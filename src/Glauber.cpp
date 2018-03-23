@@ -6,6 +6,7 @@
 using MCGlb::Nucleon;
 using MCGlb::Quark;
 
-Glauber::Glauber() {
-    Nucleon testNucleon;
+Glauber::Glauber(const MCGlb::Parameters &param_in) :
+    parameter_list(param_in) {
+    parameter_list.print_parameter_list();
 }

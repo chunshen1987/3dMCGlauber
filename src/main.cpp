@@ -1,15 +1,17 @@
 // Copyright @ Chun Shen 2018
 
 #include <iostream>
+#include <string>
 #include "Glauber.h"
 #include "Parameters.h"
-#include "ParametersMap.h"
-#include "Util.h"
 
-int main() {
-    MCGlb::Parameters Partest;
-    Partest.set_parameters();
-    std::cout << "b = " << Partest.get_b() << std::endl;
-    Glauber testGlauber;
+int main(int argc, char* argv[]) {
+    std::string input_filename = "input";
+    if (argc > 1) {
+        input_filename = *(argv + 1);
+    }
+    MCGlb::Parameters parameter_list;
+    parameter_list.read_in_parameters_from_file(input_filename);
+    Glauber testGlauber(parameter_list);
     return(0);
 }

@@ -18,20 +18,27 @@ class Parameters : public ParametersMap {
     Parameters() = default;
     ~Parameters() {};
 
+    int get_time_for_seed() const {return(stoi(get_param_val("timeForSeed")));}
+
+    string get_projectle_nucleus_name() const {
+        return(get_param_val("Projectile"));
+    }
+    string get_target_nucleus_name() const {return(get_param_val("Target"));}
+
     void set_b(real b_in);
-    real get_b() {return(static_cast<real>(stod(get_param_val("b"))));}
-
-    string get_projectle_nucleus_name() {return(get_param_val("Projectile"));}
-    string get_target_nucleus_name() {return(get_param_val("Target"));}
-
-    int get_use_energy_dependent_cross_section() {
+    real get_b() const {return(static_cast<real>(stod(get_param_val("b"))));}
+    int get_use_energy_dependent_cross_section() const {
         return(stoi(get_param_val("useEnergyDependentCrossSection")));
     }
 
-    int get_use_quarks() {return(stoi(get_param_val("useQuarks")));}
-    int get_time_for_seed() {return(stoi(get_param_val("timeForSeed")));}
+    int get_use_quarks() const {return(stoi(get_param_val("useQuarks")));}
+    int get_gaussian_wounding() const {
+        return(stoi(get_param_val("gaussianWounding")));
+    }
 
-    real get_roots() {return(static_cast<real>(stod(get_param_val("roots"))));}
+    real get_roots() const {
+        return(static_cast<real>(stod(get_param_val("roots"))));
+    }
 };
 
 }

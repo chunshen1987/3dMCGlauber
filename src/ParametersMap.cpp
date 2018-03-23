@@ -3,6 +3,7 @@
 #include "Util.h"
 #include <fstream>
 #include <iostream>
+#include <cstdlib>
 
 ParametersMap::~ParametersMap() {
     parameter_map.clear();
@@ -20,5 +21,11 @@ void ParametersMap::read_in_parameters_from_file(string filename) {
     while (getline(input_file,line)) {
         auto param = StringUtility::parse_a_line(line, " ", "#");
         set_parameter(param[0], param[1]);
+    }
+}
+
+void ParametersMap::print_parameter_list() const {
+    for (auto it = parameter_map.cbegin(); it != parameter_map.cend(); ++it) {
+        std::cout << (*it).first << " = " << (*it).second << "\n";
     }
 }
