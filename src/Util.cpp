@@ -5,9 +5,6 @@
 #include "Util.h"
 #include "doctest.h"
 
-//using std::vector;
-//using std::string;
-
 namespace StringUtility {
 
 vector<string> parse_a_line(string line, string delimiter, string ignore) {
