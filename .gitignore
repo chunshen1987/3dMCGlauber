@@ -1,0 +1,8 @@
+*.[oa]
+*.~
+.DS_Store
+results/
+test/
+3dMCGlb.e
+*.DAT
+*.txt
