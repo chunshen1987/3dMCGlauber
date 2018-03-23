@@ -4,11 +4,12 @@
 #define SRC_PARAMETERS_H_
 
 #include <string>
+#include "ParametersMap.h"
 #include "data_structs.h"
 
 namespace MCGlb {
 
-class Parameters {
+class Parameters : public ParametersMap {
  private:
     std::string parameter_filename;
     real b;
@@ -26,8 +27,8 @@ class Parameters {
         parameter_filename = input_filename;
     }
 
-    void set_b(real b_in) {b = b_in;}
-    real get_b() {return(b);}
+    void set_b(real b_in);
+    real get_b();
 
     void set_projectile_nucleus(std::string nucleus_name) {
         projectile_nucleus_name = nucleus_name;

@@ -1,8 +1,9 @@
 *.[oa]
 *.~
+*.swp
 .DS_Store
 results/
-test/
-3dMCGlb.e
+build/
+*.e
 *.DAT
 *.txt
