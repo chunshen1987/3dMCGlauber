@@ -1,5 +1,6 @@
 set (SOURCES
   main.cpp
+  Parameters.cpp
   Glauber.cpp
   )
 
