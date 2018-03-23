@@ -25,7 +25,11 @@ void ParametersMap::read_in_parameters_from_file(string filename) {
 }
 
 void ParametersMap::print_parameter_list() const {
-    for (auto it = parameter_map.cbegin(); it != parameter_map.cend(); ++it) {
-        std::cout << (*it).first << " = " << (*it).second << "\n";
+    std::cout << "==============================================" << std::endl;
+    std::cout << "Input Parameter list:" << std::endl;
+    std::cout << "==============================================" << std::endl;
+    for (auto& it: parameter_map) {
+        std::cout << it.first << " = " << it.second << "\n";
     }
+    std::cout << "==============================================" << std::endl;
 }
