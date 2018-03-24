@@ -13,6 +13,13 @@ namespace MCGlb {
 class Nucleus {
  private:
     std::string name;
+    int density_function_type;
+    int A;
+    int Z;
+    real WS_w;
+    real WS_a;
+    real WS_R;
+    real WS_rho;
     std::vector<Nucleon> Nucleon_list;
 
  public:
