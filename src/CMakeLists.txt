@@ -8,6 +8,12 @@ set (SOURCES
   )
 
 if (test)
+    add_executable (unittest_Quark.e Quark_UnitTest.cpp)
+    install(TARGETS unittest_Quark.e DESTINATION ${CMAKE_HOME_DIRECTORY})
+    add_executable (unittest_Nucleon.e Nucleon.cpp Nucleon_UnitTest.cpp)
+    install(TARGETS unittest_Nucleon.e DESTINATION ${CMAKE_HOME_DIRECTORY})
+    add_executable (unittest_Particle.e Particle_UnitTest.cpp)
+    install(TARGETS unittest_Particle.e DESTINATION ${CMAKE_HOME_DIRECTORY})
     add_executable (unittest_Util.e Util.cpp Util_UnitTest.cpp)
     install(TARGETS unittest_Util.e DESTINATION ${CMAKE_HOME_DIRECTORY})
     add_executable (unittest_Random.e Random.cpp Random_UnitTest.cpp)

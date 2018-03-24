@@ -12,19 +12,6 @@ typedef double real;
 typedef std::array<real, 4> SpatialVec;
 typedef std::array<real, 4> MomentumVec;
 
-struct Quark {
-    SpatialVec x;
-    MomentumVec p;
-    real mass;
-};
-
-struct Nucleon {
-    SpatialVec x;
-    MomentumVec p;
-    real mass;
-    std::vector<Quark> quarkList;
-};
-
 }
 
 
