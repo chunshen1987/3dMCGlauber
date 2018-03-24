@@ -1,7 +1,6 @@
 // Copyright @ Chun Shen 2018
 
 #include "Random.h"
-#include <iostream>
 
 namespace RandomUtil {
 
