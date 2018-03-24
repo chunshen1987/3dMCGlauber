@@ -18,7 +18,7 @@ class Parameters : public ParametersMap {
     Parameters() = default;
     ~Parameters() {};
 
-    int get_time_for_seed() const {return(stoi(get_param_val("timeForSeed")));}
+    int get_seed() const {return(stoi(get_param_val("seed")));}
 
     string get_projectle_nucleus_name() const {
         return(get_param_val("Projectile"));

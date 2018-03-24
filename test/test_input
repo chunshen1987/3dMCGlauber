@@ -9,7 +9,7 @@ useNuclearCorrection 1
 Q2 1.
 b 1
 roots 19.
-seed 1
+seed -1
 timeForSeed 1
 gaussianWounding 1
 useRapidityPlateau 1

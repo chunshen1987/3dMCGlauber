@@ -5,11 +5,13 @@
 
 #include "data_structs.h"
 #include "Parameters.h"
-#include <random>
+#include "Random.h"
+#include <memory>
 
 class Glauber {
  private:
     const MCGlb::Parameters &parameter_list;
+    std::unique_ptr<RandomUtil::Random> ran_gen_ptr;
 
  public:
     Glauber() = default;

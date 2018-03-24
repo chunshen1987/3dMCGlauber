@@ -16,7 +16,7 @@ TEST_CASE("Test read in parameters from a file and get functions") {
     CHECK(parameter_list.get_use_quarks() == 2);
     CHECK(parameter_list.get_use_energy_dependent_cross_section() == 1);
     CHECK(parameter_list.get_roots() == 19);
-    CHECK(parameter_list.get_time_for_seed() == 1);
+    CHECK(parameter_list.get_seed() == -1);
     CHECK(parameter_list.get_projectle_nucleus_name() == "Au");
     CHECK(parameter_list.get_target_nucleus_name() == "Pb");
 }

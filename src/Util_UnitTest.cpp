@@ -69,5 +69,12 @@ TEST_CASE("Test parse_a_line_with_ignore"){
     CHECK(word_list1[0] == "one");
     CHECK(word_list1[1] == "two");
     CHECK(word_list1[2] == "#three");
+    
+    word_list1 = StringUtility::parse_a_line("      #three   ", " ", "");
+    CHECK(word_list1.size() == 1);
+    CHECK(word_list1[0] == "#three");
+    
+    word_list1 = StringUtility::parse_a_line("      #three   ", " ", "#");
+    CHECK(word_list1.size() == 0);
 }
 
