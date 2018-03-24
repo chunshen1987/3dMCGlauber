@@ -9,6 +9,8 @@ set (SOURCES
 if (test)
     add_executable (unittest_Util.e Util.cpp UnitTest_Util.cc)
     install(TARGETS unittest_Util.e DESTINATION ${CMAKE_HOME_DIRECTORY})
+    add_executable (unittest_Random.e Random.cpp UnitTest_Random.cc)
+    install(TARGETS unittest_Random.e DESTINATION ${CMAKE_HOME_DIRECTORY})
     add_executable (unittest_ParametersMap.e ParametersMap.cpp Util.cpp UnitTest_ParametersMap.cc)
     install(TARGETS unittest_ParametersMap.e DESTINATION ${CMAKE_HOME_DIRECTORY})
     add_executable (unittest_Parameters.e Parameters.cpp ParametersMap.cpp Util.cpp UnitTest_Parameters.cc)

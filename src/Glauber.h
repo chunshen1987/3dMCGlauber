@@ -5,6 +5,7 @@
 
 #include "data_structs.h"
 #include "Parameters.h"
+#include <random>
 
 class Glauber {
  private:
