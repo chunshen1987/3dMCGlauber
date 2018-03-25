@@ -55,6 +55,14 @@ TEST_CASE("Test generate nucleus configuratin") {
             == test_nucleus.get_nucleus_A());
 }
 
+TEST_CASE("Test shift the nucleus") {
+    MCGlb::Nucleus test_nucleus("p");
+    test_nucleus.generate_nucleus_3d_configuration();
+    MCGlb::SpatialVec x_shift = {0.0, 1.0, 0.0, -1.0};
+    test_nucleus.shift_nucleus(x_shift);
+    CHECK(test_nucleus.get_nucleon(0).get_x() == x_shift);
+}
+
 TEST_CASE("Test recenter the nucleus") {
     MCGlb::Nucleus test_nucleus("Au");
     test_nucleus.recenter_nucleus();
@@ -104,8 +112,3 @@ TEST_CASE("Test Woods-Saxon sampling") {
               << std::endl;
 }
 
-TEST_CASE("Test temp") {
-    MCGlb::Nucleus test_nucleus("Au");
-    test_nucleus.set_dmin(0.9);
-    test_nucleus.generate_nucleus_configuration_with_woods_saxon();
-}

@@ -21,7 +21,6 @@ class Nucleus {
     real d_min;                         // minimum distance between nucleons
 
     std::vector<Nucleon> nucleon_list;
-    
     std::unique_ptr<RandomUtil::Random> ran_gen_ptr;
 
  public:
