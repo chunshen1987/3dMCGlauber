@@ -11,7 +11,6 @@
 class Glauber {
  private:
     const MCGlb::Parameters &parameter_list;
-    std::unique_ptr<RandomUtil::Random> ran_gen_ptr;
 
  public:
     Glauber() = default;

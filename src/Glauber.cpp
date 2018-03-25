@@ -9,9 +9,7 @@ using std::cout;
 using std::endl;
 
 Glauber::Glauber(const MCGlb::Parameters &param_in) :
-    parameter_list(param_in){
+    parameter_list(param_in) {
     parameter_list.print_parameter_list();
     int seed = parameter_list.get_seed();
-    ran_gen_ptr = (
-            std::unique_ptr<RandomUtil::Random>(new RandomUtil::Random(seed)));
 }
