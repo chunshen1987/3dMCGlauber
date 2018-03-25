@@ -139,7 +139,7 @@ void Nucleus::generate_deuteron_configuration() {
 }
 
 
-real Nucleus::get_inverse_CDF_hulthen_function(real y) {
+real Nucleus::get_inverse_CDF_hulthen_function(real y) const {
     if (y < 0. || y > 1.) {
         cout << "[Error]: Glauber::get_inverse_CDF_hulthen_function: "
              << "input y < 0 or y > 1, y = " << y << endl;
@@ -169,24 +169,19 @@ real Nucleus::get_inverse_CDF_hulthen_function(real y) {
 }
 
 
-real Nucleus::hulthen_function_CDF(real r) {
+real Nucleus::hulthen_function_CDF(real r) const {
     real alpha = 0.228;
     real beta  = 1.18;
-    real res   = 0.0;
-    if (r < 0.) {
-        res = 0.0;
-    } else {
-        real c = alpha*beta*(alpha + beta)/((alpha - beta)*(alpha - beta));
-        res = (2.*c*(2.*exp(-r*(alpha + beta))/(alpha + beta)
-                     - 1./2.*exp(-2.*alpha*r)/alpha
-                     - 1./2.*exp(-2.*beta*r)/beta
-                     + 1./(2.*alpha) + 1./(2.*beta) - 2./(alpha + beta)));
-    }
+    real c     = alpha*beta*(alpha + beta)/((alpha - beta)*(alpha - beta));
+    real res = (2.*c*(2.*exp(-r*(alpha + beta))/(alpha + beta)
+                 - 1./2.*exp(-2.*alpha*r)/alpha
+                 - 1./2.*exp(-2.*beta*r)/beta
+                 + 1./(2.*alpha) + 1./(2.*beta) - 2./(alpha + beta)));
     return(res);
 }
 
 
-real Nucleus::sample_r_from_woods_saxon() {
+real Nucleus::sample_r_from_woods_saxon() const {
     real a_WS = WS_param_vec[3];
     real R_WS = WS_param_vec[2];
     real rmaxCut = R_WS + 10.*a_WS;
@@ -199,13 +194,12 @@ real Nucleus::sample_r_from_woods_saxon() {
 
 
 void Nucleus::generate_nucleus_configuration_with_woods_saxon() {
-    std::vector<real> r_array;
-    for (int i = 0; i < A; i++) {
-        r_array.push_back(sample_r_from_woods_saxon());
-    }
+    std::vector<real> r_array(A, 0.);
+    for (int i = 0; i < A; i++)
+        r_array[i] = sample_r_from_woods_saxon();
     std::sort(r_array.begin(), r_array.end());
 
-    std::vector<real> x_array, y_array, z_array;
+    std::vector<real> x_array(A, 0.), y_array(A, 0.), z_array(A, 0.);
     const real d_min_sq = d_min*d_min;
     for (unsigned int i = 0; i < r_array.size(); i++) {
         real r_i = r_array[i];
@@ -235,9 +229,9 @@ void Nucleus::generate_nucleus_configuration_with_woods_saxon() {
             cout << "[Warning] can not find configuration : "
                  << "r[i] = " << r_i << ", r[i-1] = " << r_array[i-1] << endl;
         }
-        x_array.push_back(x_i);
-        y_array.push_back(y_i);
-        z_array.push_back(z_i);
+        x_array[i] = x_i;
+        y_array[i] = y_i;
+        z_array[i] = z_i;
     }
     for (unsigned int i = 0; i < r_array.size(); i++) {
         SpatialVec  x_in = {0.0, x_array[i], y_array[i], z_array[i]};
@@ -248,7 +242,7 @@ void Nucleus::generate_nucleus_configuration_with_woods_saxon() {
 }
 
 
-real Nucleus::fermi_distribution(real r, real R_WS, real a_WS) {
+real Nucleus::fermi_distribution(real r, real R_WS, real a_WS) const {
     real f = 1./(1. + exp((r - R_WS)/a_WS));
     return (f);
 }

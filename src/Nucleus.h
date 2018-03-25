@@ -48,18 +48,17 @@ class Nucleus {
     //! This function samples the nucleon spatial configuration for deuteron
     void generate_deuteron_configuration();
     //! The inverse CDF of the Hulthen function for deutron wavefunction
-    real get_inverse_CDF_hulthen_function(real y);
+    real get_inverse_CDF_hulthen_function(real y) const;
     //! The Hulthen function for deutron wavefunction
-    real hulthen_function_CDF(real r);
-
+    real hulthen_function_CDF(real r) const;
     //! This function samples a nucleon spatial configuration according to
     //! the Fermi Distribution
     void generate_nucleus_configuration_with_woods_saxon();
-    real sample_r_from_woods_saxon();
+    real sample_r_from_woods_saxon() const;
     //! Fermi Distribution 
-    real fermi_distribution(real r, real R_WS, real a_WS);
+    real fermi_distribution(real r, real R_WS, real a_WS) const;
 
-    int get_number_of_nucleons() {return(nucleon_list.size());}
+    int get_number_of_nucleons() const {return(nucleon_list.size());}
     Nucleon get_nucleon(int idx) {return(nucleon_list.at(idx));}
     std::vector<Nucleon> get_nucleon_list() const {return(nucleon_list);}
 
