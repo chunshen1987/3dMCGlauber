@@ -30,12 +30,12 @@ void Nucleus::set_random_seed(int seed) {
 void Nucleus::set_woods_saxon_parameters(int A_in, int Z_in,
                                          real rho, real w, real R, real a,
                                          int density_function_type_in) {
-    A    = A_in;
-    Z    = Z_in;
-    WS_param_vec[0] = rho;
-    WS_param_vec[1] = w;
-    WS_param_vec[2] = R;
-    WS_param_vec[3] = a;
+    A                     = A_in;
+    Z                     = Z_in;
+    WS_param_vec[0]       = rho;
+    WS_param_vec[1]       = w;
+    WS_param_vec[2]       = R;
+    WS_param_vec[3]       = a;
     density_function_type = density_function_type_in;
 }
 
@@ -50,17 +50,17 @@ void Nucleus::set_nucleus_parameters(std::string nucleus_name) {
         set_woods_saxon_parameters(3, 2, 0.17, 0.0, 0.0, 0.0, 1);
     } else if (nucleus_name.compare("C") == 0) {
         set_woods_saxon_parameters(12, 6, 0.17, 1.403, 2.44, 1.635, 1);
-    } else if(nucleus_name.compare("O") == 0) {
+    } else if (nucleus_name.compare("O") == 0) {
         set_woods_saxon_parameters(16, 8, 0.17, 2.608, -0.051, 0.513, 3);
-    } else if(nucleus_name.compare("Al") == 0) {
+    } else if (nucleus_name.compare("Al") == 0) {
         set_woods_saxon_parameters(27, 13, 0.17, 3.07, 0.0, 0.519, 3);
-    } else if(nucleus_name.compare("Cu") == 0) {
+    } else if (nucleus_name.compare("Cu") == 0) {
         set_woods_saxon_parameters(63, 29, 0.17, 4.163, 0.0, 0.606, 3);
-    } else if(nucleus_name.compare("Au") == 0) {
+    } else if (nucleus_name.compare("Au") == 0) {
         set_woods_saxon_parameters(197, 79, 0.17, 0.0, 6.38, 0.505, 3);
-    } else if(nucleus_name.compare("Pb") == 0) {
+    } else if (nucleus_name.compare("Pb") == 0) {
         set_woods_saxon_parameters(208, 82, 0.17, 0.0, 6.62, 0.546, 3);
-    } else if(nucleus_name.compare("U") == 0) {
+    } else if (nucleus_name.compare("U") == 0) {
         set_woods_saxon_parameters(238, 92, 0.17, 0.0, 6.874, 0.556, 3);
     } else {
         cout << "[Error] Unknown_nucleus: " << nucleus_name << endl;
@@ -75,7 +75,7 @@ void Nucleus::generate_nucleus_3d_configuration() {
         nucleon_list.clear();
     }
     if (A == 1) {  // p
-        SpatialVec  x = {0.0, 0.0, 0.0, 0.0};
+        SpatialVec  x = {0.0};
         MomentumVec p = {0.0};
         Nucleon nucleon(x, p);
         nucleon_list.push_back(nucleon);
