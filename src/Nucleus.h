@@ -63,7 +63,7 @@ class Nucleus {
     Nucleon get_nucleon(int idx) {return(nucleon_list.at(idx));}
     std::vector<Nucleon> get_nucleon_list() const {return(nucleon_list);}
 
-    void shift_nucleus(real t_shift, real x_shift, real y_shift, real z_shift);
+    void shift_nucleus(SpatialVec x_shift);
     void recenter_nucleus();
 
 };

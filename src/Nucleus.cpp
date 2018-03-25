@@ -101,18 +101,16 @@ void Nucleus::recenter_nucleus() {
     meany /= static_cast<real>(A);
     meanz /= static_cast<real>(A);
 
-    shift_nucleus(0, -meanx, -meany, -meanz);
+    SpatialVec x_shift = {0, -meanx, -meany, -meanz};
+    shift_nucleus(x_shift);
 }
 
 
-void Nucleus::shift_nucleus(real t_shift, real x_shift, real y_shift,
-                            real z_shift) {
+void Nucleus::shift_nucleus(SpatialVec x_shift) {
     for (auto &nucleon_i : nucleon_list) {
         auto x_vec = nucleon_i.get_x();
-        x_vec[0] += t_shift;
-        x_vec[1] += x_shift;
-        x_vec[2] += y_shift;
-        x_vec[3] += z_shift;
+        for (int i = 0; i < 4; i++)
+            x_vec[i] += x_shift[i];
         nucleon_i.set_x(x_vec);
     }
 }
