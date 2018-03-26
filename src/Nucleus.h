@@ -73,6 +73,14 @@ class Nucleus {
     void shift_nucleus(SpatialVec x_shift);
     void recenter_nucleus();
 
+    void accelerate_nucleus(real ecm, int direction);
+    void lorentz_contraction(real gamma);
+    void set_nucleons_momentum_with_collision_energy(real beam_rapidity);
+    real get_z_min();
+    real get_z_max();
+
+    void output_nucleon_positions(std::string filename);
+
 };
 
 }

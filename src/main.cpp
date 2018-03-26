@@ -12,6 +12,6 @@ int main(int argc, char* argv[]) {
     }
     MCGlb::Parameters parameter_list;
     parameter_list.read_in_parameters_from_file(input_filename);
-    Glauber testGlauber(parameter_list);
+    MCGlb::Glauber testGlauber(parameter_list);
     return(0);
 }

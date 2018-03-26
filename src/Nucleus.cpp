@@ -3,6 +3,8 @@
 #include "Nucleus.h"
 #include "PhysConsts.h"
 #include <iostream>
+#include <iomanip>
+#include <fstream>
 #include <algorithm>
 #include <cmath>
 
@@ -100,6 +102,7 @@ void Nucleus::generate_nucleus_3d_configuration() {
             generate_nucleus_configuration_with_deformed_woods_saxon();
         }
     }
+    recenter_nucleus();
 }
 
 
@@ -349,6 +352,63 @@ real Nucleus::spherical_harmonics(int l, real ct) const {
         ylm *= 0.10578554691520431;  // 3.0/16.0/pow(M_PI,0.5);
     }
     return(ylm);
+}
+
+
+void Nucleus::accelerate_nucleus(real ecm, int direction) {
+    assert(ecm > 2.*PhysConsts::MProton);
+    real beam_rapidity = direction*acosh(ecm/(2.*PhysConsts::MProton));
+    set_nucleons_momentum_with_collision_energy(beam_rapidity);
+    lorentz_contraction(cosh(beam_rapidity));
+}
+
+void Nucleus::lorentz_contraction(real gamma) {
+    for (auto &it: nucleon_list) {
+        auto xvec = it.get_x();
+        xvec[3] /= gamma;
+        it.set_x(xvec);
+    }
+}
+
+void Nucleus::set_nucleons_momentum_with_collision_energy(real beam_rapidity) {
+    MomentumVec p = {PhysConsts::MProton*cosh(beam_rapidity),
+                     0.0,
+                     0.0,
+                     PhysConsts::MProton*sinh(beam_rapidity)};
+    for (auto &it: nucleon_list)
+        it.set_p(p);
+}
+
+real Nucleus::get_z_min() {
+    real z_min = 100;
+    for (auto const &it: nucleon_list) {
+        auto xvec = it.get_x();
+        if (xvec[3] < z_min) z_min = xvec[3];
+    }
+    return(z_min);
+}
+
+real Nucleus::get_z_max() {
+    real z_max = -100;
+    for (auto const &it: nucleon_list) {
+        auto xvec = it.get_x();
+        if (xvec[3] > z_max) z_max = xvec[3];
+    }
+    return(z_max);
+}
+
+void Nucleus::output_nucleon_positions(std::string filename) {
+    std::ofstream of(filename, std::ofstream::out);
+    of << "# Nucleus name: " << name << std::endl;
+    of << "# x (fm)  y (fm)  z (fm)  rapidity" << std::endl;
+    for (auto const& it: nucleon_list) {
+        auto x_vec = it.get_x();
+        auto p_vec = it.get_p();
+        real rapidity = 0.5*log((p_vec[0] + p_vec[3])/(p_vec[0] - p_vec[3]));
+        of << std::scientific << std::setw(10) << std::setprecision(6)
+           << x_vec[1] << "  " << x_vec[2] << "  " << x_vec[3] << "  "
+           << rapidity << std::endl;
+    }
 }
 
 }

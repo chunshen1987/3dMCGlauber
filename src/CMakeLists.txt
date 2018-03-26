@@ -1,11 +1,13 @@
 set (SOURCES
-  main.cpp
-  Parameters.cpp
-  ParametersMap.cpp
-  Glauber.cpp
-  Random.cpp
-  Util.cpp
-  )
+    main.cpp
+    Parameters.cpp
+    ParametersMap.cpp
+    Glauber.cpp
+    Random.cpp
+    Nucleus.cpp
+    Nucleon.cpp
+    Util.cpp
+    )
 
 if (test)
     add_executable (unittest_Quark.e Quark_UnitTest.cpp)
@@ -26,8 +28,8 @@ if (test)
     install(TARGETS unittest_Parameters.e DESTINATION ${CMAKE_HOME_DIRECTORY})
 else (test)
     add_library(3dMCGlb_lib SHARED ${SOURCES})
-    add_executable(3dMCGlb.e ${SOURCES})
     target_link_libraries (3dMCGlb_lib ${LIBS})
+    add_executable(3dMCGlb.e ${SOURCES})
     target_link_libraries (3dMCGlb.e ${LIBS})
     install(TARGETS 3dMCGlb.e DESTINATION ${CMAKE_HOME_DIRECTORY})
 endif (test)

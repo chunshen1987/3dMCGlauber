@@ -8,7 +8,8 @@ set (CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_HOME_DIRECTORY}")
 
 option (test "Build Unit tests" OFF)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -O3 -Wall -std=c++11 -DDOCTEST_CONFIG_DISABLE -DNDEBUG")
+#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -O3 -Wall -std=c++11 -fsanitize=address -DDOCTEST_CONFIG_DISABLE -DNDEBUG")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -O3 -Wall -std=c++11 -fsanitize=address -DDOCTEST_CONFIG_DISABLE")
 
 if (test)
     set(CMAKE_CXX_FLAGS "-g -Wall -std=c++11 -DDOCTEST_CONFIG_IMPLEMENT_WITH_MAIN")

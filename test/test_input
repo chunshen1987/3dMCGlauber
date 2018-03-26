@@ -7,8 +7,8 @@ LexusLambda 1.0
 useQuarks 2
 useNuclearCorrection 1
 Q2 1.
-b 1
-roots 19.
+b 20.
+roots 19.6
 seed -1
 timeForSeed 1
 gaussianWounding 1
