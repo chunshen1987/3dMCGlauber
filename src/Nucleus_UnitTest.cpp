@@ -24,7 +24,8 @@ TEST_CASE("Test set nucleus parameters") {
     CHECK(test_nucleus.get_nucleus_A() == 197);
     CHECK(test_nucleus.get_nucleus_Z() == 79);
     WS_params = test_nucleus.get_woods_saxon_parameters();
-    MCGlb::WoodsSaxonParam WS_params_Au = {0.17, 0.0, 6.38, 0.505};
+    MCGlb::WoodsSaxonParam WS_params_Au = {
+                                0.17, 0.0, 6.38, 0.505, -0.13, -0.03};
     CHECK(WS_params == WS_params_Au);
 }
 
@@ -110,5 +111,10 @@ TEST_CASE("Test Woods-Saxon sampling") {
     }
     std::cout << "please check the output file check_Woods_Saxon_sampling.dat"
               << std::endl;
+}
+
+TEST_CASE("Test deformed nucleus") {
+    MCGlb::Nucleus test_nucleus("U", -1, 0.9, true);
+    test_nucleus.generate_nucleus_3d_configuration();
 }
 

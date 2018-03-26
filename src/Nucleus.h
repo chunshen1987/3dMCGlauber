@@ -17,7 +17,8 @@ class Nucleus {
     int density_function_type;
     int A;
     int Z;
-    WoodsSaxonParam WS_param_vec;       // rho, w, R, a
+    bool deformed;
+    WoodsSaxonParam WS_param_vec;       // rho, w, R, a, beta2, beta4
     real d_min;                         // minimum distance between nucleons
 
     std::vector<Nucleon> nucleon_list;
@@ -25,7 +26,8 @@ class Nucleus {
 
  public:
     Nucleus() = default;
-    Nucleus(std::string nucleus_name, int seed_in=-1, real d_min_in=0.9);
+    Nucleus(std::string nucleus_name, int seed_in=-1, real d_min_in=0.9,
+            bool deformed_in=false);
     ~Nucleus();
 
     void set_random_seed(int seed_in);
@@ -35,6 +37,7 @@ class Nucleus {
     void set_nucleus_parameters(std::string nucleus_name);
     void set_woods_saxon_parameters(int A_in, int Z_in,
                                     real rho, real w, real R, real a,
+                                    real beta2, real beta4,
                                     int density_function_type_in);
     void set_dmin (real d_min_in) {d_min = d_min_in;}
     int get_nucleus_A() const {return(A);}
@@ -53,9 +56,13 @@ class Nucleus {
     //! This function samples a nucleon spatial configuration according to
     //! the Fermi Distribution
     void generate_nucleus_configuration_with_woods_saxon();
+    void generate_nucleus_configuration_with_deformed_woods_saxon();
     real sample_r_from_woods_saxon() const;
+    void sample_r_and_costheta_from_deformed_woods_saxon(
+                                        real &r, real &costheta) const;
     //! Fermi Distribution 
     real fermi_distribution(real r, real R_WS, real a_WS) const;
+    real spherical_harmonics(int l, real ct) const;
 
     int get_number_of_nucleons() const {return(nucleon_list.size());}
     Nucleon get_nucleon(int idx) {return(nucleon_list.at(idx));}
