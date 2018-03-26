@@ -54,6 +54,9 @@ TEST_CASE("Test generate nucleus configuratin") {
     test_nucleus.generate_nucleus_3d_configuration();
     CHECK(test_nucleus.get_number_of_nucleons()
             == test_nucleus.get_nucleus_A());
+    CHECK(test_nucleus.get_nucleon_minimum_distance() == 0.9);
+    test_nucleus.set_dmin(1.5);
+    CHECK(test_nucleus.get_nucleon_minimum_distance() == 1.5);
 }
 
 TEST_CASE("Test shift the nucleus") {
@@ -116,5 +119,10 @@ TEST_CASE("Test Woods-Saxon sampling") {
 TEST_CASE("Test deformed nucleus") {
     MCGlb::Nucleus test_nucleus("U", -1, 0.9, true);
     test_nucleus.generate_nucleus_3d_configuration();
+    CHECK(test_nucleus.get_number_of_nucleons() == 238);
+    CHECK(test_nucleus.is_deformed() == true);
+    
+    MCGlb::Nucleus test_nucleus2("Au");
+    CHECK(test_nucleus2.is_deformed() == false);
 }
 

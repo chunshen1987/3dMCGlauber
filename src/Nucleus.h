@@ -40,9 +40,11 @@ class Nucleus {
                                     real beta2, real beta4,
                                     int density_function_type_in);
     void set_dmin (real d_min_in) {d_min = d_min_in;}
+    real get_nucleon_minimum_distance() {return(d_min);}
     int get_nucleus_A() const {return(A);}
     int get_nucleus_Z() const {return(Z);}
     WoodsSaxonParam get_woods_saxon_parameters() const {return(WS_param_vec);}
+    bool is_deformed() const {return(deformed);}
 
     //! This function generates the spatial and momentum configurations
     //! for the nucleus
