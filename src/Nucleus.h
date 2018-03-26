@@ -31,7 +31,7 @@ class Nucleus {
     ~Nucleus();
 
     void set_random_seed(int seed_in);
-    int get_random_seed() {return(ran_gen_ptr->get_seed());}
+    int get_random_seed() const {return(ran_gen_ptr->get_seed());}
 
     //! This function set Woods-Saxon parameters based on the nucleus name
     void set_nucleus_parameters(std::string nucleus_name);
@@ -40,7 +40,7 @@ class Nucleus {
                                     real beta2, real beta4,
                                     int density_function_type_in);
     void set_dmin (real d_min_in) {d_min = d_min_in;}
-    real get_nucleon_minimum_distance() {return(d_min);}
+    real get_nucleon_minimum_distance() const {return(d_min);}
     int get_nucleus_A() const {return(A);}
     int get_nucleus_Z() const {return(Z);}
     WoodsSaxonParam get_woods_saxon_parameters() const {return(WS_param_vec);}
