@@ -379,7 +379,7 @@ void Nucleus::set_nucleons_momentum_with_collision_energy(real beam_rapidity) {
         it.set_p(p);
 }
 
-real Nucleus::get_z_min() {
+real Nucleus::get_z_min() const {
     real z_min = 100;
     for (auto const &it: nucleon_list) {
         auto xvec = it.get_x();
@@ -388,7 +388,7 @@ real Nucleus::get_z_min() {
     return(z_min);
 }
 
-real Nucleus::get_z_max() {
+real Nucleus::get_z_max() const {
     real z_max = -100;
     for (auto const &it: nucleon_list) {
         auto xvec = it.get_x();
@@ -397,7 +397,7 @@ real Nucleus::get_z_max() {
     return(z_max);
 }
 
-void Nucleus::output_nucleon_positions(std::string filename) {
+void Nucleus::output_nucleon_positions(std::string filename) const {
     std::ofstream of(filename, std::ofstream::out);
     of << "# Nucleus name: " << name << std::endl;
     of << "# x (fm)  y (fm)  z (fm)  rapidity" << std::endl;
@@ -409,6 +409,13 @@ void Nucleus::output_nucleon_positions(std::string filename) {
            << x_vec[1] << "  " << x_vec[2] << "  " << x_vec[3] << "  "
            << rapidity << std::endl;
     }
+}
+    
+int Nucleus::get_number_of_wounded_nucleons() const {
+    int Npart = 0;
+    for (auto const& it: nucleon_list)
+        if (it.is_wounded()) Npart++;
+    return(Npart);
 }
 
 }

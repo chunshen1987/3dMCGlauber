@@ -12,12 +12,12 @@ namespace MCGlb {
 class Nucleon : public Particle {
  private:
     std::vector<Quark> quark_list;
+    int collided_times;
+    bool wounded;
 
  public:
     Nucleon() = default;
-    Nucleon(SpatialVec x_in, MomentumVec p_in) {
-        set_particle_variables(x_in, p_in);
-    }
+    Nucleon(SpatialVec x_in, MomentumVec p_in);
 
     Nucleon(SpatialVec x_in, MomentumVec p_in, real mass_in) {
         set_particle_variables(x_in, p_in, mass_in);
@@ -25,8 +25,12 @@ class Nucleon : public Particle {
 
     ~Nucleon();
 
-    int get_number_of_quarks() {return(quark_list.size());}
+    int get_number_of_quarks() const {return(quark_list.size());}
+    bool is_wounded() const {return(wounded);}
+    void set_wounded(bool hit) {wounded = hit;}
 
+    void increment_collided_times() {collided_times++;}
+    int get_collided_times() const {return(collided_times);}
 };
 
 }

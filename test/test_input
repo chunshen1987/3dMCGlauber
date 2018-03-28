@@ -1,4 +1,4 @@
-Projectile Au                             # projectile nucleus name
+Projectile Pb                             # projectile nucleus name
 Target Pb                                 # target nucleus name
 useEnergyDependentCrossSection 1
 sigmaNN 38.319
@@ -7,8 +7,8 @@ LexusLambda 1.0
 useQuarks 2
 useNuclearCorrection 1
 Q2 1.
-b 20.
-roots 19.6
+b 0.
+roots 2760.
 seed -1
 timeForSeed 1
 gaussianWounding 1

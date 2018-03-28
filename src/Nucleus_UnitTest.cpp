@@ -38,7 +38,7 @@ TEST_CASE("Test generate nucleus configuratin") {
     Nucleus test_nucleus("p", 1);
     test_nucleus.generate_nucleus_3d_configuration();
     CHECK(test_nucleus.get_number_of_nucleons() == 1);
-    auto test_nucleon = test_nucleus.get_nucleon(0);
+    auto test_nucleon = (*test_nucleus.get_nucleon(0));
     auto nucleon_x = test_nucleon.get_x();
     SpatialVec x_check = {0.0, 0.0, 0.0, 0.0};
     CHECK(nucleon_x == x_check);
@@ -46,8 +46,8 @@ TEST_CASE("Test generate nucleus configuratin") {
     test_nucleus.set_nucleus_parameters("d");
     test_nucleus.generate_nucleus_3d_configuration();
     CHECK(test_nucleus.get_number_of_nucleons() == 2);
-    auto nucleon1 = test_nucleus.get_nucleon(0);
-    auto nucleon2 = test_nucleus.get_nucleon(1);
+    auto nucleon1 = *test_nucleus.get_nucleon(0);
+    auto nucleon2 = *test_nucleus.get_nucleon(1);
     auto nucleon1_x = nucleon1.get_x();
     auto nucleon2_x = nucleon2.get_x();
     CHECK(nucleon1_x[0] ==  nucleon2_x[0]);
@@ -69,7 +69,7 @@ TEST_CASE("Test shift the nucleus") {
     test_nucleus.generate_nucleus_3d_configuration();
     SpatialVec x_shift = {0.0, 1.0, 0.0, -1.0};
     test_nucleus.shift_nucleus(x_shift);
-    CHECK(test_nucleus.get_nucleon(0).get_x() == x_shift);
+    CHECK(test_nucleus.get_nucleon(0)->get_x() == x_shift);
 }
 
 TEST_CASE("Test recenter the nucleus") {
@@ -77,7 +77,7 @@ TEST_CASE("Test recenter the nucleus") {
     test_nucleus.recenter_nucleus();
     auto nucleon_list = test_nucleus.get_nucleon_list();
     real meanx = 0., meany = 0., meanz = 0.;
-    for (auto const &nucleon_i : nucleon_list) {
+    for (auto const &nucleon_i : (*nucleon_list)) {
         auto x_vec = nucleon_i.get_x();
         meanx += x_vec[1];
         meany += x_vec[2];
@@ -139,15 +139,50 @@ TEST_CASE("Test get_z_max and get_z_min") {
     auto z_max = test_nucleus.get_z_max();
     SpatialVec x_shift = {0.0, 0.0, 0.0, -z_max};
     test_nucleus.shift_nucleus(x_shift);
-    for (auto const&it: test_nucleus.get_nucleon_list()) {
+    for (auto const&it: (*test_nucleus.get_nucleon_list())) {
         auto xvec = it.get_x();
         CHECK(xvec[3] <= 0);
     }
     auto z_min = test_nucleus.get_z_min();
     x_shift = {0.0, 0.0, 0.0, -z_min};
     test_nucleus.shift_nucleus(x_shift);
-    for (auto const&it: test_nucleus.get_nucleon_list()) {
+    for (auto const&it: (*test_nucleus.get_nucleon_list())) {
         auto xvec = it.get_x();
         CHECK(xvec[3] >= 0);
     }
 }
+
+TEST_CASE("Test accelerate_nucleus()") {
+    Nucleus test_nucleus1("Au");
+    Nucleus test_nucleus2("Pb");
+    test_nucleus1.generate_nucleus_3d_configuration();
+    test_nucleus2.generate_nucleus_3d_configuration();
+    test_nucleus1.accelerate_nucleus(20.,  1);
+    test_nucleus2.accelerate_nucleus(20., -1);
+    for (auto const&it: (*test_nucleus1.get_nucleon_list())) {
+        auto pvec = it.get_p();
+        CHECK(pvec[3]/pvec[0] > 0.);
+    }
+    for (auto const&it: (*test_nucleus2.get_nucleon_list())) {
+        auto pvec = it.get_p();
+        CHECK(pvec[3]/pvec[0] < 0.);
+    }
+}
+
+TEST_CASE("Test get_number_of_wounded_nucleons()") {
+    Nucleus test_nucleus1("Au");
+    test_nucleus1.generate_nucleus_3d_configuration();
+    auto list = test_nucleus1.get_nucleon_list();
+    for (auto &it: (*list)) {
+        it.set_wounded(true);
+    }
+    CHECK(test_nucleus1.get_number_of_wounded_nucleons()
+            == test_nucleus1.get_nucleus_A());
+    auto nucleon_i = test_nucleus1.get_nucleon(0);
+    nucleon_i->set_wounded(false);
+    CHECK(test_nucleus1.get_number_of_wounded_nucleons()
+            == (test_nucleus1.get_nucleus_A() - 1));
+
+}
+
+

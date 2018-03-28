@@ -39,6 +39,10 @@ class Parameters : public ParametersMap {
     real get_roots() const {
         return(static_cast<real>(stod(get_param_val("roots"))));
     }
+
+    real get_sigmaNN_inel() const {
+        return(static_cast<real>(stod(get_param_val("roots"))));
+    }
 };
 
 }

@@ -13,5 +13,8 @@ int main(int argc, char* argv[]) {
     MCGlb::Parameters parameter_list;
     parameter_list.read_in_parameters_from_file(input_filename);
     MCGlb::Glauber testGlauber(parameter_list);
+    testGlauber.make_nuclei();
+    auto Ncoll = testGlauber.make_collision_schedule();
+    std::cout << "Ncoll = " << Ncoll << std::endl;
     return(0);
 }

@@ -67,8 +67,9 @@ class Nucleus {
     real spherical_harmonics(int l, real ct) const;
 
     int get_number_of_nucleons() const {return(nucleon_list.size());}
-    Nucleon get_nucleon(int idx) {return(nucleon_list.at(idx));}
-    std::vector<Nucleon> get_nucleon_list() const {return(nucleon_list);}
+    Nucleon* get_nucleon(int idx) {return(&(nucleon_list.at(idx)));}
+    std::vector<Nucleon>* get_nucleon_list() {return(&nucleon_list);}
+    int get_number_of_wounded_nucleons() const;
 
     void shift_nucleus(SpatialVec x_shift);
     void recenter_nucleus();
@@ -76,10 +77,10 @@ class Nucleus {
     void accelerate_nucleus(real ecm, int direction);
     void lorentz_contraction(real gamma);
     void set_nucleons_momentum_with_collision_energy(real beam_rapidity);
-    real get_z_min();
-    real get_z_max();
+    real get_z_min() const;
+    real get_z_max() const;
 
-    void output_nucleon_positions(std::string filename);
+    void output_nucleon_positions(std::string filename) const;
 
 };
 

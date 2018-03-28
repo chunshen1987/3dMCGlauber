@@ -25,3 +25,12 @@ TEST_CASE("Test copy") {
     CHECK(testParticle2.get_p()    == p);
     CHECK(testParticle2.get_mass() == 0.0);
 }
+
+TEST_CASE("Test set_wounded") {
+    MCGlb::SpatialVec  x = {1.0, 0.0, -2.0, 3.0};
+    MCGlb::MomentumVec p = {5.0, 0.0, -4.0, 3.0};
+    MCGlb::Nucleon testParticle1(x, p);
+    CHECK(testParticle1.is_wounded() == false);
+    testParticle1.set_wounded(true);
+    CHECK(testParticle1.is_wounded() == true);
+}

@@ -6,10 +6,13 @@ set (SOURCES
     Random.cpp
     Nucleus.cpp
     Nucleon.cpp
+    CollisionEvent.cpp
     Util.cpp
     )
 
 if (test)
+    add_executable (unittest_CollisionEvent.e CollisionEvent_UnitTest.cpp CollisionEvent.cpp Nucleon.cpp)
+    install(TARGETS unittest_CollisionEvent.e DESTINATION ${CMAKE_HOME_DIRECTORY})
     add_executable (unittest_Quark.e Quark_UnitTest.cpp)
     install(TARGETS unittest_Quark.e DESTINATION ${CMAKE_HOME_DIRECTORY})
     add_executable (unittest_Nucleon.e Nucleon.cpp Nucleon_UnitTest.cpp)
