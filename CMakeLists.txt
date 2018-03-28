@@ -5,6 +5,10 @@ project (3DMCGlb)
 cmake_policy(SET CMP0042 NEW)
 
 set (CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_HOME_DIRECTORY}")
+set (CMAKE_INSTALL_PREFIX "${CMAKE_HOME_DIRECTORY}")
+set (CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
+message("prefix = " ${CMAKE_INSTALL_PREFIX})
+message("rpath = " ${CMAKE_INSTALL_RPATH})
 
 option (test "Build Unit tests" OFF)
 

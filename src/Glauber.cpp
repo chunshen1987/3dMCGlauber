@@ -55,13 +55,17 @@ int Glauber::make_collision_schedule() {
             }
         }
     }
-    auto Npart = (projectile->get_number_of_wounded_nucleons()
-                  + target->get_number_of_wounded_nucleons());
-    std::cout << "Npart = " << Npart << std::endl;
     return(collision_schedule.size());
 }
 
+int Glauber::get_Npart() {
+    int Npart = (projectile->get_number_of_wounded_nucleons()
+                  + target->get_number_of_wounded_nucleons());
+    return(Npart);
+}
+
 bool Glauber::hit(real d2, real d2_in) {
+    // need to work on
     real G = 0.92;
     return(ran_gen_ptr->rand_uniform() < G*exp(-G*d2/d2_in));
 }

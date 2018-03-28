@@ -1,5 +1,4 @@
 set (SOURCES
-    main.cpp
     Parameters.cpp
     ParametersMap.cpp
     Glauber.cpp
@@ -10,29 +9,39 @@ set (SOURCES
     Util.cpp
     )
 
+add_library(3dMCGlb_lib SHARED ${SOURCES})
+target_link_libraries (3dMCGlb_lib ${LIBS})
+
 if (test)
-    add_executable (unittest_CollisionEvent.e CollisionEvent_UnitTest.cpp CollisionEvent.cpp Nucleon.cpp)
-    install(TARGETS unittest_CollisionEvent.e DESTINATION ${CMAKE_HOME_DIRECTORY})
+    add_executable (unittest_CollisionEvent.e CollisionEvent_UnitTest.cpp)
+    target_link_libraries (unittest_CollisionEvent.e 3dMCGlb_lib ${LIBS})
     add_executable (unittest_Quark.e Quark_UnitTest.cpp)
-    install(TARGETS unittest_Quark.e DESTINATION ${CMAKE_HOME_DIRECTORY})
-    add_executable (unittest_Nucleon.e Nucleon.cpp Nucleon_UnitTest.cpp)
-    install(TARGETS unittest_Nucleon.e DESTINATION ${CMAKE_HOME_DIRECTORY})
-    add_executable (unittest_Nucleus.e Nucleus.cpp Nucleon.cpp Random.cpp Nucleus_UnitTest.cpp)
-    install(TARGETS unittest_Nucleus.e DESTINATION ${CMAKE_HOME_DIRECTORY})
+    add_executable (unittest_Nucleon.e Nucleon_UnitTest.cpp)
+    target_link_libraries (unittest_Nucleon.e 3dMCGlb_lib ${LIBS})
+    add_executable (unittest_Nucleus.e Nucleus_UnitTest.cpp)
+    target_link_libraries (unittest_Nucleus.e 3dMCGlb_lib ${LIBS})
     add_executable (unittest_Particle.e Particle_UnitTest.cpp)
-    install(TARGETS unittest_Particle.e DESTINATION ${CMAKE_HOME_DIRECTORY})
-    add_executable (unittest_Util.e Util.cpp Util_UnitTest.cpp)
-    install(TARGETS unittest_Util.e DESTINATION ${CMAKE_HOME_DIRECTORY})
-    add_executable (unittest_Random.e Random.cpp Random_UnitTest.cpp)
-    install(TARGETS unittest_Random.e DESTINATION ${CMAKE_HOME_DIRECTORY})
-    add_executable (unittest_ParametersMap.e ParametersMap.cpp Util.cpp ParametersMap_UnitTest.cpp)
-    install(TARGETS unittest_ParametersMap.e DESTINATION ${CMAKE_HOME_DIRECTORY})
-    add_executable (unittest_Parameters.e Parameters.cpp ParametersMap.cpp Util.cpp Parameters_UnitTest.cpp)
-    install(TARGETS unittest_Parameters.e DESTINATION ${CMAKE_HOME_DIRECTORY})
+    add_executable (unittest_Util.e Util_UnitTest.cpp)
+    target_link_libraries (unittest_Util.e 3dMCGlb_lib ${LIBS})
+    add_executable (unittest_Random.e Random_UnitTest.cpp)
+    target_link_libraries (unittest_Random.e 3dMCGlb_lib ${LIBS})
+    add_executable (unittest_ParametersMap.e ParametersMap_UnitTest.cpp)
+    target_link_libraries (unittest_ParametersMap.e 3dMCGlb_lib ${LIBS})
+    add_executable (unittest_Parameters.e Parameters_UnitTest.cpp)
+    target_link_libraries (unittest_Parameters.e 3dMCGlb_lib ${LIBS})
+    install(TARGETS unittest_CollisionEvent.e unittest_Quark.e
+                    unittest_Nucleon.e unittest_Nucleus.e unittest_Particle.e
+                    unittest_Util.e unittest_Random.e unittest_ParametersMap.e
+                    unittest_Parameters.e
+                    3dMCGlb_lib
+            RUNTIME DESTINATION ${CMAKE_HOME_DIRECTORY}
+            LIBRARY DESTINATION lib
+            ARCHIVE DESTINATION lib/static)
 else (test)
-    add_library(3dMCGlb_lib SHARED ${SOURCES})
-    target_link_libraries (3dMCGlb_lib ${LIBS})
-    add_executable(3dMCGlb.e ${SOURCES})
-    target_link_libraries (3dMCGlb.e ${LIBS})
-    install(TARGETS 3dMCGlb.e DESTINATION ${CMAKE_HOME_DIRECTORY})
+    add_executable(3dMCGlb.e main.cpp)
+    target_link_libraries (3dMCGlb.e 3dMCGlb_lib ${LIBS})
+    install(TARGETS 3dMCGlb.e 3dMCGlb_lib
+            RUNTIME DESTINATION ${CMAKE_HOME_DIRECTORY}
+            LIBRARY DESTINATION lib
+            ARCHIVE DESTINATION lib/static)
 endif (test)

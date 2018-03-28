@@ -28,9 +28,10 @@ class Glauber {
 
     void make_nuclei();
 
-
     int make_collision_schedule();
     bool hit(real d2, real d2_in);
+
+    int get_Npart();
 
     //! This function creates a new collision event between two nucleons
     void create_a_collision_event(Nucleon &proj, Nucleon &targ);
