@@ -103,6 +103,10 @@ void Nucleus::generate_nucleus_3d_configuration() {
         }
     }
     recenter_nucleus();
+
+    real phi   = 2.*M_PI*ran_gen_ptr->rand_uniform();
+    real theta = acos(1. - 2.*ran_gen_ptr->rand_uniform());
+    rotate_nucleus(phi, theta);
 }
 
 
@@ -130,6 +134,22 @@ void Nucleus::shift_nucleus(SpatialVec x_shift) {
         auto x_vec = nucleon_i.get_x();
         for (int i = 0; i < 4; i++)
             x_vec[i] += x_shift[i];
+        nucleon_i.set_x(x_vec);
+    }
+}
+
+
+void Nucleus::rotate_nucleus(real phi, real theta) {
+    auto cth  = cos(theta);
+    auto sth  = sin(theta);
+    auto cphi = cos(phi);
+    auto sphi = sin(phi);
+    for (auto &nucleon_i : nucleon_list) {
+        auto x_vec = nucleon_i.get_x();
+        auto x_new = cth*cphi*x_vec[1] - sphi*x_vec[2] + sth*cphi*x_vec[3];
+        auto y_new = cth*sphi*x_vec[1] + cphi*x_vec[2] + sth*sphi*x_vec[3];
+        auto z_new = -sth    *x_vec[1] + 0.  *x_vec[2] + cth     *x_vec[3];
+        x_vec[1] = x_new; x_vec[2] = y_new; x_vec[3] = z_new;
         nucleon_i.set_x(x_vec);
     }
 }
@@ -262,10 +282,10 @@ void Nucleus::generate_nucleus_configuration_with_woods_saxon() {
                 }
             }
         } while (reject_flag == 1 && iter < 100);
-        if (iter == 100) {
-            cout << "[Warning] can not find configuration : "
-                 << "r[i] = " << r_i << ", r[i-1] = " << r_array[i-1] << endl;
-        }
+        //if (iter == 100) {
+        //    cout << "[Warning] can not find configuration : "
+        //         << "r[i] = " << r_i << ", r[i-1] = " << r_array[i-1] << endl;
+        //}
         x_array[i] = x_i;
         y_array[i] = y_i;
         z_array[i] = z_i;
@@ -314,10 +334,10 @@ void Nucleus::generate_nucleus_configuration_with_deformed_woods_saxon() {
                 }
             }
         } while (reject_flag == 1 && iter < 100);
-        if (iter == 100) {
-            cout << "[Warning] can not find configuration : "
-                 << "r[i] = " << r_i << ", r[i-1] = " << r_array[i-1] << endl;
-        }
+        //if (iter == 100) {
+        //    cout << "[Warning] can not find configuration : "
+        //         << "r[i] = " << r_i << ", r[i-1] = " << r_array[i-1] << endl;
+        //}
         x_array[i] = x_i;
         y_array[i] = y_i;
         z_array[i] = z_i;

@@ -99,10 +99,15 @@ TEST_CASE("Test Woods-Saxon sampling") {
     const int n_r = static_cast<int>((r_max - r_min)/dr) + 1;
     std::vector<real> r(n_r, 0.);
     std::vector<real> rho_r(n_r, 0.);
-    for (int i = 0; i < n_r; i++)
+    std::vector<real> WS(n_r, 0.);
+    real norm_WS = 0.;
+    for (int i = 0; i < n_r; i++) {
         r[i] = r_min + i*dr;
+        WS[i] = r[i]*r[i]/(exp((r[i] - R_WS)/a_WS) + 1.);
+        norm_WS += WS[i]*dr;
+    }
 
-    int n_samples = 100000;
+    int n_samples = 1000000;
     auto weight   = 1./(n_samples*dr);
     for (int i = 0; i < n_samples; i++) {
         auto r_sample = test_nucleus.sample_r_from_woods_saxon();
@@ -113,13 +118,12 @@ TEST_CASE("Test Woods-Saxon sampling") {
     }
     std::ofstream of("check_Woods_Saxon_sampling.dat");
     of << "# r  WS  Sampled" << std::endl;
-    for (int i = 0; i < n_r; i++) {
-        auto WS = r[i]*r[i]/(exp((r[i] - R_WS)/a_WS) + 1.)/92.;
-        of << r[i] << "   " << WS << "  " << rho_r[i] << std::endl;
-    }
+    for (int i = 0; i < n_r; i++)
+        of << r[i] << "   " << WS[i]/norm_WS << "  " << rho_r[i] << std::endl;
     std::cout << "please check the output file check_Woods_Saxon_sampling.dat"
               << std::endl;
 }
+
 
 TEST_CASE("Test deformed nucleus") {
     Nucleus test_nucleus("U", -1, 0.9, true);
@@ -127,8 +131,57 @@ TEST_CASE("Test deformed nucleus") {
     CHECK(test_nucleus.get_number_of_nucleons() == 238);
     CHECK(test_nucleus.is_deformed() == true);
     
-    Nucleus test_nucleus2("Au");
+    Nucleus test_nucleus1("Au");
+    CHECK(test_nucleus1.is_deformed() == true);
+    Nucleus test_nucleus2("Au", -1, 0.9, false);
     CHECK(test_nucleus2.is_deformed() == false);
+}
+
+
+TEST_CASE("Test sampled nuclear density distribution") {
+    std::cout << "Testing the sampling routine..." << std::endl;
+    //Nucleus test_nucleus("Pb");
+    Nucleus test_nucleus("Au", -1, 0.9, false);
+    auto WS_params = test_nucleus.get_woods_saxon_parameters();
+    auto a_WS = WS_params[3];
+    auto R_WS = WS_params[2];
+
+    const real r_min = 0.0, r_max = 20.0, dr = 0.1;
+    const int n_r = static_cast<int>((r_max - r_min)/dr) + 1;
+    std::vector<real> r(n_r, 0.);
+    std::vector<real> rho_r(n_r, 0.);
+    std::vector<real> WS(n_r, 0.);
+    real norm_WS = 0.;
+    for (int i = 0; i < n_r; i++) {
+        r[i]  = r_min + i*dr;
+        WS[i] = r[i]*r[i]/(exp((r[i] - R_WS)/a_WS) + 1.);
+        norm_WS += WS[i]*dr;
+    }
+
+    int n_samples = 10000;
+    auto weight   = 1./(n_samples*dr*test_nucleus.get_nucleus_A());
+    for (int i = 0; i < n_samples; i++) {
+        test_nucleus.generate_nucleus_3d_configuration();
+        auto nucleon_list = test_nucleus.get_nucleon_list();
+        for (auto const& it: (*nucleon_list)) {
+            auto xvec = it.get_x();
+            auto r_sample = sqrt(xvec[1]*xvec[1] + xvec[2]*xvec[2]
+                                 + xvec[3]*xvec[3]);
+            int idx       = static_cast<int>((r_sample - r_min)/dr);
+            if (idx >= 0 && idx < n_r) {
+                rho_r[idx] += weight;
+            }
+        }
+    }
+    std::ofstream of("check_sampled_nucleon_distribution.dat");
+    of << "# Nucleus: " << test_nucleus.get_name() << std::endl;
+    of << "# r  WS  Sampled" << std::endl;
+
+    for (int i = 0; i < n_r; i++)
+        of << r[i] << "   " << WS[i]/norm_WS << "  " << rho_r[i] << std::endl;
+
+    std::cout << "please check the output file "
+              << "check_sampled_nucleon_distribution.dat" << std::endl;
 }
 
 
@@ -185,4 +238,5 @@ TEST_CASE("Test get_number_of_wounded_nucleons()") {
 
 }
 
-
+TEST_CASE("Test rotate_nucleus") {
+}

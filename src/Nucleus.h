@@ -27,9 +27,10 @@ class Nucleus {
  public:
     Nucleus() = default;
     Nucleus(std::string nucleus_name, int seed_in=-1, real d_min_in=0.9,
-            bool deformed_in=false);
+            bool deformed_in=true);
     ~Nucleus();
 
+    std::string get_name() const {return(name);}
     void set_random_seed(int seed_in);
     int get_random_seed() const {return(ran_gen_ptr->get_seed());}
 
@@ -73,6 +74,7 @@ class Nucleus {
 
     void shift_nucleus(SpatialVec x_shift);
     void recenter_nucleus();
+    void rotate_nucleus(real phi, real theta);
 
     void accelerate_nucleus(real ecm, int direction);
     void lorentz_contraction(real gamma);
