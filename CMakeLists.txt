@@ -12,11 +12,13 @@ message("rpath = " ${CMAKE_INSTALL_RPATH})
 
 option (test "Build Unit tests" OFF)
 
-#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -O3 -Wall -std=c++11 -fsanitize=address -DDOCTEST_CONFIG_DISABLE -DNDEBUG")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -O3 -Wall -std=c++11 -fsanitize=address -DDOCTEST_CONFIG_DISABLE")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -O3 -Wall -std=c++11 -fsanitize=address")
+
 
 if (test)
-    set(CMAKE_CXX_FLAGS "-g -Wall -std=c++11 -DDOCTEST_CONFIG_IMPLEMENT_WITH_MAIN")
-endif()
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DDOCTEST_CONFIG_IMPLEMENT_WITH_MAIN")
+else (test)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DDOCTEST_CONFIG_DISABLE -DNDEBUG")
+endif (test)
 
 add_subdirectory (src)
