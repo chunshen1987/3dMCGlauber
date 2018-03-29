@@ -19,11 +19,12 @@ class Glauber {
     std::unique_ptr<Nucleus> projectile;
     std::unique_ptr<Nucleus> target;
     std::set<CollisionEvent> collision_schedule;
-    std::unique_ptr<RandomUtil::Random> ran_gen_ptr;
+    std::weak_ptr<RandomUtil::Random> ran_gen_ptr;
 
  public:
     Glauber() = default;
-    Glauber(const MCGlb::Parameters &param_in);
+    Glauber(const MCGlb::Parameters &param_in,
+            std::shared_ptr<RandomUtil::Random> ran_gen);
     ~Glauber() {};
 
     void make_nuclei();

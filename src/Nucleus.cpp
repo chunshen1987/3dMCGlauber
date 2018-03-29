@@ -13,21 +13,22 @@ using std::endl;
 
 namespace MCGlb {
 
-Nucleus::Nucleus(std::string nucleus_name, int seed_in, real d_min_in,
-                 bool deformed_in) {
+Nucleus::Nucleus(std::string nucleus_name,
+                 std::shared_ptr<RandomUtil::Random> ran_gen,
+                 real d_min_in, bool deformed_in) {
     d_min = d_min_in;
     deformed = deformed_in;
-    set_random_seed(seed_in);
+    if (ran_gen == nullptr) {
+        ran_gen_ptr = std::make_shared<RandomUtil::Random> (-1);
+    } else {
+        std::weak_ptr<RandomUtil::Random> temp_ptr = ran_gen;
+        ran_gen_ptr = temp_ptr.lock();
+    }
     set_nucleus_parameters(nucleus_name);
 }
 
 Nucleus::~Nucleus() {
     nucleon_list.clear();
-}
-
-void Nucleus::set_random_seed(int seed) {
-    ran_gen_ptr = (
-        std::unique_ptr<RandomUtil::Random>(new RandomUtil::Random(seed)));
 }
 
 

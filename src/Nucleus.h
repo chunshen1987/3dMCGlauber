@@ -22,16 +22,16 @@ class Nucleus {
     real d_min;                         // minimum distance between nucleons
 
     std::vector<Nucleon> nucleon_list;
-    std::unique_ptr<RandomUtil::Random> ran_gen_ptr;
+    std::shared_ptr<RandomUtil::Random> ran_gen_ptr;
 
  public:
     Nucleus() = default;
-    Nucleus(std::string nucleus_name, int seed_in=-1, real d_min_in=0.9,
-            bool deformed_in=true);
+    Nucleus(std::string nucleus_name,
+            std::shared_ptr<RandomUtil::Random> ran_gen=nullptr,
+            real d_min_in=0.9, bool deformed_in=true);
     ~Nucleus();
 
     std::string get_name() const {return(name);}
-    void set_random_seed(int seed_in);
     int get_random_seed() const {return(ran_gen_ptr->get_seed());}
 
     //! This function set Woods-Saxon parameters based on the nucleus name

@@ -10,16 +10,15 @@ using std::endl;
 
 namespace MCGlb {
 
-Glauber::Glauber(const MCGlb::Parameters &param_in) :
+Glauber::Glauber(const MCGlb::Parameters &param_in,
+                 std::shared_ptr<RandomUtil::Random> ran_gen) :
     parameter_list(param_in) {
     parameter_list.print_parameter_list();
-    int seed = parameter_list.get_seed();
     projectile = std::unique_ptr<Nucleus>(
-            new Nucleus(parameter_list.get_projectle_nucleus_name(), seed));
+            new Nucleus(parameter_list.get_projectle_nucleus_name(), ran_gen));
     target = std::unique_ptr<Nucleus>(
-            new Nucleus(parameter_list.get_target_nucleus_name(), seed));
-    ran_gen_ptr = (
-        std::unique_ptr<RandomUtil::Random>(new RandomUtil::Random(seed)));
+            new Nucleus(parameter_list.get_target_nucleus_name(), ran_gen));
+    ran_gen_ptr = ran_gen;
     make_nuclei();
 }
 
@@ -67,7 +66,7 @@ int Glauber::get_Npart() {
 bool Glauber::hit(real d2, real d2_in) {
     // need to work on
     real G = 0.92;
-    return(ran_gen_ptr->rand_uniform() < G*exp(-G*d2/d2_in));
+    return(ran_gen_ptr.lock()->rand_uniform() < G*exp(-G*d2/d2_in));
 }
 
 void Glauber::create_a_collision_event(Nucleon &proj, Nucleon &targ) {

@@ -2,6 +2,7 @@
 #include "doctest.h"
 #include "Nucleus.h"
 #include <fstream>
+#include <memory>
 #include <iostream>
 
 using MCGlb::Nucleus;
@@ -11,9 +12,11 @@ using MCGlb::MomentumVec;
 using MCGlb::WoodsSaxonParam;
 
 TEST_CASE("Test random seed") {
-    Nucleus test_nucleus;
-    test_nucleus.set_random_seed(1);
-    CHECK(test_nucleus.get_random_seed() == 1);
+    int seed = 23;
+    std::shared_ptr<RandomUtil::Random> ran_gen_ptr(
+                                            new RandomUtil::Random(seed));
+    Nucleus test_nucleus("Au", ran_gen_ptr);
+    CHECK(test_nucleus.get_random_seed() == seed);
 }
 
 TEST_CASE("Test set nucleus parameters") {
@@ -22,7 +25,7 @@ TEST_CASE("Test set nucleus parameters") {
     CHECK(test_nucleus.get_nucleus_A() == 1);
     CHECK(test_nucleus.get_nucleus_Z() == 1);
     auto WS_params = test_nucleus.get_woods_saxon_parameters();
-    WoodsSaxonParam WS_params_p = {0.17, 0.0, 1.0, 1.0};
+    WoodsSaxonParam WS_params_p = {0.17, 0.0, 1.0, 1.0, 0.0, 0.0};
     CHECK(WS_params == WS_params_p);
     
     test_nucleus.set_nucleus_parameters("Au");
@@ -35,7 +38,7 @@ TEST_CASE("Test set nucleus parameters") {
 }
 
 TEST_CASE("Test generate nucleus configuratin") {
-    Nucleus test_nucleus("p", 1);
+    Nucleus test_nucleus("p");
     test_nucleus.generate_nucleus_3d_configuration();
     CHECK(test_nucleus.get_number_of_nucleons() == 1);
     auto test_nucleon = (*test_nucleus.get_nucleon(0));
@@ -126,14 +129,16 @@ TEST_CASE("Test Woods-Saxon sampling") {
 
 
 TEST_CASE("Test deformed nucleus") {
-    Nucleus test_nucleus("U", -1, 0.9, true);
+    std::shared_ptr<RandomUtil::Random> ran_gen_ptr(
+                                            new RandomUtil::Random(-1));
+    Nucleus test_nucleus("U", ran_gen_ptr, 0.9, true);
     test_nucleus.generate_nucleus_3d_configuration();
     CHECK(test_nucleus.get_number_of_nucleons() == 238);
     CHECK(test_nucleus.is_deformed() == true);
     
     Nucleus test_nucleus1("Au");
     CHECK(test_nucleus1.is_deformed() == true);
-    Nucleus test_nucleus2("Au", -1, 0.9, false);
+    Nucleus test_nucleus2("Au", nullptr, 0.9, false);
     CHECK(test_nucleus2.is_deformed() == false);
 }
 
@@ -141,7 +146,7 @@ TEST_CASE("Test deformed nucleus") {
 TEST_CASE("Test sampled nuclear density distribution") {
     std::cout << "Testing the sampling routine..." << std::endl;
     //Nucleus test_nucleus("Pb");
-    Nucleus test_nucleus("Au", -1, 0.9, false);
+    Nucleus test_nucleus("Au", nullptr, 0.9, false);
     auto WS_params = test_nucleus.get_woods_saxon_parameters();
     auto a_WS = WS_params[3];
     auto R_WS = WS_params[2];
