@@ -7,6 +7,7 @@
 
 using std::cout;
 using std::endl;
+using std::shared_ptr;
 
 namespace MCGlb {
 
@@ -27,13 +28,18 @@ void Glauber::make_nuclei() {
     target->generate_nucleus_3d_configuration();
     projectile->accelerate_nucleus(parameter_list.get_roots(), 1);
     target->accelerate_nucleus(parameter_list.get_roots(), -1);
-    auto impact_b = parameter_list.get_b();
+
+    // sample impact parameters
+    auto b_max = parameter_list.get_b_max();
+    auto b_min = parameter_list.get_b_min();
+    auto impact_b = sqrt(b_min*b_min +
+            (b_max*b_max - b_min*b_min)*ran_gen_ptr.lock()->rand_uniform());
     SpatialVec proj_shift = {0., impact_b/2., 0., -projectile->get_z_max()};
     projectile->shift_nucleus(proj_shift);
     SpatialVec targ_shift = {0., -impact_b/2., 0., -target->get_z_min()};
     target->shift_nucleus(targ_shift);
-    //projectile->output_nucleon_positions("projectile.dat");
-    //target->output_nucleon_positions("target.dat");
+    // projectile->output_nucleon_positions("projectile.dat");
+    // target->output_nucleon_positions("target.dat");
 }
 
 
@@ -44,9 +50,9 @@ int Glauber::make_collision_schedule() {
     auto proj_nucleon_list = projectile->get_nucleon_list();
     auto targ_nucleon_list = target->get_nucleon_list();
     for (auto &iproj: (*proj_nucleon_list)) {
-        auto proj_x = iproj.get_x();
+        auto proj_x = iproj->get_x();
         for (auto &itarg: (*targ_nucleon_list)) {
-            auto targ_x = itarg.get_x();
+            auto targ_x = itarg->get_x();
             auto dij = (  (targ_x[1] - proj_x[1])*(targ_x[1] - proj_x[1])
                         + (targ_x[2] - proj_x[2])*(targ_x[2] - proj_x[2]));
             if (hit(dij, d2)) {
@@ -69,12 +75,13 @@ bool Glauber::hit(real d2, real d2_in) {
     return(ran_gen_ptr.lock()->rand_uniform() < G*exp(-G*d2/d2_in));
 }
 
-void Glauber::create_a_collision_event(Nucleon &proj, Nucleon &targ) {
+void Glauber::create_a_collision_event(shared_ptr<Nucleon> proj,
+                                       shared_ptr<Nucleon> targ) {
     real t_coll, z_coll;
-    auto x1 = proj.get_x();
-    auto p1 = proj.get_p();
-    auto x2 = targ.get_x();
-    auto p2 = targ.get_p();
+    auto x1 = proj->get_x();
+    auto p1 = proj->get_p();
+    auto x2 = targ->get_x();
+    auto p2 = targ->get_p();
     auto v1 = p1[3]/p1[0];
     auto v2 = p2[3]/p2[0];
     auto collided = get_collision_point(x1[0], x1[3], v1, x2[3], v2,
@@ -82,10 +89,11 @@ void Glauber::create_a_collision_event(Nucleon &proj, Nucleon &targ) {
     if (collided) {
         SpatialVec x_coll = {t_coll, (x1[1] + x2[1])/2.,
                              (x1[2] + x2[2])/2., z_coll};
-        CollisionEvent new_event(x_coll, proj, targ);
-        collision_schedule.insert(new_event);
-        proj.set_wounded(true);
-        targ.set_wounded(true);
+        shared_ptr<CollisionEvent> event_ptr(
+                                    new CollisionEvent(x_coll, proj, targ));
+        collision_schedule.insert(event_ptr);
+        proj->set_wounded(true);
+        targ->set_wounded(true);
     }
 }
 
@@ -112,5 +120,6 @@ real Glauber::compute_NN_inelastic_cross_section(real ecm) const {
                            - (11.4 - 1.52*log(s) + 0.13*log(s)*log(s)));
     return(sigma_NN_inel);
 }
+
 
 }

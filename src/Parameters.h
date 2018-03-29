@@ -26,7 +26,18 @@ class Parameters : public ParametersMap {
     string get_target_nucleus_name() const {return(get_param_val("Target"));}
 
     void set_b(real b_in);
-    real get_b() const {return(static_cast<real>(stod(get_param_val("b"))));}
+    real get_b() const {
+        return(static_cast<real>(stod(get_param_val("b"))));
+    }
+    void set_b_max(real b_in);
+    real get_b_max() const {
+        return(static_cast<real>(stod(get_param_val("b_max"))));
+    }
+    void set_b_min(real b_in);
+    real get_b_min() const {
+        return(static_cast<real>(stod(get_param_val("b_min"))));
+    }
+
     int get_use_energy_dependent_cross_section() const {
         return(stoi(get_param_val("useEnergyDependentCrossSection")));
     }
@@ -40,9 +51,10 @@ class Parameters : public ParametersMap {
         return(static_cast<real>(stod(get_param_val("roots"))));
     }
 
-    real get_sigmaNN_inel() const {
-        return(static_cast<real>(stod(get_param_val("roots"))));
+    int get_QCD_string_production_mode() const {
+        return(stoi(get_param_val("QCD_string_production_mode")));
     }
+
 };
 
 }

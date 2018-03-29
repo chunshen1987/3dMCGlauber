@@ -14,6 +14,7 @@ class Nucleon : public Particle {
     std::vector<Quark> quark_list;
     int collided_times;
     bool wounded;
+    std::vector<Nucleon*> connected_with;
 
  public:
     Nucleon() = default;

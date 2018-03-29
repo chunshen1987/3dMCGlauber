@@ -8,6 +8,7 @@
 #include "Random.h"
 #include <vector>
 #include <string>
+#include <memory>
 
 namespace MCGlb {
 
@@ -21,7 +22,7 @@ class Nucleus {
     WoodsSaxonParam WS_param_vec;       // rho, w, R, a, beta2, beta4
     real d_min;                         // minimum distance between nucleons
 
-    std::vector<Nucleon> nucleon_list;
+    std::vector<std::shared_ptr<Nucleon>> nucleon_list;
     std::shared_ptr<RandomUtil::Random> ran_gen_ptr;
 
  public:
@@ -68,8 +69,12 @@ class Nucleus {
     real spherical_harmonics(int l, real ct) const;
 
     int get_number_of_nucleons() const {return(nucleon_list.size());}
-    Nucleon* get_nucleon(int idx) {return(&(nucleon_list.at(idx)));}
-    std::vector<Nucleon>* get_nucleon_list() {return(&nucleon_list);}
+    std::shared_ptr<Nucleon> get_nucleon(int idx) {
+        return(nucleon_list.at(idx));
+    }
+    std::vector<std::shared_ptr<Nucleon>>* get_nucleon_list() {
+        return(&nucleon_list);
+    }
     int get_number_of_wounded_nucleons() const;
 
     void shift_nucleus(SpatialVec x_shift);

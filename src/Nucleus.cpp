@@ -92,8 +92,8 @@ void Nucleus::generate_nucleus_3d_configuration() {
     if (A == 1) {  // p
         SpatialVec  x = {0.0};
         MomentumVec p = {0.0};
-        Nucleon nucleon(x, p);
-        nucleon_list.push_back(nucleon);
+        std::shared_ptr<Nucleon> nucleon_ptr(new Nucleon(x, p));
+        nucleon_list.push_back(nucleon_ptr);
     } else if (A == 2) {  // deuteron
         generate_deuteron_configuration();
     } else {  // other nucleus
@@ -115,7 +115,7 @@ void Nucleus::recenter_nucleus() {
     // compute the center of mass position and shift it to (0, 0, 0)
     real meanx = 0., meany = 0., meanz = 0.;
     for (auto const &nucleon_i : nucleon_list) {
-        auto x_vec = nucleon_i.get_x();
+        auto x_vec = nucleon_i->get_x();
         meanx += x_vec[1];
         meany += x_vec[2];
         meanz += x_vec[3];
@@ -132,10 +132,10 @@ void Nucleus::recenter_nucleus() {
 
 void Nucleus::shift_nucleus(SpatialVec x_shift) {
     for (auto &nucleon_i : nucleon_list) {
-        auto x_vec = nucleon_i.get_x();
+        auto x_vec = nucleon_i->get_x();
         for (int i = 0; i < 4; i++)
             x_vec[i] += x_shift[i];
-        nucleon_i.set_x(x_vec);
+        nucleon_i->set_x(x_vec);
     }
 }
 
@@ -146,12 +146,12 @@ void Nucleus::rotate_nucleus(real phi, real theta) {
     auto cphi = cos(phi);
     auto sphi = sin(phi);
     for (auto &nucleon_i : nucleon_list) {
-        auto x_vec = nucleon_i.get_x();
+        auto x_vec = nucleon_i->get_x();
         auto x_new = cth*cphi*x_vec[1] - sphi*x_vec[2] + sth*cphi*x_vec[3];
         auto y_new = cth*sphi*x_vec[1] + cphi*x_vec[2] + sth*sphi*x_vec[3];
         auto z_new = -sth    *x_vec[1] + 0.  *x_vec[2] + cth     *x_vec[3];
         x_vec[1] = x_new; x_vec[2] = y_new; x_vec[3] = z_new;
-        nucleon_i.set_x(x_vec);
+        nucleon_i->set_x(x_vec);
     }
 }
 
@@ -172,10 +172,10 @@ void Nucleus::generate_deuteron_configuration() {
     MomentumVec p_1 = {0.0};
     MomentumVec p_2 = p_1;
 
-    Nucleon nucleon_1(x_1, p_1);
-    Nucleon nucleon_2(x_2, p_2);
-    nucleon_list.push_back(nucleon_1);
-    nucleon_list.push_back(nucleon_2);
+    std::shared_ptr<Nucleon> nucleon1_ptr(new Nucleon(x_1, p_1));
+    nucleon_list.push_back(nucleon1_ptr);
+    std::shared_ptr<Nucleon> nucleon2_ptr(new Nucleon(x_2, p_2));
+    nucleon_list.push_back(nucleon2_ptr);
 }
 
 
@@ -294,8 +294,8 @@ void Nucleus::generate_nucleus_configuration_with_woods_saxon() {
     for (unsigned int i = 0; i < r_array.size(); i++) {
         SpatialVec  x_in = {0.0, x_array[i], y_array[i], z_array[i]};
         MomentumVec p_in = {0.0};
-        Nucleon nucleon(x_in, p_in);
-        nucleon_list.push_back(nucleon);
+        std::shared_ptr<Nucleon> nucleon_ptr(new Nucleon(x_in, p_in));
+        nucleon_list.push_back(nucleon_ptr);
     }
 }
 
@@ -346,8 +346,8 @@ void Nucleus::generate_nucleus_configuration_with_deformed_woods_saxon() {
     for (unsigned int i = 0; i < r_array.size(); i++) {
         SpatialVec  x_in = {0.0, x_array[i], y_array[i], z_array[i]};
         MomentumVec p_in = {0.0};
-        Nucleon nucleon(x_in, p_in);
-        nucleon_list.push_back(nucleon);
+        std::shared_ptr<Nucleon> nucleon_ptr(new Nucleon(x_in, p_in));
+        nucleon_list.push_back(nucleon_ptr);
     }
 }
 
@@ -385,9 +385,9 @@ void Nucleus::accelerate_nucleus(real ecm, int direction) {
 
 void Nucleus::lorentz_contraction(real gamma) {
     for (auto &it: nucleon_list) {
-        auto xvec = it.get_x();
+        auto xvec = it->get_x();
         xvec[3] /= gamma;
-        it.set_x(xvec);
+        it->set_x(xvec);
     }
 }
 
@@ -397,13 +397,13 @@ void Nucleus::set_nucleons_momentum_with_collision_energy(real beam_rapidity) {
                      0.0,
                      PhysConsts::MProton*sinh(beam_rapidity)};
     for (auto &it: nucleon_list)
-        it.set_p(p);
+        it->set_p(p);
 }
 
 real Nucleus::get_z_min() const {
     real z_min = 100;
     for (auto const &it: nucleon_list) {
-        auto xvec = it.get_x();
+        auto xvec = it->get_x();
         if (xvec[3] < z_min) z_min = xvec[3];
     }
     return(z_min);
@@ -412,7 +412,7 @@ real Nucleus::get_z_min() const {
 real Nucleus::get_z_max() const {
     real z_max = -100;
     for (auto const &it: nucleon_list) {
-        auto xvec = it.get_x();
+        auto xvec = it->get_x();
         if (xvec[3] > z_max) z_max = xvec[3];
     }
     return(z_max);
@@ -423,8 +423,8 @@ void Nucleus::output_nucleon_positions(std::string filename) const {
     of << "# Nucleus name: " << name << std::endl;
     of << "# x (fm)  y (fm)  z (fm)  rapidity" << std::endl;
     for (auto const& it: nucleon_list) {
-        auto x_vec = it.get_x();
-        auto p_vec = it.get_p();
+        auto x_vec = it->get_x();
+        auto p_vec = it->get_p();
         real rapidity = 0.5*log((p_vec[0] + p_vec[3])/(p_vec[0] - p_vec[3]));
         of << std::scientific << std::setw(10) << std::setprecision(6)
            << x_vec[1] << "  " << x_vec[2] << "  " << x_vec[3] << "  "
@@ -435,7 +435,7 @@ void Nucleus::output_nucleon_positions(std::string filename) const {
 int Nucleus::get_number_of_wounded_nucleons() const {
     int Npart = 0;
     for (auto const& it: nucleon_list)
-        if (it.is_wounded()) Npart++;
+        if (it->is_wounded()) Npart++;
     return(Npart);
 }
 
