@@ -81,7 +81,7 @@ TEST_CASE("Test recenter the nucleus") {
     auto nucleon_list = test_nucleus.get_nucleon_list();
     real meanx = 0., meany = 0., meanz = 0.;
     for (auto const &nucleon_i : (*nucleon_list)) {
-        auto x_vec = nucleon_i.get_x();
+        auto x_vec = nucleon_i->get_x();
         meanx += x_vec[1];
         meany += x_vec[2];
         meanz += x_vec[3];
@@ -169,7 +169,7 @@ TEST_CASE("Test sampled nuclear density distribution") {
         test_nucleus.generate_nucleus_3d_configuration();
         auto nucleon_list = test_nucleus.get_nucleon_list();
         for (auto const& it: (*nucleon_list)) {
-            auto xvec = it.get_x();
+            auto xvec = it->get_x();
             auto r_sample = sqrt(xvec[1]*xvec[1] + xvec[2]*xvec[2]
                                  + xvec[3]*xvec[3]);
             int idx       = static_cast<int>((r_sample - r_min)/dr);
@@ -198,14 +198,14 @@ TEST_CASE("Test get_z_max and get_z_min") {
     SpatialVec x_shift = {0.0, 0.0, 0.0, -z_max};
     test_nucleus.shift_nucleus(x_shift);
     for (auto const&it: (*test_nucleus.get_nucleon_list())) {
-        auto xvec = it.get_x();
+        auto xvec = it->get_x();
         CHECK(xvec[3] <= 0);
     }
     auto z_min = test_nucleus.get_z_min();
     x_shift = {0.0, 0.0, 0.0, -z_min};
     test_nucleus.shift_nucleus(x_shift);
     for (auto const&it: (*test_nucleus.get_nucleon_list())) {
-        auto xvec = it.get_x();
+        auto xvec = it->get_x();
         CHECK(xvec[3] >= 0);
     }
 }
@@ -218,11 +218,11 @@ TEST_CASE("Test accelerate_nucleus()") {
     test_nucleus1.accelerate_nucleus(20.,  1);
     test_nucleus2.accelerate_nucleus(20., -1);
     for (auto const&it: (*test_nucleus1.get_nucleon_list())) {
-        auto pvec = it.get_p();
+        auto pvec = it->get_p();
         CHECK(pvec[3]/pvec[0] > 0.);
     }
     for (auto const&it: (*test_nucleus2.get_nucleon_list())) {
-        auto pvec = it.get_p();
+        auto pvec = it->get_p();
         CHECK(pvec[3]/pvec[0] < 0.);
     }
 }
@@ -232,7 +232,7 @@ TEST_CASE("Test get_number_of_wounded_nucleons()") {
     test_nucleus1.generate_nucleus_3d_configuration();
     auto list = test_nucleus1.get_nucleon_list();
     for (auto &it: (*list)) {
-        it.set_wounded(true);
+        it->set_wounded(true);
     }
     CHECK(test_nucleus1.get_number_of_wounded_nucleons()
             == test_nucleus1.get_nucleus_A());

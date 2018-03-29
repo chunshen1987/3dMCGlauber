@@ -6,15 +6,16 @@
 #include "Particle.h"
 #include "Quark.h"
 #include <vector>
+#include <memory>
 
 namespace MCGlb {
 
 class Nucleon : public Particle {
  private:
-    std::vector<Quark> quark_list;
+    std::vector<std::shared_ptr<Quark>> quark_list;
     int collided_times;
     bool wounded;
-    std::vector<Nucleon*> connected_with;
+    std::vector<std::weak_ptr<Nucleon>> connected_with;
 
  public:
     Nucleon() = default;
