@@ -215,6 +215,7 @@ void Glauber::update_momentum(shared_ptr<Nucleon> n_i, real y_shift) {
 
 //! This function performs string production between each nucleon/parton pair
 int Glauber::perform_string_production() {
+    auto string_tension = parameter_list.get_string_tension();
     real t_current = 0.0;
     int number_of_collided_events = 0;
     while (collision_schedule.size() > 0) {
@@ -236,7 +237,9 @@ int Glauber::perform_string_production() {
         auto proj = first_event->get_proj_nucleon_ptr().lock();
         auto targ = first_event->get_targ_nucleon_ptr().lock();
         real tau_form = 0.5;
-        shared_ptr<QCDString> qcd_string(new QCDString(x_coll, tau_form, proj, targ));
+        shared_ptr<QCDString> qcd_string(
+                new QCDString(x_coll, tau_form, proj, targ, string_tension));
+        QCD_string_list.push_back(qcd_string);
         real y_shift = 0.001;
         update_momentum(proj, -y_shift);
         update_momentum(targ,  y_shift);

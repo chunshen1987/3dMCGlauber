@@ -4,11 +4,31 @@
 #include <fstream>
 #include <iostream>
 #include <cstdlib>
+#include <sstream>
+
+using std::string;
 
 ParametersMap::~ParametersMap() {
     parameter_map.clear();
 }
 
+void ParametersMap::set_parameter(string par, double val) {
+    std::ostringstream param_val;
+    param_val << val;
+    set_parameter(par, param_val.str());
+}
+
+void ParametersMap::set_parameter(string par, int val) {
+    std::ostringstream param_val;
+    param_val << val;
+    set_parameter(par, param_val.str());
+}
+
+void ParametersMap::set_parameter(string par, float val) {
+    std::ostringstream param_val;
+    param_val << val;
+    set_parameter(par, param_val.str());
+}
 
 void ParametersMap::read_in_parameters_from_file(string filename) {
     std::ifstream input_file(filename);

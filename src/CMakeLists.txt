@@ -1,5 +1,4 @@
 set (SOURCES
-    Parameters.cpp
     ParametersMap.cpp
     Glauber.cpp
     Random.cpp

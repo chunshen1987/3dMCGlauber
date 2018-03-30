@@ -20,11 +20,13 @@ class QCDString {
     real eta_s_left, eta_s_right;
     weak_ptr<Nucleon> proj;
     weak_ptr<Nucleon> targ;
+    real string_tension;
 
  public:
     QCDString() = default;
     QCDString(SpatialVec x_in, real tau_form,
-              shared_ptr<Nucleon> proj, shared_ptr<Nucleon> targ);
+              shared_ptr<Nucleon> proj, shared_ptr<Nucleon> targ,
+              real string_tension_in);
 
     void set_tau_form(real tau_form_in) {tau_form = tau_form_in;}
     real get_tau_form() const {return(tau_form);}
@@ -41,6 +43,16 @@ class QCDString {
     void set_final_space_time_rapidities(real eta_s_l, real eta_s_r) {
         eta_s_left = eta_s_l; eta_s_right = eta_s_r;
     }
+
+    void evolve_QCD_string();
+    //! this function return the final eta_s_f for free-streaming the strings
+    real get_freestreaming_eta_f(real delta_tau, real y_i,
+                                 real t_0, real z_0) const;
+
+    //! this function return the final eta_s_f for constant deceleration
+    //! evolution for the strings
+    real get_constant_decelerate_eta_f(real m_over_sigma_in, real delta_tau,
+                                       real y_i, real t_0, real z_0) const;
 
 };
 

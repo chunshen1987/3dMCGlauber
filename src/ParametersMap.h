@@ -7,21 +7,32 @@
 
 using std::string;
 using std::map;
+using std::stod;
+using std::stoi;
 
 class ParametersMap {
  private:
-     map<string, string> parameter_map;
+    map<string, string> parameter_map;
 
  public:
-     ParametersMap() = default;
-     ~ParametersMap();
+    ParametersMap() = default;
+    ~ParametersMap();
 
-     void set_parameter(string par, string val) {parameter_map[par] = val;}
-     string get_param_val(string par) const {return(parameter_map.at(par));}
+    void set_parameter(string par, string val) {parameter_map[par] = val;}
+    void set_parameter(string par, double val);
+    void set_parameter(string par, float val);
+    void set_parameter(string par, int val);
 
-     void read_in_parameters_from_file(string filename);
-     int get_parameter_list_size() const {return(parameter_map.size());}
-     void print_parameter_list() const;
+    string get_param_val(string par) const {return(parameter_map.at(par));}
+    int get_param_int(string par) const {return(stoi(get_param_val(par)));}
+    double get_param_double(string par) const {
+        return(stod(get_param_val(par)));
+    }
+    
+
+    void read_in_parameters_from_file(string filename);
+    int get_parameter_list_size() const {return(parameter_map.size());}
+    void print_parameter_list() const;
 };
 
 #endif  // SRC_PARAMETERSMAP_H_
