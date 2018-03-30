@@ -20,7 +20,7 @@ class QCDString {
     real eta_s_left, eta_s_right;
     weak_ptr<Nucleon> proj;
     weak_ptr<Nucleon> targ;
-    real string_tension;
+    real m_over_sigma;
 
  public:
     QCDString() = default;

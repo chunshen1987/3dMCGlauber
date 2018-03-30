@@ -8,7 +8,7 @@ namespace MCGlb {
 
 QCDString::QCDString(SpatialVec x_in, real tau_form_in,
                      shared_ptr<Nucleon> proj_in, shared_ptr<Nucleon> targ_in,
-                     real string_tension_in) {
+                     real m_over_sigma_in) {
     x_production = x_in;
     tau_form     = tau_form_in;
     proj         = proj_in;
@@ -17,11 +17,11 @@ QCDString::QCDString(SpatialVec x_in, real tau_form_in,
     y_i_left     = atanh(pvec[3]/pvec[0]);
     pvec         = proj.lock()->get_p();
     y_i_right    = atanh(pvec[3]/pvec[0]);
-    string_tension = string_tension_in;
+    m_over_sigma = m_over_sigma_in;
 }
 
 void QCDString::evolve_QCD_string() {
-    if (string_tension < 1e-6) {
+    if (m_over_sigma > 1e6) {
         evolve_QCD_string_with_free_streaming();
     } else {
         evolve_QCD_string_with_constant_deceleration();
@@ -39,7 +39,6 @@ void QCDString::evolve_QCD_string_with_free_streaming() {
 }
 
 void QCDString::evolve_QCD_string_with_constant_deceleration() {
-    real m_over_sigma = 1.;
     real y_i_lrf = std::abs(y_i_right - y_i_left)/2.;
     real deceleration_factor = (tau_form*tau_form
                                 /(2.*m_over_sigma*m_over_sigma));

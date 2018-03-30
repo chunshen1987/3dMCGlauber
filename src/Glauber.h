@@ -36,9 +36,9 @@ class Glauber {
     void make_nuclei();
 
     int make_collision_schedule();
-    bool hit(real d2, real d2_in);
+    bool hit(real d2, real d2_in) const;
 
-    int get_Npart();
+    int get_Npart() const;
 
     //! This function creates a new collision event between two nucleons
     void create_a_collision_event(shared_ptr<Nucleon> proj,
@@ -56,6 +56,7 @@ class Glauber {
     //! will produce a string
     bool decide_produce_string(shared_ptr<CollisionEvent> event_ptr) const;
 
+    real sample_rapidity_loss_from_the_LEXUS_model(real y_init) const;
     //! This function performs string production between each nucleon pair
     int perform_string_production();
     //! This function propagate individual nucleon inside the nucleus by dt
@@ -65,7 +66,7 @@ class Glauber {
     //! This function updates the collision schedule
     void update_collision_schedule(shared_ptr<CollisionEvent> event_happened);
     
-    void output_QCD_strings(std::string filename);
+    void output_QCD_strings(std::string filename) const;
 };
 
 }

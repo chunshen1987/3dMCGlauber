@@ -73,13 +73,13 @@ int Glauber::make_collision_schedule() {
     return(collision_schedule.size());
 }
 
-int Glauber::get_Npart() {
+int Glauber::get_Npart() const {
     int Npart = (projectile->get_number_of_wounded_nucleons()
                   + target->get_number_of_wounded_nucleons());
     return(Npart);
 }
 
-bool Glauber::hit(real d2, real d2_in) {
+bool Glauber::hit(real d2, real d2_in) const {
     real G = 0.92;  // from Glassando
     return(ran_gen_ptr.lock()->rand_uniform() < G*exp(-G*d2/d2_in));
 }
@@ -199,6 +199,7 @@ void Glauber::propagate_nuclei(real dt) {
         propagate_nucleon(n_i, dt);
 }
 
+
 void Glauber::propagate_nucleon(shared_ptr<Nucleon> n_i, real dt) {
     auto x_vec = n_i->get_x();
     auto p_vec = n_i->get_p();
@@ -208,6 +209,7 @@ void Glauber::propagate_nucleon(shared_ptr<Nucleon> n_i, real dt) {
     }
     n_i->set_x(x_vec);
 }
+
 
 void Glauber::update_momentum(shared_ptr<Nucleon> n_i, real y_shift) {
     auto pvec = n_i->get_p();
@@ -219,10 +221,10 @@ void Glauber::update_momentum(shared_ptr<Nucleon> n_i, real y_shift) {
 }
 
 
-//! This function performs string production between each nucleon/parton pair
 int Glauber::perform_string_production() {
     QCD_string_list.clear();
     auto string_tension = parameter_list.get_string_tension();
+    auto m_over_sigma = PhysConsts::MProton/(string_tension + 1e-15);
     real t_current = 0.0;
     int number_of_collided_events = 0;
     while (collision_schedule.size() > 0) {
@@ -245,7 +247,7 @@ int Glauber::perform_string_production() {
         auto targ = first_event->get_targ_nucleon_ptr().lock();
         real tau_form = 0.5;
         shared_ptr<QCDString> qcd_string(
-                new QCDString(x_coll, tau_form, proj, targ, string_tension));
+                new QCDString(x_coll, tau_form, proj, targ, m_over_sigma));
         QCD_string_list.push_back(qcd_string);
         real y_shift = 0.001;
         update_momentum(proj, -y_shift);
@@ -268,10 +270,11 @@ void Glauber::update_collision_schedule(shared_ptr<CollisionEvent> event_happene
     auto targ = event_happened->get_targ_nucleon_ptr().lock();
     targ->increment_collided_times();
     for (auto &it: (*targ->get_collide_nucleon_list()))
-        create_a_collision_event(targ, it.lock());
+        create_a_collision_event(it.lock(), targ);
 }
 
-void Glauber::output_QCD_strings(std::string filename) {
+
+void Glauber::output_QCD_strings(std::string filename) const {
     std::ofstream output(filename.c_str());
     output << "# norm  deltaE  tau_form  tau_0  eta_s_0  x_perp  y_perp  "
            << "eta_s_left  eta_s_right  y_l  y_r  fraction_l  fraction_r "
@@ -287,8 +290,9 @@ void Glauber::output_QCD_strings(std::string filename) {
                         it->get_targ().lock()->get_number_of_connections()));
         real output_array[] = {
             1.0, 0.0, it->get_tau_form(), tau_0, etas_0, x_prod[1], x_prod[2],
-            it->get_eta_s_left(), it->get_eta_s_right(), it->get_y_f_left(),
-            it->get_y_f_right(), fraction_left, fraction_right,
+            it->get_eta_s_left(), it->get_eta_s_right(),
+            it->get_y_f_left(), it->get_y_f_right(),
+            fraction_left, fraction_right,
             it->get_y_i_left(), it->get_y_i_right()};
 
         output << std::scientific << std::setprecision(8);
@@ -298,6 +302,17 @@ void Glauber::output_QCD_strings(std::string filename) {
         output << endl;
     }
     output.close();
+}
+
+
+real Glauber::sample_rapidity_loss_from_the_LEXUS_model(real y_init) const {
+    const real shape_coeff = 1.0;
+    real sinh_y_lrf = sinh(shape_coeff*y_init);
+    real arcsinh_factor = (ran_gen_ptr.lock()->rand_uniform()
+                           *(sinh(2.*shape_coeff*y_init) - sinh_y_lrf)
+                           + sinh_y_lrf);
+    real y_loss = 2.*y_init - asinh(arcsinh_factor)/shape_coeff;
+    return(y_loss);
 }
 
 }

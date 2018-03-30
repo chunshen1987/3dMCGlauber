@@ -23,39 +23,24 @@ class Parameters : public ParametersMap {
     }
     string get_target_nucleus_name() const {return(get_param_val("Target"));}
 
-    void set_b(real b_in) {set_parameter("b", b_in);}
-    real get_b() const {
-        return(static_cast<real>(get_param_double("b")));
-    }
-    void set_b_max(real b_in) {set_parameter("b_max", b_in);}
-    real get_b_max() const {
-        return(static_cast<real>(get_param_double("b_max")));
-    }
-    void set_b_min(real b_in) {set_parameter("b_min", b_in);}
-    real get_b_min() const {
-        return(static_cast<real>(get_param_double("b_min")));
-    }
+    void set_b(real b_in);
+    real get_b() const;
+    void set_b_max(real b_in);
+    real get_b_max() const;
+    void set_b_min(real b_in);
+    real get_b_min() const;
 
-    int get_use_energy_dependent_cross_section() const {
-        return(get_param_int("useEnergyDependentCrossSection"));
-    }
+    int get_use_energy_dependent_cross_section() const;
 
-    int get_use_quarks() const {return(get_param_int("useQuarks"));}
-    int get_gaussian_wounding() const {
-        return(get_param_int("gaussianWounding"));
-    }
+    int get_use_quarks() const;
 
-    real get_roots() const {
-        return(static_cast<real>(get_param_double("roots")));
-    }
+    int get_gaussian_wounding() const;
 
-    int get_QCD_string_production_mode() const {
-        return(get_param_int("QCD_string_production_mode"));
-    }
+    real get_roots() const;
+
+    int get_QCD_string_production_mode() const;
     
-    real get_string_tension() const {
-        return(static_cast<real>(get_param_double("string_tension")));
-    }
+    real get_string_tension() const;
 
 };
 
