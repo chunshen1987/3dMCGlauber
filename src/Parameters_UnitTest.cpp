@@ -10,7 +10,7 @@ TEST_CASE("Test set and get parameters") {
 
 TEST_CASE("Test read in parameters from a file and get functions") {
     MCGlb::Parameters parameter_list;
-    parameter_list.read_in_parameters_from_file("test/test_input");
+    parameter_list.read_in_parameters_from_file("test_input");
     CHECK(parameter_list.get_parameter_list_size() == 31);
     CHECK(parameter_list.get_b() == 1);
     CHECK(parameter_list.get_use_quarks() == 2);

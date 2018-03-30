@@ -35,7 +35,7 @@ if (test)
                     unittest_Util.e unittest_Random.e unittest_ParametersMap.e
                     unittest_Parameters.e
                     3dMCGlb_lib
-            RUNTIME DESTINATION ${CMAKE_HOME_DIRECTORY}
+            RUNTIME DESTINATION ${CMAKE_HOME_DIRECTORY}/test
             LIBRARY DESTINATION lib
             ARCHIVE DESTINATION lib/static)
 else (test)
