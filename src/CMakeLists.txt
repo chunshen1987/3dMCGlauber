@@ -7,6 +7,7 @@ set (SOURCES
     Nucleon.cpp
     CollisionEvent.cpp
     Util.cpp
+    QCDString.cpp
     )
 
 add_library(3dMCGlb_lib SHARED ${SOURCES})

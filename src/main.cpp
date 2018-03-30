@@ -18,11 +18,22 @@ int main(int argc, char* argv[]) {
     std::shared_ptr<RandomUtil::Random> ran_gen_ptr(
                                             new RandomUtil::Random(seed));
     MCGlb::Glauber testGlauber(parameter_list, ran_gen_ptr);
-    for (int iev = 0; iev < 100; iev++) {
+    int iev = 0;
+    while (iev < 100) {
         testGlauber.make_nuclei();
         auto Ncoll = testGlauber.make_collision_schedule();
         auto Npart = testGlauber.get_Npart();
-        std::cout << "Npart = " << Npart << ", Ncoll = " << Ncoll << std::endl;
+        if (Npart > 1) {
+            iev++;
+            auto Nstrings = testGlauber.decide_QCD_strings_production();
+            std::cout << "Npart = " << Npart << ", Ncoll = " << Ncoll
+                      << ", Nstring = " << Nstrings
+                      << std::endl;
+            std::cout << "averaged connected rate: " << Nstrings/(Npart/2.)
+                      << std::endl;
+            auto Ncollided = testGlauber.perform_string_production();
+            std::cout << "Ncollisions = " << Ncollided << std::endl;
+        }
     }
     return(0);
 }

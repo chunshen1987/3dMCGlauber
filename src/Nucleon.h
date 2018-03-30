@@ -15,6 +15,7 @@ class Nucleon : public Particle {
     std::vector<std::shared_ptr<Quark>> quark_list;
     int collided_times;
     bool wounded;
+    std::vector<std::weak_ptr<Nucleon>> collide_with;
     std::vector<std::weak_ptr<Nucleon>> connected_with;
 
  public:
@@ -33,6 +34,17 @@ class Nucleon : public Particle {
 
     void increment_collided_times() {collided_times++;}
     int get_collided_times() const {return(collided_times);}
+    void add_collide_nucleon(std::weak_ptr<Nucleon> collide_nucleon) {
+        collide_with.push_back(collide_nucleon);
+    }
+    std::vector<std::weak_ptr<Nucleon>>* get_collide_nucleon_list() {
+        return(&collide_with);
+    }
+
+    int get_number_of_connections() {return(connected_with.size());}
+    void add_connected_nucleon(std::weak_ptr<Nucleon> connected_nucleon) {
+        connected_with.push_back(connected_nucleon);
+    }
 };
 
 }
