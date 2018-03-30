@@ -21,7 +21,41 @@ QCDString::QCDString(SpatialVec x_in, real tau_form_in,
 }
 
 void QCDString::evolve_QCD_string() {
+    if (string_tension < 1e-6) {
+        evolve_QCD_string_with_free_streaming();
+    } else {
+        evolve_QCD_string_with_constant_deceleration();
+    }
+}
 
+void QCDString::evolve_QCD_string_with_free_streaming() {
+    // freestream the string by its formation time tau_form
+    y_f_left    = y_i_left;
+    y_f_right   = y_i_right;
+    eta_s_left  = get_freestreaming_eta_f(tau_form, y_i_left, x_production[0],
+                                          x_production[3]);
+    eta_s_right = get_freestreaming_eta_f(tau_form, y_i_right, x_production[0],
+                                          x_production[3]);
+}
+
+void QCDString::evolve_QCD_string_with_constant_deceleration() {
+    real m_over_sigma = 1.;
+    real y_i_lrf = std::abs(y_i_right - y_i_left)/2.;
+    real deceleration_factor = (tau_form*tau_form
+                                /(2.*m_over_sigma*m_over_sigma));
+    real y_loss = acosh(deceleration_factor + 1.);
+    if (y_loss > y_i_lrf) {
+        tau_form = m_over_sigma*sqrt(2.*(cosh(y_i_lrf) - 1.));
+        y_loss   = y_i_lrf;
+    }
+    y_f_left    = y_i_left + y_loss;
+    y_f_right   = y_i_right - y_loss;
+    eta_s_left  = get_constant_decelerate_eta_f(-m_over_sigma, tau_form,
+                                                y_i_left, x_production[0],
+                                                x_production[3]);
+    eta_s_right = get_constant_decelerate_eta_f(m_over_sigma, tau_form,
+                                                y_i_right, x_production[0],
+                                                x_production[3]);
 }
 
 real QCDString::get_freestreaming_eta_f(real delta_tau, real y_i,

@@ -45,6 +45,7 @@ class Nucleon : public Particle {
     void add_connected_nucleon(std::weak_ptr<Nucleon> connected_nucleon) {
         connected_with.push_back(connected_nucleon);
     }
+    bool is_connected_with(std::shared_ptr<Nucleon> targ);
 };
 
 }

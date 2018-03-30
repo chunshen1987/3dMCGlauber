@@ -21,6 +21,9 @@ class Particle {
     Particle(SpatialVec x_in, MomentumVec p_in) {
         set_particle_variables(x_in, p_in);
     }
+    bool operator == (const Particle &p1) const {
+        return(x == p1.get_x() && p == p1.get_p() && mass == p1.get_mass());
+    }
 
     Particle(SpatialVec x_in, MomentumVec p_in, real mass_in) {
         set_particle_variables(x_in, p_in, mass_in);

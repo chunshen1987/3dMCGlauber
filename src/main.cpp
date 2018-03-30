@@ -1,6 +1,7 @@
 // Copyright @ Chun Shen 2018
 
 #include <iostream>
+#include <sstream>
 #include <string>
 #include <memory>
 #include "Glauber.h"
@@ -19,7 +20,7 @@ int main(int argc, char* argv[]) {
                                             new RandomUtil::Random(seed));
     MCGlb::Glauber testGlauber(parameter_list, ran_gen_ptr);
     int iev = 0;
-    while (iev < 100) {
+    while (iev < 10) {
         testGlauber.make_nuclei();
         auto Ncoll = testGlauber.make_collision_schedule();
         auto Npart = testGlauber.get_Npart();
@@ -33,6 +34,9 @@ int main(int argc, char* argv[]) {
                       << std::endl;
             auto Ncollided = testGlauber.perform_string_production();
             std::cout << "Ncollisions = " << Ncollided << std::endl;
+            std::ostringstream filename;
+            filename << "strings_event_" << iev << ".dat";
+            testGlauber.output_QCD_strings(filename.str());
         }
     }
     return(0);

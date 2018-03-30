@@ -10,6 +10,7 @@
 #include "CollisionEvent.h"
 #include "QCDString.h"
 #include <memory>
+#include <string>
 #include <set>
 #include <vector>
 
@@ -63,6 +64,8 @@ class Glauber {
     void update_momentum(shared_ptr<Nucleon> n_i, real y_shift);
     //! This function updates the collision schedule
     void update_collision_schedule(shared_ptr<CollisionEvent> event_happened);
+    
+    void output_QCD_strings(std::string filename);
 };
 
 }

@@ -4,6 +4,9 @@
 #include "data_structs.h"
 #include "PhysConsts.h"
 
+#include <string>
+#include <iomanip>
+#include <fstream>
 #include <cassert>
 #include <iostream>
 #include <algorithm>
@@ -97,6 +100,9 @@ void Glauber::create_a_collision_event(shared_ptr<Nucleon> proj,
                              (x1[2] + x2[2])/2., z_coll};
         shared_ptr<CollisionEvent> event_ptr(
                                     new CollisionEvent(x_coll, proj, targ));
+        if (proj->is_connected_with(targ)) {
+            event_ptr->set_produced_a_string(true);
+        }
         collision_schedule.insert(event_ptr);
     }
 }
@@ -215,6 +221,7 @@ void Glauber::update_momentum(shared_ptr<Nucleon> n_i, real y_shift) {
 
 //! This function performs string production between each nucleon/parton pair
 int Glauber::perform_string_production() {
+    QCD_string_list.clear();
     auto string_tension = parameter_list.get_string_tension();
     real t_current = 0.0;
     int number_of_collided_events = 0;
@@ -246,6 +253,9 @@ int Glauber::perform_string_production() {
         update_collision_schedule(first_event);
         collision_schedule.erase((*collision_schedule.begin()));
     }
+    cout << "Nstrings = " << QCD_string_list.size() << endl;
+    for (auto &it: QCD_string_list)
+        it->evolve_QCD_string();
     return(number_of_collided_events);
 }
 
@@ -259,6 +269,35 @@ void Glauber::update_collision_schedule(shared_ptr<CollisionEvent> event_happene
     targ->increment_collided_times();
     for (auto &it: (*targ->get_collide_nucleon_list()))
         create_a_collision_event(targ, it.lock());
+}
+
+void Glauber::output_QCD_strings(std::string filename) {
+    std::ofstream output(filename.c_str());
+    output << "# norm  deltaE  tau_form  tau_0  eta_s_0  x_perp  y_perp  "
+           << "eta_s_left  eta_s_right  y_l  y_r  fraction_l  fraction_r "
+           << "y_l_i  y_r_i"
+           << endl;
+    for (auto &it: QCD_string_list) {
+        auto x_prod = it->get_x_production();
+        auto tau_0  = sqrt(x_prod[0]*x_prod[0] - x_prod[3]*x_prod[3]);
+        auto etas_0 = 0.5*log((x_prod[0] + x_prod[3])/(x_prod[0] - x_prod[3]));
+        real fraction_left = 1./(static_cast<real>(
+                        it->get_proj().lock()->get_number_of_connections()));
+        real fraction_right = 1./(static_cast<real>(
+                        it->get_targ().lock()->get_number_of_connections()));
+        real output_array[] = {
+            1.0, 0.0, it->get_tau_form(), tau_0, etas_0, x_prod[1], x_prod[2],
+            it->get_eta_s_left(), it->get_eta_s_right(), it->get_y_f_left(),
+            it->get_y_f_right(), fraction_left, fraction_right,
+            it->get_y_i_left(), it->get_y_i_right()};
+
+        output << std::scientific << std::setprecision(8);
+        for (int i = 0; i < 15; i++) {
+            output << std::setw(15) << output_array[i] << "  ";
+        }
+        output << endl;
+    }
+    output.close();
 }
 
 }
