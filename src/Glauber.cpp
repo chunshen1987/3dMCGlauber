@@ -27,6 +27,7 @@ Glauber::Glauber(const MCGlb::Parameters &param_in,
     target = std::unique_ptr<Nucleus>(
             new Nucleus(parameter_list.get_target_nucleus_name(), ran_gen));
     ran_gen_ptr = ran_gen;
+    string_production_mode = parameter_list.get_QCD_string_production_mode();
 }
 
 void Glauber::make_nuclei() {
@@ -223,8 +224,7 @@ void Glauber::update_momentum(shared_ptr<Nucleon> n_i, real y_shift) {
 
 int Glauber::perform_string_production() {
     QCD_string_list.clear();
-    auto string_tension = parameter_list.get_string_tension();
-    auto m_over_sigma = PhysConsts::MProton/(string_tension + 1e-15);
+    auto string_evolution_mode = parameter_list.get_QCD_string_evolution_mode();
     real t_current = 0.0;
     int number_of_collided_events = 0;
     while (collision_schedule.size() > 0) {
@@ -245,7 +245,14 @@ int Glauber::perform_string_production() {
         auto x_coll = first_event->get_collision_position();
         auto proj = first_event->get_proj_nucleon_ptr().lock();
         auto targ = first_event->get_targ_nucleon_ptr().lock();
+        real y_in_lrf = std::abs(proj->get_rapidity()
+                                 - targ->get_rapidity())/2.;
         real tau_form = 0.5;
+        real m_over_sigma = 1.0;
+        if (string_evolution_mode == 4) {
+            auto y_loss = sample_rapidity_loss_from_the_LEXUS_model(y_in_lrf);
+            m_over_sigma = tau_form/sqrt(2.*(cosh(y_loss) - 1.));
+        }
         shared_ptr<QCDString> qcd_string(
                 new QCDString(x_coll, tau_form, proj, targ, m_over_sigma));
         QCD_string_list.push_back(qcd_string);

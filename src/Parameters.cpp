@@ -71,6 +71,12 @@ int Parameters::get_QCD_string_production_mode() const {
     assert(flag >= 0 && flag < 5);
     return(flag);
 }
+
+int Parameters::get_QCD_string_evolution_mode() const {
+    int flag = get_param_int("evolve_QCD_string_mode");
+    assert(flag > 0 && flag < 5);
+    return(flag);
+}
     
 real Parameters::get_string_tension() const {
     real sigma = static_cast<real>(get_param_double("string_tension"));

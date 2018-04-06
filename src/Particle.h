@@ -44,6 +44,8 @@ class Particle {
 
     void set_x(SpatialVec x_in) {x = x_in;}
     SpatialVec get_x() const {return(x);}
+    
+    real get_rapidity() const {return(atanh(p[3]/p[0]));}
 
     void set_p(MomentumVec p_in) {
         assert(p_in[0] >= 0.);

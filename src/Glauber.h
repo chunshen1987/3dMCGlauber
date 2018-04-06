@@ -21,6 +21,7 @@ namespace MCGlb {
 class Glauber {
  private:
     const Parameters &parameter_list;
+    int string_production_mode;
     std::unique_ptr<Nucleus> projectile;
     std::unique_ptr<Nucleus> target;
     std::set<shared_ptr<CollisionEvent>, compare_collision_time> collision_schedule;
