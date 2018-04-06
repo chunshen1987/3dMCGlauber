@@ -1,0 +1,32 @@
+Projectile Au                             # projectile nucleus name
+Target Au                                 # target nucleus name
+useEnergyDependentCrossSection 1
+sigmaNN 38.319
+sigmaQQ 6.12
+LexusLambda 1.0
+useQuarks 2
+useNuclearCorrection 1
+Q2 1.
+b_min 0.
+b_max 10.
+roots 200
+seed -1
+timeForSeed 1
+gaussianWounding 1
+useRapidityPlateau 1
+gaussianSmearingWidth 0.2
+transverseGaussianSmearingWidth 0.2
+outputNumberOfRapidityCells 96
+outputNumberOfTransverseCells 256
+outputMaximalTransverseSize 10
+outputMaximalRapidity 8
+flag_multiplicity_fluctuation 1
+makeHadronRapidityDistribution 0
+output_QCD_strings 1
+output_nB_statistics 1
+QCD_string_thermalization_time 0.5
+QCD_string_production_mode 1
+QCD_string_production_probability 1.0
+evolve_QCD_string_mode 4
+tau_freeze 2.0
+string_tension 1.0
