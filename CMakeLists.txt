@@ -22,6 +22,7 @@ else (test)
 endif (test)
 
 include_directories("${CMAKE_HOME_DIRECTORY}/LHAPDF_Lib/include")
+include_directories("${CMAKE_HOME_DIRECTORY}/eps09")
 link_directories("${CMAKE_HOME_DIRECTORY}/LHAPDF_Lib/lib")
 
 add_subdirectory (src)

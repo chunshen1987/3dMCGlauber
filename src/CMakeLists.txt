@@ -8,6 +8,7 @@ set (SOURCES
     CollisionEvent.cpp
     Util.cpp
     QCDString.cpp
+    ../eps09/eps09.cpp
     )
 
 add_library(3dMCGlb_lib SHARED ${SOURCES})

@@ -91,7 +91,8 @@ class Nucleus {
     real get_z_max() const;
 
     void output_nucleon_positions(std::string filename) const;
-
+    
+    void make_quark_momentum_fraction(double* xQuark) const;
 };
 
 }
