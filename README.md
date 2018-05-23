@@ -20,12 +20,16 @@ A list of the produced strings (their spatial and momentum information) will be 
 
 The code can be compiled with CMake. To generate the executable, one can simply type
 
+	mkdir build
+	cd build
 	cmake ..
 	make
 	make install
 
 The code package also includes unit test modules for individual class components. To generate the unit test executables, one can build the program as,
 	
+	mkdir build
+	cd build
 	cmake ..-Dtest=ON
 	make
 	make install
