@@ -14,12 +14,14 @@ option (test "Build Unit tests" OFF)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -O3 -Wall -std=c++11 -fsanitize=address")
 
-
 if (test)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DDOCTEST_CONFIG_IMPLEMENT_WITH_MAIN")
 else (test)
     #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DDOCTEST_CONFIG_DISABLE -DNDEBUG")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DDOCTEST_CONFIG_DISABLE")
 endif (test)
+
+include_directories("${CMAKE_HOME_DIRECTORY}/LHAPDF_Lib/include")
+link_directories("${CMAKE_HOME_DIRECTORY}/LHAPDF_Lib/lib")
 
 add_subdirectory (src)

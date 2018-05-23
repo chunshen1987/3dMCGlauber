@@ -10,6 +10,8 @@
 #include <string>
 #include <memory>
 
+#include "LHAPDF/LHAPDF.h"
+
 namespace MCGlb {
 
 class Nucleus {
@@ -21,6 +23,7 @@ class Nucleus {
     bool deformed;
     WoodsSaxonParam WS_param_vec;       // rho, w, R, a, beta2, beta4
     real d_min;                         // minimum distance between nucleons
+    LHAPDF::PDF *pdf;
 
     std::vector<std::shared_ptr<Nucleon>> nucleon_list;
     std::shared_ptr<RandomUtil::Random> ran_gen_ptr;

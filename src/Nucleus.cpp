@@ -8,6 +8,8 @@
 #include <algorithm>
 #include <cmath>
 
+#include "LHAPDF/LHAPDF.h"
+
 using std::cout;
 using std::endl;
 
@@ -25,6 +27,11 @@ Nucleus::Nucleus(std::string nucleus_name,
         ran_gen_ptr = temp_ptr.lock();
     }
     set_nucleus_parameters(nucleus_name);
+        
+    // read in pdf using LHAPDF interface
+    const std::string setname = "CT10nnlo";
+    const int imem = 0;
+    pdf = LHAPDF::mkPDF(setname, imem);
 }
 
 Nucleus::~Nucleus() {
