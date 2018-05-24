@@ -23,6 +23,7 @@ class Nucleus {
     bool deformed;
     WoodsSaxonParam WS_param_vec;       // rho, w, R, a, beta2, beta4
     real d_min;                         // minimum distance between nucleons
+    bool sample_valence_quarks;
     LHAPDF::PDF *pdf;
 
     std::vector<std::shared_ptr<Nucleon>> nucleon_list;
@@ -32,7 +33,8 @@ class Nucleus {
     Nucleus() = default;
     Nucleus(std::string nucleus_name,
             std::shared_ptr<RandomUtil::Random> ran_gen=nullptr,
-            real d_min_in=0.9, bool deformed_in=true);
+            real d_min_in=0.9, bool deformed_in=true,
+            bool sample_valence_quarks=false);
     ~Nucleus();
 
     std::string get_name() const {return(name);}
@@ -92,7 +94,7 @@ class Nucleus {
 
     void output_nucleon_positions(std::string filename) const;
     
-    void make_quark_momentum_fraction(double* xQuark) const;
+    void sample_quark_momentum_fraction(std::vector<real> &xQuark) const;
 };
 
 }

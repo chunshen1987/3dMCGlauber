@@ -3,6 +3,7 @@
 #include "Nucleus.h"
 #include <fstream>
 #include <memory>
+#include <vector>
 #include <iostream>
 
 using MCGlb::Nucleus;
@@ -244,4 +245,12 @@ TEST_CASE("Test get_number_of_wounded_nucleons()") {
 }
 
 TEST_CASE("Test rotate_nucleus") {
+}
+
+TEST_CASE("Test sample quark momentum fraction") {
+    Nucleus test_nucleus1("Au", nullptr, 0.9, false, true);
+    std::vector<real> xQuark;
+    test_nucleus1.sample_quark_momentum_fraction(xQuark);
+    for (int i = 0; i < 3; i++)
+        std::cout << xQuark[i] << std::endl;
 }

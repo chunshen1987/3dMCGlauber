@@ -6,6 +6,7 @@
 #include <iomanip>
 #include <fstream>
 #include <algorithm>
+#include <array>
 #include <cmath>
 
 #include "eps09.h"
@@ -18,7 +19,8 @@ namespace MCGlb {
 
 Nucleus::Nucleus(std::string nucleus_name,
                  std::shared_ptr<RandomUtil::Random> ran_gen,
-                 real d_min_in, bool deformed_in) {
+                 real d_min_in, bool deformed_in,
+                 bool sample_valence_quarks_in) {
     d_min = d_min_in;
     deformed = deformed_in;
     if (ran_gen == nullptr) {
@@ -28,11 +30,16 @@ Nucleus::Nucleus(std::string nucleus_name,
         ran_gen_ptr = temp_ptr.lock();
     }
     set_nucleus_parameters(nucleus_name);
-        
-    // read in pdf using LHAPDF interface
-    const std::string setname = "CT10nnlo";
-    const int imem = 0;
-    pdf = LHAPDF::mkPDF(setname, imem);
+
+    sample_valence_quarks = sample_valence_quarks_in;
+    if (sample_valence_quarks) {
+        // read in pdf using LHAPDF interface
+        const std::string setname = "CT10nnlo";
+        const int imem = 0;
+        pdf = LHAPDF::mkPDF(setname, imem);
+    } else {
+        pdf = nullptr;
+    }
 }
 
 Nucleus::~Nucleus() {
@@ -447,89 +454,61 @@ int Nucleus::get_number_of_wounded_nucleons() const {
     return(Npart);
 }
 
-void Nucleus::make_quark_momentum_fraction(double* xQuark) const {
+void Nucleus::sample_quark_momentum_fraction(std::vector<real> &xQuark) const {
     real q2 = 1.0;
-    real x, tmp;
-    real xfdbar, xfd, xfubar, xfu;
-    real ru, rd, rs, rc, rb, rg;
-    real quarkx[3];
+    const int number_of_quarks = 3;
+    std::array<real, number_of_quarks> quarkx;
     // default is 1 for the nuclear correction
     // - if parameters are set to use EPS09 these will be changed
     real ruv = 1.;
     real rdv = 1.;
   
-    real correction;
+    real x, xfdbar, xfd, xfubar, xfu, correction, tmp;
     do {
         // one down quark (for proton, up for neutron)
         do {
             x = ran_gen_ptr->rand_uniform();
-
-            //if (param->getUseNuclearCorrection()) {
-                // problem when target != projectile.
-                // need to pass that information to get A
+            if (A == 197 || A == 208) {
+                real ru, rd, rs, rc, rb, rg;
                 eps09(2, 1, A, x, sqrt(q2), ruv, rdv, ru, rd, rs,
                       rc, rb, rg);
-                // ruv seems to be always equal to rdv,
-                // so I am fine not distinguishing proton and neutron here
-            //}
+            }
+            // ruv seems to be always equal to rdv,
+            // so I am fine not distinguishing proton and neutron here
       
-            xfdbar = pdf->xfxQ2(-1, x, q2);
-            xfd = pdf->xfxQ2(1, x, q2);
-            correction = exp(11.*pow(x,2.6))-0.4;
-            tmp = ran_gen_ptr->rand_uniform();
-        } while ( tmp > ((xfd-xfdbar)*rdv)*correction);
-      
-        quarkx[0] = x; 
+            xfdbar     = pdf->xfxQ2(-1, x, q2);
+            xfd        = pdf->xfxQ2(1, x, q2);
+            correction = exp(11.*pow(x, 2.6)) - 0.4;
+            tmp        = ran_gen_ptr->rand_uniform();
+        } while (tmp > ((xfd - xfdbar)*rdv)*correction);
+        quarkx[0] = x;
+
         // two up quarks (for proton, down for neutron)
-        for (int i = 1; i < 3; i++) {
+        for (int i = 1; i < number_of_quarks; i++) {
             do {
                 x = ran_gen_ptr->rand_uniform();
           
-                //if (param->getUseNuclearCorrection()) {
-                    // problem when target != projectile.
-                    // need to pass that information to get A
+                if (A == 197 || A == 208) {
+                    real ru, rd, rs, rc, rb, rg;
                     eps09(2, 1, A, x, sqrt(q2), ruv, rdv, ru, rd, rs,
                           rc, rb, rg);
-                    // ruv seems to be always equal to rdv,
-                    // so I am fine not distinguishing proton and neutron here
-                //}
+                }
 
-                xfubar = pdf->xfxQ2(-2, x, q2);
-                xfu = pdf->xfxQ2(2, x, q2);
-                correction = exp(16.*pow(x,2.8))-0.5;
- 
-                tmp = ran_gen_ptr->rand_uniform();
-            } while ( tmp > ((xfu-xfubar)*ruv)*correction);
-     
-            // if(i==1)
-            //  quarkx[i] = min(x,1.-quarkx[0]);
+                xfubar     = pdf->xfxQ2(-2, x, q2);
+                xfu        = pdf->xfxQ2(2, x, q2);
+                correction = exp(16.*pow(x, 2.8)) - 0.5;
+                tmp        = ran_gen_ptr->rand_uniform();
+            } while (tmp > ((xfu - xfubar)*ruv)*correction);
             quarkx[i] = x; 
-            //else
-            //  quarkx[i] = min(x,1.-quarkx[0]-quarkx[1]);
-            //quarkx[i] = x;
-     
-            // this last if clause and its variation under else contains
-            // the two options for dealing with sums over x that are greater
-            // than 1.
-            // one option is to throw out those events and resample everything,
-            // the other option is to always set the last quark's x to the
-            // minimum of the sampled value and the remaining x to reach 1.
-            // One way will modify all pdf's,
-            // the other only the last two quark's pdfs. None seems perfect...
         }
     } while (quarkx[0] + quarkx[1] + quarkx[2] > 1.
              || quarkx[0] == 0 || quarkx[1] == 0 || quarkx[2] == 0);
-    // repeat if sum over all three x was > 1
-    // if you want to check that pdf is sampled correctly,
-    // the condition of (quarkx[0] + quarkx[1] + quarkx[2]<1)
-    // needs to be removed
-    // cout << quarkx[2] << endl;
 
-    for (int i = 0; i < 3; i++) {
+    for (int i = 0; i < number_of_quarks; i++) {
         // assume isospin symmetry
         // (always sample two up's and one down in proton:
         //  in neutron f_n^u = f_p^d)
-        xQuark[i] = quarkx[i];
+        xQuark.push_back(quarkx[i]);
     }
 }
 
