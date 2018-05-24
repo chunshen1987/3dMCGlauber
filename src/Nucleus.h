@@ -95,6 +95,8 @@ class Nucleus {
     void output_nucleon_positions(std::string filename) const;
     
     void sample_quark_momentum_fraction(std::vector<real> &xQuark) const;
+    SpatialVec sample_valence_quark_position() const;
+    real ExponentialDistribution(const real a, const real r) const;
 };
 
 }

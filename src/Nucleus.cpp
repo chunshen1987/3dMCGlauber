@@ -247,6 +247,7 @@ real Nucleus::sample_r_from_woods_saxon() const {
     return(r);
 }
 
+
 void Nucleus::sample_r_and_costheta_from_deformed_woods_saxon(
                                         real &r, real &costheta) const {
     real a_WS = WS_param_vec[3];
@@ -372,6 +373,7 @@ real Nucleus::fermi_distribution(real r, real R_WS, real a_WS) const {
     return (f);
 }
 
+
 real Nucleus::spherical_harmonics(int l, real ct) const {
     // Currently assuming m=0 and available for Y_{20} and Y_{40}
     // "ct" is cos(theta)
@@ -398,6 +400,7 @@ void Nucleus::accelerate_nucleus(real ecm, int direction) {
     lorentz_contraction(cosh(beam_rapidity));
 }
 
+
 void Nucleus::lorentz_contraction(real gamma) {
     for (auto &it: nucleon_list) {
         auto xvec = it->get_x();
@@ -405,6 +408,7 @@ void Nucleus::lorentz_contraction(real gamma) {
         it->set_x(xvec);
     }
 }
+
 
 void Nucleus::set_nucleons_momentum_with_collision_energy(real beam_rapidity) {
     MomentumVec p = {PhysConsts::MProton*cosh(beam_rapidity),
@@ -415,6 +419,7 @@ void Nucleus::set_nucleons_momentum_with_collision_energy(real beam_rapidity) {
         it->set_p(p);
 }
 
+
 real Nucleus::get_z_min() const {
     real z_min = 100;
     for (auto const &it: nucleon_list) {
@@ -424,6 +429,7 @@ real Nucleus::get_z_min() const {
     return(z_min);
 }
 
+
 real Nucleus::get_z_max() const {
     real z_max = -100;
     for (auto const &it: nucleon_list) {
@@ -432,6 +438,7 @@ real Nucleus::get_z_max() const {
     }
     return(z_max);
 }
+
 
 void Nucleus::output_nucleon_positions(std::string filename) const {
     std::ofstream of(filename, std::ofstream::out);
@@ -446,7 +453,8 @@ void Nucleus::output_nucleon_positions(std::string filename) const {
            << rapidity << std::endl;
     }
 }
-    
+
+
 int Nucleus::get_number_of_wounded_nucleons() const {
     int Npart = 0;
     for (auto const& it: nucleon_list)
@@ -454,9 +462,18 @@ int Nucleus::get_number_of_wounded_nucleons() const {
     return(Npart);
 }
 
+
 void Nucleus::sample_quark_momentum_fraction(std::vector<real> &xQuark) const {
-    real q2 = 1.0;
     const int number_of_quarks = 3;
+
+    if (!sample_valence_quarks) {
+        for (int i = 0; i < number_of_quarks; i++) {
+            xQuark.push_back(1./3.);
+        }
+        return;
+    }
+
+    real q2 = 1.0;
     std::array<real, number_of_quarks> quarkx;
     // default is 1 for the nuclear correction
     // - if parameters are set to use EPS09 these will be changed
@@ -501,15 +518,53 @@ void Nucleus::sample_quark_momentum_fraction(std::vector<real> &xQuark) const {
             } while (tmp > ((xfu - xfubar)*ruv)*correction);
             quarkx[i] = x; 
         }
-    } while (quarkx[0] + quarkx[1] + quarkx[2] > 1.
-             || quarkx[0] == 0 || quarkx[1] == 0 || quarkx[2] == 0);
+    } while (quarkx[0] + quarkx[1] + quarkx[2] > 1.);
 
     for (int i = 0; i < number_of_quarks; i++) {
-        // assume isospin symmetry
-        // (always sample two up's and one down in proton:
-        //  in neutron f_n^u = f_p^d)
         xQuark.push_back(quarkx[i]);
     }
+}
+
+
+SpatialVec Nucleus::sample_valence_quark_position() const {
+    real phi   = 2.*M_PI*ran_gen_ptr->rand_uniform();
+    real theta = acos(1. - 2.*ran_gen_ptr->rand_uniform());
+ 
+    const real a = 3.87;   // ???
+    real r, tmp;
+    do {
+        // sample the radius from the envelope distribution
+        r = (sqrt(3)*sqrt(-log(1. + (-1. + 1./exp(1000000/3))
+                                    *ran_gen_ptr->rand_uniform())));
+      
+        // sample uniform random number
+        // to decide whether to accept or reject the sampled one
+        tmp = ran_gen_ptr->rand_uniform();
+      
+        // warn if the envelope happens to go below the actual distriution
+        // (should never happen)
+        //if (ExponentialDistribution(a, r) > (r/2.)/a*exp(-(r*r)/3.)) {
+        //    cerr << "WARNING: rho>envelope: " << "rho="
+        //         << ExponentialDistribution(a,r)
+        //         << ", envelope=" <<  (r/2.) / a * exp(-(r*r)/3.) << endl;
+        //    //repeat until tmp is smaller than the ratio p(y)/f(y)
+        //}
+    } while (tmp > ExponentialDistribution(a, r)/((r/2.)/a*exp(-(r*r)/3.))); 
+
+    // determine x,y,z coordinates of the quark (relative to the nucleon)
+    real x = r*sin(theta)*cos(phi);
+    real y = r*sin(theta)*sin(phi);
+    real z = r*cos(theta);
+
+    SpatialVec xq = {0.0, x, y, z};
+    return(xq);
+}
+
+
+real Nucleus::ExponentialDistribution(const real a, const real r) const {
+    // a = \sqrt{12}/R_p = 3.87, with R_p = 0.895
+    // from http://journals.aps.org/rmp/pdf/10.1103/RevModPhys.77.1
+    return(r*r*exp(- a*r));
 }
 
 }

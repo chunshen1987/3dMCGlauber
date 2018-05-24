@@ -106,9 +106,8 @@ TEST_CASE("Test Woods-Saxon sampling") {
     std::vector<real> WS(n_r, 0.);
     real norm_WS = 0.;
     for (int i = 0; i < n_r; i++) {
-        r[i] = r_min + i*dr;
-        WS[i] = r[i]*r[i]/(exp((r[i] - R_WS)/a_WS) + 1.);
-        norm_WS += WS[i]*dr;
+        real r_local  = r_min + i*dr;
+        norm_WS += r_local*r_local/(exp((r_local - R_WS)/a_WS) + 1.)*dr;
     }
 
     int n_samples = 1000000;
@@ -117,13 +116,20 @@ TEST_CASE("Test Woods-Saxon sampling") {
         auto r_sample = test_nucleus.sample_r_from_woods_saxon();
         int idx       = static_cast<int>((r_sample - r_min)/dr);
         if (idx >= 0 && idx < n_r) {
+            r[idx]     += weight*r_sample;
             rho_r[idx] += weight;
         }
     }
     std::ofstream of("check_Woods_Saxon_sampling.dat");
     of << "# r  WS  Sampled" << std::endl;
-    for (int i = 0; i < n_r; i++)
-        of << r[i] << "   " << WS[i]/norm_WS << "  " << rho_r[i] << std::endl;
+    for (int i = 0; i < n_r; i++) {
+        real r_mean = r_min + i*dr;
+        if (rho_r[i] > 0) {
+            r_mean = r[i]/rho_r[i];
+        }
+        real WS_local = r_mean*r_mean/(exp((r_mean - R_WS)/a_WS) + 1.)/norm_WS;
+        of << r_mean << "   " << WS_local << "  " << rho_r[i] << std::endl;
+    }
     std::cout << "please check the output file check_Woods_Saxon_sampling.dat"
               << std::endl;
 }
@@ -159,9 +165,8 @@ TEST_CASE("Test sampled nuclear density distribution") {
     std::vector<real> WS(n_r, 0.);
     real norm_WS = 0.;
     for (int i = 0; i < n_r; i++) {
-        r[i]  = r_min + i*dr;
-        WS[i] = r[i]*r[i]/(exp((r[i] - R_WS)/a_WS) + 1.);
-        norm_WS += WS[i]*dr;
+        real r_local  = r_min + i*dr;
+        norm_WS += r_local*r_local/(exp((r_local - R_WS)/a_WS) + 1.)*dr;
     }
 
     int n_samples = 10000;
@@ -175,6 +180,7 @@ TEST_CASE("Test sampled nuclear density distribution") {
                                  + xvec[3]*xvec[3]);
             int idx       = static_cast<int>((r_sample - r_min)/dr);
             if (idx >= 0 && idx < n_r) {
+                r[idx]     += weight*r_sample;
                 rho_r[idx] += weight;
             }
         }
@@ -183,8 +189,14 @@ TEST_CASE("Test sampled nuclear density distribution") {
     of << "# Nucleus: " << test_nucleus.get_name() << std::endl;
     of << "# r  WS  Sampled" << std::endl;
 
-    for (int i = 0; i < n_r; i++)
-        of << r[i] << "   " << WS[i]/norm_WS << "  " << rho_r[i] << std::endl;
+    for (int i = 0; i < n_r; i++) {
+        real r_mean = r_min + i*dr;
+        if (rho_r[i] > 0) {
+            r_mean = r[i]/rho_r[i];
+        }
+        real WS_local = r_mean*r_mean/(exp((r_mean - R_WS)/a_WS) + 1.)/norm_WS;
+        of << r_mean << "   " << WS_local << "  " << rho_r[i] << std::endl;
+    }
 
     std::cout << "please check the output file "
               << "check_sampled_nucleon_distribution.dat" << std::endl;
@@ -247,10 +259,91 @@ TEST_CASE("Test get_number_of_wounded_nucleons()") {
 TEST_CASE("Test rotate_nucleus") {
 }
 
+
+TEST_CASE("Test sampled valence quark spatial distribution") {
+    std::cout << "Testing the valence quark sampling routine..." << std::endl;
+    Nucleus test_nucleus("Au");
+    const real r_min = 0.0, r_max = 4.0, dr = 0.05;
+    const int n_r = static_cast<int>((r_max - r_min)/dr) + 1;
+    const real a = 3.87;
+    std::vector<real> r(n_r, 0.);
+    std::vector<real> rho_r(n_r, 0.);
+    std::vector<real> WS(n_r, 0.);
+    real norm_WS = 0.;
+    for (int i = 0; i < n_r; i++) {
+        real r_local = r_min + (i + 0.5)*dr;
+        norm_WS += test_nucleus.ExponentialDistribution(a, r_local)*dr;
+    }
+
+    int n_samples = 1000000;
+    auto weight   = 1./(n_samples*dr);
+    for (int i = 0; i < n_samples; i++) {
+        auto xvec     = test_nucleus.sample_valence_quark_position();
+        auto r_sample = sqrt(xvec[1]*xvec[1] + xvec[2]*xvec[2]
+                             + xvec[3]*xvec[3]);
+        int idx       = static_cast<int>((r_sample - r_min)/dr);
+        if (idx >= 0 && idx < n_r) {
+            r[idx]     += weight*r_sample;
+            rho_r[idx] += weight;
+        }
+    }
+    std::ofstream of("check_sampled_valence_quark_spatial_distribution.dat");
+    of << "# r  ExponentialDistribution  Sampled" << std::endl;
+
+    for (int i = 0; i < n_r; i++) {
+        real r_mean = r[i]/rho_r[i];
+        of << r_mean << "   "
+           << test_nucleus.ExponentialDistribution(a, r_mean)/norm_WS << "  "
+           << rho_r[i] << std::endl;
+    }
+
+    std::cout << "please check the output file "
+              << "check_sampled_valence_quark_spatial_distribution.dat"
+              << std::endl;
+}
+
+
 TEST_CASE("Test sample quark momentum fraction") {
+    std::cout << "Testing the sampling routine for valence quarks..."
+              << std::endl;
     Nucleus test_nucleus1("Au", nullptr, 0.9, false, true);
-    std::vector<real> xQuark;
-    test_nucleus1.sample_quark_momentum_fraction(xQuark);
-    for (int i = 0; i < 3; i++)
-        std::cout << xQuark[i] << std::endl;
+
+    const real x_min = 0.0, x_max = 1.0, dx = 0.02;
+    const int n_x = static_cast<int>((x_max - x_min)/dx);
+    std::vector<real> x(n_x, 0.);
+    std::vector<real> Px_0(n_x, 0.);
+    std::vector<real> Px_1(n_x, 0.);
+    std::vector<real> Px_2(n_x, 0.);
+    for (int i = 0; i < n_x; i++) {
+        x[i]  = x_min + i*dx;
+    }
+
+    int n_samples = 10000;
+    for (int i = 0; i < n_samples; i++) {
+        std::vector<real> xQuark;
+        test_nucleus1.sample_quark_momentum_fraction(xQuark);
+        int x_idx = static_cast<int>((xQuark[0] - x_min)/dx);
+        if (x_idx >= 0 && x_idx < n_x)
+            Px_0[x_idx]++;
+        x_idx = static_cast<int>((xQuark[1] - x_min)/dx);
+        if (x_idx >= 0 && x_idx < n_x)
+            Px_1[x_idx]++;
+        x_idx = static_cast<int>((xQuark[2] - x_min)/dx);
+        if (x_idx >= 0 && x_idx < n_x)
+            Px_2[x_idx]++;
+    }
+    std::ofstream of("check_sampled_valence_quarks_distribution.dat");
+    of << "# x  P_0(x)  P_1(x)  P_2(x)" << std::endl;
+
+    for (int i = 0; i < n_x; i++) {
+        of << x[i] << "   "
+           << Px_0[i]/n_samples/dx << "  "
+           << Px_1[i]/n_samples/dx << "  "
+           << Px_2[i]/n_samples/dx << "  "
+           << std::endl;
+    }
+    of.close();
+    
+    std::cout << "please check the output file "
+              << "check_sampled_valence_quarks_distribution.dat" << std::endl;
 }

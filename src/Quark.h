@@ -11,6 +11,7 @@ namespace MCGlb {
 class Quark : public Particle {
  private:
     real pdf_x;
+    real rapidity_q;
 
  public:
     Quark() = default;
@@ -22,8 +23,14 @@ class Quark : public Particle {
         set_particle_variables(x_in, p_in, mass_in);
     }
 
+    Quark(SpatialVec x_in, real pdf_x_in) {
+        set_pdf_x(pdf_x_in);
+        MomentumVec p_in = {0.0};
+        set_particle_variables(x_in, p_in);
+    }
+
     void set_pdf_x(real x_in) {
-        assert(x_in > 0.);
+        assert(x_in >= 0.);
         assert(x_in <= 1.);
         pdf_x = x_in;
     }
