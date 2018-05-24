@@ -33,8 +33,8 @@ class Nucleus {
     Nucleus() = default;
     Nucleus(std::string nucleus_name,
             std::shared_ptr<RandomUtil::Random> ran_gen=nullptr,
-            real d_min_in=0.9, bool deformed_in=true,
-            bool sample_valence_quarks=false);
+            bool sample_valence_quarks=false,
+            real d_min_in=0.9, bool deformed_in=true);
     ~Nucleus();
 
     std::string get_name() const {return(name);}

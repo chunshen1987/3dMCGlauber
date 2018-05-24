@@ -19,8 +19,8 @@ namespace MCGlb {
 
 Nucleus::Nucleus(std::string nucleus_name,
                  std::shared_ptr<RandomUtil::Random> ran_gen,
-                 real d_min_in, bool deformed_in,
-                 bool sample_valence_quarks_in) {
+                 bool sample_valence_quarks_in,
+                 real d_min_in, bool deformed_in) {
     d_min = d_min_in;
     deformed = deformed_in;
     if (ran_gen == nullptr) {

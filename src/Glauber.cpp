@@ -22,10 +22,16 @@ Glauber::Glauber(const MCGlb::Parameters &param_in,
                  shared_ptr<RandomUtil::Random> ran_gen) :
     parameter_list(param_in) {
     parameter_list.print_parameter_list();
+    bool sample_valence_quark = false;
+    if (parameter_list.get_use_quarks() > 0) {
+        sample_valence_quark = true;
+    }
     projectile = std::unique_ptr<Nucleus>(
-            new Nucleus(parameter_list.get_projectle_nucleus_name(), ran_gen));
+            new Nucleus(parameter_list.get_projectle_nucleus_name(), ran_gen,
+                        sample_valence_quark));
     target = std::unique_ptr<Nucleus>(
-            new Nucleus(parameter_list.get_target_nucleus_name(), ran_gen));
+            new Nucleus(parameter_list.get_target_nucleus_name(), ran_gen,
+                        sample_valence_quark));
     ran_gen_ptr = ran_gen;
     string_production_mode = parameter_list.get_QCD_string_production_mode();
 }

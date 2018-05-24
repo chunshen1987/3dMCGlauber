@@ -138,14 +138,14 @@ TEST_CASE("Test Woods-Saxon sampling") {
 TEST_CASE("Test deformed nucleus") {
     std::shared_ptr<RandomUtil::Random> ran_gen_ptr(
                                             new RandomUtil::Random(-1));
-    Nucleus test_nucleus("U", ran_gen_ptr, 0.9, true);
+    Nucleus test_nucleus("U", ran_gen_ptr, false, 0.9, true);
     test_nucleus.generate_nucleus_3d_configuration();
     CHECK(test_nucleus.get_number_of_nucleons() == 238);
     CHECK(test_nucleus.is_deformed() == true);
     
     Nucleus test_nucleus1("Au");
     CHECK(test_nucleus1.is_deformed() == true);
-    Nucleus test_nucleus2("Au", nullptr, 0.9, false);
+    Nucleus test_nucleus2("Au", nullptr, false, 0.9, false);
     CHECK(test_nucleus2.is_deformed() == false);
 }
 
@@ -153,7 +153,7 @@ TEST_CASE("Test deformed nucleus") {
 TEST_CASE("Test sampled nuclear density distribution") {
     std::cout << "Testing the sampling routine..." << std::endl;
     //Nucleus test_nucleus("Pb");
-    Nucleus test_nucleus("Au", nullptr, 0.9, false);
+    Nucleus test_nucleus("Au", nullptr, false, 0.9, false);
     auto WS_params = test_nucleus.get_woods_saxon_parameters();
     auto a_WS = WS_params[3];
     auto R_WS = WS_params[2];
@@ -306,7 +306,7 @@ TEST_CASE("Test sampled valence quark spatial distribution") {
 TEST_CASE("Test sample quark momentum fraction") {
     std::cout << "Testing the sampling routine for valence quarks..."
               << std::endl;
-    Nucleus test_nucleus1("Au", nullptr, 0.9, false, true);
+    Nucleus test_nucleus1("Au", nullptr, true);
 
     const real x_min = 0.0, x_max = 1.0, dx = 0.02;
     const int n_x = static_cast<int>((x_max - x_min)/dx);
