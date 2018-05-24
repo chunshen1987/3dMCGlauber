@@ -321,7 +321,7 @@ TEST_CASE("Test sample quark momentum fraction") {
     int n_samples = 10000;
     for (int i = 0; i < n_samples; i++) {
         std::vector<real> xQuark;
-        test_nucleus1.sample_quark_momentum_fraction(xQuark);
+        test_nucleus1.sample_quark_momentum_fraction(xQuark, 3);
         int x_idx = static_cast<int>((xQuark[0] - x_min)/dx);
         if (x_idx >= 0 && x_idx < n_x)
             Px_0[x_idx]++;

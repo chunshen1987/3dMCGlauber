@@ -34,7 +34,10 @@ class Quark : public Particle {
         assert(x_in <= 1.);
         pdf_x = x_in;
     }
-    real get_pdf_x() {return(pdf_x);}
+    real get_pdf_x() const {return(pdf_x);}
+
+    void set_rapidity(real rapidity_in) {rapidity_q = rapidity_in;}
+    real get_rapidity() const {return(rapidity_q);}
 
 };
 

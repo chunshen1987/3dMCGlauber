@@ -13,6 +13,12 @@ set (SOURCES
 
 add_library(3dMCGlb_lib SHARED ${SOURCES})
 target_link_libraries (3dMCGlb_lib LHAPDF)
+add_executable(3dMCGlb.e main.cpp)
+target_link_libraries (3dMCGlb.e 3dMCGlb_lib LHAPDF)
+install(TARGETS 3dMCGlb.e 3dMCGlb_lib
+        RUNTIME DESTINATION ${CMAKE_HOME_DIRECTORY}
+        LIBRARY DESTINATION lib
+        ARCHIVE DESTINATION lib/static)
 
 if (test)
     add_executable (unittest_CollisionEvent.e CollisionEvent_UnitTest.cpp)
@@ -37,13 +43,6 @@ if (test)
                     unittest_Parameters.e
                     3dMCGlb_lib
             RUNTIME DESTINATION ${CMAKE_HOME_DIRECTORY}/test
-            LIBRARY DESTINATION lib
-            ARCHIVE DESTINATION lib/static)
-else (test)
-    add_executable(3dMCGlb.e main.cpp)
-    target_link_libraries (3dMCGlb.e 3dMCGlb_lib LHAPDF)
-    install(TARGETS 3dMCGlb.e 3dMCGlb_lib
-            RUNTIME DESTINATION ${CMAKE_HOME_DIRECTORY}
             LIBRARY DESTINATION lib
             ARCHIVE DESTINATION lib/static)
 endif (test)

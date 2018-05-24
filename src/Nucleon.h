@@ -29,6 +29,9 @@ class Nucleon : public Particle {
     ~Nucleon();
 
     int get_number_of_quarks() const {return(quark_list.size());}
+    void push_back_quark(std::shared_ptr<Quark> q) {quark_list.push_back(q);}
+    std::vector<std::shared_ptr<Quark>> get_quark_list() {return(quark_list);}
+
     bool is_wounded() const {return(wounded);}
     void set_wounded(bool hit) {wounded = hit;}
 
@@ -46,6 +49,8 @@ class Nucleon : public Particle {
         connected_with.push_back(connected_nucleon);
     }
     bool is_connected_with(std::shared_ptr<Nucleon> targ);
+    void accelerate_quarks(real ecm, int direction);
+    void lorentz_contraction(real gamma);
 };
 
 }

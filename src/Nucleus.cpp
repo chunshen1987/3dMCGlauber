@@ -123,6 +123,9 @@ void Nucleus::generate_nucleus_3d_configuration() {
     real phi   = 2.*M_PI*ran_gen_ptr->rand_uniform();
     real theta = acos(1. - 2.*ran_gen_ptr->rand_uniform());
     rotate_nucleus(phi, theta);
+    if (sample_valence_quarks) {
+        sample_valence_quarks_inside_nucleons();
+    }
 }
 
 
@@ -167,6 +170,20 @@ void Nucleus::rotate_nucleus(real phi, real theta) {
         auto z_new = -sth    *x_vec[1] + 0.  *x_vec[2] + cth     *x_vec[3];
         x_vec[1] = x_new; x_vec[2] = y_new; x_vec[3] = z_new;
         nucleon_i->set_x(x_vec);
+    }
+}
+
+
+void Nucleus::sample_valence_quarks_inside_nucleons() {
+    const int number_of_quarks = 3;
+    for (auto &nucleon_i: nucleon_list) {
+        std::vector<real> xQuark;
+        sample_quark_momentum_fraction(xQuark, number_of_quarks);
+        for (int i = 0; i < number_of_quarks; i++) {
+            auto xvec = sample_valence_quark_position();
+            std::shared_ptr<Quark> quark_ptr(new Quark(xvec, xQuark[i]));
+            nucleon_i->push_back_quark(quark_ptr);
+        }
     }
 }
 
@@ -398,6 +415,11 @@ void Nucleus::accelerate_nucleus(real ecm, int direction) {
     real beam_rapidity = direction*acosh(ecm/(2.*PhysConsts::MProton));
     set_nucleons_momentum_with_collision_energy(beam_rapidity);
     lorentz_contraction(cosh(beam_rapidity));
+
+    if (sample_valence_quarks) {
+        for (auto &it: nucleon_list)
+            it->accelerate_quarks(ecm, direction);
+    }
 }
 
 
@@ -406,6 +428,11 @@ void Nucleus::lorentz_contraction(real gamma) {
         auto xvec = it->get_x();
         xvec[3] /= gamma;
         it->set_x(xvec);
+    }
+
+    if (sample_valence_quarks) {
+        for (auto &it: nucleon_list)
+            it->lorentz_contraction(gamma);
     }
 }
 
@@ -463,9 +490,8 @@ int Nucleus::get_number_of_wounded_nucleons() const {
 }
 
 
-void Nucleus::sample_quark_momentum_fraction(std::vector<real> &xQuark) const {
-    const int number_of_quarks = 3;
-
+void Nucleus::sample_quark_momentum_fraction(std::vector<real> &xQuark,
+                                             const int number_of_quarks) const {
     if (!sample_valence_quarks) {
         for (int i = 0; i < number_of_quarks; i++) {
             xQuark.push_back(1./3.);
@@ -474,14 +500,16 @@ void Nucleus::sample_quark_momentum_fraction(std::vector<real> &xQuark) const {
     }
 
     real q2 = 1.0;
-    std::array<real, number_of_quarks> quarkx;
+    std::vector<real> quarkx(number_of_quarks, 0.);
     // default is 1 for the nuclear correction
     // - if parameters are set to use EPS09 these will be changed
     real ruv = 1.;
     real rdv = 1.;
   
     real x, xfdbar, xfd, xfubar, xfu, correction, tmp;
+    real x_sum = 0.0;
     do {
+        x_sum = 0.0;
         // one down quark (for proton, up for neutron)
         do {
             x = ran_gen_ptr->rand_uniform();
@@ -499,6 +527,7 @@ void Nucleus::sample_quark_momentum_fraction(std::vector<real> &xQuark) const {
             tmp        = ran_gen_ptr->rand_uniform();
         } while (tmp > ((xfd - xfdbar)*rdv)*correction);
         quarkx[0] = x;
+        x_sum    += x;
 
         // two up quarks (for proton, down for neutron)
         for (int i = 1; i < number_of_quarks; i++) {
@@ -517,8 +546,9 @@ void Nucleus::sample_quark_momentum_fraction(std::vector<real> &xQuark) const {
                 tmp        = ran_gen_ptr->rand_uniform();
             } while (tmp > ((xfu - xfubar)*ruv)*correction);
             quarkx[i] = x; 
+            x_sum    += x;
         }
-    } while (quarkx[0] + quarkx[1] + quarkx[2] > 1.);
+    } while (x_sum > 1.);
 
     for (int i = 0; i < number_of_quarks; i++) {
         xQuark.push_back(quarkx[i]);
