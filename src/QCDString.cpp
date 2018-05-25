@@ -20,6 +20,21 @@ QCDString::QCDString(SpatialVec x_in, real tau_form_in,
     m_over_sigma = m_over_sigma_in;
 }
 
+QCDString::QCDString(SpatialVec x_in, real tau_form_in,
+                     shared_ptr<Nucleon> proj_in, shared_ptr<Nucleon> targ_in,
+                     shared_ptr<Quark> proj_q_in, shared_ptr<Quark> targ_q_in,
+                     real m_over_sigma_in) {
+    x_production = x_in;
+    tau_form     = tau_form_in;
+    proj         = proj_in;
+    targ         = targ_in;
+    proj_q       = proj_q_in;
+    targ_q       = targ_q_in;
+    y_i_left     = targ_q.lock()->get_rapidity();
+    y_i_right    = proj_q.lock()->get_rapidity();
+    m_over_sigma = m_over_sigma_in;
+}
+
 void QCDString::evolve_QCD_string() {
     if (m_over_sigma > 1e6) {
         evolve_QCD_string_with_free_streaming();

@@ -4,6 +4,7 @@
 #define SRC_QCDSTRING_H_
 
 #include "Nucleon.h"
+#include "Quark.h"
 #include <memory>
 
 using std::shared_ptr;
@@ -20,12 +21,18 @@ class QCDString {
     real eta_s_left, eta_s_right;
     weak_ptr<Nucleon> proj;
     weak_ptr<Nucleon> targ;
+    weak_ptr<Quark> proj_q;
+    weak_ptr<Quark> targ_q;
     real m_over_sigma;
 
  public:
     QCDString() = default;
     QCDString(SpatialVec x_in, real tau_form,
-              shared_ptr<Nucleon> proj, shared_ptr<Nucleon> targ,
+              shared_ptr<Nucleon> proj_in, shared_ptr<Nucleon> targ_in,
+              real string_tension_in);
+    QCDString(SpatialVec x_in, real tau_form,
+              shared_ptr<Nucleon> proj_in, shared_ptr<Nucleon> targ_in,
+              shared_ptr<Quark> proj_q_in, shared_ptr<Quark> targ_q_in,
               real string_tension_in);
 
     void set_tau_form(real tau_form_in) {tau_form = tau_form_in;}
@@ -54,6 +61,8 @@ class QCDString {
 
     weak_ptr<Nucleon> get_proj() {return(proj);}
     weak_ptr<Nucleon> get_targ() {return(targ);}
+    weak_ptr<Quark>   get_proj_q() {return(proj_q);}
+    weak_ptr<Quark>   get_targ_q() {return(targ_q);}
 
     void evolve_QCD_string();
     void evolve_QCD_string_with_free_streaming();

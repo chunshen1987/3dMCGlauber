@@ -22,7 +22,7 @@ Glauber::Glauber(const MCGlb::Parameters &param_in,
                  shared_ptr<RandomUtil::Random> ran_gen) :
     parameter_list(param_in) {
     parameter_list.print_parameter_list();
-    bool sample_valence_quark = false;
+    sample_valence_quark = false;
     if (parameter_list.get_use_quarks() > 0) {
         sample_valence_quark = true;
     }
@@ -253,15 +253,30 @@ int Glauber::perform_string_production() {
         auto targ = first_event->get_targ_nucleon_ptr().lock();
         real y_in_lrf = std::abs(proj->get_rapidity()
                                  - targ->get_rapidity())/2.;
+        std::weak_ptr<Quark> proj_q;
+        std::weak_ptr<Quark> targ_q;
+        if (sample_valence_quark) {
+            proj_q = proj->get_a_valence_quark();
+            targ_q = targ->get_a_valence_quark();
+            y_in_lrf = std::abs(proj_q.lock()->get_rapidity()
+                                - targ_q.lock()->get_rapidity())/2.;
+        }
         real tau_form = 0.5;
         real m_over_sigma = 1.0;
         if (string_evolution_mode == 4) {
             auto y_loss = sample_rapidity_loss_from_the_LEXUS_model(y_in_lrf);
             m_over_sigma = tau_form/sqrt(2.*(cosh(y_loss) - 1.));
         }
-        shared_ptr<QCDString> qcd_string(
+        if (!sample_valence_quark) {
+            shared_ptr<QCDString> qcd_string(
                 new QCDString(x_coll, tau_form, proj, targ, m_over_sigma));
-        QCD_string_list.push_back(qcd_string);
+            QCD_string_list.push_back(qcd_string);
+        } else {
+            shared_ptr<QCDString> qcd_string(
+                new QCDString(x_coll, tau_form, proj, targ,
+                              proj_q.lock(), targ_q.lock(), m_over_sigma));
+            QCD_string_list.push_back(qcd_string);
+        }
         real y_shift = 0.001;
         update_momentum(proj, -y_shift);
         update_momentum(targ,  y_shift);

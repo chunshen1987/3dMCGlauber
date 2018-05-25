@@ -7,6 +7,7 @@
 #include "Quark.h"
 #include <vector>
 #include <memory>
+#include <algorithm>
 
 namespace MCGlb {
 
@@ -51,6 +52,11 @@ class Nucleon : public Particle {
     bool is_connected_with(std::shared_ptr<Nucleon> targ);
     void accelerate_quarks(real ecm, int direction);
     void lorentz_contraction(real gamma);
+
+    std::weak_ptr<Quark> get_a_valence_quark() {
+        std::random_shuffle(quark_list.begin(), quark_list.end());
+        return(quark_list[0]);
+    }
 };
 
 }

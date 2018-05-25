@@ -27,6 +27,7 @@ class Glauber {
     std::set<shared_ptr<CollisionEvent>, compare_collision_time> collision_schedule;
     std::vector<shared_ptr<QCDString>> QCD_string_list;
     std::weak_ptr<RandomUtil::Random> ran_gen_ptr;
+    bool sample_valence_quark;
 
  public:
     Glauber() = default;
