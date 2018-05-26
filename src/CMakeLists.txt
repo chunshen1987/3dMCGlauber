@@ -15,6 +15,12 @@ add_library(3dMCGlb_lib SHARED ${SOURCES})
 target_link_libraries (3dMCGlb_lib LHAPDF)
 add_executable(3dMCGlb.e main.cpp)
 target_link_libraries (3dMCGlb.e 3dMCGlb_lib LHAPDF)
+set_target_properties(3dMCGlb_lib
+    PROPERTIES
+    INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib;${CMAKE_HOME_DIRECTORY}/LHAPDF_Lib/lib/")
+set_target_properties(3dMCGlb.e
+    PROPERTIES
+    INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib;${CMAKE_HOME_DIRECTORY}/LHAPDF_Lib/lib/")
 install(TARGETS 3dMCGlb.e 3dMCGlb_lib
         RUNTIME DESTINATION ${CMAKE_HOME_DIRECTORY}
         LIBRARY DESTINATION lib

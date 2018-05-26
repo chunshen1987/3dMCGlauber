@@ -44,6 +44,9 @@ Nucleus::Nucleus(std::string nucleus_name,
 
 Nucleus::~Nucleus() {
     nucleon_list.clear();
+    if (pdf != nullptr) {
+        delete pdf;
+    }
 }
 
 
