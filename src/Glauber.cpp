@@ -236,7 +236,8 @@ int Glauber::perform_string_production() {
                                     parameter_list.get_roots(), -1);
     }
     QCD_string_list.clear();
-    auto string_evolution_mode = parameter_list.get_QCD_string_evolution_mode();
+    const auto string_evolution_mode = (
+                            parameter_list.get_QCD_string_evolution_mode());
     real t_current = 0.0;
     int number_of_collided_events = 0;
     while (collision_schedule.size() > 0) {
@@ -267,9 +268,23 @@ int Glauber::perform_string_production() {
             y_in_lrf = std::abs(proj_q.lock()->get_rapidity()
                                 - targ_q.lock()->get_rapidity())/2.;
         }
-        real tau_form = 0.5;
-        real m_over_sigma = 1.0;
-        if (string_evolution_mode == 4) {
+        real tau_form = 0.5;      // [fm]
+        real m_over_sigma = 1.0;  // [fm]
+        if (string_evolution_mode == 1) {
+            // fixed rapidity loss
+            tau_form = 0.5;
+            m_over_sigma = 1.0;
+        } else if (string_evolution_mode == 2) {
+            // both tau_form and sigma fluctuate
+            auto y_loss = sample_rapidity_loss_from_the_LEXUS_model(y_in_lrf);
+            tau_form = 0.5 + 2.*ran_gen_ptr.lock()->rand_uniform();
+            m_over_sigma = tau_form/sqrt(2.*(cosh(y_loss) - 1.));
+        } else if (string_evolution_mode == 3) {
+            // only tau_form fluctuates
+            auto y_loss = sample_rapidity_loss_from_the_LEXUS_model(y_in_lrf);
+            tau_form = m_over_sigma*sqrt(2.*(cosh(y_loss) - 1.));
+        } else if (string_evolution_mode == 4) {
+            // only m_over_sigma fluctuates
             auto y_loss = sample_rapidity_loss_from_the_LEXUS_model(y_in_lrf);
             m_over_sigma = tau_form/sqrt(2.*(cosh(y_loss) - 1.));
         }
@@ -310,7 +325,8 @@ void Glauber::update_collision_schedule(shared_ptr<CollisionEvent> event_happene
 
 void Glauber::output_QCD_strings(std::string filename) const {
     std::ofstream output(filename.c_str());
-    output << "# norm  deltaE  tau_form  tau_0  eta_s_0  x_perp  y_perp  "
+    output << "# norm  m_over_sigma[fm]  tau_form[fm]  tau_0[fm]  eta_s_0  "
+           << "x_perp[fm]  y_perp[fm]  "
            << "eta_s_left  eta_s_right  y_l  y_r  fraction_l  fraction_r "
            << "y_l_i  y_r_i"
            << endl;
@@ -323,7 +339,8 @@ void Glauber::output_QCD_strings(std::string filename) const {
         real fraction_right = 1./(static_cast<real>(
                         it->get_targ().lock()->get_number_of_connections()));
         real output_array[] = {
-            1.0, 0.0, it->get_tau_form(), tau_0, etas_0, x_prod[1], x_prod[2],
+            1.0, it->get_m_over_sigma(), it->get_tau_form(),
+            tau_0, etas_0, x_prod[1], x_prod[2],
             it->get_eta_s_left(), it->get_eta_s_right(),
             it->get_y_f_left(), it->get_y_f_right(),
             fraction_left, fraction_right,

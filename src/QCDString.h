@@ -38,6 +38,8 @@ class QCDString {
     void set_tau_form(real tau_form_in) {tau_form = tau_form_in;}
     real get_tau_form() const {return(tau_form);}
 
+    real get_m_over_sigma() const {return(m_over_sigma);}
+
     void set_x_production(SpatialVec x_in) {x_production = x_in;}
     SpatialVec get_x_production() const {return(x_production);}
 
