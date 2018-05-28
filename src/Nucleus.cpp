@@ -126,9 +126,6 @@ void Nucleus::generate_nucleus_3d_configuration() {
     real phi   = 2.*M_PI*ran_gen_ptr->rand_uniform();
     real theta = acos(1. - 2.*ran_gen_ptr->rand_uniform());
     rotate_nucleus(phi, theta);
-    if (sample_valence_quarks) {
-        sample_valence_quarks_inside_nucleons();
-    }
 }
 
 
@@ -177,15 +174,19 @@ void Nucleus::rotate_nucleus(real phi, real theta) {
 }
 
 
-void Nucleus::sample_valence_quarks_inside_nucleons() {
+void Nucleus::sample_valence_quarks_inside_nucleons(real ecm, int direction) {
     const int number_of_quarks = 3;
     for (auto &nucleon_i: nucleon_list) {
-        std::vector<real> xQuark;
-        sample_quark_momentum_fraction(xQuark, number_of_quarks);
-        for (int i = 0; i < number_of_quarks; i++) {
-            auto xvec = sample_valence_quark_position();
-            std::shared_ptr<Quark> quark_ptr(new Quark(xvec, xQuark[i]));
-            nucleon_i->push_back_quark(quark_ptr);
+        if (nucleon_i->is_wounded()
+            && nucleon_i->get_number_of_quarks() == 0) {
+            std::vector<real> xQuark;
+            sample_quark_momentum_fraction(xQuark, number_of_quarks);
+            for (int i = 0; i < number_of_quarks; i++) {
+                auto xvec = sample_valence_quark_position();
+                std::shared_ptr<Quark> quark_ptr(new Quark(xvec, xQuark[i]));
+                nucleon_i->push_back_quark(quark_ptr);
+            }
+            nucleon_i->accelerate_quarks(ecm, direction);
         }
     }
 }
@@ -418,11 +419,6 @@ void Nucleus::accelerate_nucleus(real ecm, int direction) {
     real beam_rapidity = direction*acosh(ecm/(2.*PhysConsts::MProton));
     set_nucleons_momentum_with_collision_energy(beam_rapidity);
     lorentz_contraction(cosh(beam_rapidity));
-
-    if (sample_valence_quarks) {
-        for (auto &it: nucleon_list)
-            it->accelerate_quarks(ecm, direction);
-    }
 }
 
 

@@ -229,6 +229,12 @@ void Glauber::update_momentum(shared_ptr<Nucleon> n_i, real y_shift) {
 
 
 int Glauber::perform_string_production() {
+    if (sample_valence_quark) {
+        projectile->sample_valence_quarks_inside_nucleons(
+                                    parameter_list.get_roots(), 1);
+        target->sample_valence_quarks_inside_nucleons(
+                                    parameter_list.get_roots(), -1);
+    }
     QCD_string_list.clear();
     auto string_evolution_mode = parameter_list.get_QCD_string_evolution_mode();
     real t_current = 0.0;
