@@ -16,11 +16,14 @@ EventGenerator::EventGenerator(std::string input_filename, int nev_in) {
                                             new RandomUtil::Random(seed));
     mc_glauber_ptr = std::unique_ptr<Glauber>(
                                 new Glauber(parameter_list, ran_gen_ptr));
+    std::cout << "Generating " << nev << " events ... " << std::endl;
 }
 
 void EventGenerator::generate_events() {
-    std::ofstream of("events_summary.dat", std::ios::out);
-    of << "# event_id  Npart  Ncoll  Nstrings" << std::endl;
+    // this file records all the essential information for the generated events
+    std::ofstream record_file("events_summary.dat", std::ios::out);
+    record_file << "# event_id  Npart  Ncoll  Nstrings  b(fm)" << std::endl;
+
     int iev = 0;
     while (iev < nev) {
         mc_glauber_ptr->make_nuclei();
@@ -30,14 +33,18 @@ void EventGenerator::generate_events() {
             iev++;
             auto Nstrings = mc_glauber_ptr->decide_QCD_strings_production();
             Ncoll = mc_glauber_ptr->perform_string_production();
+
             std::ostringstream filename;
             filename << "strings_event_" << iev << ".dat";
             mc_glauber_ptr->output_QCD_strings(filename.str());
-            of << iev << "  " << Npart << "  " << Ncoll << "  "
-               << Nstrings << std::endl;
+            
+            // write event information to the record file
+            auto b = mc_glauber_ptr->get_impact_parameter();
+            record_file << iev << "  " << Npart << "  " << Ncoll << "  "
+                        << Nstrings << "  " << b << std::endl;
         }
     }
-    of.close();
+    record_file.close();
 }
 
 };

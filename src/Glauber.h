@@ -29,6 +29,8 @@ class Glauber {
     std::weak_ptr<RandomUtil::Random> ran_gen_ptr;
     bool sample_valence_quark;
 
+    real impact_b;
+
  public:
     Glauber() = default;
     Glauber(const MCGlb::Parameters &param_in,
@@ -36,6 +38,7 @@ class Glauber {
     ~Glauber() {};
 
     void make_nuclei();
+    real get_impact_parameter() const {return(impact_b);}
 
     int make_collision_schedule();
     bool hit(real d2, real d2_in) const;
