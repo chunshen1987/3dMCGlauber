@@ -34,6 +34,13 @@ int Parameters::get_use_quarks() const {
     assert(flag >= 0 && flag < 3);
     return(flag);
 }
+    
+
+real Parameters::get_quarks_Q2() const {
+    real Q2 = static_cast<real>(get_param_double("Q2"));
+    assert(Q2 >= 0.);
+    return(Q2);
+}
 
     
 real Parameters::get_roots() const {

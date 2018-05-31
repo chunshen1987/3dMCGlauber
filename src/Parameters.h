@@ -29,6 +29,7 @@ class Parameters : public ParametersMap {
     real get_b_min() const;
 
     int get_use_quarks() const;
+    real get_quarks_Q2() const;
 
     real get_roots() const;
 

@@ -498,7 +498,6 @@ void Nucleus::sample_quark_momentum_fraction(std::vector<real> &xQuark,
         return;
     }
 
-    real q2 = 1.0;
     std::vector<real> quarkx(number_of_quarks, 0.);
     // default is 1 for the nuclear correction
     // - if parameters are set to use EPS09 these will be changed
@@ -514,14 +513,14 @@ void Nucleus::sample_quark_momentum_fraction(std::vector<real> &xQuark,
             x = ran_gen_ptr->rand_uniform();
             if (A == 197 || A == 208) {
                 real ru, rd, rs, rc, rb, rg;
-                eps09(2, 1, A, x, sqrt(q2), ruv, rdv, ru, rd, rs,
+                eps09(2, 1, A, x, sqrt(Q2), ruv, rdv, ru, rd, rs,
                       rc, rb, rg);
             }
             // ruv seems to be always equal to rdv,
             // so I am fine not distinguishing proton and neutron here
       
-            xfdbar     = pdf->xfxQ2(-1, x, q2);
-            xfd        = pdf->xfxQ2(1, x, q2);
+            xfdbar     = pdf->xfxQ2(-1, x, Q2);
+            xfd        = pdf->xfxQ2( 1, x, Q2);
             correction = exp(11.*pow(x, 2.6)) - 0.4;
             tmp        = ran_gen_ptr->rand_uniform();
         } while (tmp > ((xfd - xfdbar)*rdv)*correction);
@@ -535,12 +534,12 @@ void Nucleus::sample_quark_momentum_fraction(std::vector<real> &xQuark,
           
                 if (A == 197 || A == 208) {
                     real ru, rd, rs, rc, rb, rg;
-                    eps09(2, 1, A, x, sqrt(q2), ruv, rdv, ru, rd, rs,
+                    eps09(2, 1, A, x, sqrt(Q2), ruv, rdv, ru, rd, rs,
                           rc, rb, rg);
                 }
 
-                xfubar     = pdf->xfxQ2(-2, x, q2);
-                xfu        = pdf->xfxQ2(2, x, q2);
+                xfubar     = pdf->xfxQ2(-2, x, Q2);
+                xfu        = pdf->xfxQ2( 2, x, Q2);
                 correction = exp(16.*pow(x, 2.8)) - 0.5;
                 tmp        = ran_gen_ptr->rand_uniform();
             } while (tmp > ((xfu - xfubar)*ruv)*correction);
