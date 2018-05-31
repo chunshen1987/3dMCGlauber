@@ -1,13 +1,13 @@
 ################################################################
 # collision information
 ################################################################
-Projectile p                   # projectile nucleus name
-Target p                       # target nucleus name
+Projectile Au                   # projectile nucleus name
+Target Au                       # target nucleus name
 roots 200                       # collision energy (GeV)
 useQuarks 2                     # switch to use valence quarks
 Q2 1.                           # the scale when evaluating the pdf
 b_min 0.                        # minimum impact parameter (fm)
-b_max 5.                       # maximum impact parameter (fm)
+b_max 20.                       # maximum impact parameter (fm)
 seed -1                         # random seed (-1: system)
 only_event_statistics 1         # flag to only output the event_summary file
 ###############################################################
