@@ -5,17 +5,6 @@
 
 namespace MCGlb {
 
-void Parameters::set_b(real b_in) {
-    assert(b_in >= 0.);
-    set_parameter("b", b_in);
-}
-
-real Parameters::get_b() const {
-    real b = static_cast<real>(get_param_double("b"));
-    assert(b >= 0.);
-    return(b);
-}
-
 void Parameters::set_b_max(real b_in) {
     assert(b_in >= 0.);
     set_parameter("b_max", b_in);

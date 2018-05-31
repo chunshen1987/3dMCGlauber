@@ -23,8 +23,6 @@ class Parameters : public ParametersMap {
     }
     string get_target_nucleus_name() const {return(get_param_val("Target"));}
 
-    void set_b(real b_in);
-    real get_b() const;
     void set_b_max(real b_in);
     real get_b_max() const;
     void set_b_min(real b_in);
