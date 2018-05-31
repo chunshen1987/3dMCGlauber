@@ -10,8 +10,12 @@
 
 int main(int argc, char* argv[]) {
     std::string input_filename = "input";
+    int nev = 100;
     if (argc > 1) {
-        input_filename = *(argv + 1);
+        nev = std::stoi(*(argv + 1));
+    }
+    if (argc > 2) {
+        input_filename = *(argv + 2);
     }
     MCGlb::Parameters parameter_list;
     parameter_list.read_in_parameters_from_file(input_filename);
@@ -20,7 +24,7 @@ int main(int argc, char* argv[]) {
                                             new RandomUtil::Random(seed));
     MCGlb::Glauber testGlauber(parameter_list, ran_gen_ptr);
     int iev = 0;
-    while (iev < 100) {
+    while (iev < nev) {
         testGlauber.make_nuclei();
         auto Ncoll = testGlauber.make_collision_schedule();
         auto Npart = testGlauber.get_Npart();
