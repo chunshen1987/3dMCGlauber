@@ -24,6 +24,7 @@ class EventGenerator {
     ~EventGenerator() {};
 
     void generate_events();
+    bool event_of_interest_trigger(int Npart, int Ncoll, int Nstrings);
 };
 
 };

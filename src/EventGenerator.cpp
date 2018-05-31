@@ -19,6 +19,7 @@ EventGenerator::EventGenerator(std::string input_filename, int nev_in) {
     std::cout << "Generating " << nev << " events ... " << std::endl;
 }
 
+
 void EventGenerator::generate_events() {
     // this file records all the essential information for the generated events
     std::ofstream record_file("events_summary.dat", std::ios::out);
@@ -29,9 +30,9 @@ void EventGenerator::generate_events() {
         mc_glauber_ptr->make_nuclei();
         auto Ncoll = mc_glauber_ptr->make_collision_schedule();
         auto Npart = mc_glauber_ptr->get_Npart();
-        if (Npart > 1) {
+        auto Nstrings = mc_glauber_ptr->decide_QCD_strings_production();
+        if (event_of_interest_trigger(Npart, Ncoll, Nstrings)) {
             iev++;
-            auto Nstrings = mc_glauber_ptr->decide_QCD_strings_production();
             Ncoll = mc_glauber_ptr->perform_string_production();
 
             std::ostringstream filename;
@@ -45,6 +46,16 @@ void EventGenerator::generate_events() {
         }
     }
     record_file.close();
+}
+
+
+bool EventGenerator::event_of_interest_trigger(int Npart, int Ncoll,
+                                               int Nstrings) {
+    bool pick = false;
+    if (Npart > 1) {
+        pick = true;
+    }
+    return(pick);
 }
 
 };
