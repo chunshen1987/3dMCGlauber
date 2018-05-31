@@ -308,7 +308,6 @@ int Glauber::perform_string_production() {
         update_collision_schedule(first_event);
         collision_schedule.erase((*collision_schedule.begin()));
     }
-    cout << "Nstrings = " << QCD_string_list.size() << endl;
     for (auto &it: QCD_string_list)
         it->evolve_QCD_string();
     return(number_of_collided_events);

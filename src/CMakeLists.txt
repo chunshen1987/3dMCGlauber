@@ -1,6 +1,7 @@
 set (SOURCES
     Parameters.cpp
     ParametersMap.cpp
+    EventGenerator.cpp
     Glauber.cpp
     Random.cpp
     Nucleus.cpp

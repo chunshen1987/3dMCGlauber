@@ -1,12 +1,7 @@
 // Copyright @ Chun Shen 2018
 
-#include <iostream>
-#include <sstream>
+#include "EventGenerator.h"
 #include <string>
-#include <memory>
-#include "Glauber.h"
-#include "Parameters.h"
-#include "Random.h"
 
 int main(int argc, char* argv[]) {
     std::string input_filename = "input";
@@ -17,31 +12,8 @@ int main(int argc, char* argv[]) {
     if (argc > 2) {
         input_filename = *(argv + 2);
     }
-    MCGlb::Parameters parameter_list;
-    parameter_list.read_in_parameters_from_file(input_filename);
-    int seed = parameter_list.get_seed();
-    std::shared_ptr<RandomUtil::Random> ran_gen_ptr(
-                                            new RandomUtil::Random(seed));
-    MCGlb::Glauber testGlauber(parameter_list, ran_gen_ptr);
-    int iev = 0;
-    while (iev < nev) {
-        testGlauber.make_nuclei();
-        auto Ncoll = testGlauber.make_collision_schedule();
-        auto Npart = testGlauber.get_Npart();
-        if (Npart > 1) {
-            iev++;
-            auto Nstrings = testGlauber.decide_QCD_strings_production();
-            std::cout << "Npart = " << Npart << ", Ncoll = " << Ncoll
-                      << ", Nstring = " << Nstrings
-                      << std::endl;
-            std::cout << "averaged connected rate: " << Nstrings/(Npart/2.)
-                      << std::endl;
-            auto Ncollided = testGlauber.perform_string_production();
-            std::cout << "Ncollisions = " << Ncollided << std::endl;
-            std::ostringstream filename;
-            filename << "strings_event_" << iev << ".dat";
-            testGlauber.output_QCD_strings(filename.str());
-        }
-    }
+
+    MCGlb::EventGenerator mc_gen(input_filename, nev);
+    mc_gen.generate_events();
     return(0);
 }
