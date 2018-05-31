@@ -40,7 +40,9 @@ void ParametersMap::read_in_parameters_from_file(string filename) {
     string line;
     while (getline(input_file,line)) {
         auto param = StringUtility::parse_a_line(line, " ", "#");
-        set_parameter(param[0], param[1]);
+        if (param.size() > 0) {
+            set_parameter(param[0], param[1]);
+        }
     }
 }
 

@@ -30,18 +30,12 @@ class Parameters : public ParametersMap {
     void set_b_min(real b_in);
     real get_b_min() const;
 
-    int get_use_energy_dependent_cross_section() const;
-
     int get_use_quarks() const;
-
-    int get_gaussian_wounding() const;
 
     real get_roots() const;
 
     int get_QCD_string_production_mode() const;
     int get_QCD_string_evolution_mode() const;
-    
-    real get_string_tension() const;
 
 };
 

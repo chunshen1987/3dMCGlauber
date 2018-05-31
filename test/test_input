@@ -1,31 +1,22 @@
-Projectile Au                             # projectile nucleus name
-Target Pb                                 # target nucleus name
-useEnergyDependentCrossSection 1
-sigmaNN 38.319
-sigmaQQ 6.12
-LexusLambda 1.0
-useQuarks 2
-useNuclearCorrection 1
-Q2 1.
-b 1.
-roots 19.
-seed -1
-timeForSeed 1
-gaussianWounding 1
-useRapidityPlateau 1
-gaussianSmearingWidth 0.2
-transverseGaussianSmearingWidth 0.2
-outputNumberOfRapidityCells 96
-outputNumberOfTransverseCells 256
-outputMaximalTransverseSize 10
-outputMaximalRapidity 8
-flag_multiplicity_fluctuation 1
-makeHadronRapidityDistribution 0
-output_QCD_strings 1
-output_nB_statistics 1
-QCD_string_thermalization_time 0.5
-QCD_string_production_mode 1
-QCD_string_production_probability 1.0
-evolve_QCD_string_mode 4
-tau_freeze 2.0
-string_tension 1.0
+################################################################
+# collision information
+################################################################
+Projectile Au                   # projectile nucleus name
+Target Pb                       # target nucleus name
+roots 200                       # collision energy (GeV)
+useQuarks 2                     # switch to use valence quarks
+Q2 1.                           # the scale when evaluating the pdf
+b_min 0.                        # minimum impact parameter (fm)
+b_max 10.                       # maximum impact parameter (fm)
+seed -1                         # random seed (-1: system)
+###############################################################
+# control parameters for string production
+###############################################################
+QCD_string_production_mode 1    # string production mode
+                                # 1: strings are produced randomly in the binary collision list
+                                # 2: strings are produced at the last binary collision
+evolve_QCD_string_mode 2        # string evolution mode
+                                # 1: deceleration with fixed rapidity loss (m/sigma = 1 fm, dtau = 0.5 fm)
+                                # 2: deceleration with LEXUS sampled rapidit loss (both dtau and sigma fluctuate)
+                                # 3: deceleration with LEXUS sampled rapidit loss (m/sigma = 1 fm, dtau fluctuates)
+                                # 4: deceleration with LEXUS sampled rapidit loss (dtau = 0.5 fm, m/sigma fluctuates)
