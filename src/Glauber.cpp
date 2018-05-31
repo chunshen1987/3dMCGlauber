@@ -51,9 +51,9 @@ void Glauber::make_nuclei() {
     auto b_min = parameter_list.get_b_min();
     auto impact_b = sqrt(b_min*b_min +
             (b_max*b_max - b_min*b_min)*ran_gen_ptr.lock()->rand_uniform());
-    SpatialVec proj_shift = {0., impact_b/2., 0., -projectile->get_z_max()};
+    SpatialVec proj_shift = {0., impact_b/2., 0., -projectile->get_z_max() - 1e-15};
     projectile->shift_nucleus(proj_shift);
-    SpatialVec targ_shift = {0., -impact_b/2., 0., -target->get_z_min()};
+    SpatialVec targ_shift = {0., -impact_b/2., 0., -target->get_z_min() + 1e-15};
     target->shift_nucleus(targ_shift);
     // projectile->output_nucleon_positions("projectile.dat");
     // target->output_nucleon_positions("target.dat");
