@@ -10,11 +10,13 @@ void Parameters::set_b_max(real b_in) {
     set_parameter("b_max", b_in);
 }
 
+
 real Parameters::get_b_max() const {
     real b = static_cast<real>(get_param_double("b_max"));
     assert(b >= 0.);
     return(b);
 }
+
 
 void Parameters::set_b_min(real b_in) {
     assert(b_in >= 0.);
@@ -48,6 +50,7 @@ real Parameters::get_roots() const {
     assert(roots > 0.);
     return(roots);
 }
+
     
 int Parameters::get_QCD_string_production_mode() const {
     int flag = get_param_int("QCD_string_production_mode");
@@ -55,10 +58,21 @@ int Parameters::get_QCD_string_production_mode() const {
     return(flag);
 }
 
+
 int Parameters::get_QCD_string_evolution_mode() const {
     int flag = get_param_int("evolve_QCD_string_mode");
     assert(flag > 0 && flag < 5);
     return(flag);
+}
+
+
+bool Parameters::get_only_event_statistics() const {
+    int flag = get_param_int("only_event_statistics");
+    if (flag == 0) {
+        return(false);
+    } else {
+        return(true);
+    }
 }
     
 }

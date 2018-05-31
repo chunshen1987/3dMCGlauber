@@ -17,6 +17,8 @@ EventGenerator::EventGenerator(std::string input_filename, int nev_in) {
     mc_glauber_ptr = std::unique_ptr<Glauber>(
                                 new Glauber(parameter_list, ran_gen_ptr));
     std::cout << "Generating " << nev << " events ... " << std::endl;
+
+    statistics_only = parameter_list.get_only_event_statistics();
 }
 
 
@@ -35,9 +37,11 @@ void EventGenerator::generate_events() {
             iev++;
             Ncoll = mc_glauber_ptr->perform_string_production();
 
-            std::ostringstream filename;
-            filename << "strings_event_" << iev << ".dat";
-            mc_glauber_ptr->output_QCD_strings(filename.str());
+            if (!statistics_only) {
+                std::ostringstream filename;
+                filename << "strings_event_" << iev << ".dat";
+                mc_glauber_ptr->output_QCD_strings(filename.str());
+            }
             
             // write event information to the record file
             auto b = mc_glauber_ptr->get_impact_parameter();

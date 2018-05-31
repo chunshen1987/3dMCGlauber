@@ -17,6 +17,7 @@ class EventGenerator {
     Parameters parameter_list;
     std::shared_ptr<RandomUtil::Random> ran_gen_ptr;
     std::unique_ptr<Glauber> mc_glauber_ptr;
+    bool statistics_only;
 
  public:
     EventGenerator() = default;

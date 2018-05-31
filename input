@@ -9,6 +9,7 @@ Q2 1.                           # the scale when evaluating the pdf
 b_min 0.                        # minimum impact parameter (fm)
 b_max 5.                       # maximum impact parameter (fm)
 seed -1                         # random seed (-1: system)
+only_event_statistics 1         # flag to only output the event_summary file
 ###############################################################
 # control parameters for string production
 ###############################################################

@@ -36,6 +36,8 @@ class Parameters : public ParametersMap {
     int get_QCD_string_production_mode() const;
     int get_QCD_string_evolution_mode() const;
 
+    bool get_only_event_statistics() const;
+
 };
 
 }
