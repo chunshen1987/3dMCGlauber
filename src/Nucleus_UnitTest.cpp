@@ -150,6 +150,17 @@ TEST_CASE("Test deformed nucleus") {
 }
 
 
+TEST_CASE("Test sample a deformed U nucleus") {
+    std::shared_ptr<RandomUtil::Random> ran_gen_ptr(
+                                            new RandomUtil::Random(-1));
+    Nucleus test_nucleus("U", ran_gen_ptr, false, 0.9, true);
+    test_nucleus.generate_nucleus_3d_configuration();
+    CHECK(test_nucleus.get_number_of_nucleons() == 238);
+    CHECK(test_nucleus.is_deformed() == true);
+    test_nucleus.output_nucleon_positions("test_U_sample.txt");
+}
+
+
 TEST_CASE("Test sampled nuclear density distribution") {
     std::cout << "Testing the sampling routine..." << std::endl;
     //Nucleus test_nucleus("Pb");

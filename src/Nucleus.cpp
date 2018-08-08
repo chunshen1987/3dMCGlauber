@@ -8,6 +8,7 @@
 #include <algorithm>
 #include <array>
 #include <cmath>
+#include <utility>
 
 #include "eps09.h"
 #include "LHAPDF/LHAPDF.h"
@@ -334,23 +335,26 @@ void Nucleus::generate_nucleus_configuration_with_woods_saxon() {
         std::shared_ptr<Nucleon> nucleon_ptr(new Nucleon(x_in, p_in));
         nucleon_list.push_back(nucleon_ptr);
     }
+    set_nucleons_momentum_with_collision_energy(0.0);
 }
 
 
 void Nucleus::generate_nucleus_configuration_with_deformed_woods_saxon() {
     std::vector<real> r_array(A, 0.);
     std::vector<real> costheta_array(A, 0.);
+    std::vector<std::pair<real, real>> pair_array;
     for (int i = 0; i < A; i++) {
         sample_r_and_costheta_from_deformed_woods_saxon(r_array[i],
                                                         costheta_array[i]);
+        pair_array.push_back(std::make_pair(r_array[i], costheta_array[i]));
     }
-    std::sort(r_array.begin(), r_array.end());
+    std::sort(pair_array.begin(), pair_array.end());
 
     std::vector<real> x_array(A, 0.), y_array(A, 0.), z_array(A, 0.);
     const real d_min_sq = d_min*d_min;
-    for (unsigned int i = 0; i < r_array.size(); i++) {
-        const real r_i     = r_array[i];
-        const real theta_i = acos(costheta_array[i]);
+    for (int i = 0; i < A; i++) {
+        const real r_i     = pair_array[i].first;
+        const real theta_i = acos(pair_array[i].second);
         int reject_flag = 0;
         int iter = 0;
         real x_i, y_i, z_i;
@@ -362,7 +366,8 @@ void Nucleus::generate_nucleus_configuration_with_deformed_woods_saxon() {
             y_i = r_i*sin(theta_i)*sin(phi);
             z_i = r_i*cos(theta_i);
             for (int j = i - 1; j >= 0; j--) {
-                if ((r_i - r_array[j])*(r_i - r_array[j]) > d_min_sq) break;
+                const real r_j = pair_array[j].first;
+                if ((r_i - r_j)*(r_i - r_j) > d_min_sq) break;
                 real dsq = (  (x_i - x_array[j])*(x_i - x_array[j])
                             + (y_i - y_array[j])*(y_i - y_array[j])
                             + (z_i - z_array[j])*(z_i - z_array[j]));
@@ -380,12 +385,13 @@ void Nucleus::generate_nucleus_configuration_with_deformed_woods_saxon() {
         y_array[i] = y_i;
         z_array[i] = z_i;
     }
-    for (unsigned int i = 0; i < r_array.size(); i++) {
+    for (int i = 0; i < A; i++) {
         SpatialVec  x_in = {0.0, x_array[i], y_array[i], z_array[i]};
         MomentumVec p_in = {0.0};
         std::shared_ptr<Nucleon> nucleon_ptr(new Nucleon(x_in, p_in));
         nucleon_list.push_back(nucleon_ptr);
     }
+    set_nucleons_momentum_with_collision_energy(0.0);
 }
 
 
