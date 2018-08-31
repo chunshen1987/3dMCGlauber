@@ -18,7 +18,10 @@ class QCDString {
     real tau_form;
     real y_i_left, y_i_right;
     real y_f_left, y_f_right;
+    real y_f_baryon_left, y_f_baryon_right;
     real eta_s_left, eta_s_right;
+    real eta_s_baryon_left, eta_s_baryon_right;
+    bool has_baryon_left, has_baryon_right;
     weak_ptr<Nucleon> proj;
     weak_ptr<Nucleon> targ;
     weak_ptr<Quark> proj_q;
@@ -55,11 +58,28 @@ class QCDString {
     real get_y_f_left() const {return(y_f_left);}
     real get_y_f_right() const {return(y_f_right);}
 
+    real get_y_f_baryon_left() const {return(y_f_baryon_left);}
+    real get_y_f_baryon_right() const {return(y_f_baryon_right);}
+
     void set_final_space_time_rapidities(real eta_s_l, real eta_s_r) {
         eta_s_left = eta_s_l; eta_s_right = eta_s_r;
     }
     real get_eta_s_left() const {return(eta_s_left);}
     real get_eta_s_right() const {return(eta_s_right);}
+
+    real get_eta_s_baryon_left() const {return(eta_s_baryon_left);}
+    real get_eta_s_baryon_right() const {return(eta_s_baryon_right);}
+
+    void set_has_baryon_left(bool has_b_left) {
+        has_baryon_left = has_b_left;
+    }
+
+    void set_has_baryon_right(bool has_b_right) {
+        has_baryon_right = has_b_right;
+    }
+
+    bool get_has_baryon_left() const {return(has_baryon_left);}
+    bool get_has_baryon_right() const {return(has_baryon_right);}
 
     weak_ptr<Nucleon> get_proj() {return(proj);}
     weak_ptr<Nucleon> get_targ() {return(targ);}

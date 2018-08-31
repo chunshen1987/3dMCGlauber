@@ -21,3 +21,5 @@ evolve_QCD_string_mode 2        # string evolution mode
                                 # 2: deceleration with LEXUS sampled rapidit loss (both dtau and sigma fluctuate)
                                 # 3: deceleration with LEXUS sampled rapidit loss (m/sigma = 1 fm, dtau fluctuates)
                                 # 4: deceleration with LEXUS sampled rapidit loss (dtau = 0.5 fm, m/sigma fluctuates)
+baryon_junctions 1              # 0: baryon number assumed to be at string end
+                                # 1: baryon number transported assuming baryon junctions (at smaller x) see arXiv:nucl-th/9602027

@@ -74,5 +74,14 @@ bool Parameters::get_only_event_statistics() const {
         return(true);
     }
 }
+
+bool Parameters::get_baryon_junctions() const {
+    int flag = get_param_int("baryon_junctions");
+    if (flag == 0) {
+        return(false);
+    } else {
+        return(true);
+    }
+}
     
 }
