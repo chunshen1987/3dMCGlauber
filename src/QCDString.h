@@ -34,11 +34,11 @@ class QCDString {
     QCDString() = default;
     QCDString(SpatialVec x_in, real tau_form,
               shared_ptr<Nucleon> proj_in, shared_ptr<Nucleon> targ_in,
-              real string_tension_in, bool has_baryon_right, real y_baryon_right, bool has_baryon_left, real y_baryon_left);
+              real string_tension_in, bool has_baryon_right, bool has_baryon_left);
     QCDString(SpatialVec x_in, real tau_form,
               shared_ptr<Nucleon> proj_in, shared_ptr<Nucleon> targ_in,
               shared_ptr<Quark> proj_q_in, shared_ptr<Quark> targ_q_in,
-              real string_tension_in, bool has_baryon_right, real y_baryon_right, bool has_baryon_left, real y_baryon_left);
+              real string_tension_in, bool has_baryon_right, bool has_baryon_left);
 
     void set_tau_form(real tau_form_in) {tau_form = tau_form_in;}
     real get_tau_form() const {return(tau_form);}

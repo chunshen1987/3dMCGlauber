@@ -33,6 +33,8 @@ class Parameters : public ParametersMap {
 
     real get_roots() const;
 
+    real get_lambdaB() const;
+
     int get_QCD_string_production_mode() const;
     int get_QCD_string_evolution_mode() const;
 

@@ -8,7 +8,7 @@ namespace MCGlb {
 
 QCDString::QCDString(SpatialVec x_in, real tau_form_in,
                      shared_ptr<Nucleon> proj_in, shared_ptr<Nucleon> targ_in,
-                     real m_over_sigma_in, bool has_baryon_right_in, real y_baryon_right_in, bool has_baryon_left_in, real y_baryon_left_in) {
+                     real m_over_sigma_in, bool has_baryon_right_in, bool has_baryon_left_in) {
     x_production       = x_in;
     tau_form           = tau_form_in;
     proj               = proj_in;
@@ -19,9 +19,7 @@ QCDString::QCDString(SpatialVec x_in, real tau_form_in,
     y_i_right          = atanh(pvec[3]/pvec[0]);
     m_over_sigma       = m_over_sigma_in;
     has_baryon_right   = has_baryon_right_in;
-    y_f_baryon_right   = y_baryon_right_in;
     has_baryon_left    = has_baryon_left_in;
-    y_f_baryon_left    = y_baryon_left_in;
     eta_s_baryon_left  = 0.;
     eta_s_baryon_right = 0.;
 }
@@ -29,7 +27,7 @@ QCDString::QCDString(SpatialVec x_in, real tau_form_in,
 QCDString::QCDString(SpatialVec x_in, real tau_form_in,
                      shared_ptr<Nucleon> proj_in, shared_ptr<Nucleon> targ_in,
                      shared_ptr<Quark> proj_q_in, shared_ptr<Quark> targ_q_in,
-                     real m_over_sigma_in, bool has_baryon_right_in, real y_baryon_right_in, bool has_baryon_left_in, real y_baryon_left_in) {
+                     real m_over_sigma_in, bool has_baryon_right_in, bool has_baryon_left_in) {
     x_production       = x_in;
     tau_form           = tau_form_in;
     proj               = proj_in;
@@ -40,9 +38,7 @@ QCDString::QCDString(SpatialVec x_in, real tau_form_in,
     y_i_right          = proj_q.lock()->get_rapidity();
     m_over_sigma       = m_over_sigma_in;
     has_baryon_right   = has_baryon_right_in;
-    y_f_baryon_right   = y_baryon_right_in;
     has_baryon_left    = has_baryon_left_in;
-    y_f_baryon_left    = y_baryon_left_in;
     eta_s_baryon_left  = 0.;
     eta_s_baryon_right = 0.;
 }

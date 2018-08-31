@@ -51,6 +51,12 @@ real Parameters::get_roots() const {
     return(roots);
 }
 
+real Parameters::get_lambdaB() const {
+    real lambdaB = static_cast<real>(get_param_double("lambdaB"));
+    assert(lambdaB >= 0.);
+    return(lambdaB);
+}
+
     
 int Parameters::get_QCD_string_production_mode() const {
     int flag = get_param_int("QCD_string_production_mode");

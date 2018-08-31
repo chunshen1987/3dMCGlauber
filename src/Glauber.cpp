@@ -252,6 +252,12 @@ int Glauber::perform_string_production() {
     bool has_baryon_right;
     real y_baryon_left;
     real y_baryon_right;
+    
+    real lambdaB =  parameter_list.get_lambdaB()/sqrt(parameter_list.get_roots()); // ~s^{-1/4} 
+    if(lambdaB > 1.)
+      lambdaB = 1.;
+    
+    //     cout << lambdaB <<endl;
 
     real t_current = 0.0;
     int number_of_collided_events = 0;
@@ -313,28 +319,20 @@ int Glauber::perform_string_production() {
             if (  proj->get_number_of_connections() == 1  )
               {
                 has_baryon_right = 1;
-                y_baryon_right = sample_junction_rapidity_right(targ->get_rapidity(), proj->get_rapidity());
-                
-                // One should use the very initial rapidities of the colliding nucleons to determine the junction rapidity.
-                // this may, however, lead to junctions lying outside the rapidity range of the final string which may caus problems
-                // in hydro and could be seen as unphysical...
-                // Another thing to discuss is the nergy dependence. The cross section for baryon junctions stopping has a different root-s 
-                // dependence than the usual inelastic cross section - so in principle it needs to be treated separately altogether... not sure how yet
               }
             if (  targ->get_number_of_connections() == 1  )  
               {
                 has_baryon_left = 1;
-                y_baryon_left = sample_junction_rapidity_left(targ->get_rapidity(), proj->get_rapidity());
               } 
           }
         if (!sample_valence_quark) {
-            shared_ptr<QCDString> qcd_string(
-                                             new QCDString(x_coll, tau_form, proj, targ, m_over_sigma, has_baryon_right, y_baryon_right, has_baryon_left, y_baryon_left));
-            QCD_string_list.push_back(qcd_string);
+          shared_ptr<QCDString> qcd_string(
+                                           new QCDString(x_coll, tau_form, proj, targ, m_over_sigma, has_baryon_right, has_baryon_left));
+          QCD_string_list.push_back(qcd_string);
         } else {
             shared_ptr<QCDString> qcd_string(
                 new QCDString(x_coll, tau_form, proj, targ,
-                              proj_q.lock(), targ_q.lock(), m_over_sigma, has_baryon_right, y_baryon_right, has_baryon_left, y_baryon_left));
+                              proj_q.lock(), targ_q.lock(), m_over_sigma, has_baryon_right, has_baryon_left));
             QCD_string_list.push_back(qcd_string);
         }
         real y_shift = 0.001;
@@ -349,6 +347,34 @@ int Glauber::perform_string_production() {
         if ( !baryon_junctions )
           it->set_final_baryon_rapidities(it->get_y_f_left(), it->get_y_f_right());
         //set baryon rapidities to string endpoint rapidities if no junction transport is used
+        else
+          {
+            //sample HERE if baryon should be moved
+            y_baryon_right = 0.;
+            y_baryon_left = 0.;
+            if ( it->get_has_baryon_right() )
+              {
+                if ( ran_gen_ptr.lock()->rand_uniform() < lambdaB ) 
+                  //           y_baryon_right = sample_junction_rapidity_right( it->get_y_i_left(), it->get_y_i_right() );
+                  y_baryon_right = sample_junction_rapidity_right( it->get_y_f_left(), it->get_y_f_right() );
+                else
+                  y_baryon_right = it->get_y_f_right();
+                // One should use the very initial rapidities of the colliding nucleons to determine the junction rapidity.
+                // this may, however, lead to junctions lying outside the rapidity range of the final string which may caus problems
+                // in hydro and could be seen as unphysical...
+                // Another thing to discuss is the energy dependence. The cross section for baryon junctions stopping has a different root-s 
+                // dependence than the usual inelastic cross section - so in principle it needs to be treated separately altogether... not sure how yet
+              }
+            if ( it->get_has_baryon_left() )
+              {
+                if ( ran_gen_ptr.lock()->rand_uniform() < lambdaB ) 
+                  //                 y_baryon_left = sample_junction_rapidity_left( it->get_y_i_left(), it->get_y_i_right() );
+                  y_baryon_left = sample_junction_rapidity_left( it->get_y_f_left(), it->get_y_f_right() );
+                else
+                  y_baryon_left = it->get_y_f_left();
+              }
+            it->set_final_baryon_rapidities(y_baryon_left,y_baryon_right);
+          }
       }
     return(number_of_collided_events);
 }
@@ -439,7 +465,4 @@ real Glauber::sample_rapidity_loss_from_the_LEXUS_model(real y_init) const {
     real y = 2.* (0.25 * y_right + 0.25 * y_left - log(2. * (ran_gen_ptr.lock()->rand_uniform() + 0.5 * exp(-0.25 * y_right + 0.25 * y_left)/sinh(0.25 * y_right - 0.25 * y_left)) * sinh( 0.25 * y_right - 0.25 * y_left)));
     return(y);
   }
-
-
-
 }
