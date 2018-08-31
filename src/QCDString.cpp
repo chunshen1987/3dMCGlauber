@@ -8,31 +8,43 @@ namespace MCGlb {
 
 QCDString::QCDString(SpatialVec x_in, real tau_form_in,
                      shared_ptr<Nucleon> proj_in, shared_ptr<Nucleon> targ_in,
-                     real m_over_sigma_in) {
-    x_production = x_in;
-    tau_form     = tau_form_in;
-    proj         = proj_in;
-    targ         = targ_in;
-    auto pvec    = targ.lock()->get_p();
-    y_i_left     = atanh(pvec[3]/pvec[0]);
-    pvec         = proj.lock()->get_p();
-    y_i_right    = atanh(pvec[3]/pvec[0]);
-    m_over_sigma = m_over_sigma_in;
+                     real m_over_sigma_in, bool has_baryon_right_in, real y_baryon_right_in, bool has_baryon_left_in, real y_baryon_left_in) {
+    x_production       = x_in;
+    tau_form           = tau_form_in;
+    proj               = proj_in;
+    targ               = targ_in;
+    auto pvec          = targ.lock()->get_p();
+    y_i_left           = atanh(pvec[3]/pvec[0]);
+    pvec               = proj.lock()->get_p();
+    y_i_right          = atanh(pvec[3]/pvec[0]);
+    m_over_sigma       = m_over_sigma_in;
+    has_baryon_right   = has_baryon_right_in;
+    y_f_baryon_right   = y_baryon_right_in;
+    has_baryon_left    = has_baryon_left_in;
+    y_f_baryon_left    = y_baryon_left_in;
+    eta_s_baryon_left  = 0.;
+    eta_s_baryon_right = 0.;
 }
 
 QCDString::QCDString(SpatialVec x_in, real tau_form_in,
                      shared_ptr<Nucleon> proj_in, shared_ptr<Nucleon> targ_in,
                      shared_ptr<Quark> proj_q_in, shared_ptr<Quark> targ_q_in,
-                     real m_over_sigma_in) {
-    x_production = x_in;
-    tau_form     = tau_form_in;
-    proj         = proj_in;
-    targ         = targ_in;
-    proj_q       = proj_q_in;
-    targ_q       = targ_q_in;
-    y_i_left     = targ_q.lock()->get_rapidity();
-    y_i_right    = proj_q.lock()->get_rapidity();
-    m_over_sigma = m_over_sigma_in;
+                     real m_over_sigma_in, bool has_baryon_right_in, real y_baryon_right_in, bool has_baryon_left_in, real y_baryon_left_in) {
+    x_production       = x_in;
+    tau_form           = tau_form_in;
+    proj               = proj_in;
+    targ               = targ_in;
+    proj_q             = proj_q_in;
+    targ_q             = targ_q_in;
+    y_i_left           = targ_q.lock()->get_rapidity();
+    y_i_right          = proj_q.lock()->get_rapidity();
+    m_over_sigma       = m_over_sigma_in;
+    has_baryon_right   = has_baryon_right_in;
+    y_f_baryon_right   = y_baryon_right_in;
+    has_baryon_left    = has_baryon_left_in;
+    y_f_baryon_left    = y_baryon_left_in;
+    eta_s_baryon_left  = 0.;
+    eta_s_baryon_right = 0.;
 }
 
 void QCDString::evolve_QCD_string() {

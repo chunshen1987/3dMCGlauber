@@ -19,8 +19,10 @@ class QCDString {
     real y_i_left, y_i_right;
     real y_f_left, y_f_right;
     real y_f_baryon_left, y_f_baryon_right;
+    
     real eta_s_left, eta_s_right;
     real eta_s_baryon_left, eta_s_baryon_right;
+    
     bool has_baryon_left, has_baryon_right;
     weak_ptr<Nucleon> proj;
     weak_ptr<Nucleon> targ;
@@ -32,11 +34,11 @@ class QCDString {
     QCDString() = default;
     QCDString(SpatialVec x_in, real tau_form,
               shared_ptr<Nucleon> proj_in, shared_ptr<Nucleon> targ_in,
-              real string_tension_in);
+              real string_tension_in, bool has_baryon_right, real y_baryon_right, bool has_baryon_left, real y_baryon_left);
     QCDString(SpatialVec x_in, real tau_form,
               shared_ptr<Nucleon> proj_in, shared_ptr<Nucleon> targ_in,
               shared_ptr<Quark> proj_q_in, shared_ptr<Quark> targ_q_in,
-              real string_tension_in);
+              real string_tension_in, bool has_baryon_right, real y_baryon_right, bool has_baryon_left, real y_baryon_left);
 
     void set_tau_form(real tau_form_in) {tau_form = tau_form_in;}
     real get_tau_form() const {return(tau_form);}
@@ -58,6 +60,9 @@ class QCDString {
     real get_y_f_left() const {return(y_f_left);}
     real get_y_f_right() const {return(y_f_right);}
 
+    void set_final_baryon_rapidities(real y_f_l, real y_f_r) {
+        y_f_baryon_left = y_f_l; y_f_baryon_right = y_f_r;
+    }
     real get_y_f_baryon_left() const {return(y_f_baryon_left);}
     real get_y_f_baryon_right() const {return(y_f_baryon_right);}
 
