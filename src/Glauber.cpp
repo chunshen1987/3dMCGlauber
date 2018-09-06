@@ -16,6 +16,8 @@ using std::cout;
 using std::endl;
 using std::shared_ptr;
 
+// put in use of baryon used flags
+
 namespace MCGlb {
 
 Glauber::Glauber(const MCGlb::Parameters &param_in,
@@ -235,7 +237,7 @@ void Glauber::update_momentum(shared_ptr<Nucleon> n_i, real y_shift) {
     n_i->set_p(pvec);
 }
 
-
+  // add flag if baryon used to proj and target - check it - only put in baryon if not used yet, then set it to used
 int Glauber::perform_string_production() {
     if (sample_valence_quark) {
         projectile->sample_valence_quarks_inside_nucleons(
@@ -253,7 +255,7 @@ int Glauber::perform_string_production() {
     real y_baryon_left;
     real y_baryon_right;
     
-    real lambdaB =  parameter_list.get_lambdaB()/sqrt(parameter_list.get_roots()); // ~s^{-1/4} 
+    real lambdaB =  parameter_list.get_lambdaB();///sqrt(parameter_list.get_roots()); // ~s^{-1/4} 
     if(lambdaB > 1.)
       lambdaB = 1.;
     
@@ -316,13 +318,15 @@ int Glauber::perform_string_production() {
         y_baryon_left = 0.;
         if (baryon_junctions)
           {
-            if (  proj->get_number_of_connections() == 1  )
+            if ( !proj->baryon_was_used() )
               {
                 has_baryon_right = 1;
+                proj->set_baryon_used(1);
               }
-            if (  targ->get_number_of_connections() == 1  )  
+            if ( !targ->baryon_was_used() )  
               {
                 has_baryon_left = 1;
+                targ->set_baryon_used(1);
               } 
           }
         if (!sample_valence_quark) {
@@ -355,7 +359,7 @@ int Glauber::perform_string_production() {
             if ( it->get_has_baryon_right() )
               {
                 if ( ran_gen_ptr.lock()->rand_uniform() < lambdaB ) 
-                  //           y_baryon_right = sample_junction_rapidity_right( it->get_y_i_left(), it->get_y_i_right() );
+                  //  y_baryon_right = sample_junction_rapidity_right( it->get_y_i_left(), it->get_y_i_right() );
                   y_baryon_right = sample_junction_rapidity_right( it->get_y_f_left(), it->get_y_f_right() );
                 else
                   y_baryon_right = it->get_y_f_right();
@@ -368,7 +372,7 @@ int Glauber::perform_string_production() {
             if ( it->get_has_baryon_left() )
               {
                 if ( ran_gen_ptr.lock()->rand_uniform() < lambdaB ) 
-                  //                 y_baryon_left = sample_junction_rapidity_left( it->get_y_i_left(), it->get_y_i_right() );
+                  //y_baryon_left = sample_junction_rapidity_left( it->get_y_i_left(), it->get_y_i_right() );
                   y_baryon_left = sample_junction_rapidity_left( it->get_y_f_left(), it->get_y_f_right() );
                 else
                   y_baryon_left = it->get_y_f_left();
