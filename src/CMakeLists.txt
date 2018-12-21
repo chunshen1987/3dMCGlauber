@@ -27,7 +27,7 @@ install(TARGETS 3dMCGlb.e 3dMCGlb_lib
         LIBRARY DESTINATION lib
         ARCHIVE DESTINATION lib/static)
 
-if (test)
+if (unittest)
     add_executable (unittest_CollisionEvent.e CollisionEvent_UnitTest.cpp)
     target_link_libraries (unittest_CollisionEvent.e 3dMCGlb_lib ${LIBS})
     add_executable (unittest_Quark.e Quark_UnitTest.cpp)
@@ -52,4 +52,4 @@ if (test)
             RUNTIME DESTINATION ${CMAKE_HOME_DIRECTORY}/test
             LIBRARY DESTINATION lib
             ARCHIVE DESTINATION lib/static)
-endif (test)
+endif (unittest)
