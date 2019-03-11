@@ -64,6 +64,10 @@ class Glauber {
     real sample_rapidity_loss_shell(real y_init) const;
     real sample_rapidity_loss_from_the_LEXUS_model(real y_init) const;
     real sample_rapidity_loss_from_parametrization(real y_init) const;
+    
+    real sample_junction_rapidity_right(real y_left, real y_right) const;
+    real sample_junction_rapidity_left(real y_left, real y_right) const;
+
     //! This function performs string production between each nucleon pair
     int perform_string_production();
     //! This function propagate individual nucleon inside the nucleus by dt

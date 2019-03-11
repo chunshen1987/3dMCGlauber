@@ -5,7 +5,7 @@
 
 int main(int argc, char* argv[]) {
     std::string input_filename = "input";
-    int nev = 100;
+    int nev = 200;
     if (argc > 1) {
         nev = std::stoi(*(argv + 1));
     }

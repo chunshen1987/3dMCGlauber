@@ -33,9 +33,13 @@ class Parameters : public ParametersMap {
 
     real get_roots() const;
 
+    real get_lambdaB() const;
+
     int get_QCD_string_production_mode() const;
     int get_QCD_string_evolution_mode() const;
     int get_rapidity_loss_method() const;
+
+    bool get_baryon_junctions() const; // if 0 do assume baryon number at string ends, if 1 transport baryon number according to cosh(y*/2)
 
     bool get_only_event_statistics() const;
 
