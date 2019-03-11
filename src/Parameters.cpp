@@ -66,6 +66,13 @@ int Parameters::get_QCD_string_evolution_mode() const {
 }
 
 
+int Parameters::get_rapidity_loss_method() const {
+    int flag = get_param_int("rapidity_loss_method");
+    assert(flag > 0 && flag < 3);
+    return(flag);
+}
+
+
 bool Parameters::get_only_event_statistics() const {
     int flag = get_param_int("only_event_statistics");
     if (flag == 0) {

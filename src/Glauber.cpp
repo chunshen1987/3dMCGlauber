@@ -282,16 +282,16 @@ int Glauber::perform_string_production() {
             m_over_sigma = 1.0;
         } else if (string_evolution_mode == 2) {
             // both tau_form and sigma fluctuate
-            auto y_loss = sample_rapidity_loss_from_the_LEXUS_model(y_in_lrf);
+            auto y_loss = sample_rapidity_loss_shell(y_in_lrf);
             tau_form = 0.5 + 2.*ran_gen_ptr.lock()->rand_uniform();
             m_over_sigma = tau_form/sqrt(2.*(cosh(y_loss) - 1.));
         } else if (string_evolution_mode == 3) {
             // only tau_form fluctuates
-            auto y_loss = sample_rapidity_loss_from_the_LEXUS_model(y_in_lrf);
+            auto y_loss = sample_rapidity_loss_shell(y_in_lrf);
             tau_form = m_over_sigma*sqrt(2.*(cosh(y_loss) - 1.));
         } else if (string_evolution_mode == 4) {
             // only m_over_sigma fluctuates
-            auto y_loss = sample_rapidity_loss_from_the_LEXUS_model(y_in_lrf);
+            auto y_loss = sample_rapidity_loss_shell(y_in_lrf);
             m_over_sigma = tau_form/sqrt(2.*(cosh(y_loss) - 1.));
         }
         if (!sample_valence_quark) {
@@ -361,6 +361,16 @@ void Glauber::output_QCD_strings(std::string filename) const {
 }
 
 
+real Glauber::sample_rapidity_loss_shell(real y_init) const {
+    real y_loss = 0.0;
+    if (parameter_list.get_rapidity_loss_method() == 1) {
+        y_loss = sample_rapidity_loss_from_the_LEXUS_model(y_init);
+    } else if (parameter_list.get_rapidity_loss_method() == 2) {
+        y_loss = sample_rapidity_loss_from_parametrization(y_init);
+    }
+    return(y_loss);
+}
+
 real Glauber::sample_rapidity_loss_from_the_LEXUS_model(real y_init) const {
     const real shape_coeff = 1.0;
     real sinh_y_lrf = sinh(shape_coeff*y_init);
@@ -368,6 +378,16 @@ real Glauber::sample_rapidity_loss_from_the_LEXUS_model(real y_init) const {
                            *(sinh(2.*shape_coeff*y_init) - sinh_y_lrf)
                            + sinh_y_lrf);
     real y_loss = 2.*y_init - asinh(arcsinh_factor)/shape_coeff;
+    return(y_loss);
+}
+
+real Glauber::sample_rapidity_loss_from_parametrization(real y_init) const {
+    const real slope = 0.55;
+    const real upper = 0.9;
+    const real transt = 2.1;
+    auto y_loss = (slope*y_init
+            + 0.5*(tanh(y_init - transt) + 1.)*(upper - 0.65*slope*y_init)
+            - upper/2.*(1. - tanh(transt)));
     return(y_loss);
 }
 
