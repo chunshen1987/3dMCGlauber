@@ -8,7 +8,8 @@ namespace MCGlb {
 
 QCDString::QCDString(SpatialVec x_in, real tau_form_in,
                      shared_ptr<Nucleon> proj_in, shared_ptr<Nucleon> targ_in,
-                     real m_over_sigma_in, bool has_baryon_right_in, bool has_baryon_left_in) {
+                     real m_over_sigma_in,
+                     bool has_baryon_right_in, bool has_baryon_left_in) {
     x_production       = x_in;
     tau_form           = tau_form_in;
     proj               = proj_in;
@@ -27,7 +28,8 @@ QCDString::QCDString(SpatialVec x_in, real tau_form_in,
 QCDString::QCDString(SpatialVec x_in, real tau_form_in,
                      shared_ptr<Nucleon> proj_in, shared_ptr<Nucleon> targ_in,
                      shared_ptr<Quark> proj_q_in, shared_ptr<Quark> targ_q_in,
-                     real m_over_sigma_in, bool has_baryon_right_in, bool has_baryon_left_in) {
+                     real m_over_sigma_in,
+                     bool has_baryon_right_in, bool has_baryon_left_in) {
     x_production       = x_in;
     tau_form           = tau_form_in;
     proj               = proj_in;
