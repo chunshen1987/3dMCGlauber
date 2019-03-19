@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 
-version="6.2.0"
+version="6.2.1"
 wget http://www.hepforge.org/archive/lhapdf/LHAPDF-$version.tar.gz
 tar -xf LHAPDF-$version.tar.gz
 rm -fr LHAPDF-$version.tar.gz
 LIBPATH=`echo $PWD/LHAPDF_Lib`
 (
 cd LHAPDF-$version/
-./configure --prefix=`echo $LIBPATH`
+./configure --prefix=`echo $LIBPATH` --disable-python
 make
 make install
 )
