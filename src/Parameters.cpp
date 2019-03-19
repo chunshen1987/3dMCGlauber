@@ -51,6 +51,12 @@ real Parameters::get_roots() const {
     return(roots);
 }
 
+real Parameters::get_lambdaB() const {
+    real lambdaB = static_cast<real>(get_param_double("lambdaB"));
+    assert(lambdaB >= 0.);
+    return(lambdaB);
+}
+
     
 int Parameters::get_QCD_string_production_mode() const {
     int flag = get_param_int("QCD_string_production_mode");
@@ -75,6 +81,15 @@ int Parameters::get_rapidity_loss_method() const {
 
 bool Parameters::get_only_event_statistics() const {
     int flag = get_param_int("only_event_statistics");
+    if (flag == 0) {
+        return(false);
+    } else {
+        return(true);
+    }
+}
+
+bool Parameters::get_baryon_junctions() const {
+    int flag = get_param_int("baryon_junctions");
     if (flag == 0) {
         return(false);
     } else {

@@ -16,6 +16,7 @@ class Nucleon : public Particle {
     std::vector<std::shared_ptr<Quark>> quark_list;
     int collided_times;
     bool wounded;
+    bool baryon_used;
     std::vector<std::weak_ptr<Nucleon>> collide_with;
     std::vector<std::weak_ptr<Nucleon>> connected_with;
 
@@ -34,7 +35,9 @@ class Nucleon : public Particle {
     std::vector<std::shared_ptr<Quark>> get_quark_list() {return(quark_list);}
 
     bool is_wounded() const {return(wounded);}
+    bool baryon_was_used() const {return(baryon_used);}
     void set_wounded(bool hit) {wounded = hit;}
+    void set_baryon_used(bool hit) {baryon_used = hit;}
 
     void increment_collided_times() {collided_times++;}
     int get_collided_times() const {return(collided_times);}

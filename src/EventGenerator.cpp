@@ -35,16 +35,16 @@ void EventGenerator::generate_events() {
         auto Ncoll = mc_glauber_ptr->make_collision_schedule();
         auto Npart = mc_glauber_ptr->get_Npart();
         auto Nstrings = mc_glauber_ptr->decide_QCD_strings_production();
-        if (event_of_interest_trigger(Npart, Ncoll, Nstrings)) {
+        if (event_of_interest_trigger(Npart, Ncoll, Nstrings))  {
             mean_Npart += Npart;
             if (iev%nev_progress == 0) {
                 std::cout << "Progress: " << iev << " out of " << nev
                           << " is done." << std::endl;
             }
             iev++;
-
+            
             Ncoll = mc_glauber_ptr->perform_string_production();
-
+            
             if (!statistics_only) {
                 std::ostringstream filename;
                 filename << "strings_event_" << iev << ".dat";

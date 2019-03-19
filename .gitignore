@@ -7,3 +7,5 @@ build/
 *.e
 *.DAT
 *.txt
+LHAPDF_Lib/
+lib/
