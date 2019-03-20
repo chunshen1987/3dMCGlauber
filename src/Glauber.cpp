@@ -23,7 +23,6 @@ namespace MCGlb {
 Glauber::Glauber(const MCGlb::Parameters &param_in,
                  shared_ptr<RandomUtil::Random> ran_gen) :
     parameter_list(param_in) {
-    parameter_list.print_parameter_list();
     sample_valence_quark = false;
     if (parameter_list.get_use_quarks() > 0) {
         sample_valence_quark = true;

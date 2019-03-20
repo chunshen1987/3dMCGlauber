@@ -11,6 +11,7 @@ namespace MCGlb {
 EventGenerator::EventGenerator(std::string input_filename, int nev_in) {
     nev = nev_in;
     parameter_list.read_in_parameters_from_file(input_filename);
+    parameter_list.print_parameter_list();
     int seed = parameter_list.get_seed();
     ran_gen_ptr = std::shared_ptr<RandomUtil::Random>(
                                             new RandomUtil::Random(seed));
