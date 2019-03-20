@@ -276,16 +276,16 @@ int Glauber::perform_string_production() {
             collision_schedule.erase((*collision_schedule.begin()));
             continue;
         }
-        auto x_coll = first_event.get_collision_position();
-        auto proj = first_event.get_proj_nucleon_ptr().lock();
-        auto targ = first_event.get_targ_nucleon_ptr().lock();
+        auto x_coll   = first_event.get_collision_position();
+        auto proj     = first_event.get_proj_nucleon_ptr().lock();
+        auto targ     = first_event.get_targ_nucleon_ptr().lock();
         real y_in_lrf = std::abs(proj->get_rapidity()
                                  - targ->get_rapidity())/2.;
         std::weak_ptr<Quark> proj_q;
         std::weak_ptr<Quark> targ_q;
         if (sample_valence_quark) {
-            proj_q = proj->get_a_valence_quark();
-            targ_q = targ->get_a_valence_quark();
+            proj_q   = proj->get_a_valence_quark();
+            targ_q   = targ->get_a_valence_quark();
             y_in_lrf = std::abs(proj_q.lock()->get_rapidity()
                                 - targ_q.lock()->get_rapidity())/2.;
         }

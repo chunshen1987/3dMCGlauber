@@ -22,8 +22,8 @@ Nucleus::Nucleus(std::string nucleus_name,
                  std::shared_ptr<RandomUtil::Random> ran_gen,
                  bool sample_valence_quarks_in,
                  real d_min_in, bool deformed_in) {
-    d_min = d_min_in;
-    deformed = deformed_in;
+    d_min       = d_min_in;
+    deformed    = deformed_in;
     ran_gen_ptr = ran_gen;
     set_nucleus_parameters(nucleus_name);
 
