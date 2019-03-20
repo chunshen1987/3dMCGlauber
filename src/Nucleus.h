@@ -25,22 +25,22 @@ class Nucleus {
     WoodsSaxonParam WS_param_vec;       // rho, w, R, a, beta2, beta4
     real d_min;                         // minimum distance between nucleons
     bool sample_valence_quarks;
-    LHAPDF::PDF *pdf;
+    std::unique_ptr<LHAPDF::PDF> pdf;
     real Q2;                            // Q2 when sampling valence quark
 
     std::vector<std::shared_ptr<Nucleon>> nucleon_list;
-    std::shared_ptr<RandomUtil::Random> ran_gen_ptr;
+    std::weak_ptr<RandomUtil::Random> ran_gen_ptr;
 
  public:
     Nucleus() = default;
     Nucleus(std::string nucleus_name,
-            std::shared_ptr<RandomUtil::Random> ran_gen=nullptr,
+            std::shared_ptr<RandomUtil::Random> ran_gen,
             bool sample_valence_quarks=false,
             real d_min_in=0.9, bool deformed_in=true);
     ~Nucleus();
 
     std::string get_name() const {return(name);}
-    int get_random_seed() const {return(ran_gen_ptr->get_seed());}
+    int get_random_seed() const {return(ran_gen_ptr.lock()->get_seed());}
 
     void set_valence_quark_Q2(real Q2_q) {Q2 = Q2_q;}
     //! This function set Woods-Saxon parameters based on the nucleus name

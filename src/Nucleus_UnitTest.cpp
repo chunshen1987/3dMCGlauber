@@ -21,6 +21,7 @@ TEST_CASE("Test random seed") {
 }
 
 TEST_CASE("Test set nucleus parameters") {
+    std::shared_ptr<RandomUtil::Random> ran_gen_ptr(new RandomUtil::Random(-1));
     Nucleus test_nucleus;
     test_nucleus.set_nucleus_parameters("p");
     CHECK(test_nucleus.get_nucleus_A() == 1);
@@ -39,7 +40,8 @@ TEST_CASE("Test set nucleus parameters") {
 }
 
 TEST_CASE("Test generate nucleus configuratin") {
-    Nucleus test_nucleus("p");
+    std::shared_ptr<RandomUtil::Random> ran_gen_ptr(new RandomUtil::Random(-1));
+    Nucleus test_nucleus("p", ran_gen_ptr);
     test_nucleus.generate_nucleus_3d_configuration();
     CHECK(test_nucleus.get_number_of_nucleons() == 1);
     auto test_nucleon = (*test_nucleus.get_nucleon(0));
@@ -69,7 +71,8 @@ TEST_CASE("Test generate nucleus configuratin") {
 }
 
 TEST_CASE("Test shift the nucleus") {
-    Nucleus test_nucleus("p");
+    std::shared_ptr<RandomUtil::Random> ran_gen_ptr(new RandomUtil::Random(-1));
+    Nucleus test_nucleus("p", ran_gen_ptr);
     test_nucleus.generate_nucleus_3d_configuration();
     SpatialVec x_shift = {0.0, 1.0, 0.0, -1.0};
     test_nucleus.shift_nucleus(x_shift);
@@ -77,7 +80,8 @@ TEST_CASE("Test shift the nucleus") {
 }
 
 TEST_CASE("Test recenter the nucleus") {
-    Nucleus test_nucleus("Au");
+    std::shared_ptr<RandomUtil::Random> ran_gen_ptr(new RandomUtil::Random(-1));
+    Nucleus test_nucleus("Au", ran_gen_ptr);
     test_nucleus.recenter_nucleus();
     auto nucleon_list = test_nucleus.get_nucleon_list();
     real meanx = 0., meany = 0., meanz = 0.;
@@ -93,8 +97,9 @@ TEST_CASE("Test recenter the nucleus") {
 }
 
 TEST_CASE("Test Woods-Saxon sampling") {
+    std::shared_ptr<RandomUtil::Random> ran_gen_ptr(new RandomUtil::Random(-1));
     std::cout << "Testing the Woods-Saxon sampling routine..." << std::endl;
-    Nucleus test_nucleus("Au");
+    Nucleus test_nucleus("Au", ran_gen_ptr);
     auto WS_params = test_nucleus.get_woods_saxon_parameters();
     auto a_WS = WS_params[3];
     auto R_WS = WS_params[2];
@@ -143,9 +148,9 @@ TEST_CASE("Test deformed nucleus") {
     CHECK(test_nucleus.get_number_of_nucleons() == 238);
     CHECK(test_nucleus.is_deformed() == true);
     
-    Nucleus test_nucleus1("Au");
+    Nucleus test_nucleus1("Au", ran_gen_ptr);
     CHECK(test_nucleus1.is_deformed() == true);
-    Nucleus test_nucleus2("Au", nullptr, false, 0.9, false);
+    Nucleus test_nucleus2("Au", ran_gen_ptr, false, 0.9, false);
     CHECK(test_nucleus2.is_deformed() == false);
 }
 
@@ -162,9 +167,10 @@ TEST_CASE("Test sample a deformed U nucleus") {
 
 
 TEST_CASE("Test sampled nuclear density distribution") {
+    std::shared_ptr<RandomUtil::Random> ran_gen_ptr(new RandomUtil::Random(-1));
     std::cout << "Testing the sampling routine..." << std::endl;
-    //Nucleus test_nucleus("Pb");
-    Nucleus test_nucleus("Au", nullptr, false, 0.9, false);
+    //Nucleus test_nucleus("Pb", ran_gen_ptr);
+    Nucleus test_nucleus("Au", ran_gen_ptr, false, 0.9, false);
     auto WS_params = test_nucleus.get_woods_saxon_parameters();
     auto a_WS = WS_params[3];
     auto R_WS = WS_params[2];
@@ -215,7 +221,8 @@ TEST_CASE("Test sampled nuclear density distribution") {
 
 
 TEST_CASE("Test get_z_max and get_z_min") {
-    Nucleus test_nucleus("Au");
+    std::shared_ptr<RandomUtil::Random> ran_gen_ptr(new RandomUtil::Random(-1));
+    Nucleus test_nucleus("Au", ran_gen_ptr);
     test_nucleus.generate_nucleus_3d_configuration();
     test_nucleus.accelerate_nucleus(20., 1);
     auto z_max = test_nucleus.get_z_max();
@@ -235,8 +242,9 @@ TEST_CASE("Test get_z_max and get_z_min") {
 }
 
 TEST_CASE("Test accelerate_nucleus()") {
-    Nucleus test_nucleus1("Au");
-    Nucleus test_nucleus2("Pb");
+    std::shared_ptr<RandomUtil::Random> ran_gen_ptr(new RandomUtil::Random(-1));
+    Nucleus test_nucleus1("Au", ran_gen_ptr);
+    Nucleus test_nucleus2("Pb", ran_gen_ptr);
     test_nucleus1.generate_nucleus_3d_configuration();
     test_nucleus2.generate_nucleus_3d_configuration();
     test_nucleus1.accelerate_nucleus(20.,  1);
@@ -252,7 +260,8 @@ TEST_CASE("Test accelerate_nucleus()") {
 }
 
 TEST_CASE("Test get_number_of_wounded_nucleons()") {
-    Nucleus test_nucleus1("Au");
+    std::shared_ptr<RandomUtil::Random> ran_gen_ptr(new RandomUtil::Random(-1));
+    Nucleus test_nucleus1("Au", ran_gen_ptr);
     test_nucleus1.generate_nucleus_3d_configuration();
     auto list = test_nucleus1.get_nucleon_list();
     for (auto &it: (*list)) {
@@ -272,8 +281,9 @@ TEST_CASE("Test rotate_nucleus") {
 
 
 TEST_CASE("Test sampled valence quark spatial distribution") {
+    std::shared_ptr<RandomUtil::Random> ran_gen_ptr(new RandomUtil::Random(-1));
     std::cout << "Testing the valence quark sampling routine..." << std::endl;
-    Nucleus test_nucleus("Au");
+    Nucleus test_nucleus("Au", ran_gen_ptr);
     const real r_min = 0.0, r_max = 4.0, dr = 0.05;
     const int n_r = static_cast<int>((r_max - r_min)/dr) + 1;
     const real a = 3.87;
@@ -315,9 +325,10 @@ TEST_CASE("Test sampled valence quark spatial distribution") {
 
 
 TEST_CASE("Test sample quark momentum fraction") {
+    std::shared_ptr<RandomUtil::Random> ran_gen_ptr(new RandomUtil::Random(-1));
     std::cout << "Testing the sampling routine for valence quarks..."
               << std::endl;
-    Nucleus test_nucleus1("Au", nullptr, true);
+    Nucleus test_nucleus1("Au", ran_gen_ptr, true);
 
     const real x_min = 0.0, x_max = 1.0, dx = 0.02;
     const int n_x = static_cast<int>((x_max - x_min)/dx);
