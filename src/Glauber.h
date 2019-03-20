@@ -25,7 +25,7 @@ class Glauber {
     std::unique_ptr<Nucleus> projectile;
     std::unique_ptr<Nucleus> target;
     std::set<shared_ptr<CollisionEvent>, compare_collision_time> collision_schedule;
-    std::vector<shared_ptr<QCDString>> QCD_string_list;
+    std::vector<QCDString> QCD_string_list;
     std::weak_ptr<RandomUtil::Random> ran_gen_ptr;
     bool sample_valence_quark;
 
@@ -77,7 +77,7 @@ class Glauber {
     //! This function updates the collision schedule
     void update_collision_schedule(shared_ptr<CollisionEvent> event_happened);
     
-    void output_QCD_strings(std::string filename) const;
+    void output_QCD_strings(std::string filename);
 };
 
 }

@@ -327,15 +327,13 @@ int Glauber::perform_string_production() {
             } 
         }
         if (!sample_valence_quark) {
-            shared_ptr<QCDString> qcd_string(
-                new QCDString(x_coll, tau_form, proj, targ, m_over_sigma,
-                              has_baryon_right, has_baryon_left));
+            QCDString qcd_string(x_coll, tau_form, proj, targ, m_over_sigma,
+                                 has_baryon_right, has_baryon_left);
             QCD_string_list.push_back(qcd_string);
         } else {
-            shared_ptr<QCDString> qcd_string(
-                new QCDString(x_coll, tau_form, proj, targ,
-                              proj_q.lock(), targ_q.lock(), m_over_sigma,
-                              has_baryon_right, has_baryon_left));
+            QCDString qcd_string(x_coll, tau_form, proj, targ,
+                                 proj_q.lock(), targ_q.lock(), m_over_sigma,
+                                 has_baryon_right, has_baryon_left);
             QCD_string_list.push_back(qcd_string);
         }
         real y_shift = 0.001;
@@ -345,40 +343,40 @@ int Glauber::perform_string_production() {
         collision_schedule.erase((*collision_schedule.begin()));
     }
     for (auto &it: QCD_string_list) {
-        it->evolve_QCD_string();
+        it.evolve_QCD_string();
         if (!baryon_junctions) {
             // set baryon rapidities to string endpoint rapidities
             // if no junction transport is used
-            it->set_final_baryon_rapidities(it->get_y_f_left(),
-                                            it->get_y_f_right());
+            it.set_final_baryon_rapidities(it.get_y_f_left(),
+                                           it.get_y_f_right());
         } else {
             // sample HERE if baryon should be moved
             y_baryon_right = 0.;
             y_baryon_left = 0.;
-            if (it->get_has_baryon_right()) {
+            if (it.get_has_baryon_right()) {
                 if (ran_gen_ptr.lock()->rand_uniform() < lambdaB) {
                     // y_baryon_right = sample_junction_rapidity_right( it->get_y_i_left(), it->get_y_i_right() );
                     y_baryon_right = sample_junction_rapidity_right(
-                                    it->get_y_f_left(), it->get_y_f_right());
+                                    it.get_y_f_left(), it.get_y_f_right());
                 } else {
                     // One should use the very initial rapidities of the colliding nucleons to determine the junction rapidity.
                     // this may, however, lead to junctions lying outside the rapidity range of the final string which may caus problems
                     // in hydro and could be seen as unphysical...
                     // Another thing to discuss is the energy dependence. The cross section for baryon junctions stopping has a different root-s 
                     // dependence than the usual inelastic cross section - so in principle it needs to be treated separately altogether... not sure how yet
-                    y_baryon_right = it->get_y_f_right();
+                    y_baryon_right = it.get_y_f_right();
                 }
             }
-            if (it->get_has_baryon_left()) {
+            if (it.get_has_baryon_left()) {
                 if (ran_gen_ptr.lock()->rand_uniform() < lambdaB) {
                     //y_baryon_left = sample_junction_rapidity_left( it->get_y_i_left(), it->get_y_i_right() );
                     y_baryon_left = sample_junction_rapidity_left(
-                                    it->get_y_f_left(), it->get_y_f_right());
+                                    it.get_y_f_left(), it.get_y_f_right());
                 } else {
-                    y_baryon_left = it->get_y_f_left();
+                    y_baryon_left = it.get_y_f_left();
                 }
             }
-            it->set_final_baryon_rapidities(y_baryon_left,y_baryon_right);
+            it.set_final_baryon_rapidities(y_baryon_left,y_baryon_right);
         }
     }
     return(number_of_collided_events);
@@ -396,7 +394,7 @@ void Glauber::update_collision_schedule(shared_ptr<CollisionEvent> event_happene
         create_a_collision_event(it.lock(), targ);
 }
 
-void Glauber::output_QCD_strings(std::string filename) const {
+void Glauber::output_QCD_strings(std::string filename) {
     std::ofstream output(filename.c_str());
     output << "# norm  m_over_sigma[fm]  tau_form[fm]  tau_0[fm]  eta_s_0  "
            << "x_perp[fm]  y_perp[fm]  "
@@ -411,29 +409,29 @@ void Glauber::output_QCD_strings(std::string filename) const {
     real fraction_right = 0.;
 
     for (auto &it: QCD_string_list) {
-        auto x_prod = it->get_x_production();
+        auto x_prod = it.get_x_production();
         auto tau_0  = sqrt(x_prod[0]*x_prod[0] - x_prod[3]*x_prod[3]);
         auto etas_0 = 0.5*log((x_prod[0] + x_prod[3])/(x_prod[0] - x_prod[3]));
         
         if (!baryon_junctions) {
             fraction_left = 1./(static_cast<real>(
-                        it->get_proj().lock()->get_number_of_connections()));
+                        it.get_proj().lock()->get_number_of_connections()));
             fraction_right = 1./(static_cast<real>(
-                        it->get_targ().lock()->get_number_of_connections()));
+                        it.get_targ().lock()->get_number_of_connections()));
         } else {
-            fraction_left = it->get_has_baryon_left();
-            fraction_right = it->get_has_baryon_right();
+            fraction_left  = it.get_has_baryon_left();
+            fraction_right = it.get_has_baryon_right();
         }
 
         real output_array[] = {
-            1.0, it->get_m_over_sigma(), it->get_tau_form(),
+            1.0, it.get_m_over_sigma(), it.get_tau_form(),
             tau_0, etas_0, x_prod[1], x_prod[2],
-            it->get_eta_s_left(), it->get_eta_s_right(),
-            it->get_y_f_left(), it->get_y_f_right(),
+            it.get_eta_s_left(), it.get_eta_s_right(),
+            it.get_y_f_left(), it.get_y_f_right(),
             fraction_left, fraction_right,
-            it->get_y_i_left(), it->get_y_i_right(),
-            it->get_eta_s_baryon_left(), it->get_eta_s_baryon_right(),
-            it->get_y_f_baryon_left(), it->get_y_f_baryon_right()
+            it.get_y_i_left(), it.get_y_i_right(),
+            it.get_eta_s_baryon_left(), it.get_eta_s_baryon_right(),
+            it.get_y_f_baryon_left(), it.get_y_f_baryon_right()
         };
 
         output << std::scientific << std::setprecision(8);
