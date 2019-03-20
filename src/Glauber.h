@@ -24,7 +24,7 @@ class Glauber {
     int string_production_mode;
     std::unique_ptr<Nucleus> projectile;
     std::unique_ptr<Nucleus> target;
-    std::set<shared_ptr<CollisionEvent>, compare_collision_time> collision_schedule;
+    std::set<CollisionEvent, compare_collision_time> collision_schedule;
     std::vector<QCDString> QCD_string_list;
     std::weak_ptr<RandomUtil::Random> ran_gen_ptr;
     bool sample_valence_quark;
@@ -46,8 +46,8 @@ class Glauber {
     int get_Npart() const;
 
     //! This function creates a new collision event between two nucleons
-    void create_a_collision_event(shared_ptr<Nucleon> proj,
-                                  shared_ptr<Nucleon> targ);
+    void create_a_collision_event(weak_ptr<Nucleon> proj,
+                                  weak_ptr<Nucleon> targ);
     bool get_collision_point(real t, real z1, real v1, real z2, real v2,
                              real &t_coll, real &z_coll) const;
 
@@ -59,7 +59,7 @@ class Glauber {
 
     //! this function determines whether a given binary collision event
     //! will produce a string
-    bool decide_produce_string(shared_ptr<CollisionEvent> event_ptr) const;
+    bool decide_produce_string(CollisionEvent &event_ptr) const;
 
     real sample_rapidity_loss_shell(real y_init) const;
     real sample_rapidity_loss_from_the_LEXUS_model(real y_init) const;
@@ -75,7 +75,7 @@ class Glauber {
     void propagate_nucleon(shared_ptr<Nucleon> n_i, real dt);
     void update_momentum(shared_ptr<Nucleon> n_i, real y_shift);
     //! This function updates the collision schedule
-    void update_collision_schedule(shared_ptr<CollisionEvent> event_happened);
+    void update_collision_schedule(CollisionEvent &event_happened);
     
     void output_QCD_strings(std::string filename);
 };

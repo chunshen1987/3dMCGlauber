@@ -1,14 +1,16 @@
 // Copyright @ Chun Shen 2018
 
 #include "CollisionEvent.h"
+#include <memory>
 
 using std::shared_ptr;
+using std::weak_ptr;
 
 namespace MCGlb {
 
 CollisionEvent::CollisionEvent(SpatialVec x_coll_in,
-                               shared_ptr<Nucleon> proj_in,
-                               shared_ptr<Nucleon> targ_in) {
+                               weak_ptr<Nucleon> proj_in,
+                               weak_ptr<Nucleon> targ_in) {
     proj_nucleon = proj_in;
     targ_nucleon = targ_in;
     x_coll = x_coll_in;
