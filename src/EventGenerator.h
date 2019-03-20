@@ -8,6 +8,7 @@
 #include "Glauber.h"
 #include "Parameters.h"
 #include "Random.h"
+#include "pretty_ostream.h"
 
 namespace MCGlb {
 
@@ -18,6 +19,7 @@ class EventGenerator {
     std::shared_ptr<RandomUtil::Random> ran_gen_ptr;
     std::unique_ptr<Glauber> mc_glauber_ptr;
     bool statistics_only;
+    pretty_ostream messager;
 
  public:
     EventGenerator() = default;

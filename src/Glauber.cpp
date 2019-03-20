@@ -59,8 +59,8 @@ void Glauber::make_nuclei() {
     SpatialVec targ_shift = {0., -impact_b/2., 0.,
                              -target->get_z_min() + 1e-15};
     target->shift_nucleus(targ_shift);
-    // projectile->output_nucleon_positions("projectile.dat");
-    // target->output_nucleon_positions("target.dat");
+    projectile->output_nucleon_positions("projectile.dat");
+    target->output_nucleon_positions("target.dat");
 }
 
 

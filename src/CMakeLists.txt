@@ -9,12 +9,17 @@ set (SOURCES
     CollisionEvent.cpp
     Util.cpp
     QCDString.cpp
+    pretty_ostream.cpp
     ../eps09/eps09.cpp
     )
 
 add_library(3dMCGlb_lib SHARED ${SOURCES})
-target_link_libraries (3dMCGlb_lib LHAPDF)
 add_executable(3dMCGlb.e main.cpp)
+if (APPLE)
+    set_target_properties(3dMCGlb_lib PROPERTIES COMPILE_FLAGS "-DAPPLE")
+    set_target_properties (3dMCGlb.e PROPERTIES COMPILE_FLAGS "-DAPPLE")
+endif (APPLE)
+target_link_libraries (3dMCGlb_lib LHAPDF)
 target_link_libraries (3dMCGlb.e 3dMCGlb_lib LHAPDF)
 set_target_properties(3dMCGlb_lib
     PROPERTIES

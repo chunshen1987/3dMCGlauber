@@ -112,7 +112,7 @@ void Nucleus::generate_nucleus_3d_configuration() {
         SpatialVec  x = {0.0};
         MomentumVec p = {0.0};
         std::shared_ptr<Nucleon> nucleon_ptr(new Nucleon(x, p));
-        nucleon_list.push_back(nucleon_ptr);
+        nucleon_list.push_back(std::move(nucleon_ptr));
     } else if (A == 2) {  // deuteron
         generate_deuteron_configuration();
     } else {  // other nucleus
@@ -210,9 +210,9 @@ void Nucleus::generate_deuteron_configuration() {
     MomentumVec p_2 = p_1;
 
     std::shared_ptr<Nucleon> nucleon1_ptr(new Nucleon(x_1, p_1));
-    nucleon_list.push_back(nucleon1_ptr);
+    nucleon_list.push_back(std::move(nucleon1_ptr));
     std::shared_ptr<Nucleon> nucleon2_ptr(new Nucleon(x_2, p_2));
-    nucleon_list.push_back(nucleon2_ptr);
+    nucleon_list.push_back(std::move(nucleon2_ptr));
 }
 
 
@@ -333,7 +333,7 @@ void Nucleus::generate_nucleus_configuration_with_woods_saxon() {
         SpatialVec  x_in = {0.0, x_array[i], y_array[i], z_array[i]};
         MomentumVec p_in = {0.0};
         std::shared_ptr<Nucleon> nucleon_ptr(new Nucleon(x_in, p_in));
-        nucleon_list.push_back(nucleon_ptr);
+        nucleon_list.push_back(std::move(nucleon_ptr));
     }
     set_nucleons_momentum_with_collision_energy(0.0);
 }
@@ -389,7 +389,7 @@ void Nucleus::generate_nucleus_configuration_with_deformed_woods_saxon() {
         SpatialVec  x_in = {0.0, x_array[i], y_array[i], z_array[i]};
         MomentumVec p_in = {0.0};
         std::shared_ptr<Nucleon> nucleon_ptr(new Nucleon(x_in, p_in));
-        nucleon_list.push_back(nucleon_ptr);
+        nucleon_list.push_back(std::move(nucleon_ptr));
     }
     set_nucleons_momentum_with_collision_energy(0.0);
 }

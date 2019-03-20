@@ -16,7 +16,8 @@ EventGenerator::EventGenerator(std::string input_filename, int nev_in) {
                                             new RandomUtil::Random(seed));
     mc_glauber_ptr = std::unique_ptr<Glauber>(
                                 new Glauber(parameter_list, ran_gen_ptr));
-    std::cout << "Generating " << nev << " events ... " << std::endl;
+    messager << "Generating " << nev << " events ... ";
+    messager.flush("info");
 
     statistics_only = parameter_list.get_only_event_statistics();
 }
@@ -38,8 +39,9 @@ void EventGenerator::generate_events() {
         if (event_of_interest_trigger(Npart, Ncoll, Nstrings))  {
             mean_Npart += Npart;
             if (iev%nev_progress == 0) {
-                std::cout << "Progress: " << iev << " out of " << nev
-                          << " is done." << std::endl;
+                messager << "Progress: " << iev << " out of " << nev
+                          << " is done.";
+                messager.flush("info");
             }
             iev++;
             
@@ -59,7 +61,8 @@ void EventGenerator::generate_events() {
     }
     record_file.close();
     mean_Npart = static_cast<real>(mean_Npart)/static_cast<real>(nev);
-    std::cout << "Completed. <Npart> = " << mean_Npart << std::endl;
+    messager << "Completed. <Npart> = " << mean_Npart;
+    messager.flush("info");
 }
 
 
