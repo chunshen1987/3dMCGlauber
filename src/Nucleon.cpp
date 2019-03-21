@@ -17,10 +17,10 @@ Nucleon::~Nucleon() {
     quark_list.clear();
 }
 
-bool Nucleon::is_connected_with(std::weak_ptr<Nucleon> targ) {
+bool Nucleon::is_connected_with(std::shared_ptr<Nucleon> targ) {
     bool connected = false;
     for (auto &it: connected_with) {
-        if (*(it.lock()) == *(targ.lock())) {
+        if (*(it.lock()) == *targ) {
             connected = true;
             break;
         }

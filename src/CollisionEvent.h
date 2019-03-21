@@ -20,8 +20,8 @@ class CollisionEvent {
 
  public:
     CollisionEvent() = default;
-    CollisionEvent(SpatialVec x_in, std::weak_ptr<Nucleon> proj_in,
-                   std::weak_ptr<Nucleon> targ_in);
+    CollisionEvent(SpatialVec x_in, std::shared_ptr<Nucleon> proj_in,
+                   std::shared_ptr<Nucleon> targ_in);
     
     bool operator< (const CollisionEvent &event1) const {
         return(x_coll[0] < event1.get_collision_time());
@@ -40,9 +40,9 @@ class CollisionEvent {
 };
 
 struct compare_collision_time {
-    bool operator() (const CollisionEvent lhs,
-                     const CollisionEvent rhs) const {
-        return(lhs.get_collision_time() < rhs.get_collision_time());
+    bool operator() (const std::shared_ptr<CollisionEvent> lhs,
+                     const std::shared_ptr<CollisionEvent> rhs) const {
+        return(lhs->get_collision_time() < rhs->get_collision_time());
     }
 };
 

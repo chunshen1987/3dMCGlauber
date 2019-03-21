@@ -98,13 +98,13 @@ bool Glauber::hit(real d2, real d2_in) const {
     return(ran_gen_ptr.lock()->rand_uniform() < G*exp(-G*d2/d2_in));
 }
 
-void Glauber::create_a_collision_event(weak_ptr<Nucleon> proj,
-                                       weak_ptr<Nucleon> targ) {
+void Glauber::create_a_collision_event(shared_ptr<Nucleon> proj,
+                                       shared_ptr<Nucleon> targ) {
     real t_coll, z_coll;
-    auto x1 = proj.lock()->get_x();
-    auto p1 = proj.lock()->get_p();
-    auto x2 = targ.lock()->get_x();
-    auto p2 = targ.lock()->get_p();
+    auto x1 = proj->get_x();
+    auto p1 = proj->get_p();
+    auto x2 = targ->get_x();
+    auto p2 = targ->get_p();
     auto v1 = p1[3]/p1[0];
     auto v2 = p2[3]/p2[0];
     auto collided = get_collision_point(x1[0], x1[3], v1, x2[3], v2,
@@ -112,9 +112,10 @@ void Glauber::create_a_collision_event(weak_ptr<Nucleon> proj,
     if (collided) {
         SpatialVec x_coll = {t_coll, (x1[1] + x2[1])/2.,
                              (x1[2] + x2[2])/2., z_coll};
-        CollisionEvent event_ptr(x_coll, proj, targ);
-        if (proj.lock()->is_connected_with(targ)) {
-            event_ptr.set_produced_a_string(true);
+        shared_ptr<CollisionEvent> event_ptr(
+                                    new CollisionEvent(x_coll, proj, targ));
+        if (proj->is_connected_with(targ)) {
+            event_ptr->set_produced_a_string(true);
         }
         collision_schedule.insert(event_ptr);
     }
@@ -144,12 +145,12 @@ real Glauber::compute_NN_inelastic_cross_section(real ecm) const {
 }
 
 
-bool Glauber::decide_produce_string(CollisionEvent &event_ptr) const {
+bool Glauber::decide_produce_string(shared_ptr<CollisionEvent> event_ptr) const {
     bool flag_form_a_string = false;
-    auto proj = event_ptr.get_proj_nucleon_ptr();
-    auto targ = event_ptr.get_targ_nucleon_ptr();
-    if (   proj.lock()->get_number_of_connections() == 0
-        || targ.lock()->get_number_of_connections() == 0) {
+    auto proj = event_ptr->get_proj_nucleon_ptr().lock();
+    auto targ = event_ptr->get_targ_nucleon_ptr().lock();
+    if (   proj->get_number_of_connections() == 0
+        || targ->get_number_of_connections() == 0) {
       //bps: string gets flag for whether it has left or right or both baryon numbers.
       
       //int n_connects = (  proj->get_number_of_connections()
@@ -168,7 +169,7 @@ bool Glauber::decide_produce_string(CollisionEvent &event_ptr) const {
 
 
 int Glauber::decide_QCD_strings_production() {
-    std::vector<CollisionEvent> collision_list;
+    std::vector<shared_ptr<CollisionEvent>> collision_list;
     for (auto &it: collision_schedule)
         collision_list.push_back(it);  // collision list is time ordered
 
@@ -188,13 +189,13 @@ int Glauber::decide_QCD_strings_production() {
         finished = true;
         for (auto &ievent: collision_list) {
             auto flag_form_a_string = decide_produce_string(ievent);
-            auto proj = ievent.get_proj_nucleon_ptr();
-            auto targ = ievent.get_targ_nucleon_ptr();
+            auto proj = ievent->get_proj_nucleon_ptr();
+            auto targ = ievent->get_targ_nucleon_ptr();
             if (flag_form_a_string) {
                 number_of_strings++;
                 proj.lock()->add_connected_nucleon(targ);
                 targ.lock()->add_connected_nucleon(proj);
-                ievent.set_produced_a_string(true);
+                ievent->set_produced_a_string(true);
             } else {
                 if (   proj.lock()->get_number_of_connections() == 0
                     || targ.lock()->get_number_of_connections() == 0)
@@ -263,22 +264,22 @@ int Glauber::perform_string_production() {
     int number_of_collided_events = 0;
     while (collision_schedule.size() > 0) {
         auto first_event = (*collision_schedule.begin());
-        if (!first_event.is_valid()) {
+        if (!first_event->is_valid()) {
             collision_schedule.erase((*collision_schedule.begin()));
             continue;
         }
         number_of_collided_events++;
-        real dt = first_event.get_collision_time() - t_current;
+        real dt = first_event->get_collision_time() - t_current;
         assert(dt > 0.);
-        t_current = first_event.get_collision_time();
+        t_current = first_event->get_collision_time();
         propagate_nuclei(dt);
-        if (!first_event.is_produced_a_string()) {
+        if (!first_event->is_produced_a_string()) {
             collision_schedule.erase((*collision_schedule.begin()));
             continue;
         }
-        auto x_coll   = first_event.get_collision_position();
-        auto proj     = first_event.get_proj_nucleon_ptr().lock();
-        auto targ     = first_event.get_targ_nucleon_ptr().lock();
+        auto x_coll = first_event->get_collision_position();
+        auto proj = first_event->get_proj_nucleon_ptr().lock();
+        auto targ = first_event->get_targ_nucleon_ptr().lock();
         real y_in_lrf = std::abs(proj->get_rapidity()
                                  - targ->get_rapidity())/2.;
         std::weak_ptr<Quark> proj_q;
@@ -381,15 +382,15 @@ int Glauber::perform_string_production() {
 }
 
 
-void Glauber::update_collision_schedule(CollisionEvent &event_happened) {
-    auto proj = event_happened.get_proj_nucleon_ptr();
-    proj.lock()->increment_collided_times();
-    for (auto &it: (*proj.lock()->get_collide_nucleon_list()))
-        create_a_collision_event(proj, it);
-    auto targ = event_happened.get_targ_nucleon_ptr();
-    targ.lock()->increment_collided_times();
-    for (auto &it: (*targ.lock()->get_collide_nucleon_list()))
-        create_a_collision_event(it, targ);
+void Glauber::update_collision_schedule(shared_ptr<CollisionEvent> event_happened) {
+    auto proj = event_happened->get_proj_nucleon_ptr().lock();
+    proj->increment_collided_times();
+    for (auto &it: (*proj->get_collide_nucleon_list()))
+        create_a_collision_event(proj, it.lock());
+    auto targ = event_happened->get_targ_nucleon_ptr().lock();
+    targ->increment_collided_times();
+    for (auto &it: (*targ->get_collide_nucleon_list()))
+        create_a_collision_event(it.lock(), targ);
 }
 
 void Glauber::output_QCD_strings(std::string filename) {
