@@ -44,7 +44,6 @@ void EventGenerator::generate_events() {
                           << " is done.";
                 messager.flush("info");
             }
-            iev++;
             
             Ncoll = mc_glauber_ptr->perform_string_production();
             
@@ -58,6 +57,7 @@ void EventGenerator::generate_events() {
             auto b = mc_glauber_ptr->get_impact_parameter();
             record_file << iev << "  " << Npart << "  " << Ncoll << "  "
                         << Nstrings << "  " << b << std::endl;
+            iev++;
         }
     }
     record_file.close();
