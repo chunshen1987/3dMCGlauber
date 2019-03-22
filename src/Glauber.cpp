@@ -401,8 +401,7 @@ void Glauber::output_QCD_strings(std::string filename) {
            << "y_l_i  y_r_i "
            << "eta_s_baryon_left  eta_s_baryon_right  y_l_baryon  y_r_baryon  "
            << endl;
-    const auto baryon_junctions = (
-                                   parameter_list.get_baryon_junctions());
+    const auto baryon_junctions = parameter_list.get_baryon_junctions();
     
     real fraction_left = 0.;
     real fraction_right = 0.;
