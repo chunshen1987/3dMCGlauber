@@ -400,41 +400,47 @@ void Glauber::output_QCD_strings(std::string filename) {
            << "eta_s_left  eta_s_right  y_l  y_r  fraction_l  fraction_r "
            << "y_l_i  y_r_i "
            << "eta_s_baryon_left  eta_s_baryon_right  y_l_baryon  y_r_baryon  "
+           << "baryon_fraction_l  baryon_fraction_r"
            << endl;
     const auto baryon_junctions = parameter_list.get_baryon_junctions();
     
-    real fraction_left = 0.;
-    real fraction_right = 0.;
+    real energy_fraction_left = 0.;
+    real energy_fraction_right = 0.;
+    real baryon_fraction_left = 0.;
+    real baryon_fraction_right = 0.;
 
     for (auto &it: QCD_string_list) {
         auto x_prod = it.get_x_production();
         auto tau_0  = sqrt(x_prod[0]*x_prod[0] - x_prod[3]*x_prod[3]);
         auto etas_0 = 0.5*log((x_prod[0] + x_prod[3])/(x_prod[0] - x_prod[3]));
         
-        if (!baryon_junctions) {
-            fraction_left = 1./(static_cast<real>(
+        energy_fraction_left = 1./(static_cast<real>(
                         it.get_proj().lock()->get_number_of_connections()));
-            fraction_right = 1./(static_cast<real>(
+        energy_fraction_right = 1./(static_cast<real>(
                         it.get_targ().lock()->get_number_of_connections()));
+        if (!baryon_junctions) {
+            baryon_fraction_left  = energy_fraction_left;
+            baryon_fraction_right = energy_fraction_right;
         } else {
-            fraction_left  = it.get_has_baryon_left();
-            fraction_right = it.get_has_baryon_right();
+            baryon_fraction_left  = it.get_has_baryon_left();
+            baryon_fraction_right = it.get_has_baryon_right();
         }
 
-        real output_array[] = {
+        std::vector<real> output_array = {
             1.0, it.get_m_over_sigma(), it.get_tau_form(),
             tau_0, etas_0, x_prod[1], x_prod[2],
             it.get_eta_s_left(), it.get_eta_s_right(),
             it.get_y_f_left(), it.get_y_f_right(),
-            fraction_left, fraction_right,
+            energy_fraction_left, energy_fraction_right,
             it.get_y_i_left(), it.get_y_i_right(),
             it.get_eta_s_baryon_left(), it.get_eta_s_baryon_right(),
-            it.get_y_f_baryon_left(), it.get_y_f_baryon_right()
+            it.get_y_f_baryon_left(), it.get_y_f_baryon_right(),
+            baryon_fraction_left, baryon_fraction_right,
         };
 
         output << std::scientific << std::setprecision(8);
-        for (int i = 0; i < 19; i++) {
-            output << std::setw(15) << output_array[i] << "  ";
+        for (auto &ival : output_array) {
+            output << std::setw(15) << ival << "  ";
         }
         output << endl;
     }
