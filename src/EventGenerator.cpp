@@ -8,8 +8,7 @@
 
 namespace MCGlb {
 
-EventGenerator::EventGenerator(std::string input_filename, int nev_in) {
-    nev = nev_in;
+EventGenerator::EventGenerator(std::string input_filename) {
     parameter_list.read_in_parameters_from_file(input_filename);
     parameter_list.print_parameter_list();
     int seed = parameter_list.get_seed();
@@ -17,14 +16,14 @@ EventGenerator::EventGenerator(std::string input_filename, int nev_in) {
                                             new RandomUtil::Random(seed));
     mc_glauber_ptr = std::unique_ptr<Glauber>(
                                 new Glauber(parameter_list, ran_gen_ptr));
-    messager << "Generating " << nev << " events ... ";
-    messager.flush("info");
 
     statistics_only = parameter_list.get_only_event_statistics();
 }
 
 
-void EventGenerator::generate_events() {
+void EventGenerator::generate_events(int nev, int event_id_offset) {
+    messager << "Generating " << nev << " events ... ";
+    messager.flush("info");
     // this file records all the essential information for the generated events
     std::ofstream record_file("events_summary.dat", std::ios::out);
     record_file << "# event_id  Npart  Ncoll  Nstrings  b(fm)" << std::endl;
@@ -38,6 +37,7 @@ void EventGenerator::generate_events() {
         auto Npart = mc_glauber_ptr->get_Npart();
         auto Nstrings = mc_glauber_ptr->decide_QCD_strings_production();
         if (event_of_interest_trigger(Npart, Ncoll, Nstrings))  {
+            int event_id = iev + event_id_offset;
             mean_Npart += Npart;
             if (iev%nev_progress == 0) {
                 messager << "Progress: " << iev << " out of " << nev
@@ -49,13 +49,13 @@ void EventGenerator::generate_events() {
             
             if (!statistics_only) {
                 std::ostringstream filename;
-                filename << "strings_event_" << iev << ".dat";
+                filename << "strings_event_" << event_id << ".dat";
                 mc_glauber_ptr->output_QCD_strings(filename.str());
             }
             
             // write event information to the record file
             auto b = mc_glauber_ptr->get_impact_parameter();
-            record_file << iev << "  " << Npart << "  " << Ncoll << "  "
+            record_file << event_id << "  " << Npart << "  " << Ncoll << "  "
                         << Nstrings << "  " << b << std::endl;
             iev++;
         }

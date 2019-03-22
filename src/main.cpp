@@ -5,7 +5,7 @@
 
 int main(int argc, char* argv[]) {
     std::string input_filename = "input";
-    int nev = 200;
+    int nev = 256;
     if (argc > 1) {
         nev = std::stoi(*(argv + 1));
     }
@@ -13,7 +13,7 @@ int main(int argc, char* argv[]) {
         input_filename = *(argv + 2);
     }
 
-    MCGlb::EventGenerator mc_gen(input_filename, nev);
-    mc_gen.generate_events();
+    MCGlb::EventGenerator mc_gen(input_filename);
+    mc_gen.generate_events(nev);
     return(0);
 }

@@ -14,7 +14,6 @@ namespace MCGlb {
 
 class EventGenerator {
  private:
-    int nev;
     Parameters parameter_list;
     std::shared_ptr<RandomUtil::Random> ran_gen_ptr;
     std::unique_ptr<Glauber> mc_glauber_ptr;
@@ -23,10 +22,10 @@ class EventGenerator {
 
  public:
     EventGenerator() = default;
-    EventGenerator(std::string input_filename, int nev);
+    EventGenerator(std::string input_filename);
     ~EventGenerator() {};
 
-    void generate_events();
+    void generate_events(int nev, int event_id_offset=0);
     bool event_of_interest_trigger(int Npart, int Ncoll, int Nstrings);
 };
 
