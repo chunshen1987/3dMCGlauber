@@ -112,4 +112,12 @@ real QCDString::get_constant_decelerate_eta_f(
 }
 
 
+//! This funciton sets baryon eta_s assuming linear rapidity profile
+void QCDString::set_final_baryon_space_time_rapidities() {
+    const double slope = (eta_s_right - eta_s_left)/(y_f_right - y_f_left);
+    eta_s_baryon_left  = eta_s_left + slope*(y_f_baryon_left  - y_f_left);
+    eta_s_baryon_right = eta_s_left + slope*(y_f_baryon_right - y_f_left);
+}
+
+
 }

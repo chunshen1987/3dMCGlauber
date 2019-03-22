@@ -64,7 +64,9 @@ class QCDString {
 
     void set_final_baryon_rapidities(real y_f_l, real y_f_r) {
         y_f_baryon_left = y_f_l; y_f_baryon_right = y_f_r;
+        set_final_baryon_space_time_rapidities();
     }
+
     real get_y_f_baryon_left() const {return(y_f_baryon_left);}
     real get_y_f_baryon_right() const {return(y_f_baryon_right);}
 
@@ -73,6 +75,14 @@ class QCDString {
     }
     real get_eta_s_left() const {return(eta_s_left);}
     real get_eta_s_right() const {return(eta_s_right);}
+
+    void set_final_baryon_space_time_rapidities(real eta_s_l, real eta_s_r) {
+        // set with inputs
+        eta_s_baryon_left = eta_s_l; eta_s_baryon_right = eta_s_r;
+    }
+
+    //! This funciton sets baryon eta_s assuming linear rapidity profile
+    void set_final_baryon_space_time_rapidities();
 
     real get_eta_s_baryon_left() const {return(eta_s_baryon_left);}
     real get_eta_s_baryon_right() const {return(eta_s_baryon_right);}
