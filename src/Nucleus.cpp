@@ -70,13 +70,19 @@ void Nucleus::set_nucleus_parameters(std::string nucleus_name) {
                             12, 6, 0.17, 1.403, 2.44, 1.635, 0.0, 0.0, 1);
     } else if (nucleus_name.compare("O") == 0) {
         set_woods_saxon_parameters(
-                            16, 8, 0.17, 2.608, -0.051, 0.513, 0.0, 0.0, 3);
+                            16, 8, 0.17, -0.051, 2.608, 0.513, 0.0, 0.0, 3);
     } else if (nucleus_name.compare("Al") == 0) {
         set_woods_saxon_parameters(
-                            27, 13, 0.17, 3.07, 0.0, 0.519, 0.0, 0.0, 3);
+                            27, 13, 0.17, 0.0, 3.07, 0.519, 0.0, 0.0, 3);
     } else if (nucleus_name.compare("Cu") == 0) {
         set_woods_saxon_parameters(
-                            63, 29, 0.17, 4.163, 0.0, 0.606, 0.162, 0.006, 3);
+                            63, 29, 0.17, 0.0, 4.163, 0.606, 0.162, 0.006, 3);
+    } else if (nucleus_name.compare("In") == 0) {
+        set_woods_saxon_parameters(
+                            115, 49, 0.17, 0.0, 5.35, 0.55, 0.0, 0.0, 3);
+    } else if (nucleus_name.compare("Xe") == 0) {
+        set_woods_saxon_parameters(
+                            129, 54, 0.17, 0.0, 5.36, 0.590, 0.162, -0.003, 3);
     } else if (nucleus_name.compare("Au") == 0) {
         set_woods_saxon_parameters(
                             197, 79, 0.17, 0.0, 6.38, 0.505, -0.13, -0.03, 3);
