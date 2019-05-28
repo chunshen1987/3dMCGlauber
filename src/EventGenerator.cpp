@@ -29,7 +29,7 @@ void EventGenerator::generate_events(int nev, int event_id_offset) {
     record_file << "# event_id  Npart  Ncoll  Nstrings  b(fm)" << std::endl;
 
     int iev = 0;
-    int nev_progress = nev/10;
+    int nev_progress = std::max(1, nev/10);
     int mean_Npart = 0;
     while (iev < nev) {
         mc_glauber_ptr->make_nuclei();
