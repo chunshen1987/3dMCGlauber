@@ -17,8 +17,8 @@ class Random {
     
  public:
     Random(int seed_in, double min = 0.0, double max = 1.0);
-    const double rand_uniform() {return(rand_uniform_dist(*ran_generator));}
-    const int get_seed() const {return(seed);}
+    double rand_uniform() {return(rand_uniform_dist(*ran_generator));}
+    int get_seed() const {return(seed);}
 };
 
 }
