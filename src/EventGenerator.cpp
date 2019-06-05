@@ -46,15 +46,16 @@ void EventGenerator::generate_events(int nev, int event_id_offset) {
             }
             
             Ncoll = mc_glauber_ptr->perform_string_production();
+            auto b = mc_glauber_ptr->get_impact_parameter();
             
             if (!statistics_only) {
                 std::ostringstream filename;
                 filename << "strings_event_" << event_id << ".dat";
-                mc_glauber_ptr->output_QCD_strings(filename.str());
+                mc_glauber_ptr->output_QCD_strings(filename.str(), Npart,
+                                                   Ncoll, Nstrings, b);
             }
             
             // write event information to the record file
-            auto b = mc_glauber_ptr->get_impact_parameter();
             record_file << event_id << "  " << Npart << "  " << Ncoll << "  "
                         << Nstrings << "  " << b << std::endl;
             iev++;

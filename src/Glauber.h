@@ -77,7 +77,9 @@ class Glauber {
     //! This function updates the collision schedule
     void update_collision_schedule(shared_ptr<CollisionEvent> event_happened);
     
-    void output_QCD_strings(std::string filename);
+    void output_QCD_strings(std::string filename, const real Npart,
+                            const real Ncoll, const real Nstrings,
+                            const real b);
 };
 
 }

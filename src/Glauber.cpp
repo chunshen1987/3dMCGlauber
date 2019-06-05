@@ -393,8 +393,13 @@ void Glauber::update_collision_schedule(shared_ptr<CollisionEvent> event_happene
         create_a_collision_event(it.lock(), targ);
 }
 
-void Glauber::output_QCD_strings(std::string filename) {
+void Glauber::output_QCD_strings(std::string filename, const real Npart,
+                                 const real Ncoll, const real Nstrings,
+                                 const real b) {
     std::ofstream output(filename.c_str());
+    output << "# b = " << b << " fm " << "Npart = " << Npart
+           << " Ncoll = " << Ncoll << " Nstrings = " << Nstrings << endl;
+           
     output << "# norm  m_over_sigma[fm]  tau_form[fm]  tau_0[fm]  eta_s_0  "
            << "x_perp[fm]  y_perp[fm]  "
            << "eta_s_left  eta_s_right  y_l  y_r  fraction_l  fraction_r "
