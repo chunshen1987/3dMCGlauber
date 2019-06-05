@@ -1,6 +1,9 @@
 cmake_minimum_required (VERSION 3.4)
 project (3DMCGlb LANGUAGES CXX)
 
+set(libname "3dMCGlb")
+set(exename "3dMCGlb.e")
+
 # require C++11
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
