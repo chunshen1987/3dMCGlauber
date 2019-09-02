@@ -22,7 +22,7 @@ class EventGenerator {
 
  public:
     EventGenerator() = default;
-    EventGenerator(std::string input_filename);
+    EventGenerator(std::string input_filename, int seed_add=0);
     ~EventGenerator() {};
 
     void generate_events(int nev, int event_id_offset=0);

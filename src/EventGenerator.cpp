@@ -8,12 +8,12 @@
 
 namespace MCGlb {
 
-EventGenerator::EventGenerator(std::string input_filename) {
+EventGenerator::EventGenerator(std::string input_filename, int seed_add) {
     parameter_list.read_in_parameters_from_file(input_filename);
     parameter_list.print_parameter_list();
     int seed = parameter_list.get_seed();
     ran_gen_ptr = std::shared_ptr<RandomUtil::Random>(
-                                            new RandomUtil::Random(seed));
+                            new RandomUtil::Random(seed, 0.0, 1.0, seed_add));
     mc_glauber_ptr = std::unique_ptr<Glauber>(
                                 new Glauber(parameter_list, ran_gen_ptr));
 
@@ -22,6 +22,8 @@ EventGenerator::EventGenerator(std::string input_filename) {
 
 
 void EventGenerator::generate_events(int nev, int event_id_offset) {
+    messager << "Random seed = " << ran_gen_ptr->get_seed();
+    messager.flush("info");
     messager << "Generating " << nev << " events ... ";
     messager.flush("info");
     // this file records all the essential information for the generated events
@@ -44,17 +46,16 @@ void EventGenerator::generate_events(int nev, int event_id_offset) {
                           << " is done.";
                 messager.flush("info");
             }
-            
+
             Ncoll = mc_glauber_ptr->perform_string_production();
             auto b = mc_glauber_ptr->get_impact_parameter();
-            
             if (!statistics_only) {
                 std::ostringstream filename;
                 filename << "strings_event_" << event_id << ".dat";
                 mc_glauber_ptr->output_QCD_strings(filename.str(), Npart,
                                                    Ncoll, Nstrings, b);
             }
-            
+
             // write event information to the record file
             record_file << event_id << "  " << Npart << "  " << Ncoll << "  "
                         << Nstrings << "  " << b << std::endl;
