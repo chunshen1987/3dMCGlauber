@@ -151,8 +151,9 @@ bool Glauber::decide_produce_string(shared_ptr<CollisionEvent> event_ptr) const 
     auto targ = event_ptr->get_targ_nucleon_ptr().lock();
     if (   proj->get_number_of_connections() == 0
         || targ->get_number_of_connections() == 0) {
-      //bps: string gets flag for whether it has left or right or both baryon numbers.
-      
+      //bps: string gets flag for whether it has left or right
+      //or both baryon numbers.
+
       //int n_connects = (  proj->get_number_of_connections()
         //                  + targ->get_number_of_connections());
         //real R_A = pow(projectile->get_nucleus_A(), 1./3.);
@@ -163,6 +164,15 @@ bool Glauber::decide_produce_string(shared_ptr<CollisionEvent> event_ptr) const 
         //if (ran_gen_ptr.lock()->rand_uniform() < cost_function)
         //    flag_form_a_string = true;
         flag_form_a_string = true;
+    } else {
+        int n_connects = (  proj->get_number_of_connections()
+                          + targ->get_number_of_connections());
+        real shadowing_factor = parameter_list.get_shadowing_factor();
+        real production_prob = (
+            (1. - shadowing_factor)*exp(-shadowing_factor*(n_connects - 2.)));
+        if (ran_gen_ptr.lock()->rand_uniform() < production_prob) {
+            flag_form_a_string = true;
+        }
     }
     return(flag_form_a_string);
 }
@@ -227,6 +237,16 @@ void Glauber::propagate_nucleon(shared_ptr<Nucleon> n_i, real dt) {
 }
 
 
+void Glauber::update_momentum_quark(shared_ptr<Quark> q_i, real y_shift) {
+    auto pvec = q_i->get_p();
+    auto y_i = atanh(pvec[3]/pvec[0]);
+    auto y_f = y_i + y_shift;
+    pvec[0] = PhysConsts::MProton*cosh(y_f);
+    pvec[3] = PhysConsts::MProton*sinh(y_f);
+    q_i->set_p(pvec);
+}
+
+
 void Glauber::update_momentum(shared_ptr<Nucleon> n_i, real y_shift) {
     auto pvec = n_i->get_p();
     auto y_i = atanh(pvec[3]/pvec[0]);
@@ -253,11 +273,11 @@ int Glauber::perform_string_production() {
     bool has_baryon_right;
     real y_baryon_left;
     real y_baryon_right;
-    
+
     // sqrt(parameter_list.get_roots()); // ~s^{-1/4} 
     real lambdaB =  parameter_list.get_lambdaB();
     lambdaB = std::min(1., lambdaB);
-    
+
     //cout << lambdaB <<endl;
 
     real t_current = 0.0;
@@ -282,32 +302,36 @@ int Glauber::perform_string_production() {
         auto targ = first_event->get_targ_nucleon_ptr().lock();
         real y_in_lrf = std::abs(proj->get_rapidity()
                                  - targ->get_rapidity())/2.;
-        std::weak_ptr<Quark> proj_q;
-        std::weak_ptr<Quark> targ_q;
+        std::shared_ptr<Quark> proj_q;
+        std::shared_ptr<Quark> targ_q;
         if (sample_valence_quark) {
-            proj_q   = proj->get_a_valence_quark();
-            targ_q   = targ->get_a_valence_quark();
-            y_in_lrf = std::abs(proj_q.lock()->get_rapidity()
-                                - targ_q.lock()->get_rapidity())/2.;
+            proj_q   = proj->get_a_valence_quark().lock();
+            targ_q   = targ->get_a_valence_quark().lock();
+            y_in_lrf = std::abs(proj_q->get_rapidity()
+                                - targ_q->get_rapidity())/2.;
         }
         real tau_form = 0.5;      // [fm]
         real m_over_sigma = 1.0;  // [fm]
+        real y_loss = 0.;
         if (string_evolution_mode == 1) {
             // fixed rapidity loss
-            tau_form = 0.5;
-            m_over_sigma = 1.0;
+            y_loss = (
+                acosh(tau_form*tau_form/(2.*m_over_sigma*m_over_sigma) + 1.));
+            // maximum 90% of y_in_lrf
+            y_loss = std::min(y_loss, y_in_lrf*0.9);
+            m_over_sigma = tau_form/sqrt(2.*(cosh(y_loss) - 1.));
         } else if (string_evolution_mode == 2) {
             // both tau_form and sigma fluctuate
-            auto y_loss = sample_rapidity_loss_shell(y_in_lrf);
+            y_loss = sample_rapidity_loss_shell(y_in_lrf);
             tau_form = 0.5 + 2.*ran_gen_ptr.lock()->rand_uniform();
             m_over_sigma = tau_form/sqrt(2.*(cosh(y_loss) - 1.));
         } else if (string_evolution_mode == 3) {
             // only tau_form fluctuates
-            auto y_loss = sample_rapidity_loss_shell(y_in_lrf);
+            y_loss = sample_rapidity_loss_shell(y_in_lrf);
             tau_form = m_over_sigma*sqrt(2.*(cosh(y_loss) - 1.));
         } else if (string_evolution_mode == 4) {
             // only m_over_sigma fluctuates
-            auto y_loss = sample_rapidity_loss_shell(y_in_lrf);
+            y_loss = sample_rapidity_loss_shell(y_in_lrf);
             m_over_sigma = tau_form/sqrt(2.*(cosh(y_loss) - 1.));
         }
         // set variables in case of no baryon junction transport
@@ -323,7 +347,7 @@ int Glauber::perform_string_production() {
             if (!targ->baryon_was_used()) {
                 has_baryon_left = 1;
                 targ->set_baryon_used(1);
-            } 
+            }
         }
         if (!sample_valence_quark) {
             QCDString qcd_string(x_coll, tau_form, proj, targ, m_over_sigma,
@@ -331,16 +355,27 @@ int Glauber::perform_string_production() {
             QCD_string_list.push_back(qcd_string);
         } else {
             QCDString qcd_string(x_coll, tau_form, proj, targ,
-                                 proj_q.lock(), targ_q.lock(), m_over_sigma,
+                                 proj_q, targ_q, m_over_sigma,
                                  has_baryon_right, has_baryon_left);
             QCD_string_list.push_back(qcd_string);
         }
-        real y_shift = 0.001;
-        update_momentum(proj, -y_shift);
-        update_momentum(targ,  y_shift);
+        real y_shift = y_loss;
+        if (!sample_valence_quark) {
+            update_momentum(proj, -y_shift);
+            update_momentum(targ,  y_shift);
+        } else {
+            // shift the nucleon rapidity to avoid identical collision when
+            // update the collision schedule
+            update_momentum(proj, -1e-3*proj->get_rapidity());
+            update_momentum(targ, -1e-3*targ->get_rapidity());
+            update_momentum_quark(proj_q, -y_shift);
+            update_momentum_quark(targ_q, y_shift);
+        }
         update_collision_schedule(first_event);
         collision_schedule.erase((*collision_schedule.begin()));
     }
+
+    // set baryons' rapidities
     for (auto &it: QCD_string_list) {
         it.evolve_QCD_string();
         if (!baryon_junctions) {
@@ -354,21 +389,29 @@ int Glauber::perform_string_production() {
             y_baryon_left = 0.;
             if (it.get_has_baryon_right()) {
                 if (ran_gen_ptr.lock()->rand_uniform() < lambdaB) {
-                    // y_baryon_right = sample_junction_rapidity_right( it->get_y_i_left(), it->get_y_i_right() );
+                    // y_baryon_right = sample_junction_rapidity_right(
+                    //              it->get_y_i_left(), it->get_y_i_right());
                     y_baryon_right = sample_junction_rapidity_right(
                                     it.get_y_f_left(), it.get_y_f_right());
                 } else {
-                    // One should use the very initial rapidities of the colliding nucleons to determine the junction rapidity.
-                    // this may, however, lead to junctions lying outside the rapidity range of the final string which may caus problems
-                    // in hydro and could be seen as unphysical...
-                    // Another thing to discuss is the energy dependence. The cross section for baryon junctions stopping has a different root-s 
-                    // dependence than the usual inelastic cross section - so in principle it needs to be treated separately altogether... not sure how yet
+                    // One should use the very initial rapidities of the
+                    // colliding nucleons to determine the junction rapidity
+                    // this may, however, lead to junctions lying outside the
+                    // rapidity range of the final string which may cause
+                    // problems in hydro and could be seen as unphysical...
+                    // Another thing to discuss is the energy dependence.
+                    // The cross section for baryon junctions stopping has
+                    // a different root-s dependence than the usual inelastic
+                    // cross section
+                    // - so in principle it needs to be treated separately
+                    // altogether... not sure how yet
                     y_baryon_right = it.get_y_f_right();
                 }
             }
             if (it.get_has_baryon_left()) {
                 if (ran_gen_ptr.lock()->rand_uniform() < lambdaB) {
-                    //y_baryon_left = sample_junction_rapidity_left( it->get_y_i_left(), it->get_y_i_right() );
+                    //y_baryon_left = sample_junction_rapidity_left(
+                    //              it->get_y_i_left(), it->get_y_i_right());
                     y_baryon_left = sample_junction_rapidity_left(
                                     it.get_y_f_left(), it.get_y_f_right());
                 } else {
@@ -397,9 +440,11 @@ void Glauber::output_QCD_strings(std::string filename, const real Npart,
                                  const real Ncoll, const real Nstrings,
                                  const real b) {
     std::ofstream output(filename.c_str());
+    real total_energy = Npart*parameter_list.get_roots()/2.;
     output << "# b = " << b << " fm " << "Npart = " << Npart
-           << " Ncoll = " << Ncoll << " Nstrings = " << Nstrings << endl;
-           
+           << " Ncoll = " << Ncoll << " Nstrings = " << Nstrings
+           << " total_energy = " << total_energy << " GeV" << endl;
+
     output << "# norm  m_over_sigma[fm]  tau_form[fm]  tau_0[fm]  eta_s_0  "
            << "x_perp[fm]  y_perp[fm]  "
            << "eta_s_left  eta_s_right  y_l  y_r  fraction_l  fraction_r "
@@ -408,7 +453,7 @@ void Glauber::output_QCD_strings(std::string filename, const real Npart,
            << "baryon_fraction_l  baryon_fraction_r"
            << endl;
     const auto baryon_junctions = parameter_list.get_baryon_junctions();
-    
+
     real energy_fraction_left  = 0.;
     real energy_fraction_right = 0.;
     real baryon_fraction_left  = 0.;
@@ -418,7 +463,7 @@ void Glauber::output_QCD_strings(std::string filename, const real Npart,
         auto x_prod = it.get_x_production();
         auto tau_0  = sqrt(x_prod[0]*x_prod[0] - x_prod[3]*x_prod[3]);
         auto etas_0 = 0.5*log((x_prod[0] + x_prod[3])/(x_prod[0] - x_prod[3]));
-        
+
         energy_fraction_left = 1./(static_cast<real>(
                         it.get_proj().lock()->get_number_of_connections()));
         energy_fraction_right = 1./(static_cast<real>(

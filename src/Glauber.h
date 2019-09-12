@@ -64,7 +64,7 @@ class Glauber {
     real sample_rapidity_loss_shell(real y_init) const;
     real sample_rapidity_loss_from_the_LEXUS_model(real y_init) const;
     real sample_rapidity_loss_from_parametrization(real y_init) const;
-    
+
     real sample_junction_rapidity_right(real y_left, real y_right) const;
     real sample_junction_rapidity_left(real y_left, real y_right) const;
 
@@ -74,9 +74,10 @@ class Glauber {
     void propagate_nuclei(real dt);
     void propagate_nucleon(shared_ptr<Nucleon> n_i, real dt);
     void update_momentum(shared_ptr<Nucleon> n_i, real y_shift);
+    void update_momentum_quark(shared_ptr<Quark> q_i, real y_shift);
     //! This function updates the collision schedule
     void update_collision_schedule(shared_ptr<CollisionEvent> event_happened);
-    
+
     void output_QCD_strings(std::string filename, const real Npart,
                             const real Ncoll, const real Nstrings,
                             const real b);

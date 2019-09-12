@@ -1,15 +1,16 @@
 ################################################################
 # collision information
 ################################################################
-Projectile In                   # projectile nucleus name
-Target In                       # target nucleus name
-roots 17.3                       # collision energy (GeV)
+Projectile Au                   # projectile nucleus name
+Target Au                       # target nucleus name
+roots 200.                       # collision energy (GeV)
 useQuarks 1                     # switch to use valence quarks
 Q2 1.                           # the scale when evaluating the pdf
 b_min 0.                         # minimum impact parameter (fm)
 b_max 20.                         # maximum impact parameter (fm)
 seed -1                         # random seed (-1: system)
 only_event_statistics 0         # flag to only output the event_summary file
+shadowing_factor 0.8            # a shadowning factor for producing strings from multiple scatterings
 baryon_junctions 0              # 0: baryon number assumed to be at string end
                                 # 1: baryon number transported assuming baryon junctions (at smaller x) see arXiv:nucl-th/9602027
 lambdaB 0.4                     # parameter the controls the strength of the baryon junction stopping

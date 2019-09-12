@@ -44,7 +44,7 @@ real Parameters::get_quarks_Q2() const {
     return(Q2);
 }
 
-    
+
 real Parameters::get_roots() const {
     real roots = static_cast<real>(get_param_double("roots"));
     assert(roots > 0.);
@@ -57,7 +57,7 @@ real Parameters::get_lambdaB() const {
     return(lambdaB);
 }
 
-    
+
 int Parameters::get_QCD_string_production_mode() const {
     int flag = get_param_int("QCD_string_production_mode");
     assert(flag >= 0 && flag < 5);
@@ -96,5 +96,12 @@ bool Parameters::get_baryon_junctions() const {
         return(true);
     }
 }
-    
+
+real Parameters::get_shadowing_factor() const {
+    real shadowing = static_cast<real>(get_param_double("shadowing_factor"));
+    assert(shadowing >= 0.);
+    assert(shadowing <= 1.);
+    return(shadowing);
+}
+
 }
