@@ -40,10 +40,15 @@ class Parameters : public ParametersMap {
     int get_QCD_string_evolution_mode() const;
     int get_rapidity_loss_method() const;
 
-    bool get_baryon_junctions() const; // if 0 do assume baryon number at string ends, if 1 transport baryon number according to cosh(y*/2)
+    // if False do assume baryon number at string ends
+    // if True transport baryon number according to cosh(y*/2)
+    bool get_baryon_junctions() const;
 
     bool get_only_event_statistics() const;
 
+    real get_yloss_param_slope() const;
+    real get_yloss_param_alpha1() const;
+    real get_yloss_param_alpha2() const;
 };
 
 }

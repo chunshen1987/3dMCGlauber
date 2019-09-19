@@ -39,6 +39,13 @@ Glauber::Glauber(const MCGlb::Parameters &param_in,
     }
     ran_gen_ptr = ran_gen;
     string_production_mode = parameter_list.get_QCD_string_production_mode();
+
+    yloss_param_slope = parameter_list.get_yloss_param_slope();
+    real alpha1 = parameter_list.get_yloss_param_alpha1();
+    real alpha2 = parameter_list.get_yloss_param_alpha2();
+    real alpha = alpha2/alpha1;
+    yloss_param_a = alpha/(1. - alpha);
+    yloss_param_b = alpha2/yloss_param_a;
 }
 
 void Glauber::make_nuclei() {
@@ -519,12 +526,9 @@ real Glauber::sample_rapidity_loss_from_the_LEXUS_model(real y_init) const {
 }
 
 real Glauber::sample_rapidity_loss_from_parametrization(real y_init) const {
-    const real slope = 0.55;
-    const real upper = 0.9;
-    const real transt = 2.1;
-    auto y_loss = (slope*y_init
-            + 0.5*(tanh(y_init - transt) + 1.)*(upper - 0.65*slope*y_init)
-            - upper/2.*(1. - tanh(transt)));
+    auto y_loss = (
+        yloss_param_slope*pow(pow(y_init, yloss_param_a)*tanh(y_init),
+                              yloss_param_b));
     return(y_loss);
 }
 

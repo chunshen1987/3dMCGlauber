@@ -30,6 +30,9 @@ class Glauber {
     bool sample_valence_quark;
 
     real impact_b;
+    real yloss_param_slope;
+    real yloss_param_a;
+    real yloss_param_b;
 
  public:
     Glauber() = default;
