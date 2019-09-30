@@ -56,7 +56,7 @@ class Nucleon : public Particle {
     void accelerate_quarks(real ecm, int direction);
     void lorentz_contraction(real gamma);
 
-    std::weak_ptr<Quark> get_a_valence_quark() {
+    std::shared_ptr<Quark> get_a_valence_quark() {
         std::random_shuffle(quark_list.begin(), quark_list.end());
         return(quark_list[0]);
     }

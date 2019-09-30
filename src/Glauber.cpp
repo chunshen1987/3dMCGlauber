@@ -246,8 +246,9 @@ void Glauber::propagate_nucleon(shared_ptr<Nucleon> n_i, real dt) {
 
 void Glauber::update_momentum_quark(shared_ptr<Quark> q_i, real y_shift) {
     auto pvec = q_i->get_p();
-    auto y_i = atanh(pvec[3]/pvec[0]);
+    auto y_i = q_i->get_rapidity();
     auto y_f = y_i + y_shift;
+    q_i->set_rapidity(y_f);
     pvec[0] = PhysConsts::MProton*cosh(y_f);
     pvec[3] = PhysConsts::MProton*sinh(y_f);
     q_i->set_p(pvec);
@@ -256,7 +257,7 @@ void Glauber::update_momentum_quark(shared_ptr<Quark> q_i, real y_shift) {
 
 void Glauber::update_momentum(shared_ptr<Nucleon> n_i, real y_shift) {
     auto pvec = n_i->get_p();
-    auto y_i = atanh(pvec[3]/pvec[0]);
+    auto y_i = n_i->get_rapidity();
     auto y_f = y_i + y_shift;
     pvec[0] = PhysConsts::MProton*cosh(y_f);
     pvec[3] = PhysConsts::MProton*sinh(y_f);
@@ -312,8 +313,8 @@ int Glauber::perform_string_production() {
         std::shared_ptr<Quark> proj_q;
         std::shared_ptr<Quark> targ_q;
         if (sample_valence_quark) {
-            proj_q   = proj->get_a_valence_quark().lock();
-            targ_q   = targ->get_a_valence_quark().lock();
+            proj_q   = proj->get_a_valence_quark();
+            targ_q   = targ->get_a_valence_quark();
             y_in_lrf = std::abs(proj_q->get_rapidity()
                                 - targ_q->get_rapidity())/2.;
         }
