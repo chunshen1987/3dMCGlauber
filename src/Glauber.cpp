@@ -331,7 +331,7 @@ int Glauber::perform_string_production() {
         } else if (string_evolution_mode == 2) {
             // both tau_form and sigma fluctuate
             y_loss = sample_rapidity_loss_shell(y_in_lrf);
-            tau_form = 0.5 + 2.*ran_gen_ptr.lock()->rand_uniform();
+            tau_form = 0.5 + 1.*ran_gen_ptr.lock()->rand_uniform();
             m_over_sigma = tau_form/sqrt(2.*(cosh(y_loss) - 1.));
         } else if (string_evolution_mode == 3) {
             // only tau_form fluctuates
