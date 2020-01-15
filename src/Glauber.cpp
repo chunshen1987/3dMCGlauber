@@ -613,11 +613,11 @@ void Glauber::output_QCD_strings(std::string filename, const real Npart,
                 std::vector<real> output_array = {
                     m_rem, 1.0, tau_th,
                     tau_0, etas_0, x_i[1], x_i[2],
-                    0.0, eta_s_right,
+                    eta_s_right, eta_s_right,
                     -ybeam, y_rem,
                     0.0, 1.0,
                     -ybeam, y_rem,
-                    0.0, eta_s_right,
+                    eta_s_right, eta_s_right,
                     -ybeam, y_rem,
                     0.0, 0.0
                 };
@@ -649,11 +649,11 @@ void Glauber::output_QCD_strings(std::string filename, const real Npart,
                 std::vector<real> output_array = {
                     m_rem, 1.0, tau_th,
                     tau_0, etas_0, x_i[1], x_i[2],
-                    eta_s_left, 0.0,
+                    eta_s_left, eta_s_left,
                     y_rem, ybeam,
                     1.0, 0.0,
                     y_rem, ybeam,
-                    eta_s_left, 0.0,
+                    eta_s_left, eta_s_left,
                     y_rem, ybeam,
                     0.0, 0.0
                 };
