@@ -27,9 +27,12 @@ bool Nucleon::is_connected_with(std::shared_ptr<Nucleon> targ) {
 
 void Nucleon::accelerate_quarks(real ecm, int direction) {
     const real mq = PhysConsts::MQuarkValence;
+    const real mp = PhysConsts::MProton;
+    const real ybeam = acosh(ecm/(2.*mp));
     for (auto &it: quark_list) {
-        real rap_local = direction*asinh(it->get_pdf_x()
-                                         *sqrt(ecm*ecm/(4.*mq*mq) - 1.));
+        //real rap_local = direction*asinh(it->get_pdf_x()
+        //                                 *sqrt(ecm*ecm/(4.*mq*mq) - 1.));
+        real rap_local = direction*asinh(it->get_pdf_x()*mp/mq*sinh(ybeam));
         it->set_rapidity(rap_local);
         MomentumVec p_in = {mq*cosh(rap_local), 0.0, 0.0, mq*sinh(rap_local)};
         it->set_p(p_in);

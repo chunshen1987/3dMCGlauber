@@ -20,6 +20,9 @@ class Nucleon : public Particle {
     bool remnant_set_ = false;
     std::vector<std::weak_ptr<Nucleon>> collide_with;
     std::vector<std::weak_ptr<Nucleon>> connected_with;
+    MomentumVec remnant_p_ = {0.0, 0.0, 0.0, 0.0};
+    SpatialVec remnant_x_frez_ = {0.0, 0.0, 0.0, 0.0};
+
 
  public:
     Nucleon() = default;
@@ -61,6 +64,16 @@ class Nucleon : public Particle {
 
     bool is_remnant_set() const {return(remnant_set_);}
     void set_remnant(bool remnant) {remnant_set_ = remnant;}
+
+    void set_remnant_p(MomentumVec p_in) {remnant_p_ = p_in;}
+    MomentumVec get_remnant_p() const {return(remnant_p_);}
+    void substract_momentum_from_remnant(MomentumVec p_q) {
+        for (int i = 0; i < 4; i++)
+            remnant_p_[i] -= p_q[i];
+    }
+
+    void set_remnant_x_frez(SpatialVec x_in) {remnant_x_frez_ = x_in;}
+    SpatialVec get_remnant_x_frez() const {return(remnant_x_frez_);}
 };
 
 }

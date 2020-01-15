@@ -135,7 +135,7 @@ void Nucleus::recenter_nucleus() {
         meany += x_vec[2];
         meanz += x_vec[3];
     }
-      
+
     meanx /= static_cast<real>(A);
     meany /= static_cast<real>(A);
     meanz /= static_cast<real>(A);
@@ -445,8 +445,10 @@ void Nucleus::set_nucleons_momentum_with_collision_energy(real beam_rapidity) {
                      0.0,
                      0.0,
                      PhysConsts::MProton*sinh(beam_rapidity)};
-    for (auto &it: nucleon_list)
+    for (auto &it: nucleon_list) {
         it->set_p(p);
+        it->set_remnant_p(p);
+    }
 }
 
 

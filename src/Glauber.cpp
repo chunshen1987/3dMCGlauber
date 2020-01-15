@@ -304,9 +304,31 @@ int Glauber::perform_string_production() {
         std::shared_ptr<Quark> proj_q;
         std::shared_ptr<Quark> targ_q;
         if (sample_valence_quark) {
-            proj_q   = proj->get_a_valence_quark();
-            targ_q   = targ->get_a_valence_quark();
-            y_in_lrf = std::abs(proj_q->get_rapidity()
+            proj_q = proj->get_a_valence_quark();
+            if (proj_q->get_number_of_connections() == 1) {
+                // first time pick-up the valence quark
+                // we need to substract the valence quark energy-momentum
+                // from the nucleon remnant energy-momentum vector
+                MomentumVec p_q = {
+                    PhysConsts::MQuarkValence*cosh(proj_q->get_rapidity()),
+                    0.0,
+                    0.0,
+                    PhysConsts::MQuarkValence*sinh(proj_q->get_rapidity())};
+                proj->substract_momentum_from_remnant(p_q);
+            }
+            targ_q = targ->get_a_valence_quark();
+            if (targ_q->get_number_of_connections() == 1) {
+                // first time pick-up the valence quark
+                // we need to substract the valence quark energy-momentum
+                // from the nucleon remnant energy-momentum vector
+                MomentumVec p_q = {
+                    PhysConsts::MQuarkValence*cosh(targ_q->get_rapidity()),
+                    0.0,
+                    0.0,
+                    PhysConsts::MQuarkValence*sinh(targ_q->get_rapidity())};
+                targ->substract_momentum_from_remnant(p_q);
+            }
+            y_in_lrf = std::abs(  proj_q->get_rapidity()
                                 - targ_q->get_rapidity())/2.;
         }
         real tau_form = 0.5;      // [fm]
@@ -434,6 +456,22 @@ int Glauber::perform_string_production() {
     for (std::vector<QCDString>::reverse_iterator it = QCD_string_list.rbegin();
             it != QCD_string_list.rend(); ++it) {
         if (sample_valence_quark) {
+            // record the freeze-out space-time position for the remnant of
+            // the collding nucleons at their last produced strings
+            auto proj_n = it->get_proj();
+            if (!proj_n.lock()->is_remnant_set()) {
+                proj_n.lock()->set_remnant(true);
+                auto x_frez = it->get_x_production();
+                proj_n.lock()->set_remnant_x_frez(x_frez);
+            }
+            auto targ_n = it->get_targ();
+            if (!targ_n.lock()->is_remnant_set()) {
+                targ_n.lock()->set_remnant(true);
+                auto x_frez = it->get_x_production();
+                targ_n.lock()->set_remnant_x_frez(x_frez);
+            }
+
+            // set flags for quark remnants at their last connected strings
             auto proj_q = it->get_proj_q();
             if (!proj_q.lock()->is_remnant_set()) {
                 proj_q.lock()->set_remnant(true);
@@ -541,6 +579,39 @@ void Glauber::output_QCD_strings(std::string filename, const real Npart,
             output << std::setw(15) << ival << "  ";
         }
         output << endl;
+    }
+    output.close();
+}
+
+
+void Glauber::output_remnants(std::string filename) const {
+    std::ofstream output(filename.c_str());
+    output << "# t[fm]  x[fm]  y[fm]  z[fm]  E[GeV]  px[GeV]  py[GeV]  pz[GeV]"
+           << endl;
+    auto proj_nucleon_list = projectile->get_nucleon_list();
+    auto targ_nucleon_list = target->get_nucleon_list();
+    output << std::scientific << std::setprecision(8);
+    for (auto &iproj: (*proj_nucleon_list)) {
+        if (iproj->is_wounded()) {
+            auto x_i = iproj->get_remnant_x_frez();
+            for (int i = 0; i < 4; i++)
+                output << std::setw(15) << x_i[i] << "  ";
+            auto p_i = iproj->get_remnant_p();
+            for (int i = 0; i < 4; i++)
+                output << std::setw(15) << p_i[i] << "  ";
+            output << endl;
+        }
+    }
+    for (auto &itarg: (*targ_nucleon_list)) {
+        if (itarg->is_wounded()) {
+            auto x_i = itarg->get_remnant_x_frez();
+            for (int i = 0; i < 4; i++)
+                output << std::setw(15) << x_i[i] << "  ";
+            auto p_i = itarg->get_remnant_p();
+            for (int i = 0; i < 4; i++)
+                output << std::setw(15) << p_i[i] << "  ";
+            output << endl;
+        }
     }
     output.close();
 }

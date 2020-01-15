@@ -96,7 +96,7 @@ class Nucleus {
     real get_z_max() const;
 
     void output_nucleon_positions(std::string filename) const;
-    
+
     void sample_valence_quarks_inside_nucleons(real ecm, int direction);
     void sample_quark_momentum_fraction(std::vector<real> &xQuark,
                                         const int number_of_quarkss) const;
