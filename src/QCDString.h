@@ -19,11 +19,13 @@ class QCDString {
     real y_i_left, y_i_right;
     real y_f_left, y_f_right;
     real y_f_baryon_left, y_f_baryon_right;
-    
+
     real eta_s_left, eta_s_right;
     real eta_s_baryon_left, eta_s_baryon_right;
-    
-    bool has_baryon_left, has_baryon_right;
+
+    bool has_baryon_left_, has_baryon_right_;
+    bool has_remnant_left_, has_remnant_right_;
+
     weak_ptr<Nucleon> proj;
     weak_ptr<Nucleon> targ;
     weak_ptr<Quark> proj_q;
@@ -88,15 +90,26 @@ class QCDString {
     real get_eta_s_baryon_right() const {return(eta_s_baryon_right);}
 
     void set_has_baryon_left(bool has_b_left) {
-        has_baryon_left = has_b_left;
+        has_baryon_left_ = has_b_left;
     }
 
     void set_has_baryon_right(bool has_b_right) {
-        has_baryon_right = has_b_right;
+        has_baryon_right_ = has_b_right;
     }
 
-    bool get_has_baryon_left() const {return(has_baryon_left);}
-    bool get_has_baryon_right() const {return(has_baryon_right);}
+    bool get_has_baryon_left() const {return(has_baryon_left_);}
+    bool get_has_baryon_right() const {return(has_baryon_right_);}
+
+    void set_has_remnant_left(bool has_r_left) {
+        has_remnant_left_ = has_r_left;
+    }
+
+    void set_has_remnant_right(bool has_r_right) {
+        has_remnant_right_ = has_r_right;
+    }
+
+    bool get_has_remnant_left() const {return(has_remnant_left_);}
+    bool get_has_remnant_right() const {return(has_remnant_right_);}
 
     weak_ptr<Nucleon> get_proj() {return(proj);}
     weak_ptr<Nucleon> get_targ() {return(targ);}

@@ -14,9 +14,10 @@ namespace MCGlb {
 class Nucleon : public Particle {
  private:
     std::vector<std::shared_ptr<Quark>> quark_list;
-    int collided_times;
-    bool wounded;
-    bool baryon_used;
+    int collided_times = 0;
+    bool wounded = false;
+    bool baryon_used = false;
+    bool remnant_set_ = false;
     std::vector<std::weak_ptr<Nucleon>> collide_with;
     std::vector<std::weak_ptr<Nucleon>> connected_with;
 
@@ -60,6 +61,9 @@ class Nucleon : public Particle {
         std::random_shuffle(quark_list.begin(), quark_list.end());
         return(quark_list[0]);
     }
+
+    bool is_remnant_set() const {return(remnant_set_);}
+    void set_remnant(bool remnant) {remnant_set_ = remnant;}
 };
 
 }

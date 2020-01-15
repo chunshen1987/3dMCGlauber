@@ -12,6 +12,7 @@ class Quark : public Particle {
  private:
     real pdf_x;
     real rapidity_q;
+    bool remnant_set_ = false;
 
  public:
     Quark() = default;
@@ -39,9 +40,11 @@ class Quark : public Particle {
     void set_rapidity(real rapidity_in) {rapidity_q = rapidity_in;}
     real get_rapidity() const {return(rapidity_q);}
 
+    bool is_remnant_set() const {return(remnant_set_);}
+    void set_remnant(bool remnant) {remnant_set_ = remnant;}
 };
 
 }
 
 
-#endif  // SRC_NUCLEON_H_
+#endif  // SRC_QUARK_H_
