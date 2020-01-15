@@ -54,11 +54,6 @@ void EventGenerator::generate_events(int nev, int event_id_offset) {
                 filename << "strings_event_" << event_id << ".dat";
                 mc_glauber_ptr->output_QCD_strings(filename.str(), Npart,
                                                    Ncoll, Nstrings, b);
-                if (parameter_list.get_use_quarks() > 0) {
-                    std::ostringstream filename1;
-                    filename1 << "remnants_event_" << event_id << ".dat";
-                    mc_glauber_ptr->output_remnants(filename1.str());
-                }
             }
 
             // write event information to the record file

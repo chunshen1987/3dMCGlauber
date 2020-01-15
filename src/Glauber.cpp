@@ -46,6 +46,8 @@ Glauber::Glauber(const MCGlb::Parameters &param_in,
     real alpha = alpha2/alpha1;
     yloss_param_a = alpha/(1. - alpha);
     yloss_param_b = alpha2/yloss_param_a;
+
+    ybeam = acosh(parameter_list.get_roots()/(2.*PhysConsts::MProton));
 }
 
 void Glauber::make_nuclei() {
@@ -516,11 +518,15 @@ void Glauber::output_QCD_strings(std::string filename, const real Npart,
                                  const real b) {
     std::ofstream output(filename.c_str());
     real total_energy = Npart*parameter_list.get_roots()/2.;
+    real net_Pz = ((projectile->get_number_of_wounded_nucleons()
+                    - target->get_number_of_wounded_nucleons())
+                   *parameter_list.get_roots()/2.);
     output << "# b = " << b << " fm " << "Npart = " << Npart
            << " Ncoll = " << Ncoll << " Nstrings = " << Nstrings
-           << " total_energy = " << total_energy << " GeV" << endl;
+           << " total_energy = " << total_energy << " GeV, "
+           << "net_Pz = " << net_Pz << " GeV" << endl;
 
-    output << "# norm  m_over_sigma[fm]  tau_form[fm]  tau_0[fm]  eta_s_0  "
+    output << "# mass[GeV]  m_over_sigma[fm]  tau_form[fm]  tau_0[fm]  eta_s_0  "
            << "x_perp[fm]  y_perp[fm]  "
            << "eta_s_left  eta_s_right  y_l  y_r  remnant_l  remnant_r "
            << "y_l_i  y_r_i "
@@ -533,6 +539,7 @@ void Glauber::output_QCD_strings(std::string filename, const real Npart,
     real baryon_fraction_left  = 0.;
     real baryon_fraction_right = 0.;
 
+    // output strings
     for (auto &it: QCD_string_list) {
         auto x_prod = it.get_x_production();
         auto tau_0  = sqrt(x_prod[0]*x_prod[0] - x_prod[3]*x_prod[3]);
@@ -562,8 +569,11 @@ void Glauber::output_QCD_strings(std::string filename, const real Npart,
             baryon_fraction_right = 0.0;
         }
 
+        auto mass = PhysConsts::MProton;
+        if (sample_valence_quark)
+            mass = PhysConsts::MQuarkValence;
         std::vector<real> output_array = {
-            1.0, it.get_m_over_sigma(), it.get_tau_form(),
+            mass, it.get_m_over_sigma(), it.get_tau_form(),
             tau_0, etas_0, x_prod[1], x_prod[2],
             it.get_eta_s_left(), it.get_eta_s_right(),
             it.get_y_f_left(), it.get_y_f_right(),
@@ -580,37 +590,80 @@ void Glauber::output_QCD_strings(std::string filename, const real Npart,
         }
         output << endl;
     }
-    output.close();
-}
 
+    // output the beam remnants
+    if (sample_valence_quark) {
+        auto proj_nucleon_list = projectile->get_nucleon_list();
+        for (auto &iproj: (*proj_nucleon_list)) {
+            if (iproj->is_wounded()) {
+                auto x_i = iproj->get_remnant_x_frez();
+                auto p_i = iproj->get_remnant_p();
+                auto tau_0  = sqrt(x_i[0]*x_i[0] - x_i[3]*x_i[3]);
+                auto etas_0 = 0.5*log((x_i[0] + x_i[3])/(x_i[0] - x_i[3]));
+                auto tau_th = 0.5;
+                auto y_rem = ybeam;
+                if (std::abs(p_i[3]) < p_i[0]) {
+                    // a time-like beam remnant
+                    y_rem = 0.5*log((p_i[0] + p_i[3])/(p_i[0] - p_i[3]));
+                }
+                auto m_rem = p_i[0]/cosh(y_rem);
+                auto t_f = x_i[0] + tau_th*cosh(y_rem);
+                auto z_f = x_i[3] + tau_th*sinh(y_rem);
+                auto eta_s_right = 0.5*log((t_f + z_f)/(t_f - z_f));
+                std::vector<real> output_array = {
+                    m_rem, 1.0, tau_th,
+                    tau_0, etas_0, x_i[1], x_i[2],
+                    0.0, eta_s_right,
+                    -ybeam, y_rem,
+                    0.0, 1.0,
+                    -ybeam, y_rem,
+                    0.0, eta_s_right,
+                    -ybeam, y_rem,
+                    0.0, 0.0
+                };
 
-void Glauber::output_remnants(std::string filename) const {
-    std::ofstream output(filename.c_str());
-    output << "# t[fm]  x[fm]  y[fm]  z[fm]  E[GeV]  px[GeV]  py[GeV]  pz[GeV]"
-           << endl;
-    auto proj_nucleon_list = projectile->get_nucleon_list();
-    auto targ_nucleon_list = target->get_nucleon_list();
-    output << std::scientific << std::setprecision(8);
-    for (auto &iproj: (*proj_nucleon_list)) {
-        if (iproj->is_wounded()) {
-            auto x_i = iproj->get_remnant_x_frez();
-            for (int i = 0; i < 4; i++)
-                output << std::setw(15) << x_i[i] << "  ";
-            auto p_i = iproj->get_remnant_p();
-            for (int i = 0; i < 4; i++)
-                output << std::setw(15) << p_i[i] << "  ";
-            output << endl;
+                output << std::scientific << std::setprecision(8);
+                for (auto &ival : output_array) {
+                    output << std::setw(15) << ival << "  ";
+                }
+                output << endl;
+            }
         }
-    }
-    for (auto &itarg: (*targ_nucleon_list)) {
-        if (itarg->is_wounded()) {
-            auto x_i = itarg->get_remnant_x_frez();
-            for (int i = 0; i < 4; i++)
-                output << std::setw(15) << x_i[i] << "  ";
-            auto p_i = itarg->get_remnant_p();
-            for (int i = 0; i < 4; i++)
-                output << std::setw(15) << p_i[i] << "  ";
-            output << endl;
+        auto targ_nucleon_list = target->get_nucleon_list();
+        for (auto &itarg: (*targ_nucleon_list)) {
+            if (itarg->is_wounded()) {
+                auto x_i = itarg->get_remnant_x_frez();
+                auto p_i = itarg->get_remnant_p();
+                auto tau_0  = sqrt(x_i[0]*x_i[0] - x_i[3]*x_i[3]);
+                auto etas_0 = 0.5*log((x_i[0] + x_i[3])/(x_i[0] - x_i[3]));
+                auto tau_th = 0.5;
+                auto y_rem = -ybeam;
+                if (std::abs(p_i[3]) < p_i[0]) {
+                    // a time-like beam remnant
+                    y_rem = 0.5*log((p_i[0] + p_i[3])/(p_i[0] - p_i[3]));
+                }
+                auto m_rem = p_i[0]/cosh(y_rem);
+                auto t_f = x_i[0] + tau_th*cosh(y_rem);
+                auto z_f = x_i[3] + tau_th*sinh(y_rem);
+                auto eta_s_left = 0.5*log((t_f + z_f)/(t_f - z_f));
+                std::vector<real> output_array = {
+                    m_rem, 1.0, tau_th,
+                    tau_0, etas_0, x_i[1], x_i[2],
+                    eta_s_left, 0.0,
+                    y_rem, ybeam,
+                    1.0, 0.0,
+                    y_rem, ybeam,
+                    eta_s_left, 0.0,
+                    y_rem, ybeam,
+                    0.0, 0.0
+                };
+
+                output << std::scientific << std::setprecision(8);
+                for (auto &ival : output_array) {
+                    output << std::setw(15) << ival << "  ";
+                }
+                output << endl;
+            }
         }
     }
     output.close();

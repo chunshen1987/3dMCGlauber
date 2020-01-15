@@ -34,6 +34,8 @@ class Glauber {
     real yloss_param_a;
     real yloss_param_b;
 
+    real ybeam;
+
  public:
     Glauber() = default;
     Glauber(const MCGlb::Parameters &param_in,
@@ -84,7 +86,6 @@ class Glauber {
     void output_QCD_strings(std::string filename, const real Npart,
                             const real Ncoll, const real Nstrings,
                             const real b);
-    void output_remnants(std::string filename) const;
 };
 
 }
