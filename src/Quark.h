@@ -13,6 +13,7 @@ class Quark : public Particle {
     real pdf_x;
     real rapidity_q;
     bool remnant_set_ = false;
+    int number_of_connections = 0;
 
  public:
     Quark() = default;
@@ -42,6 +43,9 @@ class Quark : public Particle {
 
     bool is_remnant_set() const {return(remnant_set_);}
     void set_remnant(bool remnant) {remnant_set_ = remnant;}
+
+    void add_a_connection() {number_of_connections++;}
+    int get_number_of_connections() const {return(number_of_connections);}
 };
 
 }

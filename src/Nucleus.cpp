@@ -172,7 +172,7 @@ void Nucleus::rotate_nucleus(real phi, real theta) {
 
 
 void Nucleus::sample_valence_quarks_inside_nucleons(real ecm, int direction) {
-    const int number_of_quarks = 3;
+    const int number_of_quarks = PhysConsts::NumValenceQuark;
     for (auto &nucleon_i: nucleon_list) {
         if (nucleon_i->is_wounded()
             && nucleon_i->get_number_of_quarks() == 0) {
@@ -497,7 +497,7 @@ void Nucleus::sample_quark_momentum_fraction(std::vector<real> &xQuark,
                                              const int number_of_quarks) const {
     if (!sample_valence_quarks) {
         for (int i = 0; i < number_of_quarks; i++) {
-            xQuark.push_back(1./3.);
+            xQuark.push_back(1./number_of_quarks);
         }
         return;
     }
@@ -507,7 +507,7 @@ void Nucleus::sample_quark_momentum_fraction(std::vector<real> &xQuark,
     // - if parameters are set to use EPS09 these will be changed
     real ruv = 1.;
     real rdv = 1.;
-  
+
     real x, xfdbar, xfd, xfubar, xfu, correction, tmp;
     real x_sum = 0.0;
     do {
@@ -522,7 +522,7 @@ void Nucleus::sample_quark_momentum_fraction(std::vector<real> &xQuark,
             }
             // ruv seems to be always equal to rdv,
             // so I am fine not distinguishing proton and neutron here
-      
+
             xfdbar     = pdf->xfxQ2(-1, x, Q2);
             xfd        = pdf->xfxQ2( 1, x, Q2);
             correction = exp(11.*pow(x, 2.6)) - 0.4;
@@ -535,7 +535,7 @@ void Nucleus::sample_quark_momentum_fraction(std::vector<real> &xQuark,
         for (int i = 1; i < number_of_quarks; i++) {
             do {
                 x = ran_gen_ptr.lock()->rand_uniform();
-          
+
                 if (A == 197 || A == 208) {
                     real ru, rd, rs, rc, rb, rg;
                     eps09(2, 1, A, x, sqrt(Q2), ruv, rdv, ru, rd, rs,

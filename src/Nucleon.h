@@ -57,10 +57,7 @@ class Nucleon : public Particle {
     void accelerate_quarks(real ecm, int direction);
     void lorentz_contraction(real gamma);
 
-    std::shared_ptr<Quark> get_a_valence_quark() {
-        std::random_shuffle(quark_list.begin(), quark_list.end());
-        return(quark_list[0]);
-    }
+    std::shared_ptr<Quark> get_a_valence_quark();
 
     bool is_remnant_set() const {return(remnant_set_);}
     void set_remnant(bool remnant) {remnant_set_ = remnant;}

@@ -22,7 +22,7 @@ class CollisionEvent {
     CollisionEvent() = default;
     CollisionEvent(SpatialVec x_in, std::shared_ptr<Nucleon> proj_in,
                    std::shared_ptr<Nucleon> targ_in);
-    
+
     bool operator< (const CollisionEvent &event1) const {
         return(x_coll[0] < event1.get_collision_time());
     }

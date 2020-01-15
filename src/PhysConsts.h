@@ -8,6 +8,7 @@ namespace PhysConsts {
 const float HBARC         = 0.19733;  // GeV*fm
 const float MProton       = 0.938;    // GeV
 const float MQuarkValence = 0.340;    // GeV
+const int   NumValenceQuark = 3;
 
 }
 
