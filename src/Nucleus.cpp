@@ -514,45 +514,44 @@ void Nucleus::sample_quark_momentum_fraction(std::vector<real> &xQuark,
     real x_sum = 0.0;
     do {
         x_sum = 0.0;
-        // one down quark (for proton, up for neutron)
-        do {
-            x = ran_gen_ptr.lock()->rand_uniform();
-            if (A == 197 || A == 208) {
-                real ru, rd, rs, rc, rb, rg;
-                eps09(2, 1, A, x, sqrt(Q2), ruv, rdv, ru, rd, rs,
-                      rc, rb, rg);
+        for (int i = 0; i < number_of_quarks; i++) {
+            real sample_species = ran_gen_ptr.lock()->rand_uniform();
+            if (sample_species < 1./3.) {
+                // one down and two up quarks (for proton)
+                do {
+                    x = ran_gen_ptr.lock()->rand_uniform();
+                    if (A == 197 || A == 208) {
+                        real ru, rd, rs, rc, rb, rg;
+                        eps09(2, 1, A, x, sqrt(Q2), ruv, rdv, ru, rd, rs,
+                              rc, rb, rg);
+                    }
+                    // ruv seems to be always equal to rdv,
+                    // so I am fine not distinguishing proton and neutron here
+
+                    xfdbar     = pdf->xfxQ2(-1, x, Q2);
+                    xfd        = pdf->xfxQ2( 1, x, Q2);
+                    correction = exp(11.*pow(x, 2.6)) - 0.4;
+                    tmp        = ran_gen_ptr.lock()->rand_uniform();
+                } while (tmp > ((xfd - xfdbar)*rdv)*correction);
+            } else {
+                do {
+                    x = ran_gen_ptr.lock()->rand_uniform();
+                    if (A == 197 || A == 208) {
+                        real ru, rd, rs, rc, rb, rg;
+                        eps09(2, 1, A, x, sqrt(Q2), ruv, rdv, ru, rd, rs,
+                              rc, rb, rg);
+                    }
+
+                    xfubar     = pdf->xfxQ2(-2, x, Q2);
+                    xfu        = pdf->xfxQ2( 2, x, Q2);
+                    correction = exp(16.*pow(x, 2.8)) - 0.5;
+                    tmp        = ran_gen_ptr.lock()->rand_uniform();
+                } while (tmp > ((xfu - xfubar)*ruv)*correction);
             }
-            // ruv seems to be always equal to rdv,
-            // so I am fine not distinguishing proton and neutron here
-
-            xfdbar     = pdf->xfxQ2(-1, x, Q2);
-            xfd        = pdf->xfxQ2( 1, x, Q2);
-            correction = exp(11.*pow(x, 2.6)) - 0.4;
-            tmp        = ran_gen_ptr.lock()->rand_uniform();
-        } while (tmp > ((xfd - xfdbar)*rdv)*correction);
-        quarkx[0] = x;
-        x_sum    += x;
-
-        // two up quarks (for proton, down for neutron)
-        for (int i = 1; i < number_of_quarks; i++) {
-            do {
-                x = ran_gen_ptr.lock()->rand_uniform();
-
-                if (A == 197 || A == 208) {
-                    real ru, rd, rs, rc, rb, rg;
-                    eps09(2, 1, A, x, sqrt(Q2), ruv, rdv, ru, rd, rs,
-                          rc, rb, rg);
-                }
-
-                xfubar     = pdf->xfxQ2(-2, x, Q2);
-                xfu        = pdf->xfxQ2( 2, x, Q2);
-                correction = exp(16.*pow(x, 2.8)) - 0.5;
-                tmp        = ran_gen_ptr.lock()->rand_uniform();
-            } while (tmp > ((xfu - xfubar)*ruv)*correction);
-            quarkx[i] = x; 
+            quarkx[i] = x;
             x_sum    += x;
         }
-    } while (x_sum > 1.);
+    } while (x_sum > 1. || x_sum < 0.95);
 
     for (int i = 0; i < number_of_quarks; i++) {
         xQuark.push_back(quarkx[i]);
@@ -563,18 +562,18 @@ void Nucleus::sample_quark_momentum_fraction(std::vector<real> &xQuark,
 SpatialVec Nucleus::sample_valence_quark_position() const {
     real phi   = 2.*M_PI*ran_gen_ptr.lock()->rand_uniform();
     real theta = acos(1. - 2.*ran_gen_ptr.lock()->rand_uniform());
- 
+
     const real a = 3.87;   // ???
     real r, tmp;
     do {
         // sample the radius from the envelope distribution
         r = (sqrt(3)*sqrt(-log(1. + (-1. + 1./exp(1000000/3))
                                     *ran_gen_ptr.lock()->rand_uniform())));
-      
+
         // sample uniform random number
         // to decide whether to accept or reject the sampled one
         tmp = ran_gen_ptr.lock()->rand_uniform();
-      
+
         // warn if the envelope happens to go below the actual distriution
         // (should never happen)
         //if (ExponentialDistribution(a, r) > (r/2.)/a*exp(-(r*r)/3.)) {
