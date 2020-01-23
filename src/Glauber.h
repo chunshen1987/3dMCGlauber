@@ -64,7 +64,12 @@ class Glauber {
 
     //! this function determines whether a given binary collision event
     //! will produce a string
-    bool decide_produce_string(shared_ptr<CollisionEvent> event_ptr) const;
+    int decide_produce_string_num(shared_ptr<CollisionEvent> event_ptr) const;
+
+    void get_tau_form_and_moversigma(const int string_evolution_mode,
+                                     const real y_in_lrf,
+                                     real &tau_form, real &m_over_sigma,
+                                     real &y_loss);
 
     real sample_rapidity_loss_shell(real y_init) const;
     real sample_rapidity_loss_from_the_LEXUS_model(real y_init) const;

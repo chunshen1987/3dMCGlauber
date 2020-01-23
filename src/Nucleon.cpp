@@ -25,6 +25,18 @@ bool Nucleon::is_connected_with(std::shared_ptr<Nucleon> targ) {
     return(connected);
 }
 
+
+int Nucleon::get_number_of_connections(std::shared_ptr<Nucleon> targ) const {
+    int n_connections = 0;
+    for (unsigned int idx = 0; idx < connected_with.size(); idx++) {
+        if (*(connected_with[idx].lock()) == *targ) {
+            n_connections = connected_times_[idx];
+            break;
+        }
+    }
+    return(n_connections);
+}
+
 void Nucleon::accelerate_quarks(real ecm, int direction) {
     const real mq = PhysConsts::MQuarkValence;
     const real mp = PhysConsts::MProton;

@@ -14,7 +14,7 @@ CollisionEvent::CollisionEvent(SpatialVec x_coll_in,
     x_coll = x_coll_in;
     proj_collided_times = proj_nucleon.lock()->get_collided_times();
     targ_collided_times = targ_nucleon.lock()->get_collided_times();
-    produced_a_string = false;
+    produced_n_strings_ = 0;
 }
 
 bool CollisionEvent::is_valid() const {

@@ -15,11 +15,13 @@ class Nucleon : public Particle {
  private:
     std::vector<std::shared_ptr<Quark>> quark_list;
     int collided_times = 0;
+    int total_connected_times_ = 0;
     bool wounded = false;
     bool baryon_used = false;
     bool remnant_set_ = false;
     std::vector<std::weak_ptr<Nucleon>> collide_with;
     std::vector<std::weak_ptr<Nucleon>> connected_with;
+    std::vector<int> connected_times_;
     MomentumVec remnant_p_ = {0.0, 0.0, 0.0, 0.0};
     SpatialVec remnant_x_frez_ = {0.0, 0.0, 0.0, 0.0};
 
@@ -52,10 +54,25 @@ class Nucleon : public Particle {
         return(&collide_with);
     }
 
-    int get_number_of_connections() {return(connected_with.size());}
     void add_connected_nucleon(std::weak_ptr<Nucleon> connected_nucleon) {
         connected_with.push_back(connected_nucleon);
     }
+
+    void add_num_connections(int N_connections) {
+        connected_times_.push_back(N_connections);
+        total_connected_times_ += N_connections;
+    }
+
+    int get_number_of_connections() const {
+        return(total_connected_times_);
+    }
+
+    int get_number_of_connections(const int idx) const {
+        return(connected_times_[idx]);
+    }
+
+    int get_number_of_connections(std::shared_ptr<Nucleon> targ) const;
+
     bool is_connected_with(std::shared_ptr<Nucleon> targ);
     void accelerate_quarks(real ecm, int direction);
     void lorentz_contraction(real gamma);

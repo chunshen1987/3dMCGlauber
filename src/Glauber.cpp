@@ -124,7 +124,8 @@ void Glauber::create_a_collision_event(shared_ptr<Nucleon> proj,
         shared_ptr<CollisionEvent> event_ptr(
                                     new CollisionEvent(x_coll, proj, targ));
         if (proj->is_connected_with(targ)) {
-            event_ptr->set_produced_a_string(true);
+            auto form_N_strings = proj->get_number_of_connections(targ);
+            event_ptr->set_produced_n_strings(form_N_strings);
         }
         collision_schedule.insert(event_ptr);
     }
@@ -154,18 +155,24 @@ real Glauber::compute_NN_inelastic_cross_section(real ecm) const {
 }
 
 
-bool Glauber::decide_produce_string(shared_ptr<CollisionEvent> event_ptr) const {
-    bool flag_form_a_string = false;
+int Glauber::decide_produce_string_num(shared_ptr<CollisionEvent> event_ptr) const {
+    int form_n_string = 0;
     auto proj = event_ptr->get_proj_nucleon_ptr().lock();
     auto targ = event_ptr->get_targ_nucleon_ptr().lock();
     int minimum_allowed_connections = 1;
     if (sample_valence_quark)
         minimum_allowed_connections = PhysConsts::NumValenceQuark;
+
     if (   proj->get_number_of_connections() < minimum_allowed_connections
+        && targ->get_number_of_connections() < minimum_allowed_connections) {
+        form_n_string = std::min(
+            minimum_allowed_connections - proj->get_number_of_connections(),
+            minimum_allowed_connections - targ->get_number_of_connections());
+    } else if (   proj->get_number_of_connections() < minimum_allowed_connections
         || targ->get_number_of_connections() < minimum_allowed_connections) {
         // bps: string gets flag for whether it has left or right
         // or both baryon numbers.
-        flag_form_a_string = true;
+        form_n_string = 1;
     } else {
         int n_connects = (  proj->get_number_of_connections()
                           + targ->get_number_of_connections());
@@ -175,10 +182,10 @@ bool Glauber::decide_produce_string(shared_ptr<CollisionEvent> event_ptr) const 
             *exp(-shadowing_factor*(n_connects
                                     - 2.*minimum_allowed_connections)));
         if (ran_gen_ptr.lock()->rand_uniform() < production_prob) {
-            flag_form_a_string = true;
+            form_n_string = 1;
         }
     }
-    return(flag_form_a_string);
+    return(form_n_string);
 }
 
 
@@ -202,14 +209,16 @@ int Glauber::decide_QCD_strings_production() {
     while (!finished) {
         finished = true;
         for (auto &ievent: collision_list) {
-            auto flag_form_a_string = decide_produce_string(ievent);
+            auto form_N_strings = decide_produce_string_num(ievent);
             auto proj = ievent->get_proj_nucleon_ptr();
             auto targ = ievent->get_targ_nucleon_ptr();
-            if (flag_form_a_string) {
-                number_of_strings++;
+            if (form_N_strings > 0) {
+                number_of_strings += form_N_strings;
                 proj.lock()->add_connected_nucleon(targ);
+                proj.lock()->add_num_connections(form_N_strings);
                 targ.lock()->add_connected_nucleon(proj);
-                ievent->set_produced_a_string(true);
+                targ.lock()->add_num_connections(form_N_strings);
+                ievent->set_produced_n_strings(form_N_strings);
             } else {
                 if (   proj.lock()->get_number_of_connections() == 0
                     || targ.lock()->get_number_of_connections() == 0)
@@ -261,6 +270,37 @@ void Glauber::update_momentum(shared_ptr<Nucleon> n_i, real y_shift) {
     n_i->set_p(pvec);
 }
 
+
+void Glauber::get_tau_form_and_moversigma(const int string_evolution_mode,
+                                          const real y_in_lrf,
+                                          real &tau_form, real &m_over_sigma,
+                                          real &y_loss) {
+    tau_form = 0.5;      // [fm]
+    m_over_sigma = 1.0;  // [fm]
+    y_loss = 0.;
+    if (string_evolution_mode == 1) {
+        // fixed rapidity loss
+        y_loss = (
+            acosh(tau_form*tau_form/(2.*m_over_sigma*m_over_sigma) + 1.));
+        // maximum 90% of y_in_lrf
+        y_loss = std::min(y_loss, y_in_lrf*0.9);
+        m_over_sigma = tau_form/sqrt(2.*(cosh(y_loss) - 1.));
+    } else if (string_evolution_mode == 2) {
+        // both tau_form and sigma fluctuate
+        y_loss = sample_rapidity_loss_shell(y_in_lrf);
+        tau_form = 0.5 + 1.*ran_gen_ptr.lock()->rand_uniform();
+        m_over_sigma = tau_form/sqrt(2.*(cosh(y_loss) - 1.));
+    } else if (string_evolution_mode == 3) {
+        // only tau_form fluctuates
+        y_loss = sample_rapidity_loss_shell(y_in_lrf);
+        tau_form = m_over_sigma*sqrt(2.*(cosh(y_loss) - 1.));
+    } else if (string_evolution_mode == 4) {
+        // only m_over_sigma fluctuates
+        y_loss = sample_rapidity_loss_shell(y_in_lrf);
+        m_over_sigma = tau_form/sqrt(2.*(cosh(y_loss) - 1.));
+    }
+}
+
 // add flag if baryon used to proj and target
 // - check it - only put in baryon if not used yet, then set it to used
 int Glauber::perform_string_production() {
@@ -294,93 +334,77 @@ int Glauber::perform_string_production() {
         assert(dt > 0.);
         t_current = first_event->get_collision_time();
         propagate_nuclei(dt);
-        if (!first_event->is_produced_a_string()) {
+        if (first_event->get_num_strings() == 0) {
             collision_schedule.erase((*collision_schedule.begin()));
             continue;
         }
-        auto x_coll = first_event->get_collision_position();
-        auto proj = first_event->get_proj_nucleon_ptr().lock();
-        auto targ = first_event->get_targ_nucleon_ptr().lock();
-        real y_in_lrf = std::abs(proj->get_rapidity()
-                                 - targ->get_rapidity())/2.;
-        std::shared_ptr<Quark> proj_q;
-        std::shared_ptr<Quark> targ_q;
-        if (sample_valence_quark) {
-            proj_q = proj->get_a_valence_quark();
-            if (proj_q->get_number_of_connections() == 1) {
-                // first time pick-up the valence quark
-                // we need to substract the valence quark energy-momentum
-                // from the nucleon remnant energy-momentum vector
-                MomentumVec p_q = {
-                    PhysConsts::MQuarkValence*cosh(proj_q->get_rapidity()),
-                    0.0,
-                    0.0,
-                    PhysConsts::MQuarkValence*sinh(proj_q->get_rapidity())};
-                proj->substract_momentum_from_remnant(p_q);
+        for (int istring = 0; istring < first_event->get_num_strings();
+                istring++) {
+            auto x_coll = first_event->get_collision_position();
+            auto proj = first_event->get_proj_nucleon_ptr().lock();
+            auto targ = first_event->get_targ_nucleon_ptr().lock();
+            real y_in_lrf = std::abs(proj->get_rapidity()
+                                     - targ->get_rapidity())/2.;
+            std::shared_ptr<Quark> proj_q;
+            std::shared_ptr<Quark> targ_q;
+            if (sample_valence_quark) {
+                proj_q = proj->get_a_valence_quark();
+                if (proj_q->get_number_of_connections() == 1) {
+                    // first time pick-up the valence quark
+                    // we need to substract the valence quark energy-momentum
+                    // from the nucleon remnant energy-momentum vector
+                    MomentumVec p_q = {
+                        PhysConsts::MQuarkValence*cosh(proj_q->get_rapidity()),
+                        0.0,
+                        0.0,
+                        PhysConsts::MQuarkValence*sinh(proj_q->get_rapidity())};
+                    proj->substract_momentum_from_remnant(p_q);
+                }
+                targ_q = targ->get_a_valence_quark();
+                if (targ_q->get_number_of_connections() == 1) {
+                    // first time pick-up the valence quark
+                    // we need to substract the valence quark energy-momentum
+                    // from the nucleon remnant energy-momentum vector
+                    MomentumVec p_q = {
+                        PhysConsts::MQuarkValence*cosh(targ_q->get_rapidity()),
+                        0.0,
+                        0.0,
+                        PhysConsts::MQuarkValence*sinh(targ_q->get_rapidity())};
+                    targ->substract_momentum_from_remnant(p_q);
+                }
+                y_in_lrf = std::abs(  proj_q->get_rapidity()
+                                    - targ_q->get_rapidity())/2.;
             }
-            targ_q = targ->get_a_valence_quark();
-            if (targ_q->get_number_of_connections() == 1) {
-                // first time pick-up the valence quark
-                // we need to substract the valence quark energy-momentum
-                // from the nucleon remnant energy-momentum vector
-                MomentumVec p_q = {
-                    PhysConsts::MQuarkValence*cosh(targ_q->get_rapidity()),
-                    0.0,
-                    0.0,
-                    PhysConsts::MQuarkValence*sinh(targ_q->get_rapidity())};
-                targ->substract_momentum_from_remnant(p_q);
+            real tau_form = 0.5;      // [fm]
+            real m_over_sigma = 1.0;  // [fm]
+            real y_loss = 0.;
+            get_tau_form_and_moversigma(string_evolution_mode, y_in_lrf,
+                                        tau_form, m_over_sigma, y_loss);
+            // set variables in case of no baryon junction transport
+            bool has_baryon_left = false;
+            bool has_baryon_right = false;
+            if (!sample_valence_quark) {
+                QCDString qcd_string(x_coll, tau_form, proj, targ, m_over_sigma,
+                                     has_baryon_right, has_baryon_left);
+                QCD_string_list.push_back(qcd_string);
+            } else {
+                QCDString qcd_string(x_coll, tau_form, proj, targ,
+                                     proj_q, targ_q, m_over_sigma,
+                                     has_baryon_right, has_baryon_left);
+                QCD_string_list.push_back(qcd_string);
             }
-            y_in_lrf = std::abs(  proj_q->get_rapidity()
-                                - targ_q->get_rapidity())/2.;
-        }
-        real tau_form = 0.5;      // [fm]
-        real m_over_sigma = 1.0;  // [fm]
-        real y_loss = 0.;
-        if (string_evolution_mode == 1) {
-            // fixed rapidity loss
-            y_loss = (
-                acosh(tau_form*tau_form/(2.*m_over_sigma*m_over_sigma) + 1.));
-            // maximum 90% of y_in_lrf
-            y_loss = std::min(y_loss, y_in_lrf*0.9);
-            m_over_sigma = tau_form/sqrt(2.*(cosh(y_loss) - 1.));
-        } else if (string_evolution_mode == 2) {
-            // both tau_form and sigma fluctuate
-            y_loss = sample_rapidity_loss_shell(y_in_lrf);
-            tau_form = 0.5 + 1.*ran_gen_ptr.lock()->rand_uniform();
-            m_over_sigma = tau_form/sqrt(2.*(cosh(y_loss) - 1.));
-        } else if (string_evolution_mode == 3) {
-            // only tau_form fluctuates
-            y_loss = sample_rapidity_loss_shell(y_in_lrf);
-            tau_form = m_over_sigma*sqrt(2.*(cosh(y_loss) - 1.));
-        } else if (string_evolution_mode == 4) {
-            // only m_over_sigma fluctuates
-            y_loss = sample_rapidity_loss_shell(y_in_lrf);
-            m_over_sigma = tau_form/sqrt(2.*(cosh(y_loss) - 1.));
-        }
-        // set variables in case of no baryon junction transport
-        bool has_baryon_left = false;
-        bool has_baryon_right = false;
-        if (!sample_valence_quark) {
-            QCDString qcd_string(x_coll, tau_form, proj, targ, m_over_sigma,
-                                 has_baryon_right, has_baryon_left);
-            QCD_string_list.push_back(qcd_string);
-        } else {
-            QCDString qcd_string(x_coll, tau_form, proj, targ,
-                                 proj_q, targ_q, m_over_sigma,
-                                 has_baryon_right, has_baryon_left);
-            QCD_string_list.push_back(qcd_string);
-        }
-        real y_shift = y_loss;
-        if (!sample_valence_quark) {
-            update_momentum(proj, -y_shift);
-            update_momentum(targ,  y_shift);
-        } else {
-            // shift the nucleon rapidity to avoid identical collision when
-            // update the collision schedule
-            update_momentum(proj, -1e-3*proj->get_rapidity());
-            update_momentum(targ, -1e-3*targ->get_rapidity());
-            update_momentum_quark(proj_q, -y_shift);
-            update_momentum_quark(targ_q, y_shift);
+            real y_shift = y_loss;
+            if (!sample_valence_quark) {
+                update_momentum(proj, -y_shift);
+                update_momentum(targ,  y_shift);
+            } else {
+                // shift the nucleon rapidity to avoid identical collision when
+                // update the collision schedule
+                update_momentum(proj, -1e-3*proj->get_rapidity());
+                update_momentum(targ, -1e-3*targ->get_rapidity());
+                update_momentum_quark(proj_q, -y_shift);
+                update_momentum_quark(targ_q, y_shift);
+            }
         }
         update_collision_schedule(first_event);
         collision_schedule.erase((*collision_schedule.begin()));
@@ -398,6 +422,9 @@ int Glauber::perform_string_production() {
             proj.lock()->set_baryon_used(true);
             QCD_string_list[idx].set_has_baryon_right(true);
         }
+    }
+    std::random_shuffle(random_idx.begin(), random_idx.end());
+    for (auto &idx: random_idx) {
         auto targ = QCD_string_list[idx].get_targ();
         if (!targ.lock()->baryon_was_used()) {
             targ.lock()->set_baryon_used(true);
@@ -600,7 +627,7 @@ void Glauber::output_QCD_strings(std::string filename, const real Npart,
                 auto p_i = iproj->get_remnant_p();
                 auto tau_0  = sqrt(x_i[0]*x_i[0] - x_i[3]*x_i[3]);
                 auto etas_0 = 0.5*log((x_i[0] + x_i[3])/(x_i[0] - x_i[3]));
-                auto tau_th = 0.5;
+                auto tau_th = 0.5 + 1.*ran_gen_ptr.lock()->rand_uniform();
                 auto y_rem = ybeam;
                 if (std::abs(p_i[3]) < p_i[0]) {
                     // a time-like beam remnant
@@ -636,7 +663,7 @@ void Glauber::output_QCD_strings(std::string filename, const real Npart,
                 auto p_i = itarg->get_remnant_p();
                 auto tau_0  = sqrt(x_i[0]*x_i[0] - x_i[3]*x_i[3]);
                 auto etas_0 = 0.5*log((x_i[0] + x_i[3])/(x_i[0] - x_i[3]));
-                auto tau_th = 0.5;
+                auto tau_th = 0.5 + 1.*ran_gen_ptr.lock()->rand_uniform();
                 auto y_rem = -ybeam;
                 if (std::abs(p_i[3]) < p_i[0]) {
                     // a time-like beam remnant
