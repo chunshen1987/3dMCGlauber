@@ -16,9 +16,10 @@ class Nucleon : public Particle {
     std::vector<std::shared_ptr<Quark>> quark_list;
     int collided_times = 0;
     int total_connected_times_ = 0;
-    bool wounded = false;
+    bool wounded_ = false;
     bool baryon_used = false;
     bool remnant_set_ = false;
+    bool remnant_carry_baryon_number_ = false;
     std::vector<std::weak_ptr<Nucleon>> collide_with;
     std::vector<std::weak_ptr<Nucleon>> connected_with;
     std::vector<int> connected_times_;
@@ -40,9 +41,9 @@ class Nucleon : public Particle {
     void push_back_quark(std::shared_ptr<Quark> q) {quark_list.push_back(q);}
     std::vector<std::shared_ptr<Quark>> get_quark_list() {return(quark_list);}
 
-    bool is_wounded() const {return(wounded);}
+    bool is_wounded() const {return(wounded_);}
     bool baryon_was_used() const {return(baryon_used);}
-    void set_wounded(bool hit) {wounded = hit;}
+    void set_wounded(bool hit) {wounded_ = hit;}
     void set_baryon_used(bool hit) {baryon_used = hit;}
 
     void increment_collided_times() {collided_times++;}
@@ -81,6 +82,13 @@ class Nucleon : public Particle {
 
     bool is_remnant_set() const {return(remnant_set_);}
     void set_remnant(bool remnant) {remnant_set_ = remnant;}
+
+    bool is_remnant_carry_baryon_number() const {
+        return(remnant_carry_baryon_number_);
+    }
+    void set_remnant_carry_baryon_number(bool remnant) {
+        remnant_carry_baryon_number_ = remnant;
+    }
 
     void set_remnant_p(MomentumVec p_in) {remnant_p_ = p_in;}
     MomentumVec get_remnant_p() const {return(remnant_p_);}

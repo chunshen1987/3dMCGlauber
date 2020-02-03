@@ -86,6 +86,8 @@ int Glauber::make_collision_schedule() {
                         + (targ_x[2] - proj_x[2])*(targ_x[2] - proj_x[2]));
             if (hit(dij, d2)) {
                 create_a_collision_event(iproj, itarg);
+                projectile->add_a_participant(iproj);
+                target->add_a_participant(itarg);
                 iproj->set_wounded(true);
                 itarg->set_wounded(true);
                 iproj->add_collide_nucleon(itarg);
@@ -160,8 +162,10 @@ int Glauber::decide_produce_string_num(shared_ptr<CollisionEvent> event_ptr) con
     auto proj = event_ptr->get_proj_nucleon_ptr().lock();
     auto targ = event_ptr->get_targ_nucleon_ptr().lock();
     int minimum_allowed_connections = 1;
-    if (sample_valence_quark)
-        minimum_allowed_connections = PhysConsts::NumValenceQuark;
+    if (sample_valence_quark) {
+        //minimum_allowed_connections = PhysConsts::NumValenceQuark;
+        minimum_allowed_connections = 2;
+    }
 
     if (   proj->get_number_of_connections() < minimum_allowed_connections
         && targ->get_number_of_connections() < minimum_allowed_connections) {
@@ -413,22 +417,46 @@ int Glauber::perform_string_production() {
     // randomize the QCD_string_list and assign the baryon charge to
     // the strings
     std::vector<unsigned int> random_idx;
-    for (unsigned int idx = 0; idx < QCD_string_list.size(); idx++)
+    unsigned int Nstrings = QCD_string_list.size();
+    unsigned int Npart_proj = projectile->get_number_of_wounded_nucleons();
+    unsigned int Npart_targ = target->get_number_of_wounded_nucleons();
+    unsigned int total_length = Nstrings + Npart_proj + Npart_targ;
+    for (unsigned int idx = 0; idx < total_length; idx++)
         random_idx.push_back(idx);
     std::random_shuffle(random_idx.begin(), random_idx.end());
     for (auto &idx: random_idx) {
-        auto proj = QCD_string_list[idx].get_proj();
-        if (!proj.lock()->baryon_was_used()) {
-            proj.lock()->set_baryon_used(true);
-            QCD_string_list[idx].set_has_baryon_right(true);
+        if (idx < Nstrings) {
+            // put baryon of the projectile in the selected string
+            auto proj = QCD_string_list[idx].get_proj();
+            if (!proj.lock()->baryon_was_used()) {
+                proj.lock()->set_baryon_used(true);
+                QCD_string_list[idx].set_has_baryon_right(true);
+            }
+        } else if (idx < Nstrings + Npart_proj) {
+            // put baryon of the projectile in the projectile remnant
+            auto proj = projectile->get_participant(idx - Nstrings);
+            if (!proj.lock()->baryon_was_used()) {
+                proj.lock()->set_baryon_used(true);
+                proj.lock()->set_remnant_carry_baryon_number(true);
+            }
         }
     }
     std::random_shuffle(random_idx.begin(), random_idx.end());
     for (auto &idx: random_idx) {
-        auto targ = QCD_string_list[idx].get_targ();
-        if (!targ.lock()->baryon_was_used()) {
-            targ.lock()->set_baryon_used(true);
-            QCD_string_list[idx].set_has_baryon_left(true);
+        if (idx < Nstrings) {
+            // put baryon of the target in the selected string
+            auto targ = QCD_string_list[idx].get_targ();
+            if (!targ.lock()->baryon_was_used()) {
+                targ.lock()->set_baryon_used(true);
+                QCD_string_list[idx].set_has_baryon_left(true);
+            }
+        } else if (idx > Nstrings + Npart_proj - 1) {
+            // put baryon of the target in the target remnant
+            auto targ = target->get_participant(idx - Nstrings - Npart_proj);
+            if (!targ.lock()->baryon_was_used()) {
+                targ.lock()->set_baryon_used(true);
+                targ.lock()->set_remnant_carry_baryon_number(true);
+            }
         }
     }
 
@@ -561,39 +589,30 @@ void Glauber::output_QCD_strings(std::string filename, const real Npart,
            << "baryon_fraction_l  baryon_fraction_r"
            << endl;
 
-    real remnant_left  = 0.;
-    real remnant_right = 0.;
-    real baryon_fraction_left  = 0.;
-    real baryon_fraction_right = 0.;
-
     // output strings
     for (auto &it: QCD_string_list) {
         auto x_prod = it.get_x_production();
         auto tau_0  = sqrt(x_prod[0]*x_prod[0] - x_prod[3]*x_prod[3]);
         auto etas_0 = 0.5*log((x_prod[0] + x_prod[3])/(x_prod[0] - x_prod[3]));
 
+        real remnant_left  = 0.;
         if (it.get_has_remnant_left()) {
             remnant_left = 1.0;
-        } else {
-            remnant_left = 0.0;
         }
 
+        real remnant_right = 0.;
         if (it.get_has_remnant_right()) {
             remnant_right = 1.0;
-        } else {
-            remnant_right = 0.0;
         }
 
+        real baryon_fraction_left  = 0.;
         if (it.get_has_baryon_left()) {
             baryon_fraction_left = 1.0;
-        } else {
-            baryon_fraction_left = 0.0;
         }
 
+        real baryon_fraction_right = 0.;
         if (it.get_has_baryon_right()) {
             baryon_fraction_right = 1.0;
-        } else {
-            baryon_fraction_right = 0.0;
         }
 
         auto mass = PhysConsts::MProton;
@@ -637,6 +656,10 @@ void Glauber::output_QCD_strings(std::string filename, const real Npart,
                 auto t_f = x_i[0] + tau_th*cosh(y_rem);
                 auto z_f = x_i[3] + tau_th*sinh(y_rem);
                 auto eta_s_right = 0.5*log((t_f + z_f)/(t_f - z_f));
+                real baryon_fraction_right  = 0.;
+                if (iproj->is_remnant_carry_baryon_number()) {
+                    baryon_fraction_right = 1.0;
+                }
                 std::vector<real> output_array = {
                     m_rem, 1.0, tau_th,
                     tau_0, etas_0, x_i[1], x_i[2],
@@ -646,7 +669,7 @@ void Glauber::output_QCD_strings(std::string filename, const real Npart,
                     y_rem, y_rem,
                     eta_s_right, eta_s_right,
                     y_rem, y_rem,
-                    0.0, 0.0
+                    0.0, baryon_fraction_right,
                 };
 
                 output << std::scientific << std::setprecision(8);
@@ -673,6 +696,10 @@ void Glauber::output_QCD_strings(std::string filename, const real Npart,
                 auto t_f = x_i[0] + tau_th*cosh(y_rem);
                 auto z_f = x_i[3] + tau_th*sinh(y_rem);
                 auto eta_s_left = 0.5*log((t_f + z_f)/(t_f - z_f));
+                real baryon_fraction_left  = 0.;
+                if (itarg->is_remnant_carry_baryon_number()) {
+                    baryon_fraction_left = 1.0;
+                }
                 std::vector<real> output_array = {
                     m_rem, 1.0, tau_th,
                     tau_0, etas_0, x_i[1], x_i[2],
@@ -682,7 +709,7 @@ void Glauber::output_QCD_strings(std::string filename, const real Npart,
                     y_rem, y_rem,
                     eta_s_left, eta_s_left,
                     y_rem, y_rem,
-                    0.0, 0.0
+                    baryon_fraction_left, 0.0,
                 };
 
                 output << std::scientific << std::setprecision(8);

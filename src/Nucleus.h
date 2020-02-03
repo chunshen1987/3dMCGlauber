@@ -19,16 +19,17 @@ class Nucleus {
  private:
     std::string name;
     int density_function_type;
-    int A;
-    int Z;
-    bool deformed;
+    int A_;
+    int Z_;
+    bool deformed_;
     WoodsSaxonParam WS_param_vec;       // rho, w, R, a, beta2, beta4
-    real d_min;                         // minimum distance between nucleons
+    real d_min_;                         // minimum distance between nucleons
     bool sample_valence_quarks;
     std::unique_ptr<LHAPDF::PDF> pdf;
     real Q2;                            // Q2 when sampling valence quark
 
-    std::vector<std::shared_ptr<Nucleon>> nucleon_list;
+    std::vector<std::shared_ptr<Nucleon>> nucleon_list_;
+    std::vector<std::shared_ptr<Nucleon>> participant_list_;
     std::weak_ptr<RandomUtil::Random> ran_gen_ptr;
 
  public:
@@ -36,7 +37,7 @@ class Nucleus {
     Nucleus(std::string nucleus_name,
             std::shared_ptr<RandomUtil::Random> ran_gen,
             bool sample_valence_quarks=false,
-            real d_min_in=0.9, bool deformed_in=true);
+            real d_min=0.9, bool deformed=true);
     ~Nucleus();
 
     std::string get_name() const {return(name);}
@@ -49,12 +50,19 @@ class Nucleus {
                                     real rho, real w, real R, real a,
                                     real beta2, real beta4,
                                     int density_function_type_in);
-    void set_dmin (real d_min_in) {d_min = d_min_in;}
-    real get_nucleon_minimum_distance() const {return(d_min);}
-    int get_nucleus_A() const {return(A);}
-    int get_nucleus_Z() const {return(Z);}
+    void set_dmin (real d_min) {d_min_ = d_min;}
+    real get_nucleon_minimum_distance() const {return(d_min_);}
+    int get_nucleus_A() const {return(A_);}
+    int get_nucleus_Z() const {return(Z_);}
     WoodsSaxonParam get_woods_saxon_parameters() const {return(WS_param_vec);}
-    bool is_deformed() const {return(deformed);}
+    bool is_deformed() const {return(deformed_);}
+
+    void add_a_participant(std::shared_ptr<Nucleon> ipart) {
+        if (!ipart->is_wounded()) {
+            // only at ipart one time
+            participant_list_.push_back(ipart);
+        }
+    }
 
     //! This function generates the spatial and momentum configurations
     //! for the nucleus
@@ -76,14 +84,19 @@ class Nucleus {
     real fermi_distribution(real r, real R_WS, real a_WS) const;
     real spherical_harmonics(int l, real ct) const;
 
-    int get_number_of_nucleons() const {return(nucleon_list.size());}
-    std::shared_ptr<Nucleon> get_nucleon(int idx) {
-        return(nucleon_list.at(idx));
+    int get_number_of_nucleons() const {return(nucleon_list_.size());}
+    std::shared_ptr<Nucleon> get_nucleon(unsigned int idx) {
+        return(nucleon_list_.at(idx));
     }
     std::vector<std::shared_ptr<Nucleon>>* get_nucleon_list() {
-        return(&nucleon_list);
+        return(&nucleon_list_);
     }
-    int get_number_of_wounded_nucleons() const;
+    int get_number_of_wounded_nucleons() const {
+        return(static_cast<int>(participant_list_.size()));
+    }
+    std::weak_ptr<Nucleon> get_participant(unsigned int idx) {
+        return(participant_list_.at(idx));
+    }
 
     void shift_nucleus(SpatialVec x_shift);
     void recenter_nucleus();
