@@ -108,7 +108,7 @@ real Parameters::get_shadowing_factor() const {
 real Parameters::get_yloss_param_slope() const {
     real slope = static_cast<real>(get_param_double("yloss_param_slope"));
     assert(slope >= 0.);
-    assert(slope <= 1.);
+    //assert(slope <= 1.);
     return(slope);
 }
 
