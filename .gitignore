@@ -9,3 +9,4 @@ build/
 *.txt
 LHAPDF_Lib/
 lib/
+*.dat
