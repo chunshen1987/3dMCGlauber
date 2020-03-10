@@ -34,11 +34,13 @@ Nucleus::Nucleus(std::string nucleus_name,
         const int imem = 0;
         pdf = std::unique_ptr<LHAPDF::PDF>(LHAPDF::mkPDF(setname, imem));
     }
+    triton_initialized_ = false;
 }
 
 Nucleus::~Nucleus() {
     participant_list_.clear();
     nucleon_list_.clear();
+    triton_pos_.clear();
 }
 
 
@@ -112,6 +114,8 @@ void Nucleus::generate_nucleus_3d_configuration() {
         nucleon_list_.push_back(std::move(nucleon_ptr));
     } else if (A_ == 2) {  // deuteron
         generate_deuteron_configuration();
+    } else if (A_ == 3) {   // triton or He3
+        generate_triton_configuration();
     } else {  // other nucleus
         if (!deformed_) {
             generate_nucleus_configuration_with_woods_saxon();
@@ -121,8 +125,8 @@ void Nucleus::generate_nucleus_3d_configuration() {
     }
     recenter_nucleus();
 
-    real phi   = 2.*M_PI*ran_gen_ptr.lock()->rand_uniform();
-    real theta = acos(1. - 2.*ran_gen_ptr.lock()->rand_uniform());
+    real phi   = 2.*M_PI*ran_gen_ptr->rand_uniform();
+    real theta = acos(1. - 2.*ran_gen_ptr->rand_uniform());
     rotate_nucleus(phi, theta);
 }
 
@@ -192,11 +196,10 @@ void Nucleus::sample_valence_quarks_inside_nucleons(real ecm, int direction) {
 
 void Nucleus::generate_deuteron_configuration() {
     // sample the distance between the two nucleons
-    real r_dis = get_inverse_CDF_hulthen_function(
-                                        ran_gen_ptr.lock()->rand_uniform());
+    real r_dis = get_inverse_CDF_hulthen_function(ran_gen_ptr->rand_uniform());
     // sample the solid angles
-    real phi = 2.*M_PI*ran_gen_ptr.lock()->rand_uniform();
-    real theta = acos(1. - 2.*ran_gen_ptr.lock()->rand_uniform());
+    real phi = 2.*M_PI*ran_gen_ptr->rand_uniform();
+    real theta = acos(1. - 2.*ran_gen_ptr->rand_uniform());
 
     // calculate the spatial poisition in the center of mass frame
     real x = 0.5*r_dis*sin(theta)*cos(phi);
@@ -256,14 +259,60 @@ real Nucleus::hulthen_function_CDF(real r) const {
 }
 
 
+void Nucleus::readin_triton_position() {
+    // This function reads in spatial configuration for triton
+    std::ifstream triton_position("tables/triton_positions.dat");
+    if (!triton_position.good()) {
+        std::cout << "Triton configurations are not found!" << std::endl;
+        std::cout << "Please check file tables/triton_positions.dat."
+                  << std::endl;
+        exit(1);
+    }
+    double x1, y1, z1, x2, y2, z2, x3, y3, z3;
+    triton_position >> x1 >> y1 >> z1 >> x2 >> y2 >> z2 >> x3 >> y3 >> z3;
+    while (!triton_position.eof()) {
+        std::array<double, 9> temp;
+        temp = {x1, y1, z1, x2, y2, z2, x3, y3, z3};
+        triton_pos_.push_back(temp);
+        triton_position >> x1 >> y1 >> z1 >> x2 >> y2 >> z2 >> x3 >> y3 >> z3;
+    }
+    triton_position.close();
+    triton_initialized_ = true;
+}
+
+
+void Nucleus::generate_triton_configuration() {
+    // This function samples the spatial configuration for triton
+    if (!triton_initialized_)
+        readin_triton_position();
+    const int num_configuration = triton_pos_.size();
+    const int rand_num = static_cast<int>(
+                            ran_gen_ptr->rand_uniform()*num_configuration);
+    auto pos_i = triton_pos_[rand_num];
+    SpatialVec  x_1 = {0.0, pos_i[0], pos_i[1], pos_i[2]};
+    SpatialVec  x_2 = {0.0, pos_i[3], pos_i[4], pos_i[5]};
+    SpatialVec  x_3 = {0.0, pos_i[6], pos_i[7], pos_i[8]};
+    MomentumVec p_1 = {0.0};
+    MomentumVec p_2 = p_1;
+    MomentumVec p_3 = p_1;
+
+    std::shared_ptr<Nucleon> nucleon1_ptr(new Nucleon(x_1, p_1));
+    nucleon_list_.push_back(std::move(nucleon1_ptr));
+    std::shared_ptr<Nucleon> nucleon2_ptr(new Nucleon(x_2, p_2));
+    nucleon_list_.push_back(std::move(nucleon2_ptr));
+    std::shared_ptr<Nucleon> nucleon3_ptr(new Nucleon(x_3, p_3));
+    nucleon_list_.push_back(std::move(nucleon3_ptr));
+}
+
+
 real Nucleus::sample_r_from_woods_saxon() const {
     real a_WS = WS_param_vec[3];
     real R_WS = WS_param_vec[2];
     real rmaxCut = R_WS + 10.*a_WS;
     real r = 0.;
     do {
-        r = rmaxCut*pow(ran_gen_ptr.lock()->rand_uniform(), 1.0/3.0);
-    } while (ran_gen_ptr.lock()->rand_uniform()
+        r = rmaxCut*pow(ran_gen_ptr->rand_uniform(), 1.0/3.0);
+    } while (ran_gen_ptr->rand_uniform()
                     > fermi_distribution(r, R_WS, a_WS));
     return(r);
 }
@@ -278,12 +327,12 @@ void Nucleus::sample_r_and_costheta_from_deformed_woods_saxon(
     real rmaxCut = R_WS + 10.*a_WS;
     real R_WS_theta = R_WS;
     do {
-        r = rmaxCut*pow(ran_gen_ptr.lock()->rand_uniform(), 1.0/3.0);
-        costheta = 1.0 - 2.0*ran_gen_ptr.lock()->rand_uniform();
+        r = rmaxCut*pow(ran_gen_ptr->rand_uniform(), 1.0/3.0);
+        costheta = 1.0 - 2.0*ran_gen_ptr->rand_uniform();
         real y20 = spherical_harmonics(2, costheta);
         real y40 = spherical_harmonics(4, costheta);
         R_WS_theta = R_WS*(1.0 + beta2*y20 + beta4*y40);
-    } while (ran_gen_ptr.lock()->rand_uniform()
+    } while (ran_gen_ptr->rand_uniform()
              > fermi_distribution(r, R_WS_theta, a_WS));
 }
 
@@ -304,8 +353,8 @@ void Nucleus::generate_nucleus_configuration_with_woods_saxon() {
         do {
             iter++;
             reject_flag = 0;
-            real phi    = 2.*M_PI*ran_gen_ptr.lock()->rand_uniform();
-            real theta  = acos(1. - 2.*ran_gen_ptr.lock()->rand_uniform());
+            real phi    = 2.*M_PI*ran_gen_ptr->rand_uniform();
+            real theta  = acos(1. - 2.*ran_gen_ptr->rand_uniform());
             x_i = r_i*sin(theta)*cos(phi);
             y_i = r_i*sin(theta)*sin(phi);
             z_i = r_i*cos(theta);
@@ -360,7 +409,7 @@ void Nucleus::generate_nucleus_configuration_with_deformed_woods_saxon() {
         do {
             iter++;
             reject_flag = 0;
-            real phi    = 2.*M_PI*ran_gen_ptr.lock()->rand_uniform();
+            real phi    = 2.*M_PI*ran_gen_ptr->rand_uniform();
             x_i = r_i*sin(theta_i)*cos(phi);
             y_i = r_i*sin(theta_i)*sin(phi);
             z_i = r_i*cos(theta_i);
@@ -508,11 +557,11 @@ void Nucleus::sample_quark_momentum_fraction(std::vector<real> &xQuark,
     do {
         x_sum = 0.0;
         for (int i = 0; i < number_of_quarks; i++) {
-            real sample_species = ran_gen_ptr.lock()->rand_uniform();
+            real sample_species = ran_gen_ptr->rand_uniform();
             if (sample_species < 1./3.) {
                 // one down and two up quarks (for proton)
                 do {
-                    x = ran_gen_ptr.lock()->rand_uniform();
+                    x = ran_gen_ptr->rand_uniform();
                     if (A_ == 197 || A_ == 208) {
                         real ru, rd, rs, rc, rb, rg;
                         eps09(2, 1, A_, x, sqrt(Q2), ruv, rdv, ru, rd, rs,
@@ -524,11 +573,11 @@ void Nucleus::sample_quark_momentum_fraction(std::vector<real> &xQuark,
                     xfdbar     = pdf->xfxQ2(-1, x, Q2);
                     xfd        = pdf->xfxQ2( 1, x, Q2);
                     correction = exp(11.*pow(x, 2.6)) - 0.4;
-                    tmp        = ran_gen_ptr.lock()->rand_uniform();
+                    tmp        = ran_gen_ptr->rand_uniform();
                 } while (tmp > ((xfd - xfdbar)*rdv)*correction);
             } else {
                 do {
-                    x = ran_gen_ptr.lock()->rand_uniform();
+                    x = ran_gen_ptr->rand_uniform();
                     if (A_ == 197 || A_ == 208) {
                         real ru, rd, rs, rc, rb, rg;
                         eps09(2, 1, A_, x, sqrt(Q2), ruv, rdv, ru, rd, rs,
@@ -538,7 +587,7 @@ void Nucleus::sample_quark_momentum_fraction(std::vector<real> &xQuark,
                     xfubar     = pdf->xfxQ2(-2, x, Q2);
                     xfu        = pdf->xfxQ2( 2, x, Q2);
                     correction = exp(16.*pow(x, 2.8)) - 0.5;
-                    tmp        = ran_gen_ptr.lock()->rand_uniform();
+                    tmp        = ran_gen_ptr->rand_uniform();
                 } while (tmp > ((xfu - xfubar)*ruv)*correction);
             }
             quarkx[i] = x;
@@ -553,19 +602,19 @@ void Nucleus::sample_quark_momentum_fraction(std::vector<real> &xQuark,
 
 
 SpatialVec Nucleus::sample_valence_quark_position() const {
-    real phi   = 2.*M_PI*ran_gen_ptr.lock()->rand_uniform();
-    real theta = acos(1. - 2.*ran_gen_ptr.lock()->rand_uniform());
+    real phi   = 2.*M_PI*ran_gen_ptr->rand_uniform();
+    real theta = acos(1. - 2.*ran_gen_ptr->rand_uniform());
 
     const real a = 3.87;   // ???
     real r, tmp;
     do {
         // sample the radius from the envelope distribution
         r = (sqrt(3)*sqrt(-log(1. + (-1. + 1./exp(1000000/3))
-                                    *ran_gen_ptr.lock()->rand_uniform())));
+                                    *ran_gen_ptr->rand_uniform())));
 
         // sample uniform random number
         // to decide whether to accept or reject the sampled one
-        tmp = ran_gen_ptr.lock()->rand_uniform();
+        tmp = ran_gen_ptr->rand_uniform();
 
         // warn if the envelope happens to go below the actual distriution
         // (should never happen)
