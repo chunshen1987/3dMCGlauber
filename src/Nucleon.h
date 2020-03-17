@@ -26,7 +26,6 @@ class Nucleon : public Particle {
     MomentumVec remnant_p_ = {0.0, 0.0, 0.0, 0.0};
     SpatialVec remnant_x_frez_ = {0.0, 0.0, 0.0, 0.0};
 
-
  public:
     Nucleon() = default;
     Nucleon(SpatialVec x_in, MomentumVec p_in);

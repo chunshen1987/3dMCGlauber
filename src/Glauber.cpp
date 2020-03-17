@@ -653,8 +653,10 @@ void Glauber::output_QCD_strings(std::string filename, const real Npart,
                     y_rem = 0.5*log((p_i[0] + p_i[3])/(p_i[0] - p_i[3]));
                 }
                 auto m_rem = p_i[0]/cosh(y_rem);
-                auto t_f = x_i[0] + tau_th*cosh(y_rem);
-                auto z_f = x_i[3] + tau_th*sinh(y_rem);
+                //auto t_f = x_i[0] + tau_th*cosh(y_rem);
+                //auto z_f = x_i[3] + tau_th*sinh(y_rem);
+                auto t_f = x_i[0] + tau_th;
+                auto z_f = x_i[3] + tau_th*tanh(y_rem);
                 auto eta_s_right = 0.5*log((t_f + z_f)/(t_f - z_f));
                 real baryon_fraction_right  = 0.;
                 if (iproj->is_remnant_carry_baryon_number()) {
@@ -693,8 +695,10 @@ void Glauber::output_QCD_strings(std::string filename, const real Npart,
                     y_rem = 0.5*log((p_i[0] + p_i[3])/(p_i[0] - p_i[3]));
                 }
                 auto m_rem = p_i[0]/cosh(y_rem);
-                auto t_f = x_i[0] + tau_th*cosh(y_rem);
-                auto z_f = x_i[3] + tau_th*sinh(y_rem);
+                //auto t_f = x_i[0] + tau_th*cosh(y_rem);
+                //auto z_f = x_i[3] + tau_th*sinh(y_rem);
+                auto t_f = x_i[0] + tau_th;
+                auto z_f = x_i[3] + tau_th*tanh(y_rem);
                 auto eta_s_left = 0.5*log((t_f + z_f)/(t_f - z_f));
                 real baryon_fraction_left  = 0.;
                 if (itarg->is_remnant_carry_baryon_number()) {

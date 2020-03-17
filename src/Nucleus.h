@@ -30,7 +30,10 @@ class Nucleus {
 
     std::vector<std::shared_ptr<Nucleon>> nucleon_list_;
     std::vector<std::shared_ptr<Nucleon>> participant_list_;
-    std::weak_ptr<RandomUtil::Random> ran_gen_ptr;
+    std::shared_ptr<RandomUtil::Random> ran_gen_ptr;
+
+    bool triton_initialized_;
+    std::vector< std::array<double, 9> > triton_pos_;
 
  public:
     Nucleus() = default;
@@ -41,7 +44,7 @@ class Nucleus {
     ~Nucleus();
 
     std::string get_name() const {return(name);}
-    int get_random_seed() const {return(ran_gen_ptr.lock()->get_seed());}
+    int get_random_seed() const {return(ran_gen_ptr->get_seed());}
 
     void set_valence_quark_Q2(real Q2_q) {Q2 = Q2_q;}
     //! This function set Woods-Saxon parameters based on the nucleus name
@@ -73,6 +76,12 @@ class Nucleus {
     real get_inverse_CDF_hulthen_function(real y) const;
     //! The Hulthen function for deutron wavefunction
     real hulthen_function_CDF(real r) const;
+
+    //! Read in spatial configuration for triton
+    void readin_triton_position();
+    //! This function samples the spatial configuration for triton
+    void generate_triton_configuration();
+
     //! This function samples a nucleon spatial configuration according to
     //! the Fermi Distribution
     void generate_nucleus_configuration_with_woods_saxon();
