@@ -38,7 +38,6 @@ Glauber::Glauber(const MCGlb::Parameters &param_in,
         target->set_valence_quark_Q2(parameter_list.get_quarks_Q2());
     }
     ran_gen_ptr = ran_gen;
-    string_production_mode = parameter_list.get_QCD_string_production_mode();
 
     yloss_param_slope = parameter_list.get_yloss_param_slope();
     real alpha1 = parameter_list.get_yloss_param_alpha1();
@@ -639,6 +638,8 @@ void Glauber::output_QCD_strings(std::string filename, const real Npart,
 
     // output the beam remnants
     if (sample_valence_quark) {
+        const auto string_evolution_mode = (
+                    parameter_list.get_QCD_string_evolution_mode());
         auto proj_nucleon_list = projectile->get_nucleon_list();
         for (auto &iproj: (*proj_nucleon_list)) {
             if (iproj->is_wounded()) {
@@ -646,17 +647,18 @@ void Glauber::output_QCD_strings(std::string filename, const real Npart,
                 auto p_i = iproj->get_remnant_p();
                 auto tau_0  = sqrt(x_i[0]*x_i[0] - x_i[3]*x_i[3]);
                 auto etas_0 = 0.5*log((x_i[0] + x_i[3])/(x_i[0] - x_i[3]));
-                auto tau_th = 0.5 + 1.*ran_gen_ptr.lock()->rand_uniform();
+                auto tau_th = 0.5;
+                if (string_evolution_mode == 2) {
+                    tau_th = 0.5 + 1.*ran_gen_ptr.lock()->rand_uniform();
+                }
                 auto y_rem = ybeam;
                 if (std::abs(p_i[3]) < p_i[0]) {
                     // a time-like beam remnant
                     y_rem = 0.5*log((p_i[0] + p_i[3])/(p_i[0] - p_i[3]));
                 }
                 auto m_rem = p_i[0]/cosh(y_rem);
-                //auto t_f = x_i[0] + tau_th*cosh(y_rem);
-                //auto z_f = x_i[3] + tau_th*sinh(y_rem);
-                auto t_f = x_i[0] + tau_th;
-                auto z_f = x_i[3] + tau_th*tanh(y_rem);
+                auto t_f = x_i[0] + tau_th*cosh(y_rem);
+                auto z_f = x_i[3] + tau_th*sinh(y_rem);
                 auto eta_s_right = 0.5*log((t_f + z_f)/(t_f - z_f));
                 real baryon_fraction_right  = 0.;
                 if (iproj->is_remnant_carry_baryon_number()) {
@@ -688,17 +690,18 @@ void Glauber::output_QCD_strings(std::string filename, const real Npart,
                 auto p_i = itarg->get_remnant_p();
                 auto tau_0  = sqrt(x_i[0]*x_i[0] - x_i[3]*x_i[3]);
                 auto etas_0 = 0.5*log((x_i[0] + x_i[3])/(x_i[0] - x_i[3]));
-                auto tau_th = 0.5 + 1.*ran_gen_ptr.lock()->rand_uniform();
+                auto tau_th = 0.5;
+                if (string_evolution_mode == 2) {
+                    tau_th = 0.5 + 1.*ran_gen_ptr.lock()->rand_uniform();
+                }
                 auto y_rem = -ybeam;
                 if (std::abs(p_i[3]) < p_i[0]) {
                     // a time-like beam remnant
                     y_rem = 0.5*log((p_i[0] + p_i[3])/(p_i[0] - p_i[3]));
                 }
                 auto m_rem = p_i[0]/cosh(y_rem);
-                //auto t_f = x_i[0] + tau_th*cosh(y_rem);
-                //auto z_f = x_i[3] + tau_th*sinh(y_rem);
-                auto t_f = x_i[0] + tau_th;
-                auto z_f = x_i[3] + tau_th*tanh(y_rem);
+                auto t_f = x_i[0] + tau_th*cosh(y_rem);
+                auto z_f = x_i[3] + tau_th*sinh(y_rem);
                 auto eta_s_left = 0.5*log((t_f + z_f)/(t_f - z_f));
                 real baryon_fraction_left  = 0.;
                 if (itarg->is_remnant_carry_baryon_number()) {
