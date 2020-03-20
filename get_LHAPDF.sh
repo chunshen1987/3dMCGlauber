@@ -14,4 +14,4 @@ make install
 rm -fr LHAPDF-$version
 
 echo "downloading pdfsets ... "
-wget http://www.hepforge.org/archive/lhapdf/pdfsets/6.2/CT10nnlo.tar.gz -O- | tar xz -C $PWD/LHAPDF_Lib/share/LHAPDF
+wget http://lhapdfsets.web.cern.ch/lhapdfsets/current/CT10nnlo.tar.gz -O- | tar xz -C $PWD/LHAPDF_Lib/share/LHAPDF
