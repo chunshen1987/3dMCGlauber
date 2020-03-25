@@ -266,8 +266,8 @@ TEST_CASE("Test get_number_of_wounded_nucleons()") {
     test_nucleus1.generate_nucleus_3d_configuration();
     auto list = test_nucleus1.get_nucleon_list();
     for (auto &it: (*list)) {
-        it->set_wounded(true);
         test_nucleus1.add_a_participant(it);
+        it->set_wounded(true);
     }
     CHECK(test_nucleus1.get_number_of_wounded_nucleons()
             == test_nucleus1.get_nucleus_A());
@@ -332,7 +332,9 @@ TEST_CASE("Test sample quark momentum fraction") {
     std::shared_ptr<RandomUtil::Random> ran_gen_ptr(new RandomUtil::Random(-1));
     std::cout << "Testing the sampling routine for valence quarks..."
               << std::endl;
-    Nucleus test_nucleus1("Au", ran_gen_ptr, true);
+    //Nucleus test_nucleus1("Au", ran_gen_ptr, true);
+    Nucleus test_nucleus1("p", ran_gen_ptr, true);
+    test_nucleus1.set_valence_quark_Q2(1.0);
 
     const real x_min = 0.0, x_max = 1.0, dx = 0.02;
     const int n_x = static_cast<int>((x_max - x_min)/dx);
@@ -344,10 +346,12 @@ TEST_CASE("Test sample quark momentum fraction") {
         x[i]  = x_min + i*dx;
     }
 
-    int n_samples = 10000;
+    int n_samples = 100000;
     for (int i = 0; i < n_samples; i++) {
+        if (i%static_cast<int>(n_samples/10) == 0)
+            std::cout << "nev = " << i << std::endl;
         std::vector<real> xQuark;
-        test_nucleus1.sample_quark_momentum_fraction(xQuark, 3);
+        test_nucleus1.sample_quark_momentum_fraction(xQuark, 3, 1);
         int x_idx = static_cast<int>((xQuark[0] - x_min)/dx);
         if (x_idx >= 0 && x_idx < n_x)
             Px_0[x_idx]++;

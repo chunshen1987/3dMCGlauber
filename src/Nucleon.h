@@ -16,6 +16,7 @@ class Nucleon : public Particle {
     std::vector<std::shared_ptr<Quark>> quark_list;
     int collided_times = 0;
     int total_connected_times_ = 0;
+    int electric_charge_ = 0;
     bool wounded_ = false;
     bool baryon_used = false;
     bool remnant_set_ = false;
@@ -35,6 +36,9 @@ class Nucleon : public Particle {
     }
 
     ~Nucleon();
+
+    void set_electric_charge(int charge) {electric_charge_ = charge;}
+    int get_electric_charge() const {return(electric_charge_);}
 
     int get_number_of_quarks() const {return(quark_list.size());}
     void push_back_quark(std::shared_ptr<Quark> q) {quark_list.push_back(q);}

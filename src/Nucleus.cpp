@@ -107,12 +107,14 @@ void Nucleus::generate_nucleus_3d_configuration() {
     if (nucleon_list_.size() > 0) {
         nucleon_list_.clear();
     }
+
+    // sample the nucleons' positions
     if (A_ == 1) {  // p
         SpatialVec  x = {0.0};
         MomentumVec p = {0.0};
         std::shared_ptr<Nucleon> nucleon_ptr(new Nucleon(x, p));
         nucleon_list_.push_back(std::move(nucleon_ptr));
-    } else if (A_ == 2) {  // deuteron
+    } else if (A_ == 2) {   // deuteron
         generate_deuteron_configuration();
     } else if (A_ == 3) {   // triton or He3
         generate_triton_configuration();
@@ -123,6 +125,17 @@ void Nucleus::generate_nucleus_3d_configuration() {
             generate_nucleus_configuration_with_deformed_woods_saxon();
         }
     }
+
+    // assign the proton or neutron identity to the nucleons
+    std::vector<int> electric_charges_arr(A_, 0);
+    for (int i = 0; i < Z_; i++)
+        electric_charges_arr[i] = 1;
+    std::random_shuffle(electric_charges_arr.begin(),
+                        electric_charges_arr.end());
+    for (int i = 0; i < A_; i++) {
+        nucleon_list_[i]->set_electric_charge(electric_charges_arr[i]);
+    }
+
     recenter_nucleus();
 
     real phi   = 2.*M_PI*ran_gen_ptr->rand_uniform();
@@ -182,7 +195,8 @@ void Nucleus::sample_valence_quarks_inside_nucleons(real ecm, int direction) {
         if (nucleon_i->is_wounded()
             && nucleon_i->get_number_of_quarks() == 0) {
             std::vector<real> xQuark;
-            sample_quark_momentum_fraction(xQuark, number_of_quarks);
+            sample_quark_momentum_fraction(xQuark, number_of_quarks,
+                                           nucleon_i->get_electric_charge());
             for (int i = 0; i < number_of_quarks; i++) {
                 auto xvec = sample_valence_quark_position();
                 std::shared_ptr<Quark> quark_ptr(new Quark(xvec, xQuark[i]));
@@ -525,20 +539,23 @@ real Nucleus::get_z_max() const {
 void Nucleus::output_nucleon_positions(std::string filename) const {
     std::ofstream of(filename, std::ofstream::out);
     of << "# Nucleus name: " << name << std::endl;
-    of << "# x (fm)  y (fm)  z (fm)  rapidity" << std::endl;
+    of << "# x (fm)  y (fm)  z (fm)  rapidity  electric_charge" << std::endl;
     for (auto const& it: nucleon_list_) {
         auto x_vec = it->get_x();
         auto p_vec = it->get_p();
         real rapidity = 0.5*log((p_vec[0] + p_vec[3])/(p_vec[0] - p_vec[3]));
         of << std::scientific << std::setw(10) << std::setprecision(6)
            << x_vec[1] << "  " << x_vec[2] << "  " << x_vec[3] << "  "
-           << rapidity << std::endl;
+           << rapidity << "  " << it->get_electric_charge()
+           << std::endl;
     }
+    of.close();
 }
 
 
 void Nucleus::sample_quark_momentum_fraction(std::vector<real> &xQuark,
-                                             const int number_of_quarks) const {
+                                             const int number_of_quarks,
+                                             const int electric_charge) const {
     if (!sample_valence_quarks) {
         for (int i = 0; i < number_of_quarks; i++) {
             xQuark.push_back(1./number_of_quarks);
@@ -557,8 +574,20 @@ void Nucleus::sample_quark_momentum_fraction(std::vector<real> &xQuark,
     do {
         x_sum = 0.0;
         for (int i = 0; i < number_of_quarks; i++) {
-            real sample_species = ran_gen_ptr->rand_uniform();
-            if (sample_species < 1./3.) {
+            int sample_species = 0;  // d quark
+            if (number_of_quarks == 3) {
+                if (electric_charge == 1 && i != 0)  // a proton
+                    sample_species = 1;  // u quark
+                if (electric_charge == 0 && i > 1)  // a neutron
+                    sample_species = 1;  // u quark
+            } else {
+                real rand_species = ran_gen_ptr->rand_uniform();
+                if (electric_charge == 1 && rand_species > 1./3.) // a proton
+                    sample_species = 1;  // u quark
+                if (electric_charge == 0 && rand_species > 2./3.) // a neutron
+                    sample_species = 1;  // u quark
+            }
+            if (sample_species == 0) {
                 // one down and two up quarks (for proton)
                 do {
                     x = ran_gen_ptr->rand_uniform();
