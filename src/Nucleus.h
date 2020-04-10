@@ -120,6 +120,9 @@ class Nucleus {
     void output_nucleon_positions(std::string filename) const;
 
     void sample_valence_quarks_inside_nucleons(real ecm, int direction);
+
+    real sample_a_u_quark_momentum_fraction(const bool flag_NPDF) const;
+    real sample_a_d_quark_momentum_fraction(const bool flag_NPDF) const;
     void sample_quark_momentum_fraction(std::vector<real> &xQuark,
                                         const int number_of_quarks,
                                         const int electric_charge) const;

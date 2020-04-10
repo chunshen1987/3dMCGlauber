@@ -5,6 +5,7 @@
 #include <memory>
 #include <vector>
 #include <iostream>
+#include "LHAPDF/LHAPDF.h"
 
 using MCGlb::Nucleus;
 using MCGlb::real;
@@ -328,7 +329,90 @@ TEST_CASE("Test sampled valence quark spatial distribution") {
 }
 
 
-TEST_CASE("Test sample quark momentum fraction") {
+TEST_CASE("Test sample quark momentum fraction1") {
+    std::shared_ptr<RandomUtil::Random> ran_gen_ptr(new RandomUtil::Random(-1));
+
+    LHAPDF::PDF *pdf = LHAPDF::mkPDF("CT10nnlo", 0);
+    std::cout << "Testing the sampling routine for valence quarks..."
+              << std::endl;
+    Nucleus test_nucleus1("p", ran_gen_ptr, true);
+    const real Q2 = 1.0;
+    test_nucleus1.set_valence_quark_Q2(Q2);
+
+    const real x_min = 0.0, x_max = 1.0, dx = 0.02;
+    const int n_x = static_cast<int>((x_max - x_min)/dx);
+    std::vector<real> x_d(n_x, 0.);
+    std::vector<real> Px_d(n_x, 0.);
+    std::vector<real> x_u(n_x, 0.);
+    std::vector<real> Px_u(n_x, 0.);
+    int n_samples = 1000000;
+    for (int i = 0; i < n_samples; i++) {
+        if (i%static_cast<int>(n_samples/10) == 0)
+            std::cout << "nev = " << i << std::endl;
+
+        real u_x = test_nucleus1.sample_a_u_quark_momentum_fraction(false);
+        int x_idx = static_cast<int>((u_x - x_min)/dx);
+        if (x_idx >= 0 && x_idx < n_x) {
+            x_u[x_idx] += u_x;
+            Px_u[x_idx]++;
+        }
+
+        real d_x = test_nucleus1.sample_a_d_quark_momentum_fraction(false);
+        x_idx = static_cast<int>((d_x - x_min)/dx);
+        if (x_idx >= 0 && x_idx < n_x) {
+            x_d[x_idx] += d_x;
+            Px_d[x_idx]++;
+        }
+    }
+
+    real pdf_u_norm = 0.0;
+    real pdf_d_norm = 0.0;
+    for (int i = 0; i < n_x; i++) {
+        real x_local = x_min + (i + 0.5)*dx;
+        pdf_u_norm += pdf->xfxQ2(2, x_local, Q2) - pdf->xfxQ2(-2, x_local, Q2);
+        pdf_d_norm += pdf->xfxQ2(1, x_local, Q2) - pdf->xfxQ2(-1, x_local, Q2);
+    }
+    pdf_u_norm *= dx;
+    pdf_d_norm *= dx;
+
+    std::ofstream of_u("check_sampled_single_u_quark_distribution.dat");
+    of_u << "# x  pdf(x)  P(x)  P(x)_err" << std::endl;
+    for (int i = 0; i < n_x; i++) {
+        real x_mean = x_min + (i+0.5)*dx;
+        if (Px_u[i] > 0.)
+            x_mean = x_u[i]/Px_u[i];
+        of_u << x_mean << "   "
+             << (pdf->xfxQ2(2, x_mean, Q2)
+                     - pdf->xfxQ2(-2, x_mean, Q2))/pdf_u_norm << "  "
+             << Px_u[i]/n_samples/dx << "  "
+             << sqrt(Px_u[i])/n_samples/dx
+             << std::endl;
+    }
+    of_u.close();
+
+    std::ofstream of_d("check_sampled_single_d_quark_distribution.dat");
+    of_d << "# x  pdf(x)  P(x)  P(x)_err" << std::endl;
+    for (int i = 0; i < n_x; i++) {
+        real x_mean = x_min + (i+0.5)*dx;
+        if (Px_d[i] > 0.)
+            x_mean = x_d[i]/Px_d[i];
+        of_d << x_mean << "   "
+             << (pdf->xfxQ2(1, x_mean, Q2)
+                     - pdf->xfxQ2(-1, x_mean, Q2))/pdf_d_norm << "  "
+             << Px_d[i]/n_samples/dx << "  "
+             << sqrt(Px_d[i])/n_samples/dx
+             << std::endl;
+    }
+    of_d.close();
+
+    std::cout << "please check the output file "
+              << "check_sampled_valence_quarks_distribution.dat" << std::endl;
+    delete pdf;
+    CHECK(0.0 == 0.0);
+}
+
+
+TEST_CASE("Test sample quark momentum fraction3") {
     std::shared_ptr<RandomUtil::Random> ran_gen_ptr(new RandomUtil::Random(-1));
     std::cout << "Testing the sampling routine for valence quarks..."
               << std::endl;
