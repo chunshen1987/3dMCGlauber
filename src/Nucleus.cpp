@@ -555,7 +555,7 @@ void Nucleus::output_nucleon_positions(std::string filename) const {
 
 real Nucleus::sample_a_d_quark_momentum_fraction(const bool flag_NPDF) const {
     real x;
-    real xfd, xfdbar, tmp;
+    real xfd, xfdbar, tmp, correction;
     real ruv = 1.;
     real rdv = 1.;
     do {
@@ -571,14 +571,15 @@ real Nucleus::sample_a_d_quark_momentum_fraction(const bool flag_NPDF) const {
         xfdbar     = pdf->xfxQ2(-1, x, Q2);
         xfd        = pdf->xfxQ2( 1, x, Q2);
         tmp        = ran_gen_ptr->rand_uniform();
-    } while (tmp > ((xfd - xfdbar)*rdv));
+        correction = 2.5;
+    } while (tmp > ((xfd - xfdbar)*rdv*correction));
     return(x);
 }
 
 
 real Nucleus::sample_a_u_quark_momentum_fraction(const bool flag_NPDF) const {
     real x;
-    real xfu, xfubar, tmp;
+    real xfu, xfubar, tmp, correction;
     real ruv = 1.;
     real rdv = 1.;
     do {
@@ -592,7 +593,8 @@ real Nucleus::sample_a_u_quark_momentum_fraction(const bool flag_NPDF) const {
         xfubar     = pdf->xfxQ2(-2, x, Q2);
         xfu        = pdf->xfxQ2( 2, x, Q2);
         tmp        = ran_gen_ptr->rand_uniform();
-    } while (tmp > ((xfu - xfubar)*ruv));
+        correction = 1.5;
+    } while (tmp > ((xfu - xfubar)*ruv*correction));
     return(x);
 }
 
