@@ -571,7 +571,7 @@ real Nucleus::sample_a_d_quark_momentum_fraction(const bool flag_NPDF) const {
         xfdbar     = pdf->xfxQ2(-1, x, Q2);
         xfd        = pdf->xfxQ2( 1, x, Q2);
         tmp        = ran_gen_ptr->rand_uniform();
-        correction = 2.5;
+        correction = 1.0;
     } while (tmp > ((xfd - xfdbar)*rdv*correction));
     return(x);
 }
@@ -593,7 +593,7 @@ real Nucleus::sample_a_u_quark_momentum_fraction(const bool flag_NPDF) const {
         xfubar     = pdf->xfxQ2(-2, x, Q2);
         xfu        = pdf->xfxQ2( 2, x, Q2);
         tmp        = ran_gen_ptr->rand_uniform();
-        correction = 1.5;
+        correction = 1.0;
     } while (tmp > ((xfu - xfubar)*ruv*correction));
     return(x);
 }
