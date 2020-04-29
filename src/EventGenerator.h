@@ -14,15 +14,15 @@ namespace MCGlb {
 
 class EventGenerator {
  private:
-    Parameters parameter_list;
-    std::shared_ptr<RandomUtil::Random> ran_gen_ptr;
-    std::unique_ptr<Glauber> mc_glauber_ptr;
-    bool statistics_only;
+    Parameters parameter_list_;
+    std::shared_ptr<RandomUtil::Random> ran_gen_ptr_;
+    std::unique_ptr<Glauber> mc_glauber_ptr_;
+    bool statistics_only_;
     pretty_ostream messager;
 
  public:
     EventGenerator() = default;
-    EventGenerator(std::string input_filename, int seed_add=0);
+    EventGenerator(std::string input_filename, int seed=0);
     ~EventGenerator() {};
 
     void generate_events(int nev, int event_id_offset=0);

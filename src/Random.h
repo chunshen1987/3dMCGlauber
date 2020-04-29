@@ -10,15 +10,14 @@ namespace RandomUtil {
 
 class Random {
  private:
-    int seed;
-    std::random_device ran_dev;
-    std::unique_ptr<std::mt19937> ran_generator;
-    std::uniform_real_distribution<double> rand_uniform_dist;
+    int seed_;
+    std::unique_ptr<std::mt19937> ran_generator_;
+    std::uniform_real_distribution<double> rand_uniform_dist_;
 
  public:
-    Random(int seed_in, double min = 0.0, double max = 1.0, int seed_add = 0);
-    double rand_uniform() {return(rand_uniform_dist(*ran_generator));}
-    int get_seed() const {return(seed);}
+    Random(int seed_in, double min = 0.0, double max = 1.0);
+    double rand_uniform() {return(rand_uniform_dist_(*ran_generator_));}
+    int get_seed() const {return(seed_);}
 };
 
 }
