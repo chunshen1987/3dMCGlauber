@@ -15,19 +15,24 @@ set (SOURCES
 
 add_library(${libname} SHARED ${SOURCES})
 add_executable(${exename} main.cpp)
+add_executable(Metropolis.e SampleValenceQuarkMetropolis.cpp)
 if (APPLE)
     set_target_properties(${libname} PROPERTIES COMPILE_FLAGS "-DAPPLE")
     set_target_properties (${exename} PROPERTIES COMPILE_FLAGS "-DAPPLE")
 endif (APPLE)
 target_link_libraries (${libname} LHAPDF)
 target_link_libraries (${exename} ${libname} LHAPDF)
+target_link_libraries (Metropolis.e ${libname} LHAPDF)
 set_target_properties(${libname}
     PROPERTIES
     INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib;${CMAKE_HOME_DIRECTORY}/LHAPDF_Lib/lib/")
 set_target_properties(${exename}
     PROPERTIES
     INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib;${CMAKE_HOME_DIRECTORY}/LHAPDF_Lib/lib/")
-install(TARGETS ${exename} ${libname}
+set_target_properties(Metropolis.e
+    PROPERTIES
+    INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib;${CMAKE_HOME_DIRECTORY}/LHAPDF_Lib/lib/")
+install(TARGETS ${exename} Metropolis.e ${libname}
         RUNTIME DESTINATION ${CMAKE_HOME_DIRECTORY}
         LIBRARY DESTINATION lib
         ARCHIVE DESTINATION lib/static)
