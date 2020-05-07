@@ -31,9 +31,12 @@ class Nucleus {
     std::vector<std::shared_ptr<Nucleon>> nucleon_list_;
     std::vector<std::shared_ptr<Nucleon>> participant_list_;
     std::shared_ptr<RandomUtil::Random> ran_gen_ptr;
+    std::shared_ptr<RandomUtil::Random> ran_int_gen_;
 
     bool triton_initialized_;
     std::vector< std::array<double, 9> > triton_pos_;
+    std::vector< std::array<float, 3> > proton_valence_quark_x_;
+    std::vector< std::array<float, 3> > neutron_valence_quark_x_;
 
  public:
     Nucleus() = default;
@@ -45,6 +48,8 @@ class Nucleus {
 
     std::string get_name() const {return(name);}
     int get_random_seed() const {return(ran_gen_ptr->get_seed());}
+
+    int readin_valence_quark_samples();
 
     void set_valence_quark_Q2(real Q2_q) {Q2 = Q2_q;}
     //! This function set Woods-Saxon parameters based on the nucleus name

@@ -4,10 +4,12 @@
 #include "PhysConsts.h"
 #include <iostream>
 #include <iomanip>
+#include <sstream>
 #include <fstream>
 #include <algorithm>
 #include <array>
 #include <cmath>
+#include <cstdlib>
 #include <utility>
 
 #include "eps09.h"
@@ -29,10 +31,10 @@ Nucleus::Nucleus(std::string nucleus_name,
 
     sample_valence_quarks = sample_valence_quarks_in;
     if (sample_valence_quarks) {
-        // read in pdf using LHAPDF interface
-        const std::string setname = "CT10nnlo";
-        const int imem = 0;
-        pdf = std::unique_ptr<LHAPDF::PDF>(LHAPDF::mkPDF(setname, imem));
+        int number_of_samples = readin_valence_quark_samples();
+        auto ran_seed = ran_gen_ptr->get_seed();
+        ran_int_gen_ = std::shared_ptr<RandomUtil::Random>(
+                new RandomUtil::Random(ran_seed, 0, number_of_samples - 1));
     }
     triton_initialized_ = false;
 }
@@ -41,6 +43,10 @@ Nucleus::~Nucleus() {
     participant_list_.clear();
     nucleon_list_.clear();
     triton_pos_.clear();
+    if (sample_valence_quarks) {
+        proton_valence_quark_x_.clear();
+        neutron_valence_quark_x_.clear();
+    }
 }
 
 
@@ -104,9 +110,12 @@ void Nucleus::set_nucleus_parameters(std::string nucleus_name) {
 
 
 void Nucleus::generate_nucleus_3d_configuration() {
-    if (nucleon_list_.size() > 0) {
+    if (nucleon_list_.size() > 0)
         nucleon_list_.clear();
-    }
+
+    if (participant_list_.size() > 0)
+        participant_list_.clear();
+
 
     // sample the nucleons' positions
     if (A_ == 1) {  // p
@@ -270,6 +279,67 @@ real Nucleus::hulthen_function_CDF(real r) const {
                  - 1./2.*exp(-2.*beta*r)/beta
                  + 1./(2.*alpha) + 1./(2.*beta) - 2./(alpha + beta)));
     return(res);
+}
+
+
+int Nucleus::readin_valence_quark_samples() {
+    std::stringstream of_p_name, of_n_name;
+    of_p_name << "tables/proton_valence_quark_samples";
+    of_n_name << "tables/neutron_valence_quark_samples";
+    if (A_ == 197) {
+        of_p_name << "_NPDFAu.dat";
+        of_n_name << "_NPDFAu.dat";
+    } else if (A_ == 208) {
+        of_p_name << "_NPDFPb.dat";
+        of_n_name << "_NPDFPb.dat";
+    } else {
+        of_p_name << ".dat";
+        of_n_name << ".dat";
+    }
+    std::ifstream of_p_test(of_p_name.str().c_str(), std::ios::binary);
+    std::ifstream of_n_test(of_n_name.str().c_str(), std::ios::binary);
+    if (!of_p_test.good() || !of_n_test.good()) {
+        std::cout << "Generating files " << of_p_name.str()
+                  << " and " << of_n_name.str() << std::endl;
+        std::stringstream command;
+        command << "./Metropolis.e " << A_;
+        std::system(command.str().c_str());
+    } else {
+        of_p_test.close();
+        of_n_test.close();
+    }
+
+    std::ifstream of_p(of_p_name.str().c_str(), std::ios::binary);
+    std::ifstream of_n(of_n_name.str().c_str(), std::ios::binary);
+    if (!of_p.good() || !of_n.good()) {
+        std::cout << "Can not generate " << of_p_name.str() << " or/and "
+                  << of_n_name.str() << std::endl;
+        std::cout << "Please check, exiting ... " << std::endl;
+        exit(1);
+    }
+    while (!of_p.eof()) {
+        std::array<float, 3> x_array;
+        for (int ii = 0; ii < 3; ii++) {
+            float temp = 0.;
+            of_p.read(reinterpret_cast<char*>(&temp), sizeof(float));
+            x_array[ii] = temp;
+        }
+        proton_valence_quark_x_.push_back(x_array);
+    }
+    of_p.close();
+    while (!of_n.eof()) {
+        std::array<float, 3> x_array;
+        for (int ii = 0; ii < 3; ii++) {
+            float temp = 0.;
+            of_n.read(reinterpret_cast<char*>(&temp), sizeof(float));
+            x_array[ii] = temp;
+        }
+        neutron_valence_quark_x_.push_back(x_array);
+    }
+    of_n.close();
+    int size = std::min(proton_valence_quark_x_.size(),
+                        neutron_valence_quark_x_.size());
+    return(size);
 }
 
 
@@ -609,42 +679,14 @@ void Nucleus::sample_quark_momentum_fraction(std::vector<real> &xQuark,
         return;
     }
 
-    std::vector<real> quarkx(number_of_quarks, 0.);
-    // default is 1 for the nuclear correction
-    // - if parameters are set to use EPS09 these will be changed
-    bool flag_NPDF = false;
-    if (A_ == 197 || A_ == 208) flag_NPDF = true;
+    auto sample_idx = ran_int_gen_->rand_int_uniform();
 
-    real x;
-    real x_sum = 0.0;
-    do {
-        x_sum = 0.0;
-        for (int i = 0; i < number_of_quarks; i++) {
-            int sample_species = 0;  // d quark
-            if (number_of_quarks == 3) {
-                if (electric_charge == 1 && i != 0)  // a proton
-                    sample_species = 1;  // u quark
-                if (electric_charge == 0 && i > 1)  // a neutron
-                    sample_species = 1;  // u quark
-            } else {
-                real rand_species = ran_gen_ptr->rand_uniform();
-                if (electric_charge == 1 && rand_species > 1./3.) // a proton
-                    sample_species = 1;  // u quark
-                if (electric_charge == 0 && rand_species > 2./3.) // a neutron
-                    sample_species = 1;  // u quark
-            }
-            if (sample_species == 0) {
-                x = sample_a_d_quark_momentum_fraction(flag_NPDF);
-            } else {
-                x = sample_a_u_quark_momentum_fraction(flag_NPDF);
-            }
-            quarkx[i] = x;
-            x_sum    += x;
-        }
-    } while (x_sum > 1. || x_sum < 0.95);
-
-    for (int i = 0; i < number_of_quarks; i++) {
-        xQuark.push_back(quarkx[i]);
+    if (electric_charge == 1) {
+        for (int i = 0; i < number_of_quarks; i++)
+            xQuark.push_back(proton_valence_quark_x_[sample_idx][i]);
+    } else  {
+        for (int i = 0; i < number_of_quarks; i++)
+            xQuark.push_back(neutron_valence_quark_x_[sample_idx][i]);
     }
 }
 

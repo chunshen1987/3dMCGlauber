@@ -45,6 +45,7 @@ class Parameters : public ParametersMap {
     bool get_baryon_junctions() const;
 
     bool get_only_event_statistics() const;
+    bool get_cached_tabels() const;
 
     real get_yloss_param_slope() const;
     real get_yloss_param_alpha1() const;

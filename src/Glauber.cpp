@@ -8,6 +8,7 @@
 #include <iomanip>
 #include <fstream>
 #include <cassert>
+#include <cstdlib>
 #include <iostream>
 #include <algorithm>
 #include <memory>
@@ -26,6 +27,10 @@ Glauber::Glauber(const MCGlb::Parameters &param_in,
     sample_valence_quark = false;
     if (parameter_list.get_use_quarks() > 0) {
         sample_valence_quark = true;
+        if (!parameter_list.get_cached_tabels()) {
+            std::system("rm -fr tables/proton_valence_quark_samples*");
+            std::system("rm -fr tables/neutron_valence_quark_samples*");
+        }
     }
     projectile = std::unique_ptr<Nucleus>(
             new Nucleus(parameter_list.get_projectle_nucleus_name(), ran_gen,

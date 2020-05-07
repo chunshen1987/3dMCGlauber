@@ -16,6 +16,9 @@ using std::array;
 
 const int number_of_quarks = 3;
 const int number_of_samples = 100000;
+const double acc_violation_fraction = 5e-4;
+const double allow_violation_fraction = 0;
+const long int ntol = 5000000;
 const double EPS = 1e-15;
 
 typedef struct{
@@ -231,31 +234,38 @@ int main(int argc, char* argv[]) {
     int proton_nviolations = number_of_violations(proton_quark_samples);
     int neutron_nviolations = number_of_violations(neutron_quark_samples);
     long long int iter = 0;
-    while (proton_nviolations > 0) {
+    long int itol = 0;
+    while (proton_nviolations > 0 && itol < ntol) {
         if (iter % 1000000 == 0) {
             std::cout << "proton iter = " << iter << ": nviolations = "
                       << proton_nviolations
-                      << ", score = " << proton_total_score << std::endl;
+                      << ", <sum_x> = " << proton_total_score << std::endl;
         }
         double delta_p;
         int delta_violation_p;
 
-        if (proton_nviolations > number_of_samples*0.0005) {
+        if (proton_nviolations > number_of_samples*acc_violation_fraction) {
             one_metropolis_step(ran_int_gen_1, ran_int_gen_2,
                                 proton_quark_samples, 0,
                                 delta_p, delta_violation_p);
-        } else {
+        } else if (proton_nviolations
+                   > number_of_samples*allow_violation_fraction) {
             one_metropolis_step(ran_int_gen_1, ran_int_gen_2,
                                 proton_quark_samples, 1,
                                 delta_p, delta_violation_p);
+            itol++;
+        } else {
+            break;
         }
+
         proton_total_score += delta_p;
         proton_nviolations += delta_violation_p;
+
         iter++;
     }
     std::cout << "proton iter = " << iter << ": nviolations = "
               << proton_nviolations
-              << ", score = " << proton_total_score << std::endl;
+              << ", <sum_x> = " << proton_total_score << std::endl;
 
     // output to file in binary
     std::stringstream of_p_name;
@@ -270,31 +280,38 @@ int main(int argc, char* argv[]) {
     std::ofstream of_p(of_p_name.str().c_str(),
                        std::ios::out | std::ios::binary | std::ofstream::app);
     for (const auto triplet_i: proton_quark_samples) {
-        for (int i = 0; i < number_of_quarks; i++) {
-            float x_i = static_cast<float>(triplet_i.Xarr[i]);
-            of_p.write((char*) &(x_i), sizeof(float));
+        if (triplet_i.score < 1.) {
+            for (int i = 0; i < number_of_quarks; i++) {
+                float x_i = static_cast<float>(triplet_i.Xarr[i]);
+                of_p.write((char*) &(x_i), sizeof(float));
+            }
         }
     }
     of_p.close();
 
     iter = 0;
-    while (neutron_nviolations > 0) {
+    itol = 0;
+    while (neutron_nviolations > 0 && itol < ntol) {
         if (iter % 1000000 == 0) {
             std::cout << "neutron iter = " << iter << ": nviolations = "
                       << neutron_nviolations
-                      << ", score = " << neutron_total_score << std::endl;
+                      << ", <sum_x> = " << neutron_total_score << std::endl;
         }
         double delta_n;
         int delta_violation_n;
 
-        if (neutron_nviolations > number_of_samples*0.0005) {
+        if (neutron_nviolations > number_of_samples*acc_violation_fraction) {
             one_metropolis_step(ran_int_gen_1, ran_int_gen_2,
                                 neutron_quark_samples, 0,
                                 delta_n, delta_violation_n);
-        } else {
+        } else if (neutron_nviolations
+                   > number_of_samples*allow_violation_fraction) {
             one_metropolis_step(ran_int_gen_1, ran_int_gen_2,
                                 neutron_quark_samples, 1,
                                 delta_n, delta_violation_n);
+            itol++;
+        } else {
+            break;
         }
 
         neutron_total_score += delta_n;
@@ -303,7 +320,7 @@ int main(int argc, char* argv[]) {
     }
     std::cout << "neutron iter = " << iter << ": nviolations = "
               << neutron_nviolations
-              << ", score = " << neutron_total_score << std::endl;
+              << ", <sum_x> = " << neutron_total_score << std::endl;
     std::stringstream of_n_name;
     of_n_name << "tables/neutron_valence_quark_samples";
     if (A == 197) {
@@ -316,9 +333,11 @@ int main(int argc, char* argv[]) {
     std::ofstream of_n(of_n_name.str().c_str(),
                        std::ios::out | std::ios::binary | std::ofstream::app);
     for (const auto triplet_i: neutron_quark_samples) {
-        for (int i = 0; i < number_of_quarks; i++) {
-            float x_i = static_cast<float>(triplet_i.Xarr[i]);
-            of_n.write((char*) &(x_i), sizeof(float));
+        if (triplet_i.score < 1.) {
+            for (int i = 0; i < number_of_quarks; i++) {
+                float x_i = static_cast<float>(triplet_i.Xarr[i]);
+                of_n.write((char*) &(x_i), sizeof(float));
+            }
         }
     }
     of_n.close();

@@ -30,13 +30,13 @@ real Parameters::get_b_min() const {
     return(b);
 }
 
-    
+
 int Parameters::get_use_quarks() const {
     int flag = get_param_int("useQuarks");
     assert(flag >= 0 && flag < 3);
     return(flag);
 }
-    
+
 
 real Parameters::get_quarks_Q2() const {
     real Q2 = static_cast<real>(get_param_double("Q2"));
@@ -55,6 +55,15 @@ real Parameters::get_lambdaB() const {
     real lambdaB = static_cast<real>(get_param_double("lambdaB"));
     assert(lambdaB >= 0.);
     return(lambdaB);
+}
+
+
+bool Parameters::get_cached_tabels() const {
+    int flag = get_param_int("cache_tables");
+    if (flag == 1)
+        return(true);
+    else
+        return(false);
 }
 
 
