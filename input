@@ -1,8 +1,8 @@
 ################################################################
 # collision information
 ################################################################
-Projectile p                   # projectile nucleus name
-Target Pb                       # target nucleus name
+Projectile Au                   # projectile nucleus name
+Target Au                       # target nucleus name
 roots 19.6                      # collision energy (GeV)
 useQuarks 1                     # switch to use valence quarks
 Q2 1.                           # the scale when evaluating the pdf
