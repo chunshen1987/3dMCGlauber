@@ -21,6 +21,7 @@ set (CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
 message("prefix = " ${CMAKE_INSTALL_PREFIX})
 message("rpath = " ${CMAKE_INSTALL_RPATH})
 
+option (link_with_lib "Link executable with library" ON)
 option (unittest "Build Unit tests" OFF)
 
 #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -O3 -Wall -std=c++11 -fsanitize=address")

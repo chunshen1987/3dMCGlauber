@@ -8,7 +8,7 @@ LIBPATH=`echo $PWD/LHAPDF_Lib`
 (
 cd LHAPDF-$version/
 ./configure --prefix=`echo $LIBPATH` --disable-python
-make
+make -j4
 make install
 )
 rm -fr LHAPDF-$version
