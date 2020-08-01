@@ -17,7 +17,6 @@ using std::cout;
 using std::endl;
 using std::shared_ptr;
 
-// put in use of baryon used flags
 
 namespace MCGlb {
 
@@ -161,14 +160,14 @@ real Glauber::compute_NN_inelastic_cross_section(real ecm) const {
 }
 
 
-int Glauber::decide_produce_string_num(shared_ptr<CollisionEvent> event_ptr) const {
+int Glauber::decide_produce_string_num(
+                                shared_ptr<CollisionEvent> event_ptr) const {
     int form_n_string = 0;
     auto proj = event_ptr->get_proj_nucleon_ptr().lock();
     auto targ = event_ptr->get_targ_nucleon_ptr().lock();
     int minimum_allowed_connections = 1;
     if (sample_valence_quark) {
-        //minimum_allowed_connections = PhysConsts::NumValenceQuark;
-        minimum_allowed_connections = 2;
+        minimum_allowed_connections = PhysConsts::NumValenceQuark;
     }
 
     if (   proj->get_number_of_connections() < minimum_allowed_connections
@@ -176,10 +175,9 @@ int Glauber::decide_produce_string_num(shared_ptr<CollisionEvent> event_ptr) con
         form_n_string = std::min(
             minimum_allowed_connections - proj->get_number_of_connections(),
             minimum_allowed_connections - targ->get_number_of_connections());
-    } else if (   proj->get_number_of_connections() < minimum_allowed_connections
+    } else if (
+           proj->get_number_of_connections() < minimum_allowed_connections
         || targ->get_number_of_connections() < minimum_allowed_connections) {
-        // bps: string gets flag for whether it has left or right
-        // or both baryon numbers.
         form_n_string = 1;
     } else {
         int n_connects = (  proj->get_number_of_connections()
