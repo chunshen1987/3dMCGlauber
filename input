@@ -30,9 +30,10 @@ yloss_param_slope 1.40          # the slope parameter for yloss parameterization
 yloss_param_alpha1 1.70         # the small y ~ y^alpha1 for yloss parameterization (>=1.)
 yloss_param_alpha2 0.32         # the large y ~ y^alpha2 for yloss parameterization [0., 1.]
 evolve_QCD_string_mode 2        # string evolution mode
-                                # 1: deceleration with fixed rapidity loss (m/sigma = 1 fm, dtau = 0.5 fm)
-                                # 2: deceleration with LEXUS sampled rapidit loss (both dtau and sigma fluctuate)
-                                # 3: deceleration with LEXUS sampled rapidit loss (m/sigma = 1 fm, dtau fluctuates)
-                                # 4: deceleration with LEXUS sampled rapidit loss (dtau = 0.5 fm, m/sigma fluctuates)
-tau_form_min 0.3
-tau_form_max 0.7
+                                # tau_form = (tau_form_min + tau_form_max)/2 [fm]
+                                # 1: deceleration with fixed (90%) rapidity loss (m/sigma = 1 fm, dtau = tau_form)
+                                # 2: deceleration with LEXUS/parameterized rapidity loss (both dtau and sigma fluctuate)
+                                # 3: deceleration with LEXUS/parameterized rapidity loss (m/sigma = 1 fm, dtau fluctuates)
+                                # 4: deceleration with LEXUS/parameterized rapidity loss (dtau = tau_from, m/sigma fluctuates)
+tau_form_min 0.3                # the minimum value for tau_form [fm]
+tau_form_max 0.7                # the maximum value for tau_form [fm]
