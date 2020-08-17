@@ -50,6 +50,9 @@ class Parameters : public ParametersMap {
     real get_yloss_param_slope() const;
     real get_yloss_param_alpha1() const;
     real get_yloss_param_alpha2() const;
+
+    real get_tau_form_min() const;
+    real get_tau_form_max() const;
 };
 
 }

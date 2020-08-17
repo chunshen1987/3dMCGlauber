@@ -303,7 +303,7 @@ int Nucleus::readin_valence_quark_samples() {
                   << " and " << of_n_name.str() << std::endl;
         std::stringstream command;
         command << "./Metropolis.e " << A_;
-        std::system(command.str().c_str());
+        system_status_ = std::system(command.str().c_str());
     } else {
         of_p_test.close();
         of_n_test.close();

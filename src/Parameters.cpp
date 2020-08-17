@@ -136,4 +136,22 @@ real Parameters::get_yloss_param_alpha2() const {
     return(a);
 }
 
+
+real Parameters::get_tau_form_min() const {
+    real tau_form_min = static_cast<real>(get_param_double("tau_form_min"));
+    real tau_form_max = static_cast<real>(get_param_double("tau_form_max"));
+    assert(tau_form_min > 0.);
+    assert(tau_form_min < tau_form_max);
+    return(tau_form_min);
+}
+
+
+real Parameters::get_tau_form_max() const {
+    real tau_form_min = static_cast<real>(get_param_double("tau_form_min"));
+    real tau_form_max = static_cast<real>(get_param_double("tau_form_max"));
+    assert(tau_form_max > 0.);
+    assert(tau_form_max > tau_form_min);
+    return(tau_form_max);
+}
+
 }

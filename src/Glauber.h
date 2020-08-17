@@ -25,7 +25,7 @@ class Glauber {
     std::unique_ptr<Nucleus> target;
     std::set<shared_ptr<CollisionEvent>, compare_collision_time> collision_schedule;
     std::vector<QCDString> QCD_string_list;
-    std::weak_ptr<RandomUtil::Random> ran_gen_ptr;
+    std::shared_ptr<RandomUtil::Random> ran_gen_ptr_;
     bool sample_valence_quark;
 
     real impact_b;
@@ -34,6 +34,8 @@ class Glauber {
     real yloss_param_b;
 
     real ybeam;
+
+    int system_status_;
 
  public:
     Glauber() = default;
@@ -65,6 +67,7 @@ class Glauber {
     //! will produce a string
     int decide_produce_string_num(shared_ptr<CollisionEvent> event_ptr) const;
 
+    real get_tau_form(const int string_evolution_mode) const;
     void get_tau_form_and_moversigma(const int string_evolution_mode,
                                      const real y_in_lrf,
                                      real &tau_form, real &m_over_sigma,

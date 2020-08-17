@@ -27,8 +27,10 @@ Glauber::Glauber(const MCGlb::Parameters &param_in,
     if (parameter_list.get_use_quarks() > 0) {
         sample_valence_quark = true;
         if (!parameter_list.get_cached_tabels()) {
-            std::system("rm -fr tables/proton_valence_quark_samples*");
-            std::system("rm -fr tables/neutron_valence_quark_samples*");
+            system_status_ = std::system(
+                    "rm -fr tables/proton_valence_quark_samples*");
+            system_status_ = std::system(
+                    "rm -fr tables/neutron_valence_quark_samples*");
         }
     }
     projectile = std::unique_ptr<Nucleus>(
@@ -41,7 +43,7 @@ Glauber::Glauber(const MCGlb::Parameters &param_in,
         projectile->set_valence_quark_Q2(parameter_list.get_quarks_Q2());
         target->set_valence_quark_Q2(parameter_list.get_quarks_Q2());
     }
-    ran_gen_ptr = ran_gen;
+    ran_gen_ptr_ = ran_gen;
 
     yloss_param_slope = parameter_list.get_yloss_param_slope();
     real alpha1 = parameter_list.get_yloss_param_alpha1();
@@ -63,7 +65,7 @@ void Glauber::make_nuclei() {
     auto b_max = parameter_list.get_b_max();
     auto b_min = parameter_list.get_b_min();
     impact_b = sqrt(b_min*b_min +
-            (b_max*b_max - b_min*b_min)*ran_gen_ptr.lock()->rand_uniform());
+            (b_max*b_max - b_min*b_min)*ran_gen_ptr_->rand_uniform());
     SpatialVec proj_shift = {0., impact_b/2., 0.,
                              -projectile->get_z_max() - 1e-15};
     projectile->shift_nucleus(proj_shift);
@@ -109,7 +111,7 @@ int Glauber::get_Npart() const {
 
 bool Glauber::hit(real d2, real d2_in) const {
     real G = 0.92;  // from Glassando
-    return(ran_gen_ptr.lock()->rand_uniform() < G*exp(-G*d2/d2_in));
+    return(ran_gen_ptr_->rand_uniform() < G*exp(-G*d2/d2_in));
 }
 
 void Glauber::create_a_collision_event(shared_ptr<Nucleon> proj,
@@ -187,7 +189,7 @@ int Glauber::decide_produce_string_num(
             (1. - shadowing_factor)
             *exp(-shadowing_factor*(n_connects
                                     - 2.*minimum_allowed_connections)));
-        if (ran_gen_ptr.lock()->rand_uniform() < production_prob) {
+        if (ran_gen_ptr_->rand_uniform() < production_prob) {
             form_n_string = 1;
         }
     }
@@ -277,11 +279,24 @@ void Glauber::update_momentum(shared_ptr<Nucleon> n_i, real y_shift) {
 }
 
 
+real Glauber::get_tau_form(const int string_evolution_mode) const {
+    auto tau_form_min = parameter_list.get_tau_form_min();
+    auto tau_form_max = parameter_list.get_tau_form_max();
+    real tau_form = (tau_form_min + tau_form_max)/2.;      // [fm]
+    if (string_evolution_mode == 2) {
+        // tau_form fluctuates from tau_from_min to tau_form_max
+        tau_form = (tau_form_min + (tau_form_max - tau_form_min)
+                                   *ran_gen_ptr_->rand_uniform());
+    }
+    return(tau_form);
+}
+
+
 void Glauber::get_tau_form_and_moversigma(const int string_evolution_mode,
                                           const real y_in_lrf,
                                           real &tau_form, real &m_over_sigma,
                                           real &y_loss) {
-    tau_form = 0.5;      // [fm]
+    tau_form = get_tau_form(string_evolution_mode);      // [fm]
     m_over_sigma = 1.0;  // [fm]
     y_loss = 0.;
     if (string_evolution_mode == 1) {
@@ -294,7 +309,6 @@ void Glauber::get_tau_form_and_moversigma(const int string_evolution_mode,
     } else if (string_evolution_mode == 2) {
         // both tau_form and sigma fluctuate
         y_loss = sample_rapidity_loss_shell(y_in_lrf);
-        tau_form = 0.5 + 1.*ran_gen_ptr.lock()->rand_uniform();
         m_over_sigma = tau_form/sqrt(2.*(cosh(y_loss) - 1.));
     } else if (string_evolution_mode == 3) {
         // only tau_form fluctuates
@@ -474,7 +488,7 @@ int Glauber::perform_string_production() {
             // sample HERE if baryon should be moved
             real y_baryon_right = 0.;
             if (it.get_has_baryon_right()) {
-                if (ran_gen_ptr.lock()->rand_uniform() < lambdaB) {
+                if (ran_gen_ptr_->rand_uniform() < lambdaB) {
                     // y_baryon_right = sample_junction_rapidity_right(
                     //              it->get_y_i_left(), it->get_y_i_right());
                     y_baryon_right = sample_junction_rapidity_right(
@@ -496,7 +510,7 @@ int Glauber::perform_string_production() {
             }
             real y_baryon_left = 0.;
             if (it.get_has_baryon_left()) {
-                if (ran_gen_ptr.lock()->rand_uniform() < lambdaB) {
+                if (ran_gen_ptr_->rand_uniform() < lambdaB) {
                     //y_baryon_left = sample_junction_rapidity_left(
                     //              it->get_y_i_left(), it->get_y_i_right());
                     y_baryon_left = sample_junction_rapidity_left(
@@ -650,10 +664,7 @@ void Glauber::output_QCD_strings(std::string filename, const real Npart,
                 auto p_i = iproj->get_remnant_p();
                 auto tau_0  = sqrt(x_i[0]*x_i[0] - x_i[3]*x_i[3]);
                 auto etas_0 = 0.5*log((x_i[0] + x_i[3])/(x_i[0] - x_i[3]));
-                auto tau_th = 0.5;
-                if (string_evolution_mode == 2) {
-                    tau_th = 0.5 + 1.*ran_gen_ptr.lock()->rand_uniform();
-                }
+                auto tau_th = get_tau_form(string_evolution_mode);
                 auto y_rem = ybeam;
                 if (std::abs(p_i[3]) < p_i[0]) {
                     // a time-like beam remnant
@@ -693,10 +704,7 @@ void Glauber::output_QCD_strings(std::string filename, const real Npart,
                 auto p_i = itarg->get_remnant_p();
                 auto tau_0  = sqrt(x_i[0]*x_i[0] - x_i[3]*x_i[3]);
                 auto etas_0 = 0.5*log((x_i[0] + x_i[3])/(x_i[0] - x_i[3]));
-                auto tau_th = 0.5;
-                if (string_evolution_mode == 2) {
-                    tau_th = 0.5 + 1.*ran_gen_ptr.lock()->rand_uniform();
-                }
+                auto tau_th = get_tau_form(string_evolution_mode);
                 auto y_rem = -ybeam;
                 if (std::abs(p_i[3]) < p_i[0]) {
                     // a time-like beam remnant
@@ -747,7 +755,7 @@ real Glauber::sample_rapidity_loss_shell(real y_init) const {
 real Glauber::sample_rapidity_loss_from_the_LEXUS_model(real y_init) const {
     const real shape_coeff = 1.0;
     real sinh_y_lrf = sinh(shape_coeff*y_init);
-    real arcsinh_factor = (ran_gen_ptr.lock()->rand_uniform()
+    real arcsinh_factor = (ran_gen_ptr_->rand_uniform()
                            *(sinh(2.*shape_coeff*y_init) - sinh_y_lrf)
                            + sinh_y_lrf);
     real y_loss = 2.*y_init - asinh(arcsinh_factor)/shape_coeff;
@@ -766,7 +774,7 @@ real Glauber::sample_rapidity_loss_from_parametrization(real y_init) const {
 // after the collision in the lab frame
 real Glauber::sample_junction_rapidity_right(real y_left, real y_right) const {
     real y = -2.*(-0.25*y_right - 0.25*y_left
-                  - 1.*log(2.*(ran_gen_ptr.lock()->rand_uniform()
+                  - 1.*log(2.*(ran_gen_ptr_->rand_uniform()
                                + 0.5*exp(-0.25*y_right + 0.25*y_left)
                                  /sinh(0.25*y_right - 0.25*y_left))
                            *sinh(0.25*y_right - 0.25*y_left)));
@@ -778,7 +786,7 @@ real Glauber::sample_junction_rapidity_right(real y_left, real y_right) const {
 // after the collision in the lab frame
 real Glauber::sample_junction_rapidity_left(real y_left, real y_right) const {
     real y = 2.*(0.25*y_right + 0.25*y_left
-                 - log(2.*(ran_gen_ptr.lock()->rand_uniform()
+                 - log(2.*(ran_gen_ptr_->rand_uniform()
                            + 0.5*exp(-0.25*y_right + 0.25*y_left)
                              /sinh(0.25*y_right - 0.25*y_left))
                        *sinh( 0.25 * y_right - 0.25 * y_left)));

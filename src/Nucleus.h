@@ -38,6 +38,8 @@ class Nucleus {
     std::vector< std::array<float, 3> > proton_valence_quark_x_;
     std::vector< std::array<float, 3> > neutron_valence_quark_x_;
 
+    int system_status_;
+
  public:
     Nucleus() = default;
     Nucleus(std::string nucleus_name,
