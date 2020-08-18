@@ -5,7 +5,7 @@
 namespace RandomUtil {
 
 Random::Random(int seed, double min, double max) :
-    rand_uniform_dist_(min, max) {
+    rand_uniform_dist_(min, max), rand_normal_dist_(0., 1.) {
     seed_ = seed;
     if (seed == -1) {
         std::random_device ran_dev;

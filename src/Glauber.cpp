@@ -752,7 +752,9 @@ real Glauber::sample_rapidity_loss_shell(real y_init) const {
     return(y_loss);
 }
 
-real Glauber::sample_rapidity_loss_from_the_LEXUS_model(real y_init) const {
+
+real Glauber::sample_rapidity_loss_from_the_LEXUS_model(
+                                            const real y_init) const {
     const real shape_coeff = 1.0;
     real sinh_y_lrf = sinh(shape_coeff*y_init);
     real arcsinh_factor = (ran_gen_ptr_->rand_uniform()
@@ -762,12 +764,36 @@ real Glauber::sample_rapidity_loss_from_the_LEXUS_model(real y_init) const {
     return(y_loss);
 }
 
-real Glauber::sample_rapidity_loss_from_parametrization(real y_init) const {
+
+real Glauber::sample_rapidity_loss_from_parametrization(
+                                                const real y_init) const {
     auto y_loss = (
         yloss_param_slope*pow(pow(y_init, yloss_param_a)*tanh(y_init),
                               yloss_param_b));
     return(y_loss);
 }
+
+
+real Glauber::sample_rapidity_loss_from_parametrization_with_fluct(
+                                                const real y_init) const {
+    auto y_mean = sample_rapidity_loss_from_parametrization(y_init);
+    auto var = parameter_list.get_yloss_param_fluct_var();
+    auto random_x = ran_gen_ptr_->rand_normal(0., var);
+
+    real logit_rand = 1./(1. + exp(-random_x));
+    auto y_loss = y_mean;
+    if (std::abs(2.*y_mean - y_init) > 1e-15) {
+        real aa = (2.*y_mean - y_init)/(2.*y_mean*y_init*(y_init - y_mean));
+        real bb = ((y_init*y_init - 2.*y_mean*y_mean)
+                   /(2.*y_init*y_mean*(y_init - y_mean)));
+        real cc = - logit_rand;
+        y_loss = (-bb + sqrt(bb*bb - 4.*aa*cc))/(2.*aa);
+    } else {
+        y_loss = logit_rand*y_init;
+    }
+    return(y_loss);
+}
+
 
 // sample y from exp[(y - (0.5 (yt + yp)))/2]/(4.` Sinh[0.25` yp - 0.25` yt]),
 // the new rapidity of the baryon number from the right moving particle

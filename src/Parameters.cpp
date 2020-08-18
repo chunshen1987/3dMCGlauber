@@ -137,6 +137,13 @@ real Parameters::get_yloss_param_alpha2() const {
 }
 
 
+real Parameters::get_yloss_param_fluct_var() const {
+    real a = static_cast<real>(get_param_double("yloss_param_fluct_var"));
+    assert(a >= 0.);
+    return(a);
+}
+
+
 real Parameters::get_tau_form_min() const {
     real tau_form_min = static_cast<real>(get_param_double("tau_form_min"));
     real tau_form_max = static_cast<real>(get_param_double("tau_form_max"));

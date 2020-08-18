@@ -26,9 +26,11 @@ QCD_string_production_mode 1    # string production mode
                                 # 2: strings are produced at the last binary collision
 rapidity_loss_method 2          # 1: LEXUS
                                 # 2: parameterization
+                                # 3: parameterization with logit-normal fluctuation
 yloss_param_slope 1.40          # the slope parameter for yloss parameterization [0., 1.]
 yloss_param_alpha1 1.70         # the small y ~ y^alpha1 for yloss parameterization (>=1.)
 yloss_param_alpha2 0.32         # the large y ~ y^alpha2 for yloss parameterization [0., 1.]
+yloss_param_fluct_var 0.2       # the variance of the logit-normal parameterized y_loss fluctuation
 evolve_QCD_string_mode 2        # string evolution mode
                                 # tau_form = (tau_form_min + tau_form_max)/2 [fm]
                                 # 1: deceleration with fixed (90%) rapidity loss (m/sigma = 1 fm, dtau = tau_form)
