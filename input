@@ -24,7 +24,7 @@ lambdaB 0.4                     # parameter the controls the strength of the bar
 QCD_string_production_mode 1    # string production mode
                                 # 1: strings are produced randomly in the binary collision list
                                 # 2: strings are produced at the last binary collision
-rapidity_loss_method 2          # 1: LEXUS
+rapidity_loss_method 3          # 1: LEXUS
                                 # 2: parameterization
                                 # 3: parameterization with logit-normal fluctuation
 yloss_param_slope 1.40          # the slope parameter for yloss parameterization [0., 1.]

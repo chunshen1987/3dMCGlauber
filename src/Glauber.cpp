@@ -748,6 +748,8 @@ real Glauber::sample_rapidity_loss_shell(real y_init) const {
         y_loss = sample_rapidity_loss_from_the_LEXUS_model(y_init);
     } else if (parameter_list.get_rapidity_loss_method() == 2) {
         y_loss = sample_rapidity_loss_from_parametrization(y_init);
+    } else if (parameter_list.get_rapidity_loss_method() == 3) {
+        y_loss = sample_rapidity_loss_from_parametrization_with_fluct(y_init);
     }
     return(y_loss);
 }
