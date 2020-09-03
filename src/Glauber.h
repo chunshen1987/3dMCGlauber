@@ -37,6 +37,9 @@ class Glauber {
 
     int system_status_;
 
+    real sigma_eff_;
+    real nucleon_width_;
+
  public:
     Glauber() = default;
     Glauber(const MCGlb::Parameters &param_in,
@@ -47,7 +50,7 @@ class Glauber {
     real get_impact_parameter() const {return(impact_b);}
 
     int make_collision_schedule();
-    bool hit(real d2, real d2_in) const;
+    bool hit(real d2) const;
 
     int get_Npart() const;
 
@@ -95,6 +98,8 @@ class Glauber {
     void output_QCD_strings(std::string filename, const real Npart,
                             const real Ncoll, const real Nstrings,
                             const real b);
+
+    real get_sig_eff(const real siginNN);
 };
 
 }

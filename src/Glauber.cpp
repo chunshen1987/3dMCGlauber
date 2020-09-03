@@ -53,6 +53,12 @@ Glauber::Glauber(const MCGlb::Parameters &param_in,
     yloss_param_b = alpha2/yloss_param_a;
 
     ybeam = acosh(parameter_list.get_roots()/(2.*PhysConsts::MProton));
+
+    real siginNN = compute_NN_inelastic_cross_section(
+                                            parameter_list.get_roots());
+    sigma_eff_ = get_sig_eff(siginNN);
+    //cout << "sigma_gg = " << sigma_eff_ << " fm^2, siginNN = " << siginNN/10.
+    //     << " fm^2" << endl;
 }
 
 void Glauber::make_nuclei() {
@@ -79,8 +85,6 @@ void Glauber::make_nuclei() {
 
 int Glauber::make_collision_schedule() {
     collision_schedule.clear();
-    auto d2 = (compute_NN_inelastic_cross_section(parameter_list.get_roots())
-               /(M_PI*10.));  // in fm^2 
     auto proj_nucleon_list = projectile->get_nucleon_list();
     auto targ_nucleon_list = target->get_nucleon_list();
     for (auto &iproj: (*proj_nucleon_list)) {
@@ -89,7 +93,7 @@ int Glauber::make_collision_schedule() {
             auto targ_x = itarg->get_x();
             auto dij = (  (targ_x[1] - proj_x[1])*(targ_x[1] - proj_x[1])
                         + (targ_x[2] - proj_x[2])*(targ_x[2] - proj_x[2]));
-            if (hit(dij, d2)) {
+            if (hit(dij)) {
                 create_a_collision_event(iproj, itarg);
                 projectile->add_a_participant(iproj);
                 target->add_a_participant(itarg);
@@ -109,9 +113,13 @@ int Glauber::get_Npart() const {
     return(Npart);
 }
 
-bool Glauber::hit(real d2, real d2_in) const {
-    real G = 0.92;  // from Glassando
-    return(ran_gen_ptr_->rand_uniform() < G*exp(-G*d2/d2_in));
+bool Glauber::hit(real d2) const {
+    //real G = 0.92;  // from Glassando
+    //return(ran_gen_ptr_->rand_uniform() < G*exp(-G*d2/d2_in));
+    const real T_nn = (exp(-d2/(4.*nucleon_width_*nucleon_width_))
+                       /(4.*M_PI*nucleon_width_*nucleon_width_));
+    const real hit_treshold = 1. - exp(-sigma_eff_*T_nn);
+    return (ran_gen_ptr_->rand_uniform() < hit_treshold);
 }
 
 void Glauber::create_a_collision_event(shared_ptr<Nucleon> proj,
@@ -819,6 +827,52 @@ real Glauber::sample_junction_rapidity_left(real y_left, real y_right) const {
                              /sinh(0.25*y_right - 0.25*y_left))
                        *sinh( 0.25 * y_right - 0.25 * y_left)));
     return(y);
+}
+
+
+// This function computes the sigeff(s) from the formula
+//  sigmaNN_in(s) = int d^2b [1 - exp(-sigeff(s)*Tpp(b))]
+//  Reads sigmaNN, returns guassian width
+real Glauber::get_sig_eff(const real siginNN) {
+    // rms-radius of a gaussian = rms-radius of a disc with radius R,
+    // where 2*PI*(2R)^2=sigmaNN
+    const real width = sqrt(0.1*siginNN/M_PI)/sqrt(8.);
+    nucleon_width_ = width;
+    const real sigin = siginNN*0.1;   // sigma_in(s) [mb --> fm^2]
+
+    const int Nint = 50;    // # of integration points
+    std::vector<real> b(Nint, 0.);
+    std::vector<real> Tnn(Nint, 0.);
+    const real Bmax = 5.0*width;
+    const real db = Bmax/Nint;
+    for (int i = 0; i < Nint; i++) {
+        b[i] = (i + 0.5)*db;
+        Tnn[i] = exp(-b[i]*b[i]/(4.*width*width))/(M_PI*(4.*width*width));
+    }
+    const real prefactor = 2.*M_PI*db;
+
+    real sum, dN;
+
+    real sigeff = 10.0;        // starting point of iteration [fm^2]
+    real sigeff0;     // holds value from previous iteration step
+    int tol = 0;
+    do {                                       // iterate ...
+        sigeff0 = sigeff;
+        sum = 0.0;
+        dN  = 0.0;
+        for (int ib = 0; ib < Nint; ib++) {  // integral d^2b from 0 to Bmax
+            sum += prefactor*b[ib]*(1.0 - exp(-sigeff*Tnn[ib]));
+            dN  += prefactor*b[ib]*Tnn[ib]*exp(-sigeff*Tnn[ib]);
+        }
+        sigeff -= (sum - sigin)/dN;
+        tol++;
+        // cout << "iter: " << tol << ": sigeff = " << sigeff
+        //      << " fm^2, sum = " << sum
+        //      << " fm^2, sigin = " << sigin << " fm^2" << endl;
+    } while(std::abs(sigeff - sigeff0) > 1e-4 && tol < 1000);
+    // until sigeff has converged
+
+    return(sigeff);
 }
 
 }
