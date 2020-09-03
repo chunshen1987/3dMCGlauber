@@ -33,6 +33,7 @@ void EventGenerator::generate_events(int nev, int event_id_offset) {
     record_file << "# event_id  Npart  Ncoll  Nstrings  b(fm)" << std::endl;
 
     int iev = 0;
+    int icollisions = 0;
     int nev_progress = std::max(1, nev/10);
     int mean_Npart = 0;
     while (iev < nev) {
@@ -63,10 +64,19 @@ void EventGenerator::generate_events(int nev, int event_id_offset) {
                         << Nstrings << "  " << b << std::endl;
             iev++;
         }
+        icollisions++;
     }
     record_file.close();
     mean_Npart = static_cast<real>(mean_Npart)/static_cast<real>(nev);
     messager << "Completed. <Npart> = " << mean_Npart;
+    messager.flush("info");
+    auto b_max = parameter_list_.get_b_max();
+    auto b_min = parameter_list_.get_b_min();
+    auto total_cross_section = (
+        M_PI*(b_max*b_max - b_min*b_min)*static_cast<real>(nev)
+        /static_cast<real>(icollisions)/100.);
+    messager << "Total cross section sig_tot = " << total_cross_section
+             << " b";
     messager.flush("info");
 }
 
