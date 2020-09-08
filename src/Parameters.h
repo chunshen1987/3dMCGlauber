@@ -45,10 +45,15 @@ class Parameters : public ParametersMap {
     bool get_baryon_junctions() const;
 
     bool get_only_event_statistics() const;
+    bool get_cached_tabels() const;
 
     real get_yloss_param_slope() const;
     real get_yloss_param_alpha1() const;
     real get_yloss_param_alpha2() const;
+    real get_yloss_param_fluct_var() const;
+
+    real get_tau_form_min() const;
+    real get_tau_form_max() const;
 };
 
 }

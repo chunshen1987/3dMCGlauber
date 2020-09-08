@@ -16,13 +16,13 @@ class CollisionEvent {
     std::weak_ptr<Nucleon> targ_nucleon;
     int proj_collided_times;
     int targ_collided_times;
-    bool produced_a_string;
+    int produced_n_strings_;
 
  public:
     CollisionEvent() = default;
     CollisionEvent(SpatialVec x_in, std::shared_ptr<Nucleon> proj_in,
                    std::shared_ptr<Nucleon> targ_in);
-    
+
     bool operator< (const CollisionEvent &event1) const {
         return(x_coll[0] < event1.get_collision_time());
     }
@@ -35,8 +35,8 @@ class CollisionEvent {
     int get_targ_collided_times() const {return(targ_collided_times);}
     bool is_valid() const;
 
-    void set_produced_a_string(bool flag) {produced_a_string = flag;}
-    bool is_produced_a_string() const {return(produced_a_string);}
+    void set_produced_n_strings(int n_strings) {produced_n_strings_ = n_strings;}
+    int get_num_strings() const {return(produced_n_strings_);}
 };
 
 struct compare_collision_time {

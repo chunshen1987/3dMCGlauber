@@ -30,13 +30,13 @@ real Parameters::get_b_min() const {
     return(b);
 }
 
-    
+
 int Parameters::get_use_quarks() const {
     int flag = get_param_int("useQuarks");
     assert(flag >= 0 && flag < 3);
     return(flag);
 }
-    
+
 
 real Parameters::get_quarks_Q2() const {
     real Q2 = static_cast<real>(get_param_double("Q2"));
@@ -58,6 +58,15 @@ real Parameters::get_lambdaB() const {
 }
 
 
+bool Parameters::get_cached_tabels() const {
+    int flag = get_param_int("cache_tables");
+    if (flag == 1)
+        return(true);
+    else
+        return(false);
+}
+
+
 int Parameters::get_QCD_string_production_mode() const {
     int flag = get_param_int("QCD_string_production_mode");
     assert(flag >= 0 && flag < 5);
@@ -74,7 +83,7 @@ int Parameters::get_QCD_string_evolution_mode() const {
 
 int Parameters::get_rapidity_loss_method() const {
     int flag = get_param_int("rapidity_loss_method");
-    assert(flag > 0 && flag < 3);
+    assert(flag > 0 && flag < 4);
     return(flag);
 }
 
@@ -108,7 +117,7 @@ real Parameters::get_shadowing_factor() const {
 real Parameters::get_yloss_param_slope() const {
     real slope = static_cast<real>(get_param_double("yloss_param_slope"));
     assert(slope >= 0.);
-    assert(slope <= 1.);
+    //assert(slope <= 1.);
     return(slope);
 }
 
@@ -125,6 +134,31 @@ real Parameters::get_yloss_param_alpha2() const {
     assert(a >= 0.);
     assert(a <= 1.);
     return(a);
+}
+
+
+real Parameters::get_yloss_param_fluct_var() const {
+    real a = static_cast<real>(get_param_double("yloss_param_fluct_var"));
+    assert(a >= 0.);
+    return(a);
+}
+
+
+real Parameters::get_tau_form_min() const {
+    real tau_form_min = static_cast<real>(get_param_double("tau_form_min"));
+    real tau_form_max = static_cast<real>(get_param_double("tau_form_max"));
+    assert(tau_form_min > 0.);
+    assert(tau_form_min < tau_form_max);
+    return(tau_form_min);
+}
+
+
+real Parameters::get_tau_form_max() const {
+    real tau_form_min = static_cast<real>(get_param_double("tau_form_min"));
+    real tau_form_max = static_cast<real>(get_param_double("tau_form_max"));
+    assert(tau_form_max > 0.);
+    assert(tau_form_max > tau_form_min);
+    return(tau_form_max);
 }
 
 }

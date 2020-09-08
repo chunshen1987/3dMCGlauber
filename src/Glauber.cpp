@@ -8,6 +8,7 @@
 #include <iomanip>
 #include <fstream>
 #include <cassert>
+#include <cstdlib>
 #include <iostream>
 #include <algorithm>
 #include <memory>
@@ -16,7 +17,6 @@ using std::cout;
 using std::endl;
 using std::shared_ptr;
 
-// put in use of baryon used flags
 
 namespace MCGlb {
 
@@ -26,6 +26,12 @@ Glauber::Glauber(const MCGlb::Parameters &param_in,
     sample_valence_quark = false;
     if (parameter_list.get_use_quarks() > 0) {
         sample_valence_quark = true;
+        if (!parameter_list.get_cached_tabels()) {
+            system_status_ = std::system(
+                    "rm -fr tables/proton_valence_quark_samples*");
+            system_status_ = std::system(
+                    "rm -fr tables/neutron_valence_quark_samples*");
+        }
     }
     projectile = std::unique_ptr<Nucleus>(
             new Nucleus(parameter_list.get_projectle_nucleus_name(), ran_gen,
@@ -37,8 +43,7 @@ Glauber::Glauber(const MCGlb::Parameters &param_in,
         projectile->set_valence_quark_Q2(parameter_list.get_quarks_Q2());
         target->set_valence_quark_Q2(parameter_list.get_quarks_Q2());
     }
-    ran_gen_ptr = ran_gen;
-    string_production_mode = parameter_list.get_QCD_string_production_mode();
+    ran_gen_ptr_ = ran_gen;
 
     yloss_param_slope = parameter_list.get_yloss_param_slope();
     real alpha1 = parameter_list.get_yloss_param_alpha1();
@@ -46,6 +51,14 @@ Glauber::Glauber(const MCGlb::Parameters &param_in,
     real alpha = alpha2/alpha1;
     yloss_param_a = alpha/(1. - alpha);
     yloss_param_b = alpha2/yloss_param_a;
+
+    ybeam = acosh(parameter_list.get_roots()/(2.*PhysConsts::MProton));
+
+    real siginNN = compute_NN_inelastic_cross_section(
+                                            parameter_list.get_roots());
+    sigma_eff_ = get_sig_eff(siginNN);
+    //cout << "sigma_gg = " << sigma_eff_ << " fm^2, siginNN = " << siginNN/10.
+    //     << " fm^2" << endl;
 }
 
 void Glauber::make_nuclei() {
@@ -58,7 +71,7 @@ void Glauber::make_nuclei() {
     auto b_max = parameter_list.get_b_max();
     auto b_min = parameter_list.get_b_min();
     impact_b = sqrt(b_min*b_min +
-            (b_max*b_max - b_min*b_min)*ran_gen_ptr.lock()->rand_uniform());
+            (b_max*b_max - b_min*b_min)*ran_gen_ptr_->rand_uniform());
     SpatialVec proj_shift = {0., impact_b/2., 0.,
                              -projectile->get_z_max() - 1e-15};
     projectile->shift_nucleus(proj_shift);
@@ -72,8 +85,6 @@ void Glauber::make_nuclei() {
 
 int Glauber::make_collision_schedule() {
     collision_schedule.clear();
-    auto d2 = (compute_NN_inelastic_cross_section(parameter_list.get_roots())
-               /(M_PI*10.));  // in fm^2 
     auto proj_nucleon_list = projectile->get_nucleon_list();
     auto targ_nucleon_list = target->get_nucleon_list();
     for (auto &iproj: (*proj_nucleon_list)) {
@@ -82,8 +93,10 @@ int Glauber::make_collision_schedule() {
             auto targ_x = itarg->get_x();
             auto dij = (  (targ_x[1] - proj_x[1])*(targ_x[1] - proj_x[1])
                         + (targ_x[2] - proj_x[2])*(targ_x[2] - proj_x[2]));
-            if (hit(dij, d2)) {
+            if (hit(dij)) {
                 create_a_collision_event(iproj, itarg);
+                projectile->add_a_participant(iproj);
+                target->add_a_participant(itarg);
                 iproj->set_wounded(true);
                 itarg->set_wounded(true);
                 iproj->add_collide_nucleon(itarg);
@@ -100,9 +113,13 @@ int Glauber::get_Npart() const {
     return(Npart);
 }
 
-bool Glauber::hit(real d2, real d2_in) const {
-    real G = 0.92;  // from Glassando
-    return(ran_gen_ptr.lock()->rand_uniform() < G*exp(-G*d2/d2_in));
+bool Glauber::hit(real d2) const {
+    //real G = 0.92;  // from Glassando
+    //return(ran_gen_ptr_->rand_uniform() < G*exp(-G*d2/d2_in));
+    const real T_nn = (exp(-d2/(4.*nucleon_width_*nucleon_width_))
+                       /(4.*M_PI*nucleon_width_*nucleon_width_));
+    const real hit_treshold = 1. - exp(-sigma_eff_*T_nn);
+    return (ran_gen_ptr_->rand_uniform() < hit_treshold);
 }
 
 void Glauber::create_a_collision_event(shared_ptr<Nucleon> proj,
@@ -122,7 +139,8 @@ void Glauber::create_a_collision_event(shared_ptr<Nucleon> proj,
         shared_ptr<CollisionEvent> event_ptr(
                                     new CollisionEvent(x_coll, proj, targ));
         if (proj->is_connected_with(targ)) {
-            event_ptr->set_produced_a_string(true);
+            auto form_N_strings = proj->get_number_of_connections(targ);
+            event_ptr->set_produced_n_strings(form_N_strings);
         }
         collision_schedule.insert(event_ptr);
     }
@@ -152,36 +170,38 @@ real Glauber::compute_NN_inelastic_cross_section(real ecm) const {
 }
 
 
-bool Glauber::decide_produce_string(shared_ptr<CollisionEvent> event_ptr) const {
-    bool flag_form_a_string = false;
+int Glauber::decide_produce_string_num(
+                                shared_ptr<CollisionEvent> event_ptr) const {
+    int form_n_string = 0;
     auto proj = event_ptr->get_proj_nucleon_ptr().lock();
     auto targ = event_ptr->get_targ_nucleon_ptr().lock();
-    if (   proj->get_number_of_connections() == 0
-        || targ->get_number_of_connections() == 0) {
-      //bps: string gets flag for whether it has left or right
-      //or both baryon numbers.
+    int minimum_allowed_connections = 1;
+    if (sample_valence_quark) {
+        minimum_allowed_connections = PhysConsts::NumValenceQuark;
+    }
 
-      //int n_connects = (  proj->get_number_of_connections()
-        //                  + targ->get_number_of_connections());
-        //real R_A = pow(projectile->get_nucleus_A(), 1./3.);
-        //real R_B = pow(target->get_nucleus_A(), 1./3.);
-        //real asymmetry_factor = (2./std::max(R_A, R_B))*R_A*R_B/(R_A + R_B);
-        //real cost_function = exp(- asymmetry_factor
-        //                           *static_cast<real>(n_connects));
-        //if (ran_gen_ptr.lock()->rand_uniform() < cost_function)
-        //    flag_form_a_string = true;
-        flag_form_a_string = true;
+    if (   proj->get_number_of_connections() < minimum_allowed_connections
+        && targ->get_number_of_connections() < minimum_allowed_connections) {
+        form_n_string = std::min(
+            minimum_allowed_connections - proj->get_number_of_connections(),
+            minimum_allowed_connections - targ->get_number_of_connections());
+    } else if (
+           proj->get_number_of_connections() < minimum_allowed_connections
+        || targ->get_number_of_connections() < minimum_allowed_connections) {
+        form_n_string = 1;
     } else {
         int n_connects = (  proj->get_number_of_connections()
                           + targ->get_number_of_connections());
         real shadowing_factor = parameter_list.get_shadowing_factor();
         real production_prob = (
-            (1. - shadowing_factor)*exp(-shadowing_factor*(n_connects - 2.)));
-        if (ran_gen_ptr.lock()->rand_uniform() < production_prob) {
-            flag_form_a_string = true;
+            (1. - shadowing_factor)
+            *exp(-shadowing_factor*(n_connects
+                                    - 2.*minimum_allowed_connections)));
+        if (ran_gen_ptr_->rand_uniform() < production_prob) {
+            form_n_string = 1;
         }
     }
-    return(flag_form_a_string);
+    return(form_n_string);
 }
 
 
@@ -205,14 +225,16 @@ int Glauber::decide_QCD_strings_production() {
     while (!finished) {
         finished = true;
         for (auto &ievent: collision_list) {
-            auto flag_form_a_string = decide_produce_string(ievent);
+            auto form_N_strings = decide_produce_string_num(ievent);
             auto proj = ievent->get_proj_nucleon_ptr();
             auto targ = ievent->get_targ_nucleon_ptr();
-            if (flag_form_a_string) {
-                number_of_strings++;
+            if (form_N_strings > 0) {
+                number_of_strings += form_N_strings;
                 proj.lock()->add_connected_nucleon(targ);
+                proj.lock()->add_num_connections(form_N_strings);
                 targ.lock()->add_connected_nucleon(proj);
-                ievent->set_produced_a_string(true);
+                targ.lock()->add_num_connections(form_N_strings);
+                ievent->set_produced_n_strings(form_N_strings);
             } else {
                 if (   proj.lock()->get_number_of_connections() == 0
                     || targ.lock()->get_number_of_connections() == 0)
@@ -264,6 +286,49 @@ void Glauber::update_momentum(shared_ptr<Nucleon> n_i, real y_shift) {
     n_i->set_p(pvec);
 }
 
+
+real Glauber::get_tau_form(const int string_evolution_mode) const {
+    auto tau_form_min = parameter_list.get_tau_form_min();
+    auto tau_form_max = parameter_list.get_tau_form_max();
+    real tau_form = (tau_form_min + tau_form_max)/2.;      // [fm]
+    if (string_evolution_mode == 2) {
+        // tau_form fluctuates from tau_from_min to tau_form_max
+        tau_form = (tau_form_min + (tau_form_max - tau_form_min)
+                                   *ran_gen_ptr_->rand_uniform());
+    }
+    return(tau_form);
+}
+
+
+void Glauber::get_tau_form_and_moversigma(const int string_evolution_mode,
+                                          const real y_in_lrf,
+                                          real &tau_form, real &m_over_sigma,
+                                          real &y_loss) {
+    tau_form = get_tau_form(string_evolution_mode);      // [fm]
+    m_over_sigma = 1.0;  // [fm]
+    y_loss = 0.;
+    if (string_evolution_mode == 1) {
+        // fixed rapidity loss
+        y_loss = (
+            acosh(tau_form*tau_form/(2.*m_over_sigma*m_over_sigma) + 1.));
+        // maximum 90% of y_in_lrf
+        y_loss = std::min(y_loss, y_in_lrf*0.9);
+        m_over_sigma = tau_form/sqrt(2.*(cosh(y_loss) - 1.));
+    } else if (string_evolution_mode == 2) {
+        // both tau_form and sigma fluctuate
+        y_loss = sample_rapidity_loss_shell(y_in_lrf);
+        m_over_sigma = tau_form/sqrt(2.*(cosh(y_loss) - 1.));
+    } else if (string_evolution_mode == 3) {
+        // only tau_form fluctuates
+        y_loss = sample_rapidity_loss_shell(y_in_lrf);
+        tau_form = m_over_sigma*sqrt(2.*(cosh(y_loss) - 1.));
+    } else if (string_evolution_mode == 4) {
+        // only m_over_sigma fluctuates
+        y_loss = sample_rapidity_loss_shell(y_in_lrf);
+        m_over_sigma = tau_form/sqrt(2.*(cosh(y_loss) - 1.));
+    }
+}
+
 // add flag if baryon used to proj and target
 // - check it - only put in baryon if not used yet, then set it to used
 int Glauber::perform_string_production() {
@@ -277,13 +342,9 @@ int Glauber::perform_string_production() {
     const auto string_evolution_mode = (
                     parameter_list.get_QCD_string_evolution_mode());
     const auto baryon_junctions = parameter_list.get_baryon_junctions();
-    bool has_baryon_left;
-    bool has_baryon_right;
-    real y_baryon_left;
-    real y_baryon_right;
 
     // sqrt(parameter_list.get_roots()); // ~s^{-1/4} 
-    real lambdaB =  parameter_list.get_lambdaB();
+    real lambdaB = parameter_list.get_lambdaB();
     lambdaB = std::min(1., lambdaB);
 
     //cout << lambdaB <<endl;
@@ -301,86 +362,126 @@ int Glauber::perform_string_production() {
         assert(dt > 0.);
         t_current = first_event->get_collision_time();
         propagate_nuclei(dt);
-        if (!first_event->is_produced_a_string()) {
+        if (first_event->get_num_strings() == 0) {
             collision_schedule.erase((*collision_schedule.begin()));
             continue;
         }
-        auto x_coll = first_event->get_collision_position();
-        auto proj = first_event->get_proj_nucleon_ptr().lock();
-        auto targ = first_event->get_targ_nucleon_ptr().lock();
-        real y_in_lrf = std::abs(proj->get_rapidity()
-                                 - targ->get_rapidity())/2.;
-        std::shared_ptr<Quark> proj_q;
-        std::shared_ptr<Quark> targ_q;
-        if (sample_valence_quark) {
-            proj_q   = proj->get_a_valence_quark();
-            targ_q   = targ->get_a_valence_quark();
-            y_in_lrf = std::abs(proj_q->get_rapidity()
-                                - targ_q->get_rapidity())/2.;
-        }
-        real tau_form = 0.5;      // [fm]
-        real m_over_sigma = 1.0;  // [fm]
-        real y_loss = 0.;
-        if (string_evolution_mode == 1) {
-            // fixed rapidity loss
-            y_loss = (
-                acosh(tau_form*tau_form/(2.*m_over_sigma*m_over_sigma) + 1.));
-            // maximum 90% of y_in_lrf
-            y_loss = std::min(y_loss, y_in_lrf*0.9);
-            m_over_sigma = tau_form/sqrt(2.*(cosh(y_loss) - 1.));
-        } else if (string_evolution_mode == 2) {
-            // both tau_form and sigma fluctuate
-            y_loss = sample_rapidity_loss_shell(y_in_lrf);
-            tau_form = 0.5 + 1.*ran_gen_ptr.lock()->rand_uniform();
-            m_over_sigma = tau_form/sqrt(2.*(cosh(y_loss) - 1.));
-        } else if (string_evolution_mode == 3) {
-            // only tau_form fluctuates
-            y_loss = sample_rapidity_loss_shell(y_in_lrf);
-            tau_form = m_over_sigma*sqrt(2.*(cosh(y_loss) - 1.));
-        } else if (string_evolution_mode == 4) {
-            // only m_over_sigma fluctuates
-            y_loss = sample_rapidity_loss_shell(y_in_lrf);
-            m_over_sigma = tau_form/sqrt(2.*(cosh(y_loss) - 1.));
-        }
-        // set variables in case of no baryon junction transport
-        has_baryon_left = 0;
-        has_baryon_right = 0;
-        y_baryon_right = 0.;
-        y_baryon_left = 0.;
-        if (baryon_junctions) {
-            if (!proj->baryon_was_used()) {
-                has_baryon_right = 1;
-                proj->set_baryon_used(1);
+        for (int istring = 0; istring < first_event->get_num_strings();
+                istring++) {
+            auto x_coll = first_event->get_collision_position();
+            auto proj = first_event->get_proj_nucleon_ptr().lock();
+            auto targ = first_event->get_targ_nucleon_ptr().lock();
+            real y_in_lrf = std::abs(proj->get_rapidity()
+                                     - targ->get_rapidity())/2.;
+            std::shared_ptr<Quark> proj_q;
+            std::shared_ptr<Quark> targ_q;
+            if (sample_valence_quark) {
+                proj_q = proj->get_a_valence_quark();
+                if (proj_q->get_number_of_connections() == 1) {
+                    // first time pick-up the valence quark
+                    // we need to substract the valence quark energy-momentum
+                    // from the nucleon remnant energy-momentum vector
+                    MomentumVec p_q = {
+                        PhysConsts::MQuarkValence*cosh(proj_q->get_rapidity()),
+                        0.0,
+                        0.0,
+                        PhysConsts::MQuarkValence*sinh(proj_q->get_rapidity())};
+                    proj->substract_momentum_from_remnant(p_q);
+                }
+                targ_q = targ->get_a_valence_quark();
+                if (targ_q->get_number_of_connections() == 1) {
+                    // first time pick-up the valence quark
+                    // we need to substract the valence quark energy-momentum
+                    // from the nucleon remnant energy-momentum vector
+                    MomentumVec p_q = {
+                        PhysConsts::MQuarkValence*cosh(targ_q->get_rapidity()),
+                        0.0,
+                        0.0,
+                        PhysConsts::MQuarkValence*sinh(targ_q->get_rapidity())};
+                    targ->substract_momentum_from_remnant(p_q);
+                }
+                y_in_lrf = std::abs(  proj_q->get_rapidity()
+                                    - targ_q->get_rapidity())/2.;
             }
-            if (!targ->baryon_was_used()) {
-                has_baryon_left = 1;
-                targ->set_baryon_used(1);
+            real tau_form = 0.5;      // [fm]
+            real m_over_sigma = 1.0;  // [fm]
+            real y_loss = 0.;
+            get_tau_form_and_moversigma(string_evolution_mode, y_in_lrf,
+                                        tau_form, m_over_sigma, y_loss);
+            // set variables in case of no baryon junction transport
+            bool has_baryon_left = false;
+            bool has_baryon_right = false;
+            if (!sample_valence_quark) {
+                QCDString qcd_string(x_coll, tau_form, proj, targ, m_over_sigma,
+                                     has_baryon_right, has_baryon_left);
+                QCD_string_list.push_back(qcd_string);
+            } else {
+                QCDString qcd_string(x_coll, tau_form, proj, targ,
+                                     proj_q, targ_q, m_over_sigma,
+                                     has_baryon_right, has_baryon_left);
+                QCD_string_list.push_back(qcd_string);
             }
-        }
-        if (!sample_valence_quark) {
-            QCDString qcd_string(x_coll, tau_form, proj, targ, m_over_sigma,
-                                 has_baryon_right, has_baryon_left);
-            QCD_string_list.push_back(qcd_string);
-        } else {
-            QCDString qcd_string(x_coll, tau_form, proj, targ,
-                                 proj_q, targ_q, m_over_sigma,
-                                 has_baryon_right, has_baryon_left);
-            QCD_string_list.push_back(qcd_string);
-        }
-        real y_shift = y_loss;
-        if (!sample_valence_quark) {
-            update_momentum(proj, -y_shift);
-            update_momentum(targ,  y_shift);
-        } else {
-            // shift the nucleon rapidity to avoid identical collision when
-            // update the collision schedule
-            update_momentum(proj, -1e-3*proj->get_rapidity());
-            update_momentum(targ, -1e-3*targ->get_rapidity());
-            update_momentum_quark(proj_q, -y_shift);
-            update_momentum_quark(targ_q, y_shift);
+            real y_shift = y_loss;
+            if (!sample_valence_quark) {
+                update_momentum(proj, -y_shift);
+                update_momentum(targ,  y_shift);
+            } else {
+                // shift the nucleon rapidity to avoid identical collision when
+                // update the collision schedule
+                update_momentum(proj, -1e-3*proj->get_rapidity());
+                update_momentum(targ, -1e-3*targ->get_rapidity());
+                update_momentum_quark(proj_q, -y_shift);
+                update_momentum_quark(targ_q, y_shift);
+            }
         }
         update_collision_schedule(first_event);
         collision_schedule.erase((*collision_schedule.begin()));
+    }
+
+    // randomize the QCD_string_list and assign the baryon charge to
+    // the strings
+    std::vector<unsigned int> random_idx;
+    unsigned int Nstrings = QCD_string_list.size();
+    unsigned int Npart_proj = projectile->get_number_of_wounded_nucleons();
+    unsigned int Npart_targ = target->get_number_of_wounded_nucleons();
+    unsigned int total_length = Nstrings + Npart_proj + Npart_targ;
+    for (unsigned int idx = 0; idx < total_length; idx++)
+        random_idx.push_back(idx);
+    std::random_shuffle(random_idx.begin(), random_idx.end());
+    for (auto &idx: random_idx) {
+        if (idx < Nstrings) {
+            // put baryon of the projectile in the selected string
+            auto proj = QCD_string_list[idx].get_proj();
+            if (!proj.lock()->baryon_was_used()) {
+                proj.lock()->set_baryon_used(true);
+                QCD_string_list[idx].set_has_baryon_right(true);
+            }
+        } else if (idx < Nstrings + Npart_proj) {
+            // put baryon of the projectile in the projectile remnant
+            auto proj = projectile->get_participant(idx - Nstrings);
+            if (!proj.lock()->baryon_was_used()) {
+                proj.lock()->set_baryon_used(true);
+                proj.lock()->set_remnant_carry_baryon_number(true);
+            }
+        }
+    }
+    std::random_shuffle(random_idx.begin(), random_idx.end());
+    for (auto &idx: random_idx) {
+        if (idx < Nstrings) {
+            // put baryon of the target in the selected string
+            auto targ = QCD_string_list[idx].get_targ();
+            if (!targ.lock()->baryon_was_used()) {
+                targ.lock()->set_baryon_used(true);
+                QCD_string_list[idx].set_has_baryon_left(true);
+            }
+        } else if (idx > Nstrings + Npart_proj - 1) {
+            // put baryon of the target in the target remnant
+            auto targ = target->get_participant(idx - Nstrings - Npart_proj);
+            if (!targ.lock()->baryon_was_used()) {
+                targ.lock()->set_baryon_used(true);
+                targ.lock()->set_remnant_carry_baryon_number(true);
+            }
+        }
     }
 
     // set baryons' rapidities
@@ -393,10 +494,9 @@ int Glauber::perform_string_production() {
                                            it.get_y_f_right());
         } else {
             // sample HERE if baryon should be moved
-            y_baryon_right = 0.;
-            y_baryon_left = 0.;
+            real y_baryon_right = 0.;
             if (it.get_has_baryon_right()) {
-                if (ran_gen_ptr.lock()->rand_uniform() < lambdaB) {
+                if (ran_gen_ptr_->rand_uniform() < lambdaB) {
                     // y_baryon_right = sample_junction_rapidity_right(
                     //              it->get_y_i_left(), it->get_y_i_right());
                     y_baryon_right = sample_junction_rapidity_right(
@@ -416,8 +516,9 @@ int Glauber::perform_string_production() {
                     y_baryon_right = it.get_y_f_right();
                 }
             }
+            real y_baryon_left = 0.;
             if (it.get_has_baryon_left()) {
-                if (ran_gen_ptr.lock()->rand_uniform() < lambdaB) {
+                if (ran_gen_ptr_->rand_uniform() < lambdaB) {
                     //y_baryon_left = sample_junction_rapidity_left(
                     //              it->get_y_i_left(), it->get_y_i_right());
                     y_baryon_left = sample_junction_rapidity_left(
@@ -426,14 +527,61 @@ int Glauber::perform_string_production() {
                     y_baryon_left = it.get_y_f_left();
                 }
             }
-            it.set_final_baryon_rapidities(y_baryon_left,y_baryon_right);
+            it.set_final_baryon_rapidities(y_baryon_left, y_baryon_right);
+        }
+    }
+
+
+    // collision remnant is assigned to the last string which connects the
+    // colliding nucleons or quarks
+    for (std::vector<QCDString>::reverse_iterator it = QCD_string_list.rbegin();
+            it != QCD_string_list.rend(); ++it) {
+        if (sample_valence_quark) {
+            // record the freeze-out space-time position for the remnant of
+            // the collding nucleons at their last produced strings
+            auto proj_n = it->get_proj();
+            if (!proj_n.lock()->is_remnant_set()) {
+                proj_n.lock()->set_remnant(true);
+                auto x_frez = it->get_x_production();
+                proj_n.lock()->set_remnant_x_frez(x_frez);
+            }
+            auto targ_n = it->get_targ();
+            if (!targ_n.lock()->is_remnant_set()) {
+                targ_n.lock()->set_remnant(true);
+                auto x_frez = it->get_x_production();
+                targ_n.lock()->set_remnant_x_frez(x_frez);
+            }
+
+            // set flags for quark remnants at their last connected strings
+            auto proj_q = it->get_proj_q();
+            if (!proj_q.lock()->is_remnant_set()) {
+                proj_q.lock()->set_remnant(true);
+                it->set_has_remnant_right(true);
+            }
+            auto targ_q = it->get_targ_q();
+            if (!targ_q.lock()->is_remnant_set()) {
+                targ_q.lock()->set_remnant(true);
+                it->set_has_remnant_left(true);
+            }
+        } else {
+            auto proj_n = it->get_proj();
+            if (!proj_n.lock()->is_remnant_set()) {
+                proj_n.lock()->set_remnant(true);
+                it->set_has_remnant_right(true);
+            }
+            auto targ_n = it->get_targ();
+            if (!targ_n.lock()->is_remnant_set()) {
+                targ_n.lock()->set_remnant(true);
+                it->set_has_remnant_left(true);
+            }
         }
     }
     return(number_of_collided_events);
 }
 
 
-void Glauber::update_collision_schedule(shared_ptr<CollisionEvent> event_happened) {
+void Glauber::update_collision_schedule(
+                                shared_ptr<CollisionEvent> event_happened) {
     auto proj = event_happened->get_proj_nucleon_ptr().lock();
     proj->increment_collided_times();
     for (auto &it: (*proj->get_collide_nucleon_list()))
@@ -449,47 +597,57 @@ void Glauber::output_QCD_strings(std::string filename, const real Npart,
                                  const real b) {
     std::ofstream output(filename.c_str());
     real total_energy = Npart*parameter_list.get_roots()/2.;
+    real net_Pz = ((projectile->get_number_of_wounded_nucleons()
+                    - target->get_number_of_wounded_nucleons())
+                   *parameter_list.get_roots()/2.);
     output << "# b = " << b << " fm " << "Npart = " << Npart
            << " Ncoll = " << Ncoll << " Nstrings = " << Nstrings
-           << " total_energy = " << total_energy << " GeV" << endl;
+           << " total_energy = " << total_energy << " GeV, "
+           << "net_Pz = " << net_Pz << " GeV" << endl;
 
-    output << "# norm  m_over_sigma[fm]  tau_form[fm]  tau_0[fm]  eta_s_0  "
+    output << "# mass[GeV]  m_over_sigma[fm]  tau_form[fm]  tau_0[fm]  eta_s_0  "
            << "x_perp[fm]  y_perp[fm]  "
-           << "eta_s_left  eta_s_right  y_l  y_r  fraction_l  fraction_r "
+           << "eta_s_left  eta_s_right  y_l  y_r  remnant_l  remnant_r "
            << "y_l_i  y_r_i "
            << "eta_s_baryon_left  eta_s_baryon_right  y_l_baryon  y_r_baryon  "
            << "baryon_fraction_l  baryon_fraction_r"
            << endl;
-    const auto baryon_junctions = parameter_list.get_baryon_junctions();
 
-    real energy_fraction_left  = 0.;
-    real energy_fraction_right = 0.;
-    real baryon_fraction_left  = 0.;
-    real baryon_fraction_right = 0.;
-
+    // output strings
     for (auto &it: QCD_string_list) {
         auto x_prod = it.get_x_production();
         auto tau_0  = sqrt(x_prod[0]*x_prod[0] - x_prod[3]*x_prod[3]);
         auto etas_0 = 0.5*log((x_prod[0] + x_prod[3])/(x_prod[0] - x_prod[3]));
 
-        energy_fraction_left = 1./(static_cast<real>(
-                        it.get_proj().lock()->get_number_of_connections()));
-        energy_fraction_right = 1./(static_cast<real>(
-                        it.get_targ().lock()->get_number_of_connections()));
-        if (!baryon_junctions) {
-            baryon_fraction_left  = energy_fraction_left;
-            baryon_fraction_right = energy_fraction_right;
-        } else {
-            baryon_fraction_left  = it.get_has_baryon_left();
-            baryon_fraction_right = it.get_has_baryon_right();
+        real remnant_left  = 0.;
+        if (it.get_has_remnant_left()) {
+            remnant_left = 1.0;
         }
 
+        real remnant_right = 0.;
+        if (it.get_has_remnant_right()) {
+            remnant_right = 1.0;
+        }
+
+        real baryon_fraction_left  = 0.;
+        if (it.get_has_baryon_left()) {
+            baryon_fraction_left = 1.0;
+        }
+
+        real baryon_fraction_right = 0.;
+        if (it.get_has_baryon_right()) {
+            baryon_fraction_right = 1.0;
+        }
+
+        auto mass = PhysConsts::MProton;
+        if (sample_valence_quark)
+            mass = PhysConsts::MQuarkValence;
         std::vector<real> output_array = {
-            1.0, it.get_m_over_sigma(), it.get_tau_form(),
+            mass, it.get_m_over_sigma(), it.get_tau_form(),
             tau_0, etas_0, x_prod[1], x_prod[2],
             it.get_eta_s_left(), it.get_eta_s_right(),
             it.get_y_f_left(), it.get_y_f_right(),
-            energy_fraction_left, energy_fraction_right,
+            remnant_left, remnant_right,
             it.get_y_i_left(), it.get_y_i_right(),
             it.get_eta_s_baryon_left(), it.get_eta_s_baryon_right(),
             it.get_y_f_baryon_left(), it.get_y_f_baryon_right(),
@@ -502,6 +660,92 @@ void Glauber::output_QCD_strings(std::string filename, const real Npart,
         }
         output << endl;
     }
+
+    // output the beam remnants
+    if (sample_valence_quark) {
+        const auto string_evolution_mode = (
+                    parameter_list.get_QCD_string_evolution_mode());
+        auto proj_nucleon_list = projectile->get_nucleon_list();
+        for (auto &iproj: (*proj_nucleon_list)) {
+            if (iproj->is_wounded()) {
+                auto x_i = iproj->get_remnant_x_frez();
+                auto p_i = iproj->get_remnant_p();
+                auto tau_0  = sqrt(x_i[0]*x_i[0] - x_i[3]*x_i[3]);
+                auto etas_0 = 0.5*log((x_i[0] + x_i[3])/(x_i[0] - x_i[3]));
+                auto tau_th = get_tau_form(string_evolution_mode);
+                auto y_rem = ybeam;
+                if (std::abs(p_i[3]) < p_i[0]) {
+                    // a time-like beam remnant
+                    y_rem = 0.5*log((p_i[0] + p_i[3])/(p_i[0] - p_i[3]));
+                }
+                auto m_rem = p_i[0]/cosh(y_rem);
+                auto t_f = x_i[0] + tau_th*cosh(y_rem);
+                auto z_f = x_i[3] + tau_th*sinh(y_rem);
+                auto eta_s_right = 0.5*log((t_f + z_f)/(t_f - z_f));
+                real baryon_fraction_right  = 0.;
+                if (iproj->is_remnant_carry_baryon_number()) {
+                    baryon_fraction_right = 1.0;
+                }
+                std::vector<real> output_array = {
+                    m_rem, 1.0, tau_th,
+                    tau_0, etas_0, x_i[1], x_i[2],
+                    eta_s_right, eta_s_right,
+                    y_rem, y_rem,
+                    0.0, 1.0,
+                    y_rem, y_rem,
+                    eta_s_right, eta_s_right,
+                    y_rem, y_rem,
+                    0.0, baryon_fraction_right,
+                };
+
+                output << std::scientific << std::setprecision(8);
+                for (auto &ival : output_array) {
+                    output << std::setw(15) << ival << "  ";
+                }
+                output << endl;
+            }
+        }
+        auto targ_nucleon_list = target->get_nucleon_list();
+        for (auto &itarg: (*targ_nucleon_list)) {
+            if (itarg->is_wounded()) {
+                auto x_i = itarg->get_remnant_x_frez();
+                auto p_i = itarg->get_remnant_p();
+                auto tau_0  = sqrt(x_i[0]*x_i[0] - x_i[3]*x_i[3]);
+                auto etas_0 = 0.5*log((x_i[0] + x_i[3])/(x_i[0] - x_i[3]));
+                auto tau_th = get_tau_form(string_evolution_mode);
+                auto y_rem = -ybeam;
+                if (std::abs(p_i[3]) < p_i[0]) {
+                    // a time-like beam remnant
+                    y_rem = 0.5*log((p_i[0] + p_i[3])/(p_i[0] - p_i[3]));
+                }
+                auto m_rem = p_i[0]/cosh(y_rem);
+                auto t_f = x_i[0] + tau_th*cosh(y_rem);
+                auto z_f = x_i[3] + tau_th*sinh(y_rem);
+                auto eta_s_left = 0.5*log((t_f + z_f)/(t_f - z_f));
+                real baryon_fraction_left  = 0.;
+                if (itarg->is_remnant_carry_baryon_number()) {
+                    baryon_fraction_left = 1.0;
+                }
+                std::vector<real> output_array = {
+                    m_rem, 1.0, tau_th,
+                    tau_0, etas_0, x_i[1], x_i[2],
+                    eta_s_left, eta_s_left,
+                    y_rem, y_rem,
+                    1.0, 0.0,
+                    y_rem, y_rem,
+                    eta_s_left, eta_s_left,
+                    y_rem, y_rem,
+                    baryon_fraction_left, 0.0,
+                };
+
+                output << std::scientific << std::setprecision(8);
+                for (auto &ival : output_array) {
+                    output << std::setw(15) << ival << "  ";
+                }
+                output << endl;
+            }
+        }
+    }
     output.close();
 }
 
@@ -512,33 +756,61 @@ real Glauber::sample_rapidity_loss_shell(real y_init) const {
         y_loss = sample_rapidity_loss_from_the_LEXUS_model(y_init);
     } else if (parameter_list.get_rapidity_loss_method() == 2) {
         y_loss = sample_rapidity_loss_from_parametrization(y_init);
+    } else if (parameter_list.get_rapidity_loss_method() == 3) {
+        y_loss = sample_rapidity_loss_from_parametrization_with_fluct(y_init);
     }
     return(y_loss);
 }
 
-real Glauber::sample_rapidity_loss_from_the_LEXUS_model(real y_init) const {
+
+real Glauber::sample_rapidity_loss_from_the_LEXUS_model(
+                                            const real y_init) const {
     const real shape_coeff = 1.0;
     real sinh_y_lrf = sinh(shape_coeff*y_init);
-    real arcsinh_factor = (ran_gen_ptr.lock()->rand_uniform()
+    real arcsinh_factor = (ran_gen_ptr_->rand_uniform()
                            *(sinh(2.*shape_coeff*y_init) - sinh_y_lrf)
                            + sinh_y_lrf);
     real y_loss = 2.*y_init - asinh(arcsinh_factor)/shape_coeff;
     return(y_loss);
 }
 
-real Glauber::sample_rapidity_loss_from_parametrization(real y_init) const {
+
+real Glauber::sample_rapidity_loss_from_parametrization(
+                                                const real y_init) const {
     auto y_loss = (
         yloss_param_slope*pow(pow(y_init, yloss_param_a)*tanh(y_init),
                               yloss_param_b));
     return(y_loss);
 }
 
+
+real Glauber::sample_rapidity_loss_from_parametrization_with_fluct(
+                                                const real y_init) const {
+    auto y_mean = sample_rapidity_loss_from_parametrization(y_init);
+    auto var = parameter_list.get_yloss_param_fluct_var();
+    auto random_x = ran_gen_ptr_->rand_normal(0., var);
+
+    real logit_rand = 1./(1. + exp(-random_x));
+    auto y_loss = y_mean;
+    if (std::abs(2.*y_mean - y_init) > 1e-15) {
+        real aa = (2.*y_mean - y_init)/(2.*y_mean*y_init*(y_init - y_mean));
+        real bb = ((y_init*y_init - 2.*y_mean*y_mean)
+                   /(2.*y_init*y_mean*(y_init - y_mean)));
+        real cc = - logit_rand;
+        y_loss = (-bb + sqrt(bb*bb - 4.*aa*cc))/(2.*aa);
+    } else {
+        y_loss = logit_rand*y_init;
+    }
+    return(y_loss);
+}
+
+
 // sample y from exp[(y - (0.5 (yt + yp)))/2]/(4.` Sinh[0.25` yp - 0.25` yt]),
 // the new rapidity of the baryon number from the right moving particle
 // after the collision in the lab frame
 real Glauber::sample_junction_rapidity_right(real y_left, real y_right) const {
     real y = -2.*(-0.25*y_right - 0.25*y_left
-                  - 1.*log(2.*(ran_gen_ptr.lock()->rand_uniform()
+                  - 1.*log(2.*(ran_gen_ptr_->rand_uniform()
                                + 0.5*exp(-0.25*y_right + 0.25*y_left)
                                  /sinh(0.25*y_right - 0.25*y_left))
                            *sinh(0.25*y_right - 0.25*y_left)));
@@ -550,11 +822,57 @@ real Glauber::sample_junction_rapidity_right(real y_left, real y_right) const {
 // after the collision in the lab frame
 real Glauber::sample_junction_rapidity_left(real y_left, real y_right) const {
     real y = 2.*(0.25*y_right + 0.25*y_left
-                 - log(2.*(ran_gen_ptr.lock()->rand_uniform()
+                 - log(2.*(ran_gen_ptr_->rand_uniform()
                            + 0.5*exp(-0.25*y_right + 0.25*y_left)
                              /sinh(0.25*y_right - 0.25*y_left))
                        *sinh( 0.25 * y_right - 0.25 * y_left)));
     return(y);
+}
+
+
+// This function computes the sigeff(s) from the formula
+//  sigmaNN_in(s) = int d^2b [1 - exp(-sigeff(s)*Tpp(b))]
+//  Reads sigmaNN, returns guassian width
+real Glauber::get_sig_eff(const real siginNN) {
+    // rms-radius of a gaussian = rms-radius of a disc with radius R,
+    // where 2*PI*(2R)^2=sigmaNN
+    const real width = sqrt(0.1*siginNN/M_PI)/sqrt(8.);
+    nucleon_width_ = width;
+    const real sigin = siginNN*0.1;   // sigma_in(s) [mb --> fm^2]
+
+    const int Nint = 50;    // # of integration points
+    std::vector<real> b(Nint, 0.);
+    std::vector<real> Tnn(Nint, 0.);
+    const real Bmax = 5.0*width;
+    const real db = Bmax/Nint;
+    for (int i = 0; i < Nint; i++) {
+        b[i] = (i + 0.5)*db;
+        Tnn[i] = exp(-b[i]*b[i]/(4.*width*width))/(M_PI*(4.*width*width));
+    }
+    const real prefactor = 2.*M_PI*db;
+
+    real sum, dN;
+
+    real sigeff = 10.0;        // starting point of iteration [fm^2]
+    real sigeff0;     // holds value from previous iteration step
+    int tol = 0;
+    do {                                       // iterate ...
+        sigeff0 = sigeff;
+        sum = 0.0;
+        dN  = 0.0;
+        for (int ib = 0; ib < Nint; ib++) {  // integral d^2b from 0 to Bmax
+            sum += prefactor*b[ib]*(1.0 - exp(-sigeff*Tnn[ib]));
+            dN  += prefactor*b[ib]*Tnn[ib]*exp(-sigeff*Tnn[ib]);
+        }
+        sigeff -= (sum - sigin)/dN;
+        tol++;
+        // cout << "iter: " << tol << ": sigeff = " << sigeff
+        //      << " fm^2, sum = " << sum
+        //      << " fm^2, sigin = " << sigin << " fm^2" << endl;
+    } while(std::abs(sigeff - sigeff0) > 1e-4 && tol < 1000);
+    // until sigeff has converged
+
+    return(sigeff);
 }
 
 }

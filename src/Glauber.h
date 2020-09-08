@@ -21,18 +21,24 @@ namespace MCGlb {
 class Glauber {
  private:
     const Parameters &parameter_list;
-    int string_production_mode;
     std::unique_ptr<Nucleus> projectile;
     std::unique_ptr<Nucleus> target;
     std::set<shared_ptr<CollisionEvent>, compare_collision_time> collision_schedule;
     std::vector<QCDString> QCD_string_list;
-    std::weak_ptr<RandomUtil::Random> ran_gen_ptr;
+    std::shared_ptr<RandomUtil::Random> ran_gen_ptr_;
     bool sample_valence_quark;
 
     real impact_b;
     real yloss_param_slope;
     real yloss_param_a;
     real yloss_param_b;
+
+    real ybeam;
+
+    int system_status_;
+
+    real sigma_eff_;
+    real nucleon_width_;
 
  public:
     Glauber() = default;
@@ -44,7 +50,7 @@ class Glauber {
     real get_impact_parameter() const {return(impact_b);}
 
     int make_collision_schedule();
-    bool hit(real d2, real d2_in) const;
+    bool hit(real d2) const;
 
     int get_Npart() const;
 
@@ -62,11 +68,19 @@ class Glauber {
 
     //! this function determines whether a given binary collision event
     //! will produce a string
-    bool decide_produce_string(shared_ptr<CollisionEvent> event_ptr) const;
+    int decide_produce_string_num(shared_ptr<CollisionEvent> event_ptr) const;
+
+    real get_tau_form(const int string_evolution_mode) const;
+    void get_tau_form_and_moversigma(const int string_evolution_mode,
+                                     const real y_in_lrf,
+                                     real &tau_form, real &m_over_sigma,
+                                     real &y_loss);
 
     real sample_rapidity_loss_shell(real y_init) const;
-    real sample_rapidity_loss_from_the_LEXUS_model(real y_init) const;
-    real sample_rapidity_loss_from_parametrization(real y_init) const;
+    real sample_rapidity_loss_from_the_LEXUS_model(const real y_init) const;
+    real sample_rapidity_loss_from_parametrization(const real y_init) const;
+    real sample_rapidity_loss_from_parametrization_with_fluct(
+                                                const real y_init) const;
 
     real sample_junction_rapidity_right(real y_left, real y_right) const;
     real sample_junction_rapidity_left(real y_left, real y_right) const;
@@ -84,6 +98,8 @@ class Glauber {
     void output_QCD_strings(std::string filename, const real Npart,
                             const real Ncoll, const real Nstrings,
                             const real b);
+
+    real get_sig_eff(const real siginNN);
 };
 
 }

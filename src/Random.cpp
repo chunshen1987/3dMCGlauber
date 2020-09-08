@@ -4,13 +4,25 @@
 
 namespace RandomUtil {
 
-Random::Random(int seed_in, double min, double max, int seed_add) :
-    rand_uniform_dist(min, max) {
-    seed = seed_in;
+Random::Random(int seed, double min, double max) :
+    rand_uniform_dist_(min, max), rand_normal_dist_(0., 1.) {
+    seed_ = seed;
     if (seed == -1) {
-        seed = ran_dev() + seed_add;
+        std::random_device ran_dev;
+        seed_ = ran_dev();
     }
-    ran_generator = std::unique_ptr<std::mt19937>(new std::mt19937(seed));
+    ran_generator_ = std::unique_ptr<std::mt19937>(new std::mt19937(seed_));
+}
+
+
+Random::Random(int seed, int min, int max) :
+    rand_int_uniform_dist_(min, max) {
+    seed_ = seed;
+    if (seed == -1) {
+        std::random_device ran_dev;
+        seed_ = ran_dev();
+    }
+    ran_generator_ = std::unique_ptr<std::mt19937>(new std::mt19937(seed_));
 }
 
 }
