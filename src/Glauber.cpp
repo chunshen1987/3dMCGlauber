@@ -288,13 +288,12 @@ void Glauber::update_momentum(shared_ptr<Nucleon> n_i, real y_shift) {
 
 
 real Glauber::get_tau_form(const int string_evolution_mode) const {
-    auto tau_form_min = parameter_list.get_tau_form_min();
-    auto tau_form_max = parameter_list.get_tau_form_max();
-    real tau_form = (tau_form_min + tau_form_max)/2.;      // [fm]
+    auto tau_form_mean = parameter_list.get_tau_form_mean();
+    real tau_form = tau_form_mean;      // [fm]
     if (string_evolution_mode == 2) {
-        // tau_form fluctuates from tau_from_min to tau_form_max
-        tau_form = (tau_form_min + (tau_form_max - tau_form_min)
-                                   *ran_gen_ptr_->rand_uniform());
+        // tau_form fluctuates with a gamma distribution
+        tau_form = tau_form_mean/ran_gen_ptr_->rand_gamma_dis();
+        tau_form = std::min(std::max(0.1, tau_form), 6*tau_form_mean);
     }
     return(tau_form);
 }

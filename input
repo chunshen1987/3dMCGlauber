@@ -9,7 +9,7 @@ Q2 1.                           # the scale when evaluating the pdf
 b_min 0.                        # minimum impact parameter (fm)
 b_max 25.                        # maximum impact parameter (fm)
 seed -1                         # random seed (-1: system)
-only_event_statistics 1         # flag to only output the event_summary file
+only_event_statistics 0         # flag to only output the event_summary file
 cache_tables 1                  # 1: use pre-generated tables for valence quark x
                                 # 0: re-generate tables for valence quark x
 shadowing_factor 0.0            # a shadowning factor for producing strings
@@ -32,10 +32,10 @@ yloss_param_alpha1 1.70         # the small y ~ y^alpha1 for yloss parameterizat
 yloss_param_alpha2 0.32         # the large y ~ y^alpha2 for yloss parameterization [0., 1.]
 yloss_param_fluct_var 0.2       # the variance of the logit-normal parameterized y_loss fluctuation
 evolve_QCD_string_mode 2        # string evolution mode
-                                # tau_form = (tau_form_min + tau_form_max)/2 [fm]
+                                # tau_form = tau_form_mean [fm]
                                 # 1: deceleration with fixed (90%) rapidity loss (m/sigma = 1 fm, dtau = tau_form)
                                 # 2: deceleration with LEXUS/parameterized rapidity loss (both dtau and sigma fluctuate)
                                 # 3: deceleration with LEXUS/parameterized rapidity loss (m/sigma = 1 fm, dtau fluctuates)
                                 # 4: deceleration with LEXUS/parameterized rapidity loss (dtau = tau_from, m/sigma fluctuates)
-tau_form_min 0.3                # the minimum value for tau_form [fm]
-tau_form_max 0.7                # the maximum value for tau_form [fm]
+tau_form_mean 0.5               # the mean value for tau_form [fm]
+tau_form_fluct_gamma_beta 1.0   # fluctuation parameter for the gamma distribution

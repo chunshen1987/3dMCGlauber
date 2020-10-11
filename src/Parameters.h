@@ -52,8 +52,8 @@ class Parameters : public ParametersMap {
     real get_yloss_param_alpha2() const;
     real get_yloss_param_fluct_var() const;
 
-    real get_tau_form_min() const;
-    real get_tau_form_max() const;
+    real get_tau_form_mean() const;
+    real get_tau_form_fluct_gamma_beta() const;
 };
 
 }

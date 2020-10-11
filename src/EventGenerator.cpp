@@ -14,10 +14,11 @@ EventGenerator::EventGenerator(std::string input_filename, int seed) {
     parameter_list_.print_parameter_list();
     int ran_seed = parameter_list_.get_seed();
     if (seed != 0) ran_seed = seed;
+    auto gamma_beta = parameter_list_.get_tau_form_fluct_gamma_beta();
     ran_gen_ptr_ = std::shared_ptr<RandomUtil::Random>(
-                                new RandomUtil::Random(ran_seed, 0.0, 1.0));
+                    new RandomUtil::Random(ran_seed, 0.0, 1.0, gamma_beta));
     mc_glauber_ptr_ = std::unique_ptr<Glauber>(
-                                new Glauber(parameter_list_, ran_gen_ptr_));
+                    new Glauber(parameter_list_, ran_gen_ptr_));
 
     statistics_only_ = parameter_list_.get_only_event_statistics();
 }
