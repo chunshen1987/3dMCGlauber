@@ -177,7 +177,8 @@ int Glauber::decide_produce_string_num(
     auto targ = event_ptr->get_targ_nucleon_ptr().lock();
     int minimum_allowed_connections = 1;
     if (sample_valence_quark) {
-        minimum_allowed_connections = PhysConsts::NumValenceQuark;
+        minimum_allowed_connections = static_cast<int>(
+                PhysConsts::NumValenceQuark*ran_gen_ptr_->rand_uniform()) + 1;
     }
 
     if (   proj->get_number_of_connections() < minimum_allowed_connections
@@ -804,7 +805,7 @@ real Glauber::sample_rapidity_loss_from_parametrization_with_fluct(
 }
 
 
-// sample y from exp[(y - (0.5 (yt + yp)))/2]/(4.` Sinh[0.25` yp - 0.25` yt]),
+// sample y from exp[(y - (0.5*(yt + yp)))/2]/(4.*Sinh[0.25*yp - 0.25*yt]),
 // the new rapidity of the baryon number from the right moving particle
 // after the collision in the lab frame
 real Glauber::sample_junction_rapidity_right(real y_left, real y_right) const {
@@ -816,7 +817,7 @@ real Glauber::sample_junction_rapidity_right(real y_left, real y_right) const {
     return(y);
 }
 
-// sample y from exp[-(y - (0.5 (yt + yp)))/2]/(4.` Sinh[0.25` yp - 0.25` yt]),
+// sample y from exp[-(y - (0.5*(yt + yp)))/2]/(4.*Sinh[0.25*yp - 0.25*yt]),
 // the new rapidity of the baryon number from the left moving particle
 // after the collision in the lab frame
 real Glauber::sample_junction_rapidity_left(real y_left, real y_right) const {
