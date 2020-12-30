@@ -50,7 +50,8 @@ class Parameters : public ParametersMap {
     real get_yloss_param_slope() const;
     real get_yloss_param_alpha1() const;
     real get_yloss_param_alpha2() const;
-    real get_yloss_param_fluct_var() const;
+    real get_yloss_param_fluct_var_RHIC() const;
+    real get_yloss_param_fluct_var_LHC() const;
 
     real get_tau_form_mean() const;
     real get_tau_form_fluct_gamma_beta() const;

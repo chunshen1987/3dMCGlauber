@@ -787,7 +787,18 @@ real Glauber::sample_rapidity_loss_from_parametrization(
 real Glauber::sample_rapidity_loss_from_parametrization_with_fluct(
                                                 const real y_init) const {
     auto y_mean = sample_rapidity_loss_from_parametrization(y_init);
-    auto var = parameter_list.get_yloss_param_fluct_var();
+    auto y_rhic = 5.5;
+    auto y_lhc = 9.0;
+    auto var_rhic = parameter_list.get_yloss_param_fluct_var_RHIC();
+    auto var_lhc = parameter_list.get_yloss_param_fluct_var_LHC();
+    auto var = var_rhic;
+    if (y_init > y_lhc) {
+        var = var_lhc;
+    } else if (y_init > y_rhic) {
+        var = (var_rhic
+               + (y_init - y_rhic)/(y_lhc - y_rhic)*(var_lhc - var_rhic));
+    }
+
     auto random_x = ran_gen_ptr_->rand_normal(0., var);
 
     real logit_rand = 1./(1. + exp(-random_x));

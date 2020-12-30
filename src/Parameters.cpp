@@ -137,8 +137,15 @@ real Parameters::get_yloss_param_alpha2() const {
 }
 
 
-real Parameters::get_yloss_param_fluct_var() const {
-    real a = static_cast<real>(get_param_double("yloss_param_fluct_var"));
+real Parameters::get_yloss_param_fluct_var_LHC() const {
+    real a = static_cast<real>(get_param_double("yloss_param_fluct_var_LHC"));
+    assert(a >= 0.);
+    return(a);
+}
+
+
+real Parameters::get_yloss_param_fluct_var_RHIC() const {
+    real a = static_cast<real>(get_param_double("yloss_param_fluct_var_RHIC"));
     assert(a >= 0.);
     return(a);
 }

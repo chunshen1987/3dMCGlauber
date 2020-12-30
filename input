@@ -30,7 +30,9 @@ rapidity_loss_method 3          # 1: LEXUS
 yloss_param_slope 1.40          # the slope parameter for yloss parameterization [0., 1.]
 yloss_param_alpha1 1.70         # the small y ~ y^alpha1 for yloss parameterization (>=1.)
 yloss_param_alpha2 0.32         # the large y ~ y^alpha2 for yloss parameterization [0., 1.]
-yloss_param_fluct_var 0.2       # the variance of the logit-normal parameterized y_loss fluctuation
+yloss_param_fluct_var_RHIC 0.6  # the variance of the logit-normal parameterized y_loss fluctuation for y_init <= 5.5
+yloss_param_fluct_var_LHC 0.8   # the variance of the logit-normal parameterized y_loss fluctuation for y_init >= 9.0
+                                # variance is linearly increase from var_RHIC to var_LHC when 5.5 < y_init < 9.0
 evolve_QCD_string_mode 2        # string evolution mode
                                 # tau_form = tau_form_mean [fm]
                                 # 1: deceleration with fixed (90%) rapidity loss (m/sigma = 1 fm, dtau = tau_form)
