@@ -692,34 +692,14 @@ void Nucleus::sample_quark_momentum_fraction(std::vector<real> &xQuark,
 
 
 SpatialVec Nucleus::sample_valence_quark_position() const {
-    real phi   = 2.*M_PI*ran_gen_ptr->rand_uniform();
-    real theta = acos(1. - 2.*ran_gen_ptr->rand_uniform());
-
-    const real a = 3.87;   // ???
-    real r, tmp;
-    do {
-        // sample the radius from the envelope distribution
-        r = (sqrt(3)*sqrt(-log(1. + (-1. + 1./exp(1000000/3))
-                                    *ran_gen_ptr->rand_uniform())));
-
-        // sample uniform random number
-        // to decide whether to accept or reject the sampled one
-        tmp = ran_gen_ptr->rand_uniform();
-
-        // warn if the envelope happens to go below the actual distriution
-        // (should never happen)
-        //if (ExponentialDistribution(a, r) > (r/2.)/a*exp(-(r*r)/3.)) {
-        //    cerr << "WARNING: rho>envelope: " << "rho="
-        //         << ExponentialDistribution(a,r)
-        //         << ", envelope=" <<  (r/2.) / a * exp(-(r*r)/3.) << endl;
-        //    //repeat until tmp is smaller than the ratio p(y)/f(y)
-        //}
-    } while (tmp > ExponentialDistribution(a, r)/((r/2.)/a*exp(-(r*r)/3.))); 
-
+    // sample Gaussian distribution for the valence quark position
     // determine x,y,z coordinates of the quark (relative to the nucleon)
-    real x = r*sin(theta)*cos(phi);
-    real y = r*sin(theta)*sin(phi);
-    real z = r*cos(theta);
+
+    // This parameter was from IP-Glasma fit to the HERA data
+    real BG = sqrt(4.)*PhysConsts::HBARC;     // ~ 0.4 fm
+    real x = ran_gen_ptr->rand_normal(0., BG);
+    real y = ran_gen_ptr->rand_normal(0., BG);
+    real z = ran_gen_ptr->rand_normal(0., BG);
 
     SpatialVec xq = {0.0, x, y, z};
     return(xq);
