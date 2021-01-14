@@ -177,8 +177,11 @@ int Glauber::decide_produce_string_num(
     auto targ = event_ptr->get_targ_nucleon_ptr().lock();
     int minimum_allowed_connections = 1;
     if (sample_valence_quark) {
+        // assume P(N) = 1/2^N distribution
+        auto rand = ran_gen_ptr_->rand_uniform();
+        int N = PhysConsts::NumValenceQuark + 1;
         minimum_allowed_connections = static_cast<int>(
-                PhysConsts::NumValenceQuark*ran_gen_ptr_->rand_uniform()) + 1;
+                -log((1. - rand*(1. - pow(2., -N))))/log(2.)) + 1;
     }
 
     if (   proj->get_number_of_connections() < minimum_allowed_connections
@@ -337,6 +340,8 @@ int Glauber::perform_string_production() {
                                     parameter_list.get_roots(), 1);
         target->sample_valence_quarks_inside_nucleons(
                                     parameter_list.get_roots(), -1);
+        projectile->add_soft_parton_ball(parameter_list.get_roots(), 1);
+        target->add_soft_parton_ball(parameter_list.get_roots(), -1);
     }
     QCD_string_list.clear();
     const auto string_evolution_mode = (
@@ -381,11 +386,7 @@ int Glauber::perform_string_production() {
                     // first time pick-up the valence quark
                     // we need to substract the valence quark energy-momentum
                     // from the nucleon remnant energy-momentum vector
-                    MomentumVec p_q = {
-                        PhysConsts::MQuarkValence*cosh(proj_q->get_rapidity()),
-                        0.0,
-                        0.0,
-                        PhysConsts::MQuarkValence*sinh(proj_q->get_rapidity())};
+                    auto p_q = proj_q->get_p();
                     proj->substract_momentum_from_remnant(p_q);
                 }
                 targ_q = targ->get_a_valence_quark();
@@ -393,11 +394,7 @@ int Glauber::perform_string_production() {
                     // first time pick-up the valence quark
                     // we need to substract the valence quark energy-momentum
                     // from the nucleon remnant energy-momentum vector
-                    MomentumVec p_q = {
-                        PhysConsts::MQuarkValence*cosh(targ_q->get_rapidity()),
-                        0.0,
-                        0.0,
-                        PhysConsts::MQuarkValence*sinh(targ_q->get_rapidity())};
+                    auto p_q = targ_q->get_p();
                     targ->substract_momentum_from_remnant(p_q);
                 }
                 y_in_lrf = std::abs(  proj_q->get_rapidity()

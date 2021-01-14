@@ -127,6 +127,7 @@ class Nucleus {
     void output_nucleon_positions(std::string filename) const;
 
     void sample_valence_quarks_inside_nucleons(real ecm, int direction);
+    void add_soft_parton_ball(real ecm, int direction);
 
     real sample_a_u_quark_momentum_fraction(const bool flag_NPDF) const;
     real sample_a_d_quark_momentum_fraction(const bool flag_NPDF) const;

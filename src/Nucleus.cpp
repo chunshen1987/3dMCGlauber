@@ -217,6 +217,29 @@ void Nucleus::sample_valence_quarks_inside_nucleons(real ecm, int direction) {
 }
 
 
+void Nucleus::add_soft_parton_ball(real ecm, int direction) {
+    // assuming the soft parton ball has beam rapidity
+    real beam_rapidity = direction*acosh(ecm/(2.*PhysConsts::MProton));
+    for (auto &nucleon_i: nucleon_list_) {
+        if (nucleon_i->is_wounded()
+            && nucleon_i->get_number_of_quarks() != 0) {
+            auto soft_pvec = nucleon_i->get_p();
+            auto valence_quark_list = nucleon_i->get_quark_list();
+            for (const auto & q_i: valence_quark_list) {
+                auto quark_pvec = q_i->get_p();
+                for (int i = 0; i < 4; i++) {
+                    soft_pvec[i] -= quark_pvec[i];
+                }
+            }
+            real mass = soft_pvec[0]/cosh(beam_rapidity);
+            soft_pvec[3] = mass*sinh(beam_rapidity);
+            auto xvec = sample_valence_quark_position();
+            std::shared_ptr<Quark> quark_ptr(new Quark(xvec, soft_pvec));
+            nucleon_i->push_back_quark(quark_ptr);
+        }
+    }
+}
+
 void Nucleus::generate_deuteron_configuration() {
     // sample the distance between the two nucleons
     real r_dis = get_inverse_CDF_hulthen_function(ran_gen_ptr->rand_uniform());
