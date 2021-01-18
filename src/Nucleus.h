@@ -133,7 +133,8 @@ class Nucleus {
     real sample_a_d_quark_momentum_fraction(const bool flag_NPDF) const;
     void sample_quark_momentum_fraction(std::vector<real> &xQuark,
                                         const int number_of_quarks,
-                                        const int electric_charge) const;
+                                        const int electric_charge,
+                                        const real ecm) const;
     SpatialVec sample_valence_quark_position() const;
     real ExponentialDistribution(const real a, const real r) const;
 };

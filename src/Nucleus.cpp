@@ -205,7 +205,8 @@ void Nucleus::sample_valence_quarks_inside_nucleons(real ecm, int direction) {
             && nucleon_i->get_number_of_quarks() == 0) {
             std::vector<real> xQuark;
             sample_quark_momentum_fraction(xQuark, number_of_quarks,
-                                           nucleon_i->get_electric_charge());
+                                           nucleon_i->get_electric_charge(),
+                                           ecm);
             for (int i = 0; i < number_of_quarks; i++) {
                 auto xvec = sample_valence_quark_position();
                 std::shared_ptr<Quark> quark_ptr(new Quark(xvec, xQuark[i]));
@@ -235,6 +236,7 @@ void Nucleus::add_soft_parton_ball(real ecm, int direction) {
             soft_pvec[3] = mass*sinh(beam_rapidity);
             auto xvec = sample_valence_quark_position();
             std::shared_ptr<Quark> quark_ptr(new Quark(xvec, soft_pvec));
+            quark_ptr->set_rapidity(beam_rapidity);
             nucleon_i->push_back_quark(quark_ptr);
         }
     }
@@ -694,7 +696,8 @@ real Nucleus::sample_a_u_quark_momentum_fraction(const bool flag_NPDF) const {
 
 void Nucleus::sample_quark_momentum_fraction(std::vector<real> &xQuark,
                                              const int number_of_quarks,
-                                             const int electric_charge) const {
+                                             const int electric_charge,
+                                             const real ecm) const {
     if (!sample_valence_quarks) {
         for (int i = 0; i < number_of_quarks; i++) {
             xQuark.push_back(1./number_of_quarks);
@@ -702,15 +705,28 @@ void Nucleus::sample_quark_momentum_fraction(std::vector<real> &xQuark,
         return;
     }
 
-    auto sample_idx = ran_int_gen_->rand_int_uniform();
-
-    if (electric_charge == 1) {
-        for (int i = 0; i < number_of_quarks; i++)
-            xQuark.push_back(proton_valence_quark_x_[sample_idx][i]);
-    } else  {
-        for (int i = 0; i < number_of_quarks; i++)
-            xQuark.push_back(neutron_valence_quark_x_[sample_idx][i]);
-    }
+    const real mq = PhysConsts::MQuarkValence;
+    const real mp = PhysConsts::MProton;
+    const real ybeam = acosh(ecm/(2.*mp));
+    real total_energy = 0.;
+    real E_proton = mp*cosh(ybeam);
+    do {
+        auto sample_idx = ran_int_gen_->rand_int_uniform();
+        xQuark.clear();
+        if (electric_charge == 1) {
+            for (int i = 0; i < number_of_quarks; i++)
+                xQuark.push_back(proton_valence_quark_x_[sample_idx][i]);
+        } else  {
+            for (int i = 0; i < number_of_quarks; i++)
+                xQuark.push_back(neutron_valence_quark_x_[sample_idx][i]);
+        }
+        total_energy = 0.;
+        for (int i = 0; i < number_of_quarks; i++) {
+            real rap_local = asinh(xQuark[i]*mp/mq*sinh(ybeam));
+            real E_local = mq*cosh(rap_local);
+            total_energy += E_local;
+        }
+    } while (total_energy > E_proton);
 }
 
 

@@ -272,11 +272,12 @@ void Glauber::propagate_nucleon(shared_ptr<Nucleon> n_i, real dt) {
 
 void Glauber::update_momentum_quark(shared_ptr<Quark> q_i, real y_shift) {
     auto pvec = q_i->get_p();
+    auto mass = q_i->get_mass();
     auto y_i = q_i->get_rapidity();
     auto y_f = y_i + y_shift;
     q_i->set_rapidity(y_f);
-    pvec[0] = PhysConsts::MProton*cosh(y_f);
-    pvec[3] = PhysConsts::MProton*sinh(y_f);
+    pvec[0] = mass*cosh(y_f);
+    pvec[3] = mass*sinh(y_f);
     q_i->set_p(pvec);
 }
 
@@ -426,9 +427,9 @@ int Glauber::perform_string_production() {
                 // shift the nucleon rapidity to avoid identical collision when
                 // update the collision schedule
                 update_momentum(proj, -1e-3*proj->get_rapidity());
-                update_momentum(targ, -1e-3*targ->get_rapidity());
+                update_momentum(targ,  1e-3*targ->get_rapidity());
                 update_momentum_quark(proj_q, -y_shift);
-                update_momentum_quark(targ_q, y_shift);
+                update_momentum_quark(targ_q,  y_shift);
             }
         }
         update_collision_schedule(first_event);
