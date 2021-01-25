@@ -414,7 +414,14 @@ int Glauber::perform_string_production() {
                                      has_baryon_right, has_baryon_left);
                 QCD_string_list.push_back(qcd_string);
             } else {
-                QCDString qcd_string(x_coll, tau_form, proj, targ,
+                auto proj_q_xvec = proj_q->get_x();
+                auto targ_q_xvec = targ_q->get_x();
+                SpatialVec x_coll_q = {
+                    x_coll[0],
+                    x_coll[1] + (proj_q_xvec[1] + targ_q_xvec[1])/2.,
+                    x_coll[2] + (proj_q_xvec[2] + targ_q_xvec[2])/2.,
+                    x_coll[3]};
+                QCDString qcd_string(x_coll_q, tau_form, proj, targ,
                                      proj_q, targ_q, m_over_sigma,
                                      has_baryon_right, has_baryon_left);
                 QCD_string_list.push_back(qcd_string);
