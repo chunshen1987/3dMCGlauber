@@ -621,13 +621,14 @@ void Glauber::output_QCD_strings(std::string filename, const real Npart,
     // output strings
     for (auto &it: QCD_string_list) {
         auto x_prod = it.get_x_production();
-        auto x_left = it.get_proj().lock()->get_x();
-        auto x_right = it.get_targ().lock()->get_x();
+        auto x_left = it.get_targ().lock()->get_x();
+        auto x_right = it.get_proj().lock()->get_x();
         if (sample_valence_quark) {
-            auto xq_left = it.get_proj_q().lock()->get_x();
-            auto xq_right = it.get_targ_q().lock()->get_x();
+            auto xq_left = it.get_targ_q().lock()->get_x();
             x_left[1]  += xq_left[1];
             x_left[2]  += xq_left[2];
+
+            auto xq_right = it.get_proj_q().lock()->get_x();
             x_right[1] += xq_right[1];
             x_right[2] += xq_right[2];
         }
