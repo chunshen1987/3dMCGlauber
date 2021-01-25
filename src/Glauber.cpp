@@ -547,13 +547,13 @@ int Glauber::perform_string_production() {
             auto proj_n = it->get_proj();
             if (!proj_n.lock()->is_remnant_set()) {
                 proj_n.lock()->set_remnant(true);
-                auto x_frez = it->get_x_production();
+                auto x_frez = proj_n.lock()->get_x();
                 proj_n.lock()->set_remnant_x_frez(x_frez);
             }
             auto targ_n = it->get_targ();
             if (!targ_n.lock()->is_remnant_set()) {
                 targ_n.lock()->set_remnant(true);
-                auto x_frez = it->get_x_production();
+                auto x_frez = targ_n.lock()->get_x();
                 targ_n.lock()->set_remnant_x_frez(x_frez);
             }
 
@@ -611,7 +611,7 @@ void Glauber::output_QCD_strings(std::string filename, const real Npart,
            << "net_Pz = " << net_Pz << " GeV" << endl;
 
     output << "# mass[GeV]  m_over_sigma[fm]  tau_form[fm]  tau_0[fm]  eta_s_0  "
-           << "x_perp[fm]  y_perp[fm]  "
+           << "x_perp[fm]  y_perp[fm]  x_l[fm]  y_l[fm]  x_r[fm]  y_r[fm]  "
            << "eta_s_left  eta_s_right  y_l  y_r  remnant_l  remnant_r "
            << "y_l_i  y_r_i "
            << "eta_s_baryon_left  eta_s_baryon_right  y_l_baryon  y_r_baryon  "
@@ -621,6 +621,16 @@ void Glauber::output_QCD_strings(std::string filename, const real Npart,
     // output strings
     for (auto &it: QCD_string_list) {
         auto x_prod = it.get_x_production();
+        auto x_left = it.get_proj().lock()->get_x();
+        auto x_right = it.get_targ().lock()->get_x();
+        if (sample_valence_quark) {
+            auto xq_left = it.get_proj_q().lock()->get_x();
+            auto xq_right = it.get_targ_q().lock()->get_x();
+            x_left[1]  += xq_left[1];
+            x_left[2]  += xq_left[2];
+            x_right[1] += xq_right[1];
+            x_right[2] += xq_right[2];
+        }
         auto tau_0  = sqrt(x_prod[0]*x_prod[0] - x_prod[3]*x_prod[3]);
         auto etas_0 = 0.5*log((x_prod[0] + x_prod[3])/(x_prod[0] - x_prod[3]));
 
@@ -645,11 +655,13 @@ void Glauber::output_QCD_strings(std::string filename, const real Npart,
         }
 
         auto mass = PhysConsts::MProton;
-        if (sample_valence_quark)
+        if (sample_valence_quark) {
             mass = PhysConsts::MQuarkValence;
+        }
         std::vector<real> output_array = {
             mass, it.get_m_over_sigma(), it.get_tau_form(),
             tau_0, etas_0, x_prod[1], x_prod[2],
+            x_left[1], x_left[2], x_right[1], x_right[2],
             it.get_eta_s_left(), it.get_eta_s_right(),
             it.get_y_f_left(), it.get_y_f_right(),
             remnant_left, remnant_right,
@@ -694,6 +706,7 @@ void Glauber::output_QCD_strings(std::string filename, const real Npart,
                 std::vector<real> output_array = {
                     m_rem, 1.0, tau_th,
                     tau_0, etas_0, x_i[1], x_i[2],
+                    x_i[1], x_i[2], x_i[1], x_i[2],
                     eta_s_right, eta_s_right,
                     y_rem, y_rem,
                     0.0, 1.0,
@@ -734,6 +747,7 @@ void Glauber::output_QCD_strings(std::string filename, const real Npart,
                 std::vector<real> output_array = {
                     m_rem, 1.0, tau_th,
                     tau_0, etas_0, x_i[1], x_i[2],
+                    x_i[1], x_i[2], x_i[1], x_i[2],
                     eta_s_left, eta_s_left,
                     y_rem, y_rem,
                     1.0, 0.0,
