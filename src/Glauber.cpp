@@ -57,8 +57,8 @@ Glauber::Glauber(const MCGlb::Parameters &param_in,
     real siginNN = compute_NN_inelastic_cross_section(
                                             parameter_list.get_roots());
     sigma_eff_ = get_sig_eff(siginNN);
-    //cout << "sigma_gg = " << sigma_eff_ << " fm^2, siginNN = " << siginNN/10.
-    //     << " fm^2" << endl;
+    cout << "sqrt{s} = " << parameter_list.get_roots() << " GeV, "
+         << "siginNN = " << siginNN << " mb" << endl;
 }
 
 void Glauber::make_nuclei() {
@@ -871,10 +871,10 @@ real Glauber::get_sig_eff(const real siginNN) {
     nucleon_width_ = width;
     const real sigin = siginNN*0.1;   // sigma_in(s) [mb --> fm^2]
 
-    const int Nint = 50;    // # of integration points
+    const int Nint = 100;    // # of integration points
     std::vector<real> b(Nint, 0.);
     std::vector<real> Tnn(Nint, 0.);
-    const real Bmax = 5.0*width;
+    const real Bmax = 10.0*width;
     const real db = Bmax/Nint;
     for (int i = 0; i < Nint; i++) {
         b[i] = (i + 0.5)*db;
@@ -897,9 +897,9 @@ real Glauber::get_sig_eff(const real siginNN) {
         }
         sigeff -= (sum - sigin)/dN;
         tol++;
-        // cout << "iter: " << tol << ": sigeff = " << sigeff
-        //      << " fm^2, sum = " << sum
-        //      << " fm^2, sigin = " << sigin << " fm^2" << endl;
+        //cout << "iter: " << tol << ": sigeff = " << sigeff
+        //     << " fm^2, sum = " << sum
+        //     << " fm^2, sigin = " << sigin << " fm^2" << endl;
     } while(std::abs(sigeff - sigeff0) > 1e-4 && tol < 1000);
     // until sigeff has converged
 
