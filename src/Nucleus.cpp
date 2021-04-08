@@ -216,7 +216,6 @@ void Nucleus::sample_valence_quarks_inside_nucleons(real ecm, int direction) {
 
 
 void Nucleus::add_soft_parton_ball(real ecm, int direction) {
-    // assuming the soft parton ball has beam rapidity
     for (auto &nucleon_i: nucleon_list_) {
         if (nucleon_i->is_wounded()
             && nucleon_i->get_number_of_quarks() != 0) {
@@ -229,12 +228,17 @@ void Nucleus::add_soft_parton_ball(real ecm, int direction) {
                 }
             }
             real mass = PhysConsts::MQuarkValence;
-            real rapidity = acosh(soft_pvec[0]/mass);
-            soft_pvec[3] = mass*sinh(rapidity);
-            auto xvec = sample_valence_quark_position();
-            std::shared_ptr<Quark> quark_ptr(new Quark(xvec, soft_pvec));
-            quark_ptr->set_rapidity(rapidity);
-            nucleon_i->push_back_quark(quark_ptr);
+            if (soft_pvec[0] > mass) {
+                // assuming the soft parton ball has valence quark mass
+                // only add a soft parton when the leftover energy is
+                // larger than mq
+                real rapidity = acosh(soft_pvec[0]/mass);
+                soft_pvec[3] = mass*sinh(rapidity);
+                auto xvec = sample_valence_quark_position();
+                std::shared_ptr<Quark> quark_ptr(new Quark(xvec, soft_pvec));
+                quark_ptr->set_rapidity(rapidity);
+                nucleon_i->push_back_quark(quark_ptr);
+            }
         }
     }
 }

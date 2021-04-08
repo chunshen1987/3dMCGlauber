@@ -179,7 +179,8 @@ int Glauber::decide_produce_string_num(
     if (sample_valence_quark) {
         // assume P(N) = 1/2^N distribution
         auto rand = ran_gen_ptr_->rand_uniform();
-        int N = PhysConsts::NumValenceQuark + 1;
+        int N = std::min(proj->get_number_of_quarks(),
+                         targ->get_number_of_quarks());
         minimum_allowed_connections = static_cast<int>(
                 -log((1. - rand*(1. - pow(2., -N))))/log(2.)) + 1;
     }
@@ -210,6 +211,14 @@ int Glauber::decide_produce_string_num(
 
 
 int Glauber::decide_QCD_strings_production() {
+    if (sample_valence_quark) {
+        projectile->sample_valence_quarks_inside_nucleons(
+                                    parameter_list.get_roots(), 1);
+        target->sample_valence_quarks_inside_nucleons(
+                                    parameter_list.get_roots(), -1);
+        projectile->add_soft_parton_ball(parameter_list.get_roots(), 1);
+        target->add_soft_parton_ball(parameter_list.get_roots(), -1);
+    }
     std::vector<shared_ptr<CollisionEvent>> collision_list;
     for (auto &it: collision_schedule)
         collision_list.push_back(it);  // collision list is time ordered
@@ -336,14 +345,6 @@ void Glauber::get_tau_form_and_moversigma(const int string_evolution_mode,
 // add flag if baryon used to proj and target
 // - check it - only put in baryon if not used yet, then set it to used
 int Glauber::perform_string_production() {
-    if (sample_valence_quark) {
-        projectile->sample_valence_quarks_inside_nucleons(
-                                    parameter_list.get_roots(), 1);
-        target->sample_valence_quarks_inside_nucleons(
-                                    parameter_list.get_roots(), -1);
-        projectile->add_soft_parton_ball(parameter_list.get_roots(), 1);
-        target->add_soft_parton_ball(parameter_list.get_roots(), -1);
-    }
     QCD_string_list.clear();
     const auto string_evolution_mode = (
                     parameter_list.get_QCD_string_evolution_mode());

@@ -3,7 +3,7 @@
 ################################################################
 Projectile p                    # projectile nucleus name
 Target p                        # target nucleus name
-roots 200.                      # collision energy (GeV)
+roots 7.7                      # collision energy (GeV)
 useQuarks 1                     # switch to use valence quarks
 Q2 1.                           # the scale when evaluating the pdf
 b_min 0.                        # minimum impact parameter (fm)
