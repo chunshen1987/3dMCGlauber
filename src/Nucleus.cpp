@@ -31,10 +31,7 @@ Nucleus::Nucleus(std::string nucleus_name,
 
     sample_valence_quarks = sample_valence_quarks_in;
     if (sample_valence_quarks) {
-        int number_of_samples = readin_valence_quark_samples();
-        auto ran_seed = ran_gen_ptr->get_seed();
-        ran_int_gen_ = std::shared_ptr<RandomUtil::Random>(
-                new RandomUtil::Random(ran_seed, 0, number_of_samples - 1));
+        number_of_valence_quark_samples_ = readin_valence_quark_samples();
     }
     triton_initialized_ = false;
 }
@@ -220,7 +217,6 @@ void Nucleus::sample_valence_quarks_inside_nucleons(real ecm, int direction) {
 
 void Nucleus::add_soft_parton_ball(real ecm, int direction) {
     // assuming the soft parton ball has beam rapidity
-    real beam_rapidity = direction*acosh(ecm/(2.*PhysConsts::MProton));
     for (auto &nucleon_i: nucleon_list_) {
         if (nucleon_i->is_wounded()
             && nucleon_i->get_number_of_quarks() != 0) {
@@ -232,11 +228,12 @@ void Nucleus::add_soft_parton_ball(real ecm, int direction) {
                     soft_pvec[i] -= quark_pvec[i];
                 }
             }
-            real mass = soft_pvec[0]/cosh(beam_rapidity);
-            soft_pvec[3] = mass*sinh(beam_rapidity);
+            real mass = PhysConsts::MQuarkValence;
+            real rapidity = acosh(soft_pvec[0]/mass);
+            soft_pvec[3] = mass*sinh(rapidity);
             auto xvec = sample_valence_quark_position();
             std::shared_ptr<Quark> quark_ptr(new Quark(xvec, soft_pvec));
-            quark_ptr->set_rapidity(beam_rapidity);
+            quark_ptr->set_rapidity(rapidity);
             nucleon_i->push_back_quark(quark_ptr);
         }
     }
@@ -711,7 +708,8 @@ void Nucleus::sample_quark_momentum_fraction(std::vector<real> &xQuark,
     real total_energy = 0.;
     real E_proton = mp*cosh(ybeam);
     do {
-        auto sample_idx = ran_int_gen_->rand_int_uniform();
+        auto sample_idx = static_cast<int>(
+            ran_gen_ptr->rand_uniform()*number_of_valence_quark_samples_);
         xQuark.clear();
         if (electric_charge == 1) {
             for (int i = 0; i < number_of_quarks; i++)

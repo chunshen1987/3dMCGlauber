@@ -31,7 +31,6 @@ class Nucleus {
     std::vector<std::shared_ptr<Nucleon>> nucleon_list_;
     std::vector<std::shared_ptr<Nucleon>> participant_list_;
     std::shared_ptr<RandomUtil::Random> ran_gen_ptr;
-    std::shared_ptr<RandomUtil::Random> ran_int_gen_;
 
     bool triton_initialized_;
     std::vector< std::array<double, 9> > triton_pos_;
@@ -39,6 +38,7 @@ class Nucleus {
     std::vector< std::array<float, 3> > neutron_valence_quark_x_;
 
     int system_status_;
+    int number_of_valence_quark_samples_;
 
  public:
     Nucleus() = default;

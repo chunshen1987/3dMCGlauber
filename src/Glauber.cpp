@@ -464,7 +464,13 @@ int Glauber::perform_string_production() {
         } else if (idx < Nstrings + Npart_proj) {
             // put baryon of the projectile in the projectile remnant
             auto proj = projectile->get_participant(idx - Nstrings);
-            if (!proj.lock()->baryon_was_used()) {
+            auto p_i = proj.lock()->get_remnant_p();
+            auto mass = 0.;
+            if (std::abs(p_i[3]) < p_i[0]) {
+                // a time-like beam remnant
+                mass = sqrt(p_i[0]*p_i[0] - p_i[3]*p_i[3]);
+            }
+            if (!proj.lock()->baryon_was_used() && mass > 0.1) {
                 proj.lock()->set_baryon_used(true);
                 proj.lock()->set_remnant_carry_baryon_number(true);
             }
@@ -482,7 +488,13 @@ int Glauber::perform_string_production() {
         } else if (idx > Nstrings + Npart_proj - 1) {
             // put baryon of the target in the target remnant
             auto targ = target->get_participant(idx - Nstrings - Npart_proj);
-            if (!targ.lock()->baryon_was_used()) {
+            auto p_i = targ.lock()->get_remnant_p();
+            auto mass = 0.;
+            if (std::abs(p_i[3]) < p_i[0]) {
+                // a time-like beam remnant
+                mass = sqrt(p_i[0]*p_i[0] - p_i[3]*p_i[3]);
+            }
+            if (!targ.lock()->baryon_was_used() && mass > 0.1) {
                 targ.lock()->set_baryon_used(true);
                 targ.lock()->set_remnant_carry_baryon_number(true);
             }
@@ -688,6 +700,7 @@ void Glauber::output_QCD_strings(std::string filename, const real Npart,
             if (iproj->is_wounded()) {
                 auto x_i = iproj->get_remnant_x_frez();
                 auto p_i = iproj->get_remnant_p();
+                p_i[0] = std::max(0., p_i[0]);
                 auto tau_0  = sqrt(x_i[0]*x_i[0] - x_i[3]*x_i[3]);
                 auto etas_0 = 0.5*log((x_i[0] + x_i[3])/(x_i[0] - x_i[3]));
                 auto tau_th = get_tau_form(string_evolution_mode);
@@ -729,6 +742,7 @@ void Glauber::output_QCD_strings(std::string filename, const real Npart,
             if (itarg->is_wounded()) {
                 auto x_i = itarg->get_remnant_x_frez();
                 auto p_i = itarg->get_remnant_p();
+                p_i[0] = std::max(0., p_i[0]);
                 auto tau_0  = sqrt(x_i[0]*x_i[0] - x_i[3]*x_i[3]);
                 auto etas_0 = 0.5*log((x_i[0] + x_i[3])/(x_i[0] - x_i[3]));
                 auto tau_th = get_tau_form(string_evolution_mode);
