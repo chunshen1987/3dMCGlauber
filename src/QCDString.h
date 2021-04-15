@@ -31,6 +31,7 @@ class QCDString {
     weak_ptr<Quark> proj_q;
     weak_ptr<Quark> targ_q;
     real m_over_sigma;
+    real mass_;
 
  public:
     QCDString() = default;
@@ -43,6 +44,13 @@ class QCDString {
               shared_ptr<Quark> proj_q_in, shared_ptr<Quark> targ_q_in,
               real string_tension_in,
               bool has_baryon_right, bool has_baryon_left);
+    QCDString(SpatialVec x_in, real tau_form_in,
+              shared_ptr<Nucleon> proj_in, shared_ptr<Nucleon> targ_in,
+              MomentumVec proj_p_in, MomentumVec targ_p_in,
+              real m_over_sigma_in,
+              bool has_baryon_right_in, bool has_baryon_left_in);
+
+    real get_string_mass() const {return(mass_);}
 
     void set_tau_form(real tau_form_in) {tau_form = tau_form_in;}
     real get_tau_form() const {return(tau_form);}

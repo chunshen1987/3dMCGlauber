@@ -25,6 +25,7 @@ class Glauber {
     std::unique_ptr<Nucleus> target;
     std::set<shared_ptr<CollisionEvent>, compare_collision_time> collision_schedule;
     std::vector<QCDString> QCD_string_list;
+    std::vector<QCDString> remnant_string_list_;
     std::shared_ptr<RandomUtil::Random> ran_gen_ptr_;
     bool sample_valence_quark;
 
@@ -87,6 +88,8 @@ class Glauber {
 
     //! This function performs string production between each nucleon pair
     int perform_string_production();
+    void produce_remnant_strings();
+
     //! This function propagate individual nucleon inside the nucleus by dt
     void propagate_nuclei(real dt);
     void propagate_nucleon(shared_ptr<Nucleon> n_i, real dt);

@@ -346,6 +346,7 @@ void Glauber::get_tau_form_and_moversigma(const int string_evolution_mode,
 // - check it - only put in baryon if not used yet, then set it to used
 int Glauber::perform_string_production() {
     QCD_string_list.clear();
+    remnant_string_list_.clear();
     const auto string_evolution_mode = (
                     parameter_list.get_QCD_string_evolution_mode());
     const auto baryon_junctions = parameter_list.get_baryon_junctions();
@@ -594,7 +595,84 @@ int Glauber::perform_string_production() {
             }
         }
     }
+
+    produce_remnant_strings();
     return(number_of_collided_events);
+}
+
+
+void Glauber::produce_remnant_strings() {
+    // create strings for the beam remnants
+    const auto string_evolution_mode = (
+                    parameter_list.get_QCD_string_evolution_mode());
+    real tau_form = 0.5;
+    real m_over_sigma = 1.0;  // [fm]
+    real y_loss = 0.;
+    auto proj_nucleon_list = projectile->get_nucleon_list();
+    for (auto &iproj: (*proj_nucleon_list)) {
+        if (iproj->is_wounded()) {
+            auto x_i = iproj->get_remnant_x_frez();
+
+            auto p_i = iproj->get_remnant_p();
+            p_i[0] = std::max(0., p_i[0]);
+            auto y_rem = ybeam;
+            if (std::abs(p_i[3]) < p_i[0]) {
+                // a time-like beam remnant
+                y_rem = 0.5*log((p_i[0] + p_i[3])/(p_i[0] - p_i[3]));
+            }
+            auto cosh_y_rem = cosh(y_rem);
+            auto m_rem = p_i[0]/cosh_y_rem;
+            p_i[1] = 0.;
+            p_i[2] = 0.;
+            p_i[3] = m_rem*sinh(y_rem);
+            MomentumVec targ_p_vec = {p_i[0], p_i[1], p_i[2], -p_i[3]};
+
+            get_tau_form_and_moversigma(string_evolution_mode, y_rem,
+                                        tau_form, m_over_sigma, y_loss);
+            bool has_baryon_left = false;
+            bool has_baryon_right = iproj->is_remnant_carry_baryon_number();
+            QCDString qcd_string(x_i, tau_form, iproj, iproj,
+                                 p_i, targ_p_vec, m_over_sigma,
+                                 has_baryon_right, has_baryon_left);
+            qcd_string.set_has_remnant_right(true);
+            qcd_string.set_final_baryon_rapidities(0., y_rem - y_loss);
+            remnant_string_list_.push_back(qcd_string);
+        }
+    }
+    auto targ_nucleon_list = target->get_nucleon_list();
+    for (auto &itarg: (*targ_nucleon_list)) {
+        if (itarg->is_wounded()) {
+            auto x_i = itarg->get_remnant_x_frez();
+
+            auto p_i = itarg->get_remnant_p();
+            p_i[0] = std::max(0., p_i[0]);
+            auto y_rem = -ybeam;
+            if (std::abs(p_i[3]) < p_i[0]) {
+                // a time-like beam remnant
+                y_rem = 0.5*log((p_i[0] + p_i[3])/(p_i[0] - p_i[3]));
+            }
+            auto cosh_y_rem = cosh(y_rem);
+            auto m_rem = p_i[0]/cosh_y_rem;
+            p_i[1] = 0.;
+            p_i[2] = 0.;
+            p_i[3] = m_rem*sinh(y_rem);
+            MomentumVec proj_p_vec = {p_i[0], p_i[1], p_i[2], -p_i[3]};
+
+            get_tau_form_and_moversigma(string_evolution_mode, y_rem,
+                                        tau_form, m_over_sigma, y_loss);
+            bool has_baryon_left = itarg->is_remnant_carry_baryon_number();
+            bool has_baryon_right = false;
+            QCDString qcd_string(x_i, tau_form, itarg, itarg,
+                                 proj_p_vec, p_i, m_over_sigma,
+                                 has_baryon_right, has_baryon_left);
+            qcd_string.set_has_remnant_left(true);
+            qcd_string.set_final_baryon_rapidities(y_rem + y_loss, 0.);
+            remnant_string_list_.push_back(qcd_string);
+        }
+    }
+    for (auto &istring: remnant_string_list_) {
+        istring.evolve_QCD_string();
+    }
 }
 
 
@@ -668,10 +746,7 @@ void Glauber::output_QCD_strings(std::string filename, const real Npart,
             baryon_fraction_right = 1.0;
         }
 
-        auto mass = PhysConsts::MProton;
-        if (sample_valence_quark) {
-            mass = PhysConsts::MQuarkValence;
-        }
+        auto mass = it.get_string_mass();
         std::vector<real> output_array = {
             mass, it.get_m_over_sigma(), it.get_tau_form(),
             tau_0, etas_0, x_prod[1], x_prod[2],
@@ -692,93 +767,62 @@ void Glauber::output_QCD_strings(std::string filename, const real Npart,
         output << endl;
     }
 
-    // output the beam remnants
+    // output the beam remnant strings
     if (sample_valence_quark) {
-        const auto string_evolution_mode = (
-                    parameter_list.get_QCD_string_evolution_mode());
-        auto proj_nucleon_list = projectile->get_nucleon_list();
-        for (auto &iproj: (*proj_nucleon_list)) {
-            if (iproj->is_wounded()) {
-                auto x_i = iproj->get_remnant_x_frez();
-                auto p_i = iproj->get_remnant_p();
-                p_i[0] = std::max(0., p_i[0]);
-                auto tau_0  = sqrt(x_i[0]*x_i[0] - x_i[3]*x_i[3]);
-                auto etas_0 = 0.5*log((x_i[0] + x_i[3])/(x_i[0] - x_i[3]));
-                auto tau_th = get_tau_form(string_evolution_mode);
-                auto y_rem = ybeam;
-                if (std::abs(p_i[3]) < p_i[0]) {
-                    // a time-like beam remnant
-                    y_rem = 0.5*log((p_i[0] + p_i[3])/(p_i[0] - p_i[3]));
-                }
-                auto m_rem = p_i[0]/cosh(y_rem);
-                auto t_f = x_i[0] + tau_th*cosh(y_rem);
-                auto z_f = x_i[3] + tau_th*sinh(y_rem);
-                auto eta_s_right = 0.5*log((t_f + z_f)/(t_f - z_f));
-                real baryon_fraction_right  = 0.;
-                if (iproj->is_remnant_carry_baryon_number()) {
-                    baryon_fraction_right = 1.0;
-                }
-                std::vector<real> output_array = {
-                    m_rem, 1.0, tau_th,
-                    tau_0, etas_0, x_i[1], x_i[2],
-                    x_i[1], x_i[2], x_i[1], x_i[2],
-                    eta_s_right, eta_s_right,
-                    y_rem, y_rem,
-                    0.0, 1.0,
-                    y_rem, y_rem,
-                    eta_s_right, eta_s_right,
-                    y_rem, y_rem,
-                    0.0, baryon_fraction_right,
-                };
+        for (auto &it: remnant_string_list_) {
+            auto x_prod = it.get_x_production();
+            auto x_left = it.get_targ().lock()->get_x();
+            auto x_right = it.get_proj().lock()->get_x();
+            auto tau_0  = sqrt(x_prod[0]*x_prod[0] - x_prod[3]*x_prod[3]);
+            auto etas_0 = 0.5*log((x_prod[0] + x_prod[3])/(x_prod[0] - x_prod[3]));
 
-                output << std::scientific << std::setprecision(8);
-                for (auto &ival : output_array) {
-                    output << std::setw(15) << ival << "  ";
-                }
-                output << endl;
+            real remnant_left  = 0.;
+            if (it.get_has_remnant_left()) {
+                remnant_left = 1.0;
             }
-        }
-        auto targ_nucleon_list = target->get_nucleon_list();
-        for (auto &itarg: (*targ_nucleon_list)) {
-            if (itarg->is_wounded()) {
-                auto x_i = itarg->get_remnant_x_frez();
-                auto p_i = itarg->get_remnant_p();
-                p_i[0] = std::max(0., p_i[0]);
-                auto tau_0  = sqrt(x_i[0]*x_i[0] - x_i[3]*x_i[3]);
-                auto etas_0 = 0.5*log((x_i[0] + x_i[3])/(x_i[0] - x_i[3]));
-                auto tau_th = get_tau_form(string_evolution_mode);
-                auto y_rem = -ybeam;
-                if (std::abs(p_i[3]) < p_i[0]) {
-                    // a time-like beam remnant
-                    y_rem = 0.5*log((p_i[0] + p_i[3])/(p_i[0] - p_i[3]));
-                }
-                auto m_rem = p_i[0]/cosh(y_rem);
-                auto t_f = x_i[0] + tau_th*cosh(y_rem);
-                auto z_f = x_i[3] + tau_th*sinh(y_rem);
-                auto eta_s_left = 0.5*log((t_f + z_f)/(t_f - z_f));
-                real baryon_fraction_left  = 0.;
-                if (itarg->is_remnant_carry_baryon_number()) {
-                    baryon_fraction_left = 1.0;
-                }
-                std::vector<real> output_array = {
-                    m_rem, 1.0, tau_th,
-                    tau_0, etas_0, x_i[1], x_i[2],
-                    x_i[1], x_i[2], x_i[1], x_i[2],
-                    eta_s_left, eta_s_left,
-                    y_rem, y_rem,
-                    1.0, 0.0,
-                    y_rem, y_rem,
-                    eta_s_left, eta_s_left,
-                    y_rem, y_rem,
-                    baryon_fraction_left, 0.0,
-                };
 
-                output << std::scientific << std::setprecision(8);
-                for (auto &ival : output_array) {
-                    output << std::setw(15) << ival << "  ";
-                }
-                output << endl;
+            real remnant_right = 0.;
+            if (it.get_has_remnant_right()) {
+                remnant_right = 1.0;
             }
+
+            real baryon_fraction_left  = 0.;
+            if (it.get_has_baryon_left()) {
+                baryon_fraction_left = 1.0;
+            }
+
+            real baryon_fraction_right = 0.;
+            if (it.get_has_baryon_right()) {
+                baryon_fraction_right = 1.0;
+            }
+
+            auto mass = it.get_string_mass();
+            auto eta_s_left = (  remnant_left*it.get_eta_s_left()
+                               + (1. - remnant_left)*etas_0);
+            auto eta_s_right = (  remnant_right*it.get_eta_s_right()
+                                + (1. - remnant_right)*etas_0);
+            std::vector<real> output_array = {
+                mass, it.get_m_over_sigma(), it.get_tau_form(),
+                tau_0, etas_0, x_prod[1], x_prod[2],
+                x_left[1], x_left[2], x_right[1], x_right[2],
+                eta_s_left, eta_s_right,
+                remnant_left*it.get_y_f_left(),
+                remnant_right*it.get_y_f_right(),
+                remnant_left, remnant_right,
+                remnant_left*it.get_y_i_left(),
+                remnant_right*it.get_y_i_right(),
+                remnant_left*it.get_eta_s_baryon_left(),
+                remnant_right*it.get_eta_s_baryon_right(),
+                remnant_left*it.get_y_f_baryon_left(),
+                remnant_right*it.get_y_f_baryon_right(),
+                baryon_fraction_left, baryon_fraction_right,
+            };
+
+            output << std::scientific << std::setprecision(8);
+            for (auto &ival : output_array) {
+                output << std::setw(15) << ival << "  ";
+            }
+            output << endl;
         }
     }
     output.close();
