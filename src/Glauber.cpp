@@ -614,7 +614,7 @@ void Glauber::produce_remnant_strings() {
             auto x_i = iproj->get_remnant_x_frez();
 
             auto p_i = iproj->get_remnant_p();
-            p_i[0] = std::max(0., p_i[0]);
+            if (p_i[0] <= 0.) continue;
             auto y_rem = ybeam;
             if (std::abs(p_i[3]) < p_i[0]) {
                 // a time-like beam remnant
@@ -635,6 +635,7 @@ void Glauber::produce_remnant_strings() {
                                  p_i, targ_p_vec, m_over_sigma,
                                  has_baryon_right, has_baryon_left);
             qcd_string.set_has_remnant_right(true);
+            qcd_string.evolve_QCD_string();
             qcd_string.set_final_baryon_rapidities(0., y_rem - y_loss);
             remnant_string_list_.push_back(qcd_string);
         }
@@ -645,7 +646,7 @@ void Glauber::produce_remnant_strings() {
             auto x_i = itarg->get_remnant_x_frez();
 
             auto p_i = itarg->get_remnant_p();
-            p_i[0] = std::max(0., p_i[0]);
+            if (p_i[0] <= 0.) continue;
             auto y_rem = -ybeam;
             if (std::abs(p_i[3]) < p_i[0]) {
                 // a time-like beam remnant
@@ -658,7 +659,7 @@ void Glauber::produce_remnant_strings() {
             p_i[3] = m_rem*sinh(y_rem);
             MomentumVec proj_p_vec = {p_i[0], p_i[1], p_i[2], -p_i[3]};
 
-            get_tau_form_and_moversigma(string_evolution_mode, y_rem,
+            get_tau_form_and_moversigma(string_evolution_mode, std::abs(y_rem),
                                         tau_form, m_over_sigma, y_loss);
             bool has_baryon_left = itarg->is_remnant_carry_baryon_number();
             bool has_baryon_right = false;
@@ -666,12 +667,10 @@ void Glauber::produce_remnant_strings() {
                                  proj_p_vec, p_i, m_over_sigma,
                                  has_baryon_right, has_baryon_left);
             qcd_string.set_has_remnant_left(true);
+            qcd_string.evolve_QCD_string();
             qcd_string.set_final_baryon_rapidities(y_rem + y_loss, 0.);
             remnant_string_list_.push_back(qcd_string);
         }
-    }
-    for (auto &istring: remnant_string_list_) {
-        istring.evolve_QCD_string();
     }
 }
 

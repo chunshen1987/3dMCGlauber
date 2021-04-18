@@ -232,7 +232,7 @@ void Nucleus::add_soft_parton_ball(real ecm, int direction) {
                 // assuming the soft parton ball has valence quark mass
                 // only add a soft parton when the leftover energy is
                 // larger than mq
-                real rapidity = acosh(soft_pvec[0]/mass);
+                real rapidity = direction*acosh(soft_pvec[0]/mass);
                 soft_pvec[3] = mass*sinh(rapidity);
                 auto xvec = sample_valence_quark_position();
                 std::shared_ptr<Quark> quark_ptr(new Quark(xvec, soft_pvec));
