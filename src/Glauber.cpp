@@ -690,6 +690,26 @@ void Glauber::update_collision_schedule(
 void Glauber::output_QCD_strings(std::string filename, const real Npart,
                                  const real Ncoll, const real Nstrings,
                                  const real b) {
+    // compute the center of mass
+    real x_o = 0.;
+    real y_o = 0.;
+    int n_strings = QCD_string_list.size();
+    for (auto &it: QCD_string_list) {
+        auto x_prod = it.get_x_production();
+        x_o += x_prod[1];
+        y_o += x_prod[2];
+    }
+    if (sample_valence_quark) {
+        for (auto &it: remnant_string_list_) {
+            auto x_prod = it.get_x_production();
+            x_o += x_prod[1];
+            y_o += x_prod[2];
+        }
+        n_strings += remnant_string_list_.size();
+    }
+    x_o /= n_strings;
+    y_o /= n_strings;
+
     std::ofstream output(filename.c_str());
     real total_energy = Npart*parameter_list.get_roots()/2.;
     real net_Pz = ((projectile->get_number_of_wounded_nucleons()
@@ -748,8 +768,9 @@ void Glauber::output_QCD_strings(std::string filename, const real Npart,
         auto mass = it.get_string_mass();
         std::vector<real> output_array = {
             mass, it.get_m_over_sigma(), it.get_tau_form(),
-            tau_0, etas_0, x_prod[1], x_prod[2],
-            x_left[1], x_left[2], x_right[1], x_right[2],
+            tau_0, etas_0, x_prod[1] - x_o, x_prod[2] - y_o,
+            x_left[1] - x_o, x_left[2] - y_o,
+            x_right[1] - x_o, x_right[2] - y_o,
             it.get_eta_s_left(), it.get_eta_s_right(),
             it.get_y_f_left(), it.get_y_f_right(),
             remnant_left, remnant_right,
@@ -773,7 +794,8 @@ void Glauber::output_QCD_strings(std::string filename, const real Npart,
             auto x_left = it.get_targ().lock()->get_x();
             auto x_right = it.get_proj().lock()->get_x();
             auto tau_0  = sqrt(x_prod[0]*x_prod[0] - x_prod[3]*x_prod[3]);
-            auto etas_0 = 0.5*log((x_prod[0] + x_prod[3])/(x_prod[0] - x_prod[3]));
+            auto etas_0 = 0.5*log((x_prod[0] + x_prod[3])
+                                  /(x_prod[0] - x_prod[3]));
 
             real remnant_left  = 0.;
             if (it.get_has_remnant_left()) {
@@ -803,8 +825,9 @@ void Glauber::output_QCD_strings(std::string filename, const real Npart,
                                 + (1. - remnant_right)*eta_s_center);
             std::vector<real> output_array = {
                 mass, it.get_m_over_sigma(), it.get_tau_form(),
-                tau_0, etas_0, x_prod[1], x_prod[2],
-                x_left[1], x_left[2], x_right[1], x_right[2],
+                tau_0, etas_0, x_prod[1] - x_o, x_prod[2] - y_o,
+                x_left[1] - x_o, x_left[2] - y_o,
+                x_right[1] - x_o, x_right[2] - y_o,
                 eta_s_left, eta_s_right,
                 remnant_left*it.get_y_f_left(),
                 remnant_right*it.get_y_f_right(),
