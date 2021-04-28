@@ -2,12 +2,12 @@
 # collision information
 ################################################################
 Projectile p                    # projectile nucleus name
-Target Pb                       # target nucleus name
+Target p                        # target nucleus name
 roots 5020.                     # collision energy (GeV)
 useQuarks 1                     # switch to use valence quarks
 Q2 1.                           # the scale when evaluating the pdf
-b_min 7.                        # minimum impact parameter (fm)
-b_max 8.                        # maximum impact parameter (fm)
+b_min 0.                        # minimum impact parameter (fm)
+b_max 5.                        # maximum impact parameter (fm)
 seed -1                         # random seed (-1: system)
 only_event_statistics 0         # flag to only output the event_summary file
 cache_tables 1                  # 1: use pre-generated tables for valence quark x
@@ -27,11 +27,11 @@ QCD_string_production_mode 1    # string production mode
 rapidity_loss_method 3          # 1: LEXUS
                                 # 2: parameterization
                                 # 3: parameterization with logit-normal fluctuation
-yloss_param_slope 0.45          # the slope parameter for yloss parameterization [0., 1.]
-yloss_param_alpha1 1.00         # the small y ~ y^alpha1 for yloss parameterization (>=1.)
-yloss_param_alpha2 0.70         # the large y ~ y^alpha2 for yloss parameterization [0., 1.]
-yloss_param_fluct_var_RHIC 0.9  # the variance of the logit-normal parameterized y_loss fluctuation for y_init <= 5.5
-yloss_param_fluct_var_LHC 0.9   # the variance of the logit-normal parameterized y_loss fluctuation for y_init >= 9.0
+yloss_param_slope 1.23          # the slope parameter for yloss parameterization [0., 1.]
+yloss_param_alpha1 2.00         # the small y ~ y^alpha1 for yloss parameterization (>=1.)
+yloss_param_alpha2 0.32         # the large y ~ y^alpha2 for yloss parameterization [0., 1.]
+yloss_param_fluct_var_RHIC 0.6  # the variance of the logit-normal parameterized y_loss fluctuation for y_init <= 5.5
+yloss_param_fluct_var_LHC 0.8   # the variance of the logit-normal parameterized y_loss fluctuation for y_init >= 9.0
                                 # variance is linearly increase from var_RHIC to var_LHC when 5.5 < y_init < 9.0
 evolve_QCD_string_mode 4        # string evolution mode
                                 # tau_form = tau_form_mean [fm]

@@ -339,6 +339,10 @@ void Glauber::get_tau_form_and_moversigma(const int string_evolution_mode,
         // only m_over_sigma fluctuates
         y_loss = sample_rapidity_loss_shell(y_in_lrf);
         m_over_sigma = tau_form/sqrt(2.*(cosh(y_loss) - 1.));
+    } else if (string_evolution_mode == -4) {
+        // only m_over_sigma fluctuates for Beam Remnants
+        y_loss = sample_rapidity_loss_shell(y_in_lrf)/2.5;
+        m_over_sigma = tau_form/sqrt(2.*(cosh(y_loss) - 1.));
     }
 }
 
@@ -603,8 +607,7 @@ int Glauber::perform_string_production() {
 
 void Glauber::produce_remnant_strings() {
     // create strings for the beam remnants
-    const auto string_evolution_mode = (
-                    parameter_list.get_QCD_string_evolution_mode());
+    const auto string_evolution_mode = -4;
     real tau_form = 0.5;
     real m_over_sigma = 1.0;  // [fm]
     real y_loss = 0.;
@@ -820,20 +823,22 @@ void Glauber::output_QCD_strings(std::string filename, const real Npart,
             auto mass = it.get_string_mass();
             auto eta_s_center = (it.get_eta_s_left() + it.get_eta_s_right())/2.;
             auto eta_s_left = (  remnant_left*it.get_eta_s_left()
-                               + (1. - remnant_left)*eta_s_center);
+                               + (1. - remnant_left)
+                                 *(eta_s_center + it.get_eta_s_right())/2.);
             auto eta_s_right = (  remnant_right*it.get_eta_s_right()
-                                + (1. - remnant_right)*eta_s_center);
+                                + (1. - remnant_right)
+                                  *(eta_s_center + it.get_eta_s_left())/2.);
             std::vector<real> output_array = {
                 mass, it.get_m_over_sigma(), it.get_tau_form(),
                 tau_0, etas_0, x_prod[1] - x_o, x_prod[2] - y_o,
                 x_left[1] - x_o, x_left[2] - y_o,
                 x_right[1] - x_o, x_right[2] - y_o,
                 eta_s_left, eta_s_right,
-                remnant_left*it.get_y_f_left(),
-                remnant_right*it.get_y_f_right(),
+                remnant_left*it.get_y_f_left() + (1. - remnant_left)*eta_s_left,
+                remnant_right*it.get_y_f_right() + (1. - remnant_right)*eta_s_right,
                 remnant_left, remnant_right,
-                remnant_left*it.get_y_i_left(),
-                remnant_right*it.get_y_i_right(),
+                remnant_left*it.get_y_i_left() + (1. - remnant_left)*eta_s_left,
+                remnant_right*it.get_y_i_right() + (1. - remnant_right)*eta_s_right,
                 remnant_left*it.get_eta_s_baryon_left(),
                 remnant_right*it.get_eta_s_baryon_right(),
                 remnant_left*it.get_y_f_baryon_left(),
