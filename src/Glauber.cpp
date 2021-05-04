@@ -824,10 +824,10 @@ void Glauber::output_QCD_strings(std::string filename, const real Npart,
             auto eta_s_center = (it.get_eta_s_left() + it.get_eta_s_right())/2.;
             auto eta_s_left = (  remnant_left*it.get_eta_s_left()
                                + (1. - remnant_left)
-                                 *(eta_s_center + it.get_eta_s_right())/2.);
+                                 *(it.get_eta_s_right() - 2.0));
             auto eta_s_right = (  remnant_right*it.get_eta_s_right()
                                 + (1. - remnant_right)
-                                  *(eta_s_center + it.get_eta_s_left())/2.);
+                                  *(it.get_eta_s_left() + 2.0));
             std::vector<real> output_array = {
                 mass, it.get_m_over_sigma(), it.get_tau_form(),
                 tau_0, etas_0, x_prod[1] - x_o, x_prod[2] - y_o,
