@@ -177,12 +177,13 @@ int Glauber::decide_produce_string_num(
     auto targ = event_ptr->get_targ_nucleon_ptr().lock();
     int minimum_allowed_connections = 1;
     if (sample_valence_quark) {
-        // assume P(N) = 1/2^N distribution
-        auto rand = ran_gen_ptr_->rand_uniform();
+        // assume P(N) = 1/e^N distribution
         int N = std::min(proj->get_number_of_quarks(),
                          targ->get_number_of_quarks());
-        minimum_allowed_connections = static_cast<int>(
-                -log((1. - rand*(1. - pow(2., -N))))/log(2.)) + 1;
+        do {
+            auto rand = ran_gen_ptr_->rand_uniform();
+            minimum_allowed_connections = static_cast<int>(-log(1 - rand)) + 1;
+        } while (minimum_allowed_connections <= N);
     }
 
     if (   proj->get_number_of_connections() < minimum_allowed_connections
@@ -341,7 +342,7 @@ void Glauber::get_tau_form_and_moversigma(const int string_evolution_mode,
         m_over_sigma = tau_form/sqrt(2.*(cosh(y_loss) - 1.));
     } else if (string_evolution_mode == -4) {
         // only m_over_sigma fluctuates for Beam Remnants
-        y_loss = sample_rapidity_loss_shell(y_in_lrf)/2.5;
+        y_loss = sample_rapidity_loss_shell(y_in_lrf)/2.;
         m_over_sigma = tau_form/sqrt(2.*(cosh(y_loss) - 1.));
     }
 }
@@ -826,12 +827,12 @@ void Glauber::output_QCD_strings(std::string filename, const real Npart,
                                + (1. - remnant_left)
                                  *(std::max(
                                      (eta_s_center + it.get_eta_s_right())/2.,
-                                     it.get_eta_s_right() - 2.0)));
+                                     it.get_eta_s_right() - 1.0)));
             auto eta_s_right = (  remnant_right*it.get_eta_s_right()
                                 + (1. - remnant_right)
                                   *(std::min(
                                      (eta_s_center + it.get_eta_s_left())/2.,
-                                     it.get_eta_s_left() + 2.0)));
+                                     it.get_eta_s_left() + 1.0)));
             std::vector<real> output_array = {
                 mass, it.get_m_over_sigma(), it.get_tau_form(),
                 tau_0, etas_0, x_prod[1] - x_o, x_prod[2] - y_o,
