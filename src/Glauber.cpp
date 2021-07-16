@@ -183,7 +183,7 @@ int Glauber::decide_produce_string_num(
         do {
             auto rand = ran_gen_ptr_->rand_uniform();
             minimum_allowed_connections = static_cast<int>(-log(1 - rand)) + 1;
-        } while (minimum_allowed_connections <= N);
+        } while (minimum_allowed_connections > N);
     }
 
     if (   proj->get_number_of_connections() < minimum_allowed_connections
