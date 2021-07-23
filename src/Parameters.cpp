@@ -76,12 +76,11 @@ bool Parameters::get_fluct_Nstrings_per_NN_collision() const {
 }
 
 
-bool Parameters::get_remnant_energy_loss() const {
-    int flag = get_param_int("remnant_energy_loss");
-    if (flag == 1)
-        return(true);
-    else
-        return(false);
+double Parameters::get_remnant_energy_loss_fraction() const {
+    real frac = static_cast<real>(
+            get_param_double("remnant_energy_loss_fraction"));
+    assert(frac >= 0. && frac <= 1.);
+    return(frac);
 }
 
 

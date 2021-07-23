@@ -28,7 +28,7 @@ QCD_string_production_mode 1             # string production mode
 rapidity_loss_method 3                   # 1: LEXUS
                                          # 2: parameterization
                                          # 3: parameterization with logit-normal fluctuation
-remnant_energy_loss 1                    # 1: consider energy loss for nucleon remnants; 0: free-streaming nucleon remnants
+remnant_energy_loss_fraction 0.5         # nucleon remnants energy loss fraction (fraction of string's y_loss) [0, 1]
 yloss_param_slope 1.23                   # the slope parameter for yloss parameterization [0., 1.]
 yloss_param_alpha1 2.00                  # the small y ~ y^alpha1 for yloss parameterization (>=1.)
 yloss_param_alpha2 0.32                  # the large y ~ y^alpha2 for yloss parameterization [0., 1.]

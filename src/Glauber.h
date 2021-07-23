@@ -29,7 +29,7 @@ class Glauber {
     std::shared_ptr<RandomUtil::Random> ran_gen_ptr_;
     bool sample_valence_quark;
     bool fluct_Nstrings_per_NN_collision_;
-    bool remnant_energy_loss_;
+    real remnant_energy_loss_fraction_;
 
     real impact_b;
     real yloss_param_slope;

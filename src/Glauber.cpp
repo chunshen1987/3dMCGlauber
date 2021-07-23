@@ -25,7 +25,8 @@ Glauber::Glauber(const MCGlb::Parameters &param_in,
     parameter_list(param_in) {
     sample_valence_quark = false;
     fluct_Nstrings_per_NN_collision_ = false;
-    remnant_energy_loss_ = parameter_list.get_remnant_energy_loss();
+    remnant_energy_loss_fraction_ = (
+            parameter_list.get_remnant_energy_loss_fraction());
     if (parameter_list.get_use_quarks() > 0) {
         sample_valence_quark = true;
         fluct_Nstrings_per_NN_collision_ = (
@@ -325,17 +326,18 @@ void Glauber::get_tau_form_and_moversigma(const int string_evolution_mode,
     tau_form = get_tau_form(string_evolution_mode);      // [fm]
     m_over_sigma = 1.0;  // [fm]
     y_loss = 0.;
+    real eps = 1e-16;
     if (string_evolution_mode == 1) {
         // fixed rapidity loss
         y_loss = (
             acosh(tau_form*tau_form/(2.*m_over_sigma*m_over_sigma) + 1.));
         // maximum 90% of y_in_lrf
         y_loss = std::min(y_loss, y_in_lrf*0.9);
-        m_over_sigma = tau_form/sqrt(2.*(cosh(y_loss) - 1.));
+        m_over_sigma = tau_form/std::max(eps, sqrt(2.*(cosh(y_loss) - 1.)));
     } else if (string_evolution_mode == 2) {
         // both tau_form and sigma fluctuate
         y_loss = sample_rapidity_loss_shell(y_in_lrf);
-        m_over_sigma = tau_form/sqrt(2.*(cosh(y_loss) - 1.));
+        m_over_sigma = tau_form/std::max(eps, sqrt(2.*(cosh(y_loss) - 1.)));
     } else if (string_evolution_mode == 3) {
         // only tau_form fluctuates
         y_loss = sample_rapidity_loss_shell(y_in_lrf);
@@ -343,16 +345,12 @@ void Glauber::get_tau_form_and_moversigma(const int string_evolution_mode,
     } else if (string_evolution_mode == 4) {
         // only m_over_sigma fluctuates
         y_loss = sample_rapidity_loss_shell(y_in_lrf);
-        m_over_sigma = tau_form/sqrt(2.*(cosh(y_loss) - 1.));
+        m_over_sigma = tau_form/std::max(eps, sqrt(2.*(cosh(y_loss) - 1.)));
     } else if (string_evolution_mode == -4) {
-        if (remnant_energy_loss_) {
-            // only m_over_sigma fluctuates for Beam Remnants
-            y_loss = sample_rapidity_loss_shell(y_in_lrf)/2.;
-            m_over_sigma = tau_form/sqrt(2.*(cosh(y_loss) - 1.));
-        } else {
-            y_loss = 1e-6;
-            m_over_sigma = 1e8;
-        }
+        // only m_over_sigma fluctuates for Beam Remnants
+        y_loss = (sample_rapidity_loss_shell(y_in_lrf)
+                  *remnant_energy_loss_fraction_);
+        m_over_sigma = tau_form/std::max(eps, sqrt(2.*(cosh(y_loss) - 1.)));
     }
 }
 
