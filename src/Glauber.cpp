@@ -24,8 +24,12 @@ Glauber::Glauber(const MCGlb::Parameters &param_in,
                  shared_ptr<RandomUtil::Random> ran_gen) :
     parameter_list(param_in) {
     sample_valence_quark = false;
+    fluct_Nstrings_per_NN_collision_ = false;
+    remnant_energy_loss_ = parameter_list.get_remnant_energy_loss();
     if (parameter_list.get_use_quarks() > 0) {
         sample_valence_quark = true;
+        fluct_Nstrings_per_NN_collision_ = (
+                parameter_list.get_fluct_Nstrings_per_NN_collision());
         if (!parameter_list.get_cached_tabels()) {
             system_status_ = std::system(
                     "rm -fr tables/proton_valence_quark_samples*");
@@ -176,7 +180,7 @@ int Glauber::decide_produce_string_num(
     auto proj = event_ptr->get_proj_nucleon_ptr().lock();
     auto targ = event_ptr->get_targ_nucleon_ptr().lock();
     int minimum_allowed_connections = 1;
-    if (sample_valence_quark) {
+    if (sample_valence_quark && fluct_Nstrings_per_NN_collision_) {
         // assume P(N) = 1/e^N distribution
         int N = std::min(proj->get_number_of_quarks(),
                          targ->get_number_of_quarks());
@@ -341,9 +345,14 @@ void Glauber::get_tau_form_and_moversigma(const int string_evolution_mode,
         y_loss = sample_rapidity_loss_shell(y_in_lrf);
         m_over_sigma = tau_form/sqrt(2.*(cosh(y_loss) - 1.));
     } else if (string_evolution_mode == -4) {
-        // only m_over_sigma fluctuates for Beam Remnants
-        y_loss = sample_rapidity_loss_shell(y_in_lrf)/2.;
-        m_over_sigma = tau_form/sqrt(2.*(cosh(y_loss) - 1.));
+        if (remnant_energy_loss_) {
+            // only m_over_sigma fluctuates for Beam Remnants
+            y_loss = sample_rapidity_loss_shell(y_in_lrf)/2.;
+            m_over_sigma = tau_form/sqrt(2.*(cosh(y_loss) - 1.));
+        } else {
+            y_loss = 1e-6;
+            m_over_sigma = 1e8;
+        }
     }
 }
 

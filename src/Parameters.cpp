@@ -67,6 +67,24 @@ bool Parameters::get_cached_tabels() const {
 }
 
 
+bool Parameters::get_fluct_Nstrings_per_NN_collision() const {
+    int flag = get_param_int("fluct_Nstrings_per_NN_collision");
+    if (flag == 1)
+        return(true);
+    else
+        return(false);
+}
+
+
+bool Parameters::get_remnant_energy_loss() const {
+    int flag = get_param_int("remnant_energy_loss");
+    if (flag == 1)
+        return(true);
+    else
+        return(false);
+}
+
+
 int Parameters::get_QCD_string_production_mode() const {
     int flag = get_param_int("QCD_string_production_mode");
     assert(flag >= 0 && flag < 5);

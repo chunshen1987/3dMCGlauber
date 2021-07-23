@@ -47,6 +47,9 @@ class Parameters : public ParametersMap {
     bool get_only_event_statistics() const;
     bool get_cached_tabels() const;
 
+    bool get_fluct_Nstrings_per_NN_collision() const;
+    bool get_remnant_energy_loss() const;
+
     real get_yloss_param_slope() const;
     real get_yloss_param_alpha1() const;
     real get_yloss_param_alpha2() const;
