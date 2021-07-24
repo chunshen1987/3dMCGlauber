@@ -23,9 +23,10 @@ namespace MCGlb {
 Nucleus::Nucleus(std::string nucleus_name,
                  std::shared_ptr<RandomUtil::Random> ran_gen,
                  bool sample_valence_quarks_in,
-                 real d_min, bool deformed) {
+                 real d_min, bool deformed, bool confFromFile) {
     d_min_      = d_min;
     deformed_   = deformed;
+    confFromFile_ = confFromFile;
     ran_gen_ptr = ran_gen;
     set_nucleus_parameters(nucleus_name);
 
@@ -33,13 +34,12 @@ Nucleus::Nucleus(std::string nucleus_name,
     if (sample_valence_quarks) {
         number_of_valence_quark_samples_ = readin_valence_quark_samples();
     }
-    triton_initialized_ = false;
+    nucleon_configuration_loaded_ = false;
 }
 
 Nucleus::~Nucleus() {
     participant_list_.clear();
     nucleon_list_.clear();
-    triton_pos_.clear();
     if (sample_valence_quarks) {
         proton_valence_quark_x_.clear();
         neutron_valence_quark_x_.clear();
@@ -69,8 +69,10 @@ void Nucleus::set_nucleus_parameters(std::string nucleus_name) {
         set_woods_saxon_parameters(1, 1, 0.17, 0.0, 1.0, 1.0, 0.0, 0.0, 3);
     } else if (nucleus_name.compare("d") == 0) {
         set_woods_saxon_parameters(2, 1, 0.17, 1.18, 1.0, 0.228, 0.0, 0.0, 8);
-     } else if (nucleus_name.compare("He3") == 0) {
+    } else if (nucleus_name.compare("He3") == 0) {
         set_woods_saxon_parameters(3, 2, 0.17, 0.0, 0.0, 0.0, 0.0, 0.0, 1);
+    } else if (nucleus_name.compare("He4") == 0) {
+        set_woods_saxon_parameters(4, 2, 0.17, 0.0, 0.0, 0.0, 0.0, 0.0, 1);
     } else if (nucleus_name.compare("C") == 0) {
         set_woods_saxon_parameters(
                             12, 6, 0.17, 1.403, 2.44, 1.635, 0.0, 0.0, 1);
@@ -83,6 +85,12 @@ void Nucleus::set_nucleus_parameters(std::string nucleus_name) {
     } else if (nucleus_name.compare("Cu") == 0) {
         set_woods_saxon_parameters(
                             63, 29, 0.17, 0.0, 4.163, 0.606, 0.162, 0.006, 3);
+    } else if (nucleus_name.compare("Zr") == 0) {
+        set_woods_saxon_parameters(
+                            96, 40, 0.17, 0.0, 5.02, 0.46, 0.0, 0.0, 3);
+    } else if (nucleus_name.compare("Ru") == 0) {
+        set_woods_saxon_parameters(
+                            96, 44, 0.17, 0.0, 5.085, 0.46, 0.158, 0.0, 3);
     } else if (nucleus_name.compare("In") == 0) {
         set_woods_saxon_parameters(
                             115, 49, 0.17, 0.0, 5.35, 0.55, 0.0, 0.0, 3);
@@ -113,18 +121,22 @@ void Nucleus::generate_nucleus_3d_configuration() {
     if (participant_list_.size() > 0)
         participant_list_.clear();
 
-
+    int status = 2;
     // sample the nucleons' positions
     if (A_ == 1) {  // p
         SpatialVec  x = {0.0};
         MomentumVec p = {0.0};
         std::shared_ptr<Nucleon> nucleon_ptr(new Nucleon(x, p));
         nucleon_list_.push_back(std::move(nucleon_ptr));
+        status = 0;
     } else if (A_ == 2) {   // deuteron
         generate_deuteron_configuration();
-    } else if (A_ == 3) {   // triton or He3
-        generate_triton_configuration();
-    } else {  // other nucleus
+        status = 0;
+    } else if (confFromFile_) {
+        status = sample_nucleon_configuration();
+    }
+
+    if (status != 0) {
         if (!deformed_) {
             generate_nucleus_configuration_with_woods_saxon();
         } else {
@@ -387,13 +399,12 @@ void Nucleus::readin_triton_position() {
         triton_position >> x1 >> y1 >> z1 >> x2 >> y2 >> z2 >> x3 >> y3 >> z3;
     }
     triton_position.close();
-    triton_initialized_ = true;
 }
 
 
 void Nucleus::generate_triton_configuration() {
     // This function samples the spatial configuration for triton
-    if (!triton_initialized_)
+    if (triton_pos_.size() == 0)
         readin_triton_position();
     const int num_configuration = triton_pos_.size();
     const int rand_num = static_cast<int>(
@@ -412,6 +423,98 @@ void Nucleus::generate_triton_configuration() {
     nucleon_list_.push_back(std::move(nucleon2_ptr));
     std::shared_ptr<Nucleon> nucleon3_ptr(new Nucleon(x_3, p_3));
     nucleon_list_.push_back(std::move(nucleon3_ptr));
+}
+
+void Nucleus::readin_nucleon_positions() {
+    std::cout << "read in nucleon positions for Nucleus: " << name << "  "
+              << std::flush;
+    std::ostringstream filename;
+    int n_configuration = 0;
+    if (A_ == 3) {  // he3
+        filename << "tables/he3_plaintext.dat";
+        n_configuration = 13699;
+    } else if (A_ == 4) {  // he4
+        filename << "tables/he4_plaintext.dat";
+        n_configuration = 6000;
+    } else if (A_ == 12) {  // carbon
+        filename << "tables/carbon_plaintext.dat";
+        n_configuration = 6000;
+    } else if (A_ == 16) {  // oxygen
+        filename << "tables/oxygen_plaintext.dat";
+        n_configuration = 6000;
+    } else if (A_ == 197) {  // Au
+        filename << "tables/au197-sw-full_3Bchains-conf1820.dat";
+        n_configuration = 1820;
+    } else if (A_ == 208) {  // Pb
+        int temp = 1;
+        filename << "tables/pb208-" << temp << ".dat";
+        n_configuration = 10000;
+    } else {
+        std::cout << "[Warning]: No configuration file for Nucleus: "
+                  << name << std::endl;
+        std::cout << "Generate configuration with Wood-Saxon distribution"
+                  << std::endl;
+        return;
+    }
+
+    std::ifstream input(filename.str().c_str());
+    if (!input.good()) {
+        std::cout << "Configuration file not found!" << std::endl;
+        std::cout << "Please check file: " << filename.str()
+                  << std::endl;
+        exit(1);
+    }
+
+    double dummy;
+    for (int iconf = 0; iconf < n_configuration; iconf++) {
+        std::vector< std::array<double, 3> > conf_i;
+
+        if (A_ == 12) {
+            input >> dummy >> dummy;
+        }
+        for (int ia = 0; ia < A_; ia++) {
+            double x_local, y_local, z_local;
+            int isospin;
+            if (A_ == 208) {
+                input >> x_local >> y_local >> z_local >> isospin;
+            } else if (A_ == 197) {
+                input >> x_local >> y_local >> z_local >> isospin >> dummy;
+            } else {
+                input >> x_local >> y_local >> z_local;
+            }
+            std::array<double, 3> nucleon_pos = {x_local, y_local, z_local};
+            conf_i.push_back(nucleon_pos);
+        }
+        if (A_ == 3) {
+            input >> dummy >> dummy >> dummy >> dummy;
+        }
+        heavyIon_pos_.push_back(conf_i);
+    }
+    input.close();
+    cout << heavyIon_pos_.size() << " configrations." << endl;
+}
+
+
+int Nucleus::sample_nucleon_configuration() {
+    // This function samples the spatial configuration for triton
+    if (!nucleon_configuration_loaded_) {
+        readin_nucleon_positions();
+        nucleon_configuration_loaded_ = true;
+    }
+    if (heavyIon_pos_.size() == 0)
+        return(2);
+    const int num_configuration = heavyIon_pos_.size();
+    const int rand_num = static_cast<int>(
+                            ran_gen_ptr->rand_uniform()*num_configuration);
+    auto conf_i = heavyIon_pos_[rand_num];
+    for (int iA = 0; iA < A_; iA++) {
+        SpatialVec x_i = {0.0, conf_i[iA][0], conf_i[iA][1], conf_i[iA][2]};
+        MomentumVec p_i = {0.0};
+
+        std::shared_ptr<Nucleon> nucleon_i_ptr(new Nucleon(x_i, p_i));
+        nucleon_list_.push_back(std::move(nucleon_i_ptr));
+    }
+    return(0);
 }
 
 

@@ -114,6 +114,7 @@ bool Parameters::get_only_event_statistics() const {
     }
 }
 
+
 bool Parameters::get_baryon_junctions() const {
     int flag = get_param_int("baryon_junctions");
     if (flag == 0) {
@@ -122,6 +123,7 @@ bool Parameters::get_baryon_junctions() const {
         return(true);
     }
 }
+
 
 real Parameters::get_shadowing_factor() const {
     real shadowing = static_cast<real>(get_param_double("shadowing_factor"));
@@ -179,6 +181,16 @@ real Parameters::get_tau_form_fluct_gamma_beta() const {
     real tau_form_beta = static_cast<real>(
             get_param_double("tau_form_fluct_gamma_beta"));
     return(tau_form_beta);
+}
+
+
+bool Parameters::nucleon_configuration_from_file() const {
+    int flag = get_param_int("nucleon_configuration_from_file");
+    if (flag == 0) {
+        return(false);
+    } else {
+        return(true);
+    }
 }
 
 }

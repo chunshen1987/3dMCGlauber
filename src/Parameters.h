@@ -58,6 +58,8 @@ class Parameters : public ParametersMap {
 
     real get_tau_form_mean() const;
     real get_tau_form_fluct_gamma_beta() const;
+
+    bool nucleon_configuration_from_file() const;
 };
 
 }

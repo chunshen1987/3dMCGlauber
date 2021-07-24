@@ -22,6 +22,7 @@ class Nucleus {
     int A_;
     int Z_;
     bool deformed_;
+    bool confFromFile_;
     WoodsSaxonParam WS_param_vec;       // rho, w, R, a, beta2, beta4
     real d_min_;                         // minimum distance between nucleons
     bool sample_valence_quarks;
@@ -32,8 +33,10 @@ class Nucleus {
     std::vector<std::shared_ptr<Nucleon>> participant_list_;
     std::shared_ptr<RandomUtil::Random> ran_gen_ptr;
 
-    bool triton_initialized_;
     std::vector< std::array<double, 9> > triton_pos_;
+    bool nucleon_configuration_loaded_;
+    std::vector< std::vector< std::array<double, 3> > > heavyIon_pos_;
+
     std::vector< std::array<float, 3> > proton_valence_quark_x_;
     std::vector< std::array<float, 3> > neutron_valence_quark_x_;
 
@@ -45,7 +48,7 @@ class Nucleus {
     Nucleus(std::string nucleus_name,
             std::shared_ptr<RandomUtil::Random> ran_gen,
             bool sample_valence_quarks=false,
-            real d_min=0.9, bool deformed=true);
+            real d_min=0.9, bool deformed=true, bool confFromFile=false);
     ~Nucleus();
 
     std::string get_name() const {return(name);}
@@ -86,8 +89,11 @@ class Nucleus {
 
     //! Read in spatial configuration for triton
     void readin_triton_position();
+    void readin_nucleon_positions();
+
     //! This function samples the spatial configuration for triton
     void generate_triton_configuration();
+    int sample_nucleon_configuration();
 
     //! This function samples a nucleon spatial configuration according to
     //! the Fermi Distribution

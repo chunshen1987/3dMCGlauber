@@ -38,12 +38,18 @@ Glauber::Glauber(const MCGlb::Parameters &param_in,
                     "rm -fr tables/neutron_valence_quark_samples*");
         }
     }
+
+    real d_min = 0.9;
+    bool deformed = true;
+    bool nucleonConfFromFile = parameter_list.nucleon_configuration_from_file();
     projectile = std::unique_ptr<Nucleus>(
             new Nucleus(parameter_list.get_projectle_nucleus_name(), ran_gen,
-                        sample_valence_quark));
+                        sample_valence_quark, d_min, deformed,
+                        nucleonConfFromFile));
     target = std::unique_ptr<Nucleus>(
             new Nucleus(parameter_list.get_target_nucleus_name(), ran_gen,
-                        sample_valence_quark));
+                        sample_valence_quark, d_min, deformed,
+                        nucleonConfFromFile));
     if (sample_valence_quark) {
         projectile->set_valence_quark_Q2(parameter_list.get_quarks_Q2());
         target->set_valence_quark_Q2(parameter_list.get_quarks_Q2());
