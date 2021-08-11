@@ -13,7 +13,7 @@ void print_help() {
 int main(int argc, char* argv[]) {
     std::string input_filename = "input";
     int nev = 100;
-    int seed = 0;
+    long long int seed = 0;
     if (argc == 1) {
         print_help();
         exit(1);
@@ -26,7 +26,7 @@ int main(int argc, char* argv[]) {
         input_filename = *(argv + 2);
     }
     if (argc > 3) {
-        seed = std::stoi(*(argv + 3));
+        seed = std::stoll(*(argv + 3));
     }
 
     MCGlb::EventGenerator mc_gen(input_filename, seed);
