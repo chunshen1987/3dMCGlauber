@@ -8,9 +8,7 @@ fi
 
 version="6.2.1"
 echo "Building LHAPDF ${version} ... "
-wget http://www.hepforge.org/archive/lhapdf/LHAPDF-${version}.tar.gz
-tar -xf LHAPDF-${version}.tar.gz
-rm -fr LHAPDF-${version}.tar.gz
+tar -xf utilities/LHAPDF-${version}.tar.gz
 LIBPATH=`echo $PWD/LHAPDF_Lib`
 (
     cd LHAPDF-${version}/
