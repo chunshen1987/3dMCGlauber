@@ -477,22 +477,23 @@ int Glauber::perform_string_production() {
         if (idx < Nstrings) {
             // put baryon of the projectile in the selected string
             auto proj = QCD_string_list[idx].get_proj();
-            if (!proj.lock()->baryon_was_used()) {
-                proj.lock()->set_baryon_used(true);
+            if (!proj->baryon_was_used()) {
+                proj->set_baryon_used(true);
                 QCD_string_list[idx].set_has_baryon_right(true);
             }
         } else if (idx < Nstrings + Npart_proj) {
             // put baryon of the projectile in the projectile remnant
             auto proj = projectile->get_participant(idx - Nstrings);
-            auto p_i = proj.lock()->get_remnant_p();
-            auto mass = 0.;
-            if (std::abs(p_i[3]) < p_i[0]) {
-                // a time-like beam remnant
-                mass = sqrt(p_i[0]*p_i[0] - p_i[3]*p_i[3]);
-            }
-            if (!proj.lock()->baryon_was_used() && mass > 0.1) {
-                proj.lock()->set_baryon_used(true);
-                proj.lock()->set_remnant_carry_baryon_number(true);
+            //auto p_i = proj->get_remnant_p();
+            //auto mass = 0.;
+            //if (std::abs(p_i[3]) < p_i[0]) {
+            //    // a time-like beam remnant
+            //    mass = sqrt(p_i[0]*p_i[0] - p_i[3]*p_i[3]);
+            //}
+            //if (!proj->baryon_was_used() && mass > 0.1) {
+            if (!proj->baryon_was_used()) {
+                proj->set_baryon_used(true);
+                proj->set_remnant_carry_baryon_number(true);
             }
         }
     }
@@ -501,22 +502,23 @@ int Glauber::perform_string_production() {
         if (idx < Nstrings) {
             // put baryon of the target in the selected string
             auto targ = QCD_string_list[idx].get_targ();
-            if (!targ.lock()->baryon_was_used()) {
-                targ.lock()->set_baryon_used(true);
+            if (!targ->baryon_was_used()) {
+                targ->set_baryon_used(true);
                 QCD_string_list[idx].set_has_baryon_left(true);
             }
         } else if (idx > Nstrings + Npart_proj - 1) {
             // put baryon of the target in the target remnant
             auto targ = target->get_participant(idx - Nstrings - Npart_proj);
-            auto p_i = targ.lock()->get_remnant_p();
-            auto mass = 0.;
-            if (std::abs(p_i[3]) < p_i[0]) {
-                // a time-like beam remnant
-                mass = sqrt(p_i[0]*p_i[0] - p_i[3]*p_i[3]);
-            }
-            if (!targ.lock()->baryon_was_used() && mass > 0.1) {
-                targ.lock()->set_baryon_used(true);
-                targ.lock()->set_remnant_carry_baryon_number(true);
+            //auto p_i = targ->get_remnant_p();
+            //auto mass = 0.;
+            //if (std::abs(p_i[3]) < p_i[0]) {
+            //    // a time-like beam remnant
+            //    mass = sqrt(p_i[0]*p_i[0] - p_i[3]*p_i[3]);
+            //}
+            //if (!targ->baryon_was_used() && mass > 0.1) {
+            if (!targ->baryon_was_used()) {
+                targ->set_baryon_used(true);
+                targ->set_remnant_carry_baryon_number(true);
             }
         }
     }
@@ -577,38 +579,38 @@ int Glauber::perform_string_production() {
             // record the freeze-out space-time position for the remnant of
             // the collding nucleons at their last produced strings
             auto proj_n = it->get_proj();
-            if (!proj_n.lock()->is_remnant_set()) {
-                proj_n.lock()->set_remnant(true);
-                auto x_frez = proj_n.lock()->get_x();
-                proj_n.lock()->set_remnant_x_frez(x_frez);
+            if (!proj_n->is_remnant_set()) {
+                proj_n->set_remnant(true);
+                auto x_frez = proj_n->get_x();
+                proj_n->set_remnant_x_frez(x_frez);
             }
             auto targ_n = it->get_targ();
-            if (!targ_n.lock()->is_remnant_set()) {
-                targ_n.lock()->set_remnant(true);
-                auto x_frez = targ_n.lock()->get_x();
-                targ_n.lock()->set_remnant_x_frez(x_frez);
+            if (!targ_n->is_remnant_set()) {
+                targ_n->set_remnant(true);
+                auto x_frez = targ_n->get_x();
+                targ_n->set_remnant_x_frez(x_frez);
             }
 
             // set flags for quark remnants at their last connected strings
             auto proj_q = it->get_proj_q();
-            if (!proj_q.lock()->is_remnant_set()) {
-                proj_q.lock()->set_remnant(true);
+            if (!proj_q->is_remnant_set()) {
+                proj_q->set_remnant(true);
                 it->set_has_remnant_right(true);
             }
             auto targ_q = it->get_targ_q();
-            if (!targ_q.lock()->is_remnant_set()) {
-                targ_q.lock()->set_remnant(true);
+            if (!targ_q->is_remnant_set()) {
+                targ_q->set_remnant(true);
                 it->set_has_remnant_left(true);
             }
         } else {
             auto proj_n = it->get_proj();
-            if (!proj_n.lock()->is_remnant_set()) {
-                proj_n.lock()->set_remnant(true);
+            if (!proj_n->is_remnant_set()) {
+                proj_n->set_remnant(true);
                 it->set_has_remnant_right(true);
             }
             auto targ_n = it->get_targ();
-            if (!targ_n.lock()->is_remnant_set()) {
-                targ_n.lock()->set_remnant(true);
+            if (!targ_n->is_remnant_set()) {
+                targ_n->set_remnant(true);
                 it->set_has_remnant_left(true);
             }
         }
@@ -748,14 +750,14 @@ void Glauber::output_QCD_strings(std::string filename, const real Npart,
     // output strings
     for (auto &it: QCD_string_list) {
         auto x_prod = it.get_x_production();
-        auto x_left = it.get_targ().lock()->get_x();
-        auto x_right = it.get_proj().lock()->get_x();
+        auto x_left = it.get_targ()->get_x();
+        auto x_right = it.get_proj()->get_x();
         if (sample_valence_quark) {
-            auto xq_left = it.get_targ_q().lock()->get_x();
+            auto xq_left = it.get_targ_q()->get_x();
             x_left[1]  += xq_left[1];
             x_left[2]  += xq_left[2];
 
-            auto xq_right = it.get_proj_q().lock()->get_x();
+            auto xq_right = it.get_proj_q()->get_x();
             x_right[1] += xq_right[1];
             x_right[2] += xq_right[2];
         }
@@ -808,8 +810,8 @@ void Glauber::output_QCD_strings(std::string filename, const real Npart,
     if (sample_valence_quark) {
         for (auto &it: remnant_string_list_) {
             auto x_prod = it.get_x_production();
-            auto x_left = it.get_targ().lock()->get_x();
-            auto x_right = it.get_proj().lock()->get_x();
+            auto x_left = it.get_targ()->get_x();
+            auto x_right = it.get_proj()->get_x();
             auto tau_0  = sqrt(x_prod[0]*x_prod[0] - x_prod[3]*x_prod[3]);
             auto etas_0 = 0.5*log((x_prod[0] + x_prod[3])
                                   /(x_prod[0] - x_prod[3]));

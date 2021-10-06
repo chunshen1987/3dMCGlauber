@@ -26,10 +26,10 @@ class QCDString {
     bool has_baryon_left_, has_baryon_right_;
     bool has_remnant_left_, has_remnant_right_;
 
-    weak_ptr<Nucleon> proj;
-    weak_ptr<Nucleon> targ;
-    weak_ptr<Quark> proj_q;
-    weak_ptr<Quark> targ_q;
+    shared_ptr<Nucleon> proj;
+    shared_ptr<Nucleon> targ;
+    shared_ptr<Quark> proj_q;
+    shared_ptr<Quark> targ_q;
     real m_over_sigma;
     real mass_;
 
@@ -119,10 +119,10 @@ class QCDString {
     bool get_has_remnant_left() const {return(has_remnant_left_);}
     bool get_has_remnant_right() const {return(has_remnant_right_);}
 
-    weak_ptr<Nucleon> get_proj() {return(proj);}
-    weak_ptr<Nucleon> get_targ() {return(targ);}
-    weak_ptr<Quark>   get_proj_q() {return(proj_q);}
-    weak_ptr<Quark>   get_targ_q() {return(targ_q);}
+    shared_ptr<Nucleon> get_proj() {return(proj);}
+    shared_ptr<Nucleon> get_targ() {return(targ);}
+    shared_ptr<Quark>   get_proj_q() {return(proj_q);}
+    shared_ptr<Quark>   get_targ_q() {return(targ_q);}
 
     void evolve_QCD_string();
     void evolve_QCD_string_with_free_streaming();

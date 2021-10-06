@@ -116,7 +116,7 @@ class Nucleus {
     int get_number_of_wounded_nucleons() const {
         return(static_cast<int>(participant_list_.size()));
     }
-    std::weak_ptr<Nucleon> get_participant(unsigned int idx) {
+    std::shared_ptr<Nucleon> get_participant(unsigned int idx) {
         return(participant_list_.at(idx));
     }
 

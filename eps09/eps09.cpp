@@ -143,7 +143,8 @@ void eps09(int order, int pset, int AAA,
     int setnumber, j, A;
 
     static double allvalues[31+1][8+1][50+1][50+1];
-    static int psetlast = -10, Alast = -10, orderlast = -10;
+    //static int psetlast = -10;
+    static int Alast = -10, orderlast = -10;
 
     //
     // Stop if the set specifications are wrong ones
@@ -217,7 +218,7 @@ void eps09(int order, int pset, int AAA,
 
         ifs.close();
 
-        psetlast  = pset;
+        //psetlast  = pset;
         Alast     = A;
         orderlast = order;
 

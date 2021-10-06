@@ -15,9 +15,9 @@ QCDString::QCDString(SpatialVec x_in, real tau_form_in,
     tau_form           = tau_form_in;
     proj               = proj_in;
     targ               = targ_in;
-    auto pvec          = targ.lock()->get_p();
+    auto pvec          = targ->get_p();
     y_i_left           = atanh(pvec[3]/pvec[0]);
-    pvec               = proj.lock()->get_p();
+    pvec               = proj->get_p();
     y_i_right          = atanh(pvec[3]/pvec[0]);
     m_over_sigma       = m_over_sigma_in;
     mass_              = PhysConsts::MProton;
@@ -41,8 +41,8 @@ QCDString::QCDString(SpatialVec x_in, real tau_form_in,
     targ               = targ_in;
     proj_q             = proj_q_in;
     targ_q             = targ_q_in;
-    y_i_left           = targ_q.lock()->get_rapidity();
-    y_i_right          = proj_q.lock()->get_rapidity();
+    y_i_left           = targ_q->get_rapidity();
+    y_i_right          = proj_q->get_rapidity();
     m_over_sigma       = m_over_sigma_in;
     mass_              = PhysConsts::MQuarkValence;
     has_baryon_right_  = has_baryon_right_in;
