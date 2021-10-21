@@ -28,6 +28,7 @@ class Nucleus {
     bool sample_valence_quarks;
     std::unique_ptr<LHAPDF::PDF> pdf;
     real Q2;                            // Q2 when sampling valence quark
+    real BG_;
 
     std::vector<std::shared_ptr<Nucleon>> nucleon_list_;
     std::vector<std::shared_ptr<Nucleon>> participant_list_;
@@ -47,7 +48,7 @@ class Nucleus {
     Nucleus() = default;
     Nucleus(std::string nucleus_name,
             std::shared_ptr<RandomUtil::Random> ran_gen,
-            bool sample_valence_quarks=false,
+            bool sample_valence_quarks=false, real BG=4.,
             real d_min=0.9, bool deformed=true, bool confFromFile=false);
     ~Nucleus();
 

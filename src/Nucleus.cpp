@@ -22,11 +22,12 @@ namespace MCGlb {
 
 Nucleus::Nucleus(std::string nucleus_name,
                  std::shared_ptr<RandomUtil::Random> ran_gen,
-                 bool sample_valence_quarks_in,
+                 bool sample_valence_quarks_in, real BG,
                  real d_min, bool deformed, bool confFromFile) {
     d_min_      = d_min;
     deformed_   = deformed;
     confFromFile_ = confFromFile;
+    BG_ = BG;
     ran_gen_ptr = ran_gen;
     set_nucleus_parameters(nucleus_name);
 
@@ -839,8 +840,7 @@ SpatialVec Nucleus::sample_valence_quark_position() const {
     // sample Gaussian distribution for the valence quark position
     // determine x,y,z coordinates of the quark (relative to the nucleon)
 
-    // This parameter was from IP-Glasma fit to the HERA data
-    real BG = sqrt(4.)*PhysConsts::HBARC;     // ~ 0.4 fm
+    real BG = sqrt(BG_)*PhysConsts::HBARC;
     real x = ran_gen_ptr->rand_normal(0., BG);
     real y = ran_gen_ptr->rand_normal(0., BG);
     real z = ran_gen_ptr->rand_normal(0., BG);

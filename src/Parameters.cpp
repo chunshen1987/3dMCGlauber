@@ -193,4 +193,11 @@ bool Parameters::nucleon_configuration_from_file() const {
     }
 }
 
+
+real Parameters::get_BG() const {
+    real BG = static_cast<real>(get_param_double("BG"));
+    assert(BG > 0.);
+    return(BG);
+}
+
 }
