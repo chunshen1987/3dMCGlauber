@@ -20,6 +20,10 @@ using std::shared_ptr;
 
 namespace MCGlb {
 
+std::vector<CollisionEvent> Glauber::get_collision_information() {
+        return (collision_schedule_list_);
+}
+
 Glauber::Glauber(const MCGlb::Parameters &param_in,
                  shared_ptr<RandomUtil::Random> ran_gen) :
     parameter_list(param_in) {
@@ -115,6 +119,17 @@ int Glauber::make_collision_schedule() {
             }
         }
     }
+    
+    // copy the collision_schedule information to outside 
+    collision_schedule_list_.clear();
+    int pos=0;
+    for (auto &it: collision_schedule) {
+        collision_schedule_list_.push_back(*it);  // collision list is time ordered
+        //auto xvec = collision_schedule_list_[pos].get_collision_position();
+        //std::cout << xvec[0]<<" "<< xvec[1]<<" "<< xvec[2]<<" "<< xvec[3]<<" " << std::endl;
+        pos++;
+    }
+        //std::cout<<"dfsdf "<< collision_schedule_list[0] <<endl;}
     return(collision_schedule.size());
 }
 
