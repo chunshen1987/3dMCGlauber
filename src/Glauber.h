@@ -24,7 +24,7 @@ class Glauber {
     std::unique_ptr<Nucleus> projectile;
     std::unique_ptr<Nucleus> target;
     std::set<shared_ptr<CollisionEvent>, compare_collision_time> collision_schedule;
-
+    
     std::vector<QCDString> QCD_string_list;
     std::vector<QCDString> remnant_string_list_;
     std::vector<CollisionEvent> collision_schedule_list_;
@@ -51,7 +51,10 @@ class Glauber {
             shared_ptr<RandomUtil::Random> ran_gen);
     ~Glauber() {};
     
-    std::vector<CollisionEvent> get_collision_information();
+    std::vector<CollisionEvent> get_collision_information() {
+        return (collision_schedule_list_);
+    }
+    
     void make_nuclei();
     real get_impact_parameter() const {return(impact_b);}
 
@@ -67,6 +70,7 @@ class Glauber {
                              real &t_coll, real &z_coll) const;
 
     real compute_NN_inelastic_cross_section(real ecm) const;
+
 
     //! this function decides which of those binary collisions will produce
     //! QCD strings
