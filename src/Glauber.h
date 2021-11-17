@@ -52,7 +52,6 @@ class Glauber {
     ~Glauber() {};
     
     std::vector<CollisionEvent> get_collision_information();
-    
     void make_nuclei();
     real get_impact_parameter() const {return(impact_b);}
 

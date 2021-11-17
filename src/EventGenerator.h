@@ -16,17 +16,25 @@ class EventGenerator {
  private:
     Parameters parameter_list_;
     std::shared_ptr<RandomUtil::Random> ran_gen_ptr_;
-    std::unique_ptr<Glauber> mc_glauber_ptr_;
+    std::shared_ptr<Glauber> mc_glauber_ptr_;
+    
     bool statistics_only_;
     pretty_ostream messager;
 
- public:
+ public:    
     EventGenerator() = default;
     EventGenerator(std::string input_filename, int seed=0);
     ~EventGenerator() {};
 
+    int get_eNpart() const;
     void generate_events(int nev, int event_id_offset=0);
+/*    void generate_pre_events(int nev, int event_id_offset=0);*/
     bool event_of_interest_trigger(int Npart, int Ncoll, int Nstrings);
+    
+    
+    //////////
+    std::shared_ptr<Glauber> get_mc_glauber_ptr_();
+    //////////
 };
 
 };

@@ -8,6 +8,10 @@
 
 namespace MCGlb {
 
+std::shared_ptr<Glauber> EventGenerator::get_mc_glauber_ptr_() {
+    return mc_glauber_ptr_;
+}
+
 
 EventGenerator::EventGenerator(std::string input_filename, int seed) {
     parameter_list_.read_in_parameters_from_file(input_filename);
@@ -80,6 +84,7 @@ void EventGenerator::generate_events(int nev, int event_id_offset) {
              << " b";
     messager.flush("info");
 }
+
 
 
 bool EventGenerator::event_of_interest_trigger(int Npart, int Ncoll,
