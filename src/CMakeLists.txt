@@ -23,9 +23,8 @@ else (link_with_lib)
     target_link_libraries (${exename} LHAPDF)
 endif (link_with_lib)
 add_executable(Metropolis.e SampleValenceQuarkMetropolis.cpp)
-add_executable(Metropolis_for_dipole.e SampleDipoleValenceQuarkMetropolis.cpp)
 target_link_libraries (Metropolis.e ${libname} LHAPDF)
-target_link_libraries (Metropolis_for_dipole.e ${libname} LHAPDF)
+#target_link_libraries (Metropolis_for_dipole.e ${libname} LHAPDF)
 if (APPLE)
     set_target_properties(${libname} PROPERTIES COMPILE_FLAGS "-DAPPLE")
     set_target_properties (${exename} PROPERTIES COMPILE_FLAGS "-DAPPLE")
@@ -39,19 +38,19 @@ set_target_properties(${exename}
 set_target_properties(Metropolis.e
     PROPERTIES
     INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib;${CMAKE_HOME_DIRECTORY}/LHAPDF_Lib/lib/")
-set_target_properties(Metropolis_for_dipole.e
-    PROPERTIES
-    INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib;${CMAKE_HOME_DIRECTORY}/LHAPDF_Lib/lib/")
+#set_target_properties(Metropolis_for_dipole.e
+#    PROPERTIES
+#    INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib;${CMAKE_HOME_DIRECTORY}/LHAPDF_Lib/lib/")
     
 install(TARGETS ${exename} Metropolis.e ${libname}
         RUNTIME DESTINATION ${CMAKE_HOME_DIRECTORY}
         LIBRARY DESTINATION lib
         ARCHIVE DESTINATION lib/static)
 
-install(TARGETS ${exename} Metropolis_for_dipole.e ${libname}
-        RUNTIME DESTINATION ${CMAKE_HOME_DIRECTORY}
-        LIBRARY DESTINATION lib
-        ARCHIVE DESTINATION lib/static)
+#install(TARGETS ${exename} Metropolis_for_dipole.e ${libname}
+#        RUNTIME DESTINATION ${CMAKE_HOME_DIRECTORY}
+#        LIBRARY DESTINATION lib
+#        ARCHIVE DESTINATION lib/static)
         
 if (unittest)
     add_executable (unittest_CollisionEvent.e CollisionEvent_UnitTest.cpp)
