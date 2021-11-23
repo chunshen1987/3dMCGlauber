@@ -513,7 +513,7 @@ int Glauber::perform_string_production() {
             // put baryon of the projectile in the selected string
             auto proj = QCD_string_list[idx].get_proj();
             {
-                    if(proj->get_baryon_number()>0)proj->set_baryon_used(true);
+                    if(proj->get_baryon_number()==0)proj->set_baryon_used(true);
                     if (!proj->baryon_was_used()) {
                         proj->set_baryon_used(true);
                         QCD_string_list[idx].set_has_baryon_right(true);
@@ -529,7 +529,7 @@ int Glauber::perform_string_production() {
             //    mass = sqrt(p_i[0]*p_i[0] - p_i[3]*p_i[3]);
             //}
             //if (!proj->baryon_was_used() && mass > 0.1) {
-            if(proj->get_baryon_number()>0)proj->set_baryon_used(true);
+            if(proj->get_baryon_number()==0)proj->set_baryon_used(true);
             if (!proj->baryon_was_used()) {
                 proj->set_baryon_used(true);
                 proj->set_remnant_carry_baryon_number(true);
@@ -542,7 +542,7 @@ int Glauber::perform_string_production() {
             // put baryon of the target in the selected string
             auto targ = QCD_string_list[idx].get_targ();
             {      
-                    if(targ->get_baryon_number()>0)targ->set_baryon_used(true);
+                    if(targ->get_baryon_number()==0)targ->set_baryon_used(true);
                     if (!targ->baryon_was_used()) {
                         targ->set_baryon_used(true);
                         QCD_string_list[idx].set_has_baryon_left(true);
@@ -558,7 +558,7 @@ int Glauber::perform_string_production() {
             //    mass = sqrt(p_i[0]*p_i[0] - p_i[3]*p_i[3]);
             //}
             //if (!targ->baryon_was_used() && mass > 0.1) {
-            if(targ->get_baryon_number()>0)targ->set_baryon_used(true);
+            if(targ->get_baryon_number()==0)targ->set_baryon_used(true);
             if (!targ->baryon_was_used()) {
                 targ->set_baryon_used(true);
                 targ->set_remnant_carry_baryon_number(true);
