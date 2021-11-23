@@ -75,8 +75,20 @@ Glauber::Glauber(const MCGlb::Parameters &param_in,
 void Glauber::make_nuclei() {
     projectile->generate_nucleus_3d_configuration();
     target->generate_nucleus_3d_configuration();
-    projectile->accelerate_nucleus(parameter_list.get_roots(), 1);
-    target->accelerate_nucleus(parameter_list.get_roots(), -1);
+    int Nucleus_projectile=projectile->get_nucleus_A();
+    if(Nucleus_projectile>0){
+        projectile->accelerate_nucleus(parameter_list.get_roots(), 1);
+    }else{
+        projectile->accelerate_dipole(parameter_list.get_roots(), 1);
+    }
+    int Nucleus_target=target->get_nucleus_A();
+    if(Nucleus_target>0){
+         target->accelerate_nucleus(parameter_list.get_roots(), -1);
+    }else{
+         target->accelerate_dipole(parameter_list.get_roots(), -1);
+    }
+    
+   
 
     // sample impact parameters
     auto b_max = parameter_list.get_b_max();
@@ -115,6 +127,17 @@ int Glauber::make_collision_schedule() {
             }
         }
     }
+    
+    // copy the collision_schedule information to outside 
+    collision_schedule_list_.clear();
+    int pos=0;
+    for (auto &it: collision_schedule) {
+        collision_schedule_list_.push_back(*it);  // collision list is time ordered
+        //auto xvec = collision_schedule_list_[pos].get_collision_position();
+        //std::cout << xvec[0]<<" "<< xvec[1]<<" "<< xvec[2]<<" "<< xvec[3]<<" " << std::endl;
+        pos++;
+    }
+        get_collision_information();
     return(collision_schedule.size());
 }
 
@@ -224,10 +247,22 @@ int Glauber::decide_produce_string_num(
 
 int Glauber::decide_QCD_strings_production() {
     if (sample_valence_quark) {
-        projectile->sample_valence_quarks_inside_nucleons(
+        int Nucleus_projectile=projectile->get_nucleus_A();
+        if(Nucleus_projectile>0){
+                projectile->sample_valence_quarks_inside_nucleons(
                                     parameter_list.get_roots(), 1);
-        target->sample_valence_quarks_inside_nucleons(
+        }else{
+                projectile->sample_valence_quarks_inside_dipole(
+                                    parameter_list.get_roots(), 1);
+        }
+        int Nucleus_target=target->get_nucleus_A();
+        if(Nucleus_target>0){
+                target->sample_valence_quarks_inside_nucleons(
                                     parameter_list.get_roots(), -1);
+        }else{
+                target->sample_valence_quarks_inside_dipole(
+                                    parameter_list.get_roots(), -1);
+        }
         projectile->add_soft_parton_ball(parameter_list.get_roots(), 1);
         target->add_soft_parton_ball(parameter_list.get_roots(), -1);
     }
@@ -477,9 +512,12 @@ int Glauber::perform_string_production() {
         if (idx < Nstrings) {
             // put baryon of the projectile in the selected string
             auto proj = QCD_string_list[idx].get_proj();
-            if (!proj->baryon_was_used()) {
-                proj->set_baryon_used(true);
-                QCD_string_list[idx].set_has_baryon_right(true);
+            {
+                    if(proj->get_baryon_number()>0)proj->set_baryon_used(true);
+                    if (!proj->baryon_was_used()) {
+                        proj->set_baryon_used(true);
+                        QCD_string_list[idx].set_has_baryon_right(true);
+                    }
             }
         } else if (idx < Nstrings + Npart_proj) {
             // put baryon of the projectile in the projectile remnant
@@ -491,6 +529,7 @@ int Glauber::perform_string_production() {
             //    mass = sqrt(p_i[0]*p_i[0] - p_i[3]*p_i[3]);
             //}
             //if (!proj->baryon_was_used() && mass > 0.1) {
+            if(proj->get_baryon_number()>0)proj->set_baryon_used(true);
             if (!proj->baryon_was_used()) {
                 proj->set_baryon_used(true);
                 proj->set_remnant_carry_baryon_number(true);
@@ -502,9 +541,12 @@ int Glauber::perform_string_production() {
         if (idx < Nstrings) {
             // put baryon of the target in the selected string
             auto targ = QCD_string_list[idx].get_targ();
-            if (!targ->baryon_was_used()) {
-                targ->set_baryon_used(true);
-                QCD_string_list[idx].set_has_baryon_left(true);
+            {      
+                    if(targ->get_baryon_number()>0)targ->set_baryon_used(true);
+                    if (!targ->baryon_was_used()) {
+                        targ->set_baryon_used(true);
+                        QCD_string_list[idx].set_has_baryon_left(true);
+                    }
             }
         } else if (idx > Nstrings + Npart_proj - 1) {
             // put baryon of the target in the target remnant
@@ -516,6 +558,7 @@ int Glauber::perform_string_production() {
             //    mass = sqrt(p_i[0]*p_i[0] - p_i[3]*p_i[3]);
             //}
             //if (!targ->baryon_was_used() && mass > 0.1) {
+            if(targ->get_baryon_number()>0)targ->set_baryon_used(true);
             if (!targ->baryon_was_used()) {
                 targ->set_baryon_used(true);
                 targ->set_remnant_carry_baryon_number(true);

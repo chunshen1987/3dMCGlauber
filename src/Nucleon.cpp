@@ -51,6 +51,21 @@ void Nucleon::accelerate_quarks(real ecm, int direction) {
     }
 }
 
+void Nucleon::accelerate_quarks_in_dipole(real ecm, int direction) {
+    const real mq = PhysConsts::MQuarkValence;
+    const real mp = PhysConsts::MProton;
+    const real mdipole=PhysConsts::MDipole;
+    const real ybeam = acosh(ecm/(2.*mp));
+    for (auto &it: quark_list) {
+        //real rap_local = direction*asinh(it->get_pdf_x()
+        //                                 *sqrt(ecm*ecm/(4.*mq*mq) - 1.));
+        real rap_local = direction*asinh(it->get_pdf_x()*mdipole/mq*sinh(ybeam));
+        it->set_rapidity(rap_local);
+        MomentumVec p_in = {mq*cosh(rap_local), 0.0, 0.0, mq*sinh(rap_local)};
+        it->set_p(p_in);
+    }
+}
+
 void Nucleon::lorentz_contraction(real gamma) {
     for (auto &it: quark_list) {
         auto xvec = it->get_x();

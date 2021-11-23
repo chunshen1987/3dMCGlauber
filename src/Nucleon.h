@@ -17,6 +17,7 @@ class Nucleon : public Particle {
     int collided_times = 0;
     int total_connected_times_ = 0;
     int electric_charge_ = 0;
+    int baryon_number_=1;
     bool wounded_ = false;
     bool baryon_used = false;
     bool remnant_set_ = false;
@@ -37,6 +38,10 @@ class Nucleon : public Particle {
 
     ~Nucleon();
 
+
+    void set_baryon_number(int baryon_number) {baryon_number_ = baryon_number;}
+    int get_baryon_number() const {return(baryon_number_);}
+    
     void set_electric_charge(int charge) {electric_charge_ = charge;}
     int get_electric_charge() const {return(electric_charge_);}
 
@@ -79,6 +84,7 @@ class Nucleon : public Particle {
 
     bool is_connected_with(std::shared_ptr<Nucleon> targ);
     void accelerate_quarks(real ecm, int direction);
+    void accelerate_quarks_in_dipole(real ecm, int direction);
     void lorentz_contraction(real gamma);
 
     std::shared_ptr<Quark> get_a_valence_quark();
