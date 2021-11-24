@@ -87,7 +87,7 @@ double sample_a_d_quark_momentum_fraction(
 double sample_a_quark_momentum_fraction_in_diople(
          double CDF[], int size,const shared_ptr<Random> ran_gen_ptr,double dx) {
     double x;       
-    int ndivided=20; 
+    int ndivided=10; 
     int index1=size/ndivided;
     int startid;
     int simble=0;
@@ -96,10 +96,11 @@ double sample_a_quark_momentum_fraction_in_diople(
     if(tmp<=CDF[index1]){
       startid=index1*0;
       simble2=1;
-    }
+    }else{
     if(tmp>CDF[index1*ndivided-index1]){
       startid=index1*ndivided-index1;
       simble2=1;
+    }
     }
     if(simble2==0){
       for (int k=1;k<ndivided-1;k++){
@@ -115,7 +116,7 @@ double sample_a_quark_momentum_fraction_in_diople(
         }
         if(simble==1)break;
     }
-    if(simble==0)x=0.99;
+    //if(simble==0)x=0.999;
     //std::cout<<"priliminary x "<<x<<" "<<simble<<std::endl;
     return (x);
 }
@@ -234,7 +235,7 @@ int main(int argc, char* argv[]) {
         A = std::stoi(*(argv + 1));
     }
     // the quark's PDF in the dipole, p(x)=x^alpha(1-x)^beta
-    double dx=0.002;
+    double dx=0.01;
     int lenght=1/dx;
     double CDF[lenght+100]={0.0};
     double alpha=2.0;
@@ -254,9 +255,8 @@ int main(int argc, char* argv[]) {
     }
     for(int i=0;i<index;i++){
         CDF[i]=CDF[i]/CDF[index-1];
-        //std::cout<<" "<<i<<" "<<CDF[i]<<std::endl;
+        //std::cout<<" "<<i<<" "<<index-1<<" "<<CDF[i]<<std::endl;
     }
-    
     // define nuclear pdf
     bool flag_NPDF = false;
     if (A == 197 || A == 208) flag_NPDF = true;
@@ -292,13 +292,13 @@ int main(int argc, char* argv[]) {
     long long int iter = 0;
     long int itol = 0;
     while (dipole_nviolations > 0 && itol < ntol) {
-        
+        /*
         if (iter % 1000000 == 0) {
             std::cout << "dipole iter = " << iter << ": nviolations = "
                       << dipole_nviolations
                       << ", <sum_x> = " << dipole_total_score << std::endl;
         }
-        
+        */
         double delta_p;
         int delta_violation_p;
 
@@ -321,14 +321,21 @@ int main(int argc, char* argv[]) {
 
         iter++;
     }
-    
+    /*
     std::cout << "dipole iter = " << iter << ": nviolations = "
               << dipole_nviolations
               << ", <sum_x> = " << dipole_total_score << std::endl;
-    
+    */
     // output to file in binary
     std::stringstream of_p_name;
-    of_p_name << "tables/dipole_valence_quark_samples.dat";
+    of_p_name << "tables/dipole_valence_quark_samples";
+    if (A == 197) {
+        of_p_name << "_NPDFAu.dat";
+    } else if (A == 208) {
+        of_p_name << "_NPDFPb.dat";
+    } else {
+        of_p_name << ".dat";
+    }
     std::ofstream of_p(of_p_name.str().c_str(),
                        std::ios::out | std::ios::binary | std::ofstream::app);
     for (const auto triplet_i: dipole_quark_samples) {
