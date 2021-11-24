@@ -328,14 +328,7 @@ int main(int argc, char* argv[]) {
     
     // output to file in binary
     std::stringstream of_p_name;
-    of_p_name << "tables/dipole_valence_quark_samples";
-    if (A == 197) {
-        of_p_name << "_NPDFAu.dat";
-    } else if (A == 208) {
-        of_p_name << "_NPDFPb.dat";
-    } else {
-        of_p_name << ".dat";
-    }
+    of_p_name << "tables/dipole_valence_quark_samples.dat";
     std::ofstream of_p(of_p_name.str().c_str(),
                        std::ios::out | std::ios::binary | std::ofstream::app);
     for (const auto triplet_i: dipole_quark_samples) {
@@ -343,6 +336,7 @@ int main(int argc, char* argv[]) {
             for (int i = 0; i < two_quarks; i++) {
                 float x_i = static_cast<float>(triplet_i.Xarr2[i]);
                 of_p.write((char*) &(x_i), sizeof(float));
+                std::cout<<x_i<<std::endl;
             }
         }
     }
