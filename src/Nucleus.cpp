@@ -133,7 +133,7 @@ void Nucleus::generate_nucleus_3d_configuration() {
         std::shared_ptr<Nucleon> nucleon_ptr(new Nucleon(x, p));
         nucleon_list_.push_back(std::move(nucleon_ptr));
         status = 0;
-    }else if (A_ == 0) {   // dipole /////////////////////////////
+    } else if (A_ == 0) {   // dipole
         SpatialVec  x = {0.0};
         MomentumVec p = {0.0};
         std::shared_ptr<Nucleon> nucleon_ptr2(new Nucleon(x, p));
@@ -145,7 +145,6 @@ void Nucleus::generate_nucleus_3d_configuration() {
         std::cout<<"test output==== "<<x_vec[1]<<std::endl;
         }
         */
-    
     } else if (A_ == 2) {   // deuteron
         generate_deuteron_configuration();
         status = 0;
@@ -160,35 +159,27 @@ void Nucleus::generate_nucleus_3d_configuration() {
             generate_nucleus_configuration_with_deformed_woods_saxon();
         }
     }
-    if(A_>0){
-          // assign the proton or neutron identity to the nucleons
-          std::vector<int> electric_charges_arr(A_, 0);
-          for (int i = 0; i < Z_; i++)
-              electric_charges_arr[i] = 1;
-          std::random_shuffle(electric_charges_arr.begin(),
-                              electric_charges_arr.end());
-          for (int i = 0; i < A_; i++) {
-              nucleon_list_[i]->set_electric_charge(electric_charges_arr[i]);///////////////////
-              nucleon_list_[i]->set_baryon_number(1);///////////////////
-          }
+    if (A_ > 0) {
+        // assign the proton or neutron identity to the nucleons
+        std::vector<int> electric_charges_arr(A_, 0);
+        for (int i = 0; i < Z_; i++)
+            electric_charges_arr[i] = 1;
+        std::random_shuffle(electric_charges_arr.begin(),
+                            electric_charges_arr.end());
+        for (int i = 0; i < A_; i++) {
+            nucleon_list_[i]->set_electric_charge(electric_charges_arr[i]);
+            nucleon_list_[i]->set_baryon_number(1);
+        }
 
-          recenter_nucleus();
+        recenter_nucleus();
 
-          real phi   = 2.*M_PI*ran_gen_ptr->rand_uniform();
-          real theta = acos(1. - 2.*ran_gen_ptr->rand_uniform());
-          rotate_nucleus(phi, theta);
-    }else{// assign the dipole 
-          std::vector<int> electric_charges_arr(1, 0);
-          electric_charges_arr[0]=0;
-          std::random_shuffle(electric_charges_arr.begin(),
-                              electric_charges_arr.end());
-          nucleon_list_[0]->set_electric_charge(electric_charges_arr[0]);
-          nucleon_list_[0]->set_baryon_number(0);
-          recenter_nucleus_for_dipole();
-
-          real phi   = 2.*M_PI*ran_gen_ptr->rand_uniform();
-          real theta = acos(1. - 2.*ran_gen_ptr->rand_uniform());
-          rotate_nucleus(phi, theta);
+        real phi   = 2.*M_PI*ran_gen_ptr->rand_uniform();
+        real theta = acos(1. - 2.*ran_gen_ptr->rand_uniform());
+        rotate_nucleus(phi, theta);
+    } else {
+        // assign the dipole
+        nucleon_list_[0]->set_electric_charge(0);
+        nucleon_list_[0]->set_baryon_number(0);
     }
 }
 
@@ -206,24 +197,6 @@ void Nucleus::recenter_nucleus() {
     meanx /= static_cast<real>(A_);
     meany /= static_cast<real>(A_);
     meanz /= static_cast<real>(A_);
-
-    SpatialVec x_shift = {0, -meanx, -meany, -meanz};
-    shift_nucleus(x_shift);
-}
-
-void Nucleus::recenter_nucleus_for_dipole() {
-    // compute the center of mass position and shift it to (0, 0, 0)
-    real meanx = 0., meany = 0., meanz = 0.;
-    for (auto const &nucleon_i : nucleon_list_) {
-        auto x_vec = nucleon_i->get_x();
-        meanx += x_vec[1];
-        meany += x_vec[2];
-        meanz += x_vec[3];
-    }
-
-    meanx /= 1.0;
-    meany /= 1.0;
-    meanz /= 1.0;
 
     SpatialVec x_shift = {0, -meanx, -meany, -meanz};
     shift_nucleus(x_shift);
@@ -275,7 +248,7 @@ void Nucleus::sample_valence_quarks_inside_nucleons(real ecm, int direction) {
     }
 }
 
-//************* sample the quarks inside the dipole *************
+
 void Nucleus::sample_valence_quarks_inside_dipole(real ecm, int direction) {
     const int number_of_quarks = PhysConsts::NumQuarkinDipole;
     for (auto &nucleon_i: nucleon_list_) {
@@ -283,8 +256,7 @@ void Nucleus::sample_valence_quarks_inside_dipole(real ecm, int direction) {
             && nucleon_i->get_number_of_quarks() == 0) {
             std::vector<real> xQuark;
             sample_quark_momentum_fraction_in_dipole(xQuark, number_of_quarks,
-                                           nucleon_i->get_electric_charge(),
-                                           ecm);
+                                                     ecm);
             for (int i = 0; i < number_of_quarks; i++) {
                 auto xvec = sample_valence_quark_position();
                 std::shared_ptr<Quark> quark_ptr(new Quark(xvec, xQuark[i]));
@@ -323,6 +295,7 @@ void Nucleus::add_soft_parton_ball(real ecm, int direction) {
         }
     }
 }
+
 
 void Nucleus::generate_deuteron_configuration() {
     // sample the distance between the two nucleons
@@ -392,91 +365,96 @@ real Nucleus::hulthen_function_CDF(real r) const {
 int Nucleus::readin_valence_quark_samples() {
     std::stringstream of_p_name, of_n_name,of_dipole_name;
     int size;
-    if(A_>0){// for nucleon or nucleus 
-          of_p_name << "tables/proton_valence_quark_samples";
-          of_n_name << "tables/neutron_valence_quark_samples";
-          if (A_ == 197) {
-              of_p_name << "_NPDFAu.dat";
-              of_n_name << "_NPDFAu.dat";
-          } else if (A_ == 208) {
-              of_p_name << "_NPDFPb.dat";
-              of_n_name << "_NPDFPb.dat";
-          } else {
-              of_p_name << ".dat";
-              of_n_name << ".dat";
-          }
-          std::ifstream of_p_test(of_p_name.str().c_str(), std::ios::binary);
-          std::ifstream of_n_test(of_n_name.str().c_str(), std::ios::binary);
-          if (!of_p_test.good() || !of_n_test.good()) {
-              std::cout << "Generating files " << of_p_name.str()
-                        << " and " << of_n_name.str() << std::endl;
-              std::stringstream command;
-              command << "./Metropolis.e " << A_;
-              system_status_ = std::system(command.str().c_str());
-          } else {
-              of_p_test.close();
-              of_n_test.close();
-          }
+    if (A_ > 0) {
+        // for nucleon or nucleus
+        of_p_name << "tables/proton_valence_quark_samples";
+        of_n_name << "tables/neutron_valence_quark_samples";
+        if (A_ == 197) {
+            of_p_name << "_NPDFAu.dat";
+            of_n_name << "_NPDFAu.dat";
+        } else if (A_ == 208) {
+            of_p_name << "_NPDFPb.dat";
+            of_n_name << "_NPDFPb.dat";
+        } else {
+            of_p_name << ".dat";
+            of_n_name << ".dat";
+        }
+        std::ifstream of_p_test(of_p_name.str().c_str(), std::ios::binary);
+        std::ifstream of_n_test(of_n_name.str().c_str(), std::ios::binary);
+        if (!of_p_test.good() || !of_n_test.good()) {
+            std::cout << "Generating files " << of_p_name.str()
+                      << " and " << of_n_name.str() << std::endl;
+            std::stringstream command;
+            command << "./Metropolis.e " << A_;
+            system_status_ = std::system(command.str().c_str());
+        } else {
+            of_p_test.close();
+            of_n_test.close();
+        }
 
-          std::ifstream of_p(of_p_name.str().c_str(), std::ios::binary);
-          std::ifstream of_n(of_n_name.str().c_str(), std::ios::binary);
-          if (!of_p.good() || !of_n.good()) {
-              std::cout << "Can not generate " << of_p_name.str() << " or/and "
-                        << of_n_name.str() << std::endl;
-              std::cout << "Please check, exiting ... " << std::endl;
-              exit(1);
-          }
-          while (!of_p.eof()) {
-              std::array<float, 3> x_array;
-              for (int ii = 0; ii < 3; ii++) {
-                  float temp = 0.;
-                  of_p.read(reinterpret_cast<char*>(&temp), sizeof(float));
-                  x_array[ii] = temp;
-              }
-              proton_valence_quark_x_.push_back(x_array);
-          }
-          of_p.close();
-          while (!of_n.eof()) {
-              std::array<float, 3> x_array;
-              for (int ii = 0; ii < 3; ii++) {
-                  float temp = 0.;
-                  of_n.read(reinterpret_cast<char*>(&temp), sizeof(float));
-                  x_array[ii] = temp;
-              }
-              neutron_valence_quark_x_.push_back(x_array);
-          }
-          of_n.close();
-          size = std::min(proton_valence_quark_x_.size(),
-                             neutron_valence_quark_x_.size());
-    }else{// for dipole
-          of_dipole_name << "tables/dipole_valence_quark_samples.dat";
-          std::ifstream of_dipole_test(of_dipole_name.str().c_str(), std::ios::binary);
-          if (!of_dipole_test.good()) {
-              std::cout << "Generating files " << of_dipole_name.str()
-                        << std::endl;
-              std::stringstream command;
-              command << "./Metropolis_for_dipole.e ";
-              system_status_ = std::system(command.str().c_str());
-          } else {
-              of_dipole_test.close();
-          }
-          std::ifstream of_dipole(of_dipole_name.str().c_str(), std::ios::binary);
-          if (!of_dipole.good()) {
-              std::cout << "Can not generate " << of_dipole_name.str()<< std::endl;
-              std::cout << "Please check, exiting ... " << std::endl;
-              exit(1);
-          }
-          while (!of_dipole.eof()) {
-              std::array<float, 2> x_array;
-              for (int ii = 0; ii < 2; ii++) {
-                  float temp = 0.;
-                  of_dipole.read(reinterpret_cast<char*>(&temp), sizeof(float));
-                  x_array[ii] = temp;
-              }
-              dipole_valence_quark_x_.push_back(x_array);
-          }
-          of_dipole.close();
-          size =dipole_valence_quark_x_.size();
+        std::ifstream of_p(of_p_name.str().c_str(), std::ios::binary);
+        std::ifstream of_n(of_n_name.str().c_str(), std::ios::binary);
+        if (!of_p.good() || !of_n.good()) {
+            std::cout << "Can not generate " << of_p_name.str() << " or/and "
+                      << of_n_name.str() << std::endl;
+            std::cout << "Please check, exiting ... " << std::endl;
+            exit(1);
+        }
+        while (!of_p.eof()) {
+            std::array<float, 3> x_array;
+            for (int ii = 0; ii < 3; ii++) {
+                float temp = 0.;
+                of_p.read(reinterpret_cast<char*>(&temp), sizeof(float));
+                x_array[ii] = temp;
+            }
+            proton_valence_quark_x_.push_back(x_array);
+        }
+        of_p.close();
+        while (!of_n.eof()) {
+            std::array<float, 3> x_array;
+            for (int ii = 0; ii < 3; ii++) {
+                float temp = 0.;
+                of_n.read(reinterpret_cast<char*>(&temp), sizeof(float));
+                x_array[ii] = temp;
+            }
+            neutron_valence_quark_x_.push_back(x_array);
+        }
+        of_n.close();
+        size = std::min(proton_valence_quark_x_.size(),
+                        neutron_valence_quark_x_.size());
+    } else {
+        // for dipole
+        of_dipole_name << "tables/dipole_valence_quark_samples.dat";
+        std::ifstream of_dipole_test(of_dipole_name.str().c_str(),
+                                     std::ios::binary);
+        if (!of_dipole_test.good()) {
+            std::cout << "Generating files " << of_dipole_name.str()
+                      << std::endl;
+            std::stringstream command;
+            command << "./Metropolis_for_dipole.e ";
+            system_status_ = std::system(command.str().c_str());
+        } else {
+            of_dipole_test.close();
+        }
+        std::ifstream of_dipole(of_dipole_name.str().c_str(),
+                                std::ios::binary);
+        if (!of_dipole.good()) {
+            std::cout << "Can not generate " << of_dipole_name.str()
+                      << std::endl;
+            std::cout << "Please check, exiting ... " << std::endl;
+            exit(1);
+        }
+        while (!of_dipole.eof()) {
+            std::array<float, 2> x_array;
+            for (int ii = 0; ii < 2; ii++) {
+                float temp = 0.;
+                of_dipole.read(reinterpret_cast<char*>(&temp), sizeof(float));
+                x_array[ii] = temp;
+            }
+            dipole_valence_quark_x_.push_back(x_array);
+        }
+        of_dipole.close();
+        size =dipole_valence_quark_x_.size();
     }
     return(size);
 }
@@ -525,6 +503,7 @@ void Nucleus::generate_triton_configuration() {
     std::shared_ptr<Nucleon> nucleon3_ptr(new Nucleon(x_3, p_3));
     nucleon_list_.push_back(std::move(nucleon3_ptr));
 }
+
 
 void Nucleus::readin_nucleon_positions() {
     std::cout << "read in nucleon positions for Nucleus: " << name << "  "
@@ -789,9 +768,10 @@ void Nucleus::accelerate_nucleus(real ecm, int direction) {
     lorentz_contraction(cosh(beam_rapidity));
 }
 
+
 void Nucleus::accelerate_dipole(real ecm, int direction) {
-    assert(ecm > 2.*PhysConsts::MProton);
-    real beam_rapidity = direction*acosh(ecm/(2.*PhysConsts::MProton));
+    assert(ecm > 2.*PhysConsts::MDipole);
+    real beam_rapidity = direction*acosh(ecm/(2.*PhysConsts::MDipole));
     set_dipole_momentum_with_collision_energy(beam_rapidity);
     lorentz_contraction(cosh(beam_rapidity));
 }
@@ -822,7 +802,8 @@ void Nucleus::set_nucleons_momentum_with_collision_energy(real beam_rapidity) {
     }
 }
 
-void Nucleus::set_dipole_momentum_with_collision_energy(real beam_rapidity) {//????
+
+void Nucleus::set_dipole_momentum_with_collision_energy(real beam_rapidity) {
     MomentumVec p = {PhysConsts::MDipole*cosh(beam_rapidity),
                      0.0,
                      0.0,
@@ -953,10 +934,10 @@ void Nucleus::sample_quark_momentum_fraction(std::vector<real> &xQuark,
     } while (total_energy > E_proton);
 }
 
-void Nucleus::sample_quark_momentum_fraction_in_dipole(std::vector<real> &xQuark,
-                                             const int number_of_quarks,
-                                             const int electric_charge,
-                                             const real ecm) const {
+
+void Nucleus::sample_quark_momentum_fraction_in_dipole(
+        std::vector<real> &xQuark, const int number_of_quarks,
+        const real ecm) const {
     if (!sample_valence_quarks) {
         for (int i = 0; i < number_of_quarks; i++) {
             xQuark.push_back(1./number_of_quarks);
@@ -965,27 +946,23 @@ void Nucleus::sample_quark_momentum_fraction_in_dipole(std::vector<real> &xQuark
     }
 
     const real mq = PhysConsts::MQuarkValence;
-    const real mp = PhysConsts::MProton;
     const real md = PhysConsts::MDipole;
-    const real ybeam = acosh(ecm/(2.*mp));
     const real ydipole= acosh(ecm/(2.*md));
+    real E_dipole = md*cosh(ydipole);
     real total_energy = 0.;
-    real E_dipole = md*cosh(ydipole);//????
     do {
         auto sample_idx = static_cast<int>(
             ran_gen_ptr->rand_uniform()*number_of_valence_quark_samples_);
         xQuark.clear();
-       //
-            for (int i = 0; i < number_of_quarks; i++)
-                xQuark.push_back(dipole_valence_quark_x_[sample_idx][i]);
-        
+        for (int i = 0; i < number_of_quarks; i++)
+            xQuark.push_back(dipole_valence_quark_x_[sample_idx][i]);
         total_energy = 0.;
         for (int i = 0; i < number_of_quarks; i++) {
-            real rap_local = asinh(xQuark[i]*md/mq*sinh(ybeam));
+            real rap_local = asinh(xQuark[i]*md/mq*sinh(ydipole));
             real E_local = mq*cosh(rap_local);
             total_energy += E_local;
         }
-    } while (total_energy > E_dipole);//????
+    } while (total_energy > E_dipole);
 }
 
 

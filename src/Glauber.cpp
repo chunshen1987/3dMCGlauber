@@ -75,20 +75,18 @@ Glauber::Glauber(const MCGlb::Parameters &param_in,
 void Glauber::make_nuclei() {
     projectile->generate_nucleus_3d_configuration();
     target->generate_nucleus_3d_configuration();
-    int Nucleus_projectile=projectile->get_nucleus_A();
-    if(Nucleus_projectile>0){
+    int Nucleus_projectile = projectile->get_nucleus_A();
+    if (Nucleus_projectile > 0) {
         projectile->accelerate_nucleus(parameter_list.get_roots(), 1);
-    }else{
+    } else {
         projectile->accelerate_dipole(parameter_list.get_roots(), 1);
     }
-    int Nucleus_target=target->get_nucleus_A();
-    if(Nucleus_target>0){
+    int Nucleus_target = target->get_nucleus_A();
+    if (Nucleus_target > 0) j{
          target->accelerate_nucleus(parameter_list.get_roots(), -1);
-    }else{
+    } else {
          target->accelerate_dipole(parameter_list.get_roots(), -1);
     }
-    
-   
 
     // sample impact parameters
     auto b_max = parameter_list.get_b_max();
@@ -247,20 +245,20 @@ int Glauber::decide_produce_string_num(
 
 int Glauber::decide_QCD_strings_production() {
     if (sample_valence_quark) {
-        int Nucleus_projectile=projectile->get_nucleus_A();
-        if(Nucleus_projectile>0){
-                projectile->sample_valence_quarks_inside_nucleons(
+        int Nucleus_projectile = projectile->get_nucleus_A();
+        if (Nucleus_projectile > 0) {
+            projectile->sample_valence_quarks_inside_nucleons(
                                     parameter_list.get_roots(), 1);
-        }else{
-                projectile->sample_valence_quarks_inside_dipole(
+        } else {
+            projectile->sample_valence_quarks_inside_dipole(
                                     parameter_list.get_roots(), 1);
         }
         int Nucleus_target=target->get_nucleus_A();
-        if(Nucleus_target>0){
-                target->sample_valence_quarks_inside_nucleons(
+        if (Nucleus_target>0) {
+            target->sample_valence_quarks_inside_nucleons(
                                     parameter_list.get_roots(), -1);
-        }else{
-                target->sample_valence_quarks_inside_dipole(
+        } else {
+            target->sample_valence_quarks_inside_dipole(
                                     parameter_list.get_roots(), -1);
         }
         projectile->add_soft_parton_ball(parameter_list.get_roots(), 1);

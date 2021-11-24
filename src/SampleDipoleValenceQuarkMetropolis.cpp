@@ -27,10 +27,12 @@ typedef struct{
     double score;
 } Triplet;
 
+
 typedef struct{
     array<double, two_quarks> Xarr2;
     double score;
 } Double_let;
+
 
 double sample_a_u_quark_momentum_fraction(
         const bool flag_NPDF, const shared_ptr<LHAPDF::PDF> pdf,
@@ -86,7 +88,7 @@ double sample_a_d_quark_momentum_fraction(
 // sample a (anti-)quark's momentum fraction of the meson or dipole
 double sample_a_quark_momentum_fraction_in_diople(
          double CDF[], int size,const shared_ptr<Random> ran_gen_ptr,double dx) {
-    double x;       
+    double x;
     int ndivided=20; 
     int index1=size/ndivided;
     int startid;
@@ -107,7 +109,7 @@ double sample_a_quark_momentum_fraction_in_diople(
           if(simble2==1)break;
       }
     }
-    
+
     for (int i = startid; i < index1+startid; i++) {
         if(tmp<CDF[i+1]){
            x=i*1.0*dx+dx/2.0;
@@ -248,15 +250,13 @@ int main(int argc, char* argv[]) {
         }else{
             CDF[index]=dipole_px+CDF[index-1];
         }
-        
         loopx=loopx+dx;
         index++;
     }
     for(int i=0;i<index;i++){
         CDF[i]=CDF[i]/CDF[index-1];
-        //std::cout<<" "<<i<<" "<<CDF[i]<<std::endl;
     }
-    
+
     // define nuclear pdf
     bool flag_NPDF = false;
     if (A == 197 || A == 208) flag_NPDF = true;

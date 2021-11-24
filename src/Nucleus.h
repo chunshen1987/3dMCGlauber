@@ -41,7 +41,7 @@ class Nucleus {
     std::vector< std::array<float, 3> > proton_valence_quark_x_;
     std::vector< std::array<float, 3> > neutron_valence_quark_x_;
     std::vector< std::array<float, 2> > dipole_valence_quark_x_;
-    
+
     int system_status_;
     int number_of_valence_quark_samples_;
 
@@ -124,7 +124,6 @@ class Nucleus {
 
     void shift_nucleus(SpatialVec x_shift);
     void recenter_nucleus();
-    void recenter_nucleus_for_dipole();
     void rotate_nucleus(real phi, real theta);
 
     void accelerate_nucleus(real ecm, int direction);
@@ -147,11 +146,10 @@ class Nucleus {
                                         const int number_of_quarks,
                                         const int electric_charge,
                                         const real ecm) const;
-    void sample_quark_momentum_fraction_in_dipole(std::vector<real> &xQuark,
-                                        const int number_of_quarks,
-                                        const int electric_charge,
-                                        const real ecm) const;
-                                        
+    void sample_quark_momentum_fraction_in_dipole(
+            std::vector<real> &xQuark, const int number_of_quarks,
+            const real ecm) const;
+
     SpatialVec sample_valence_quark_position() const;
     real ExponentialDistribution(const real a, const real r) const;
 };

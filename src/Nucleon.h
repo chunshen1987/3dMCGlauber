@@ -41,7 +41,7 @@ class Nucleon : public Particle {
 
     void set_baryon_number(int baryon_number) {baryon_number_ = baryon_number;}
     int get_baryon_number() const {return(baryon_number_);}
-    
+
     void set_electric_charge(int charge) {electric_charge_ = charge;}
     int get_electric_charge() const {return(electric_charge_);}
 
