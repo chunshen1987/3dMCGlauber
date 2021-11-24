@@ -16,10 +16,10 @@ using std::array;
 
 const int number_of_quarks = 3;
 const int two_quarks = 2;
-const int number_of_samples = 1000000;
+const int number_of_samples = 100000;
 const double acc_violation_fraction = 5e-4;
 const double allow_violation_fraction = 0;
-const long int ntol = 50000000;
+const long int ntol = 5000000;
 const double EPS = 1e-15;
 
 typedef struct{
@@ -27,12 +27,10 @@ typedef struct{
     double score;
 } Triplet;
 
-
 typedef struct{
     array<double, two_quarks> Xarr2;
     double score;
 } Double_let;
-
 
 double sample_a_u_quark_momentum_fraction(
         const bool flag_NPDF, const shared_ptr<LHAPDF::PDF> pdf,
@@ -88,7 +86,7 @@ double sample_a_d_quark_momentum_fraction(
 // sample a (anti-)quark's momentum fraction of the meson or dipole
 double sample_a_quark_momentum_fraction_in_diople(
          double CDF[], int size,const shared_ptr<Random> ran_gen_ptr,double dx) {
-    double x;
+    double x;       
     int ndivided=20; 
     int index1=size/ndivided;
     int startid;
@@ -109,7 +107,7 @@ double sample_a_quark_momentum_fraction_in_diople(
           if(simble2==1)break;
       }
     }
-
+    
     for (int i = startid; i < index1+startid; i++) {
         if(tmp<CDF[i+1]){
            x=i*1.0*dx+dx/2.0;
@@ -237,8 +235,8 @@ int main(int argc, char* argv[]) {
     }
     // the quark's PDF in the dipole, p(x)=x^alpha(1-x)^beta
     double dx=0.002;
-    int length=1/dx;
-    double CDF[length+100]={0.0};
+    int lenght=1/dx;
+    double CDF[lenght+100]={0.0};
     double alpha=2.0;
     double beta=2.0;
     double loopx=0.0;
@@ -250,13 +248,15 @@ int main(int argc, char* argv[]) {
         }else{
             CDF[index]=dipole_px+CDF[index-1];
         }
+        
         loopx=loopx+dx;
         index++;
     }
     for(int i=0;i<index;i++){
         CDF[i]=CDF[i]/CDF[index-1];
+        //std::cout<<" "<<i<<" "<<CDF[i]<<std::endl;
     }
-
+    
     // define nuclear pdf
     bool flag_NPDF = false;
     if (A == 197 || A == 208) flag_NPDF = true;
@@ -292,13 +292,13 @@ int main(int argc, char* argv[]) {
     long long int iter = 0;
     long int itol = 0;
     while (dipole_nviolations > 0 && itol < ntol) {
-        /*
+        
         if (iter % 1000000 == 0) {
             std::cout << "dipole iter = " << iter << ": nviolations = "
                       << dipole_nviolations
                       << ", <sum_x> = " << dipole_total_score << std::endl;
         }
-        */
+        
         double delta_p;
         int delta_violation_p;
 
@@ -321,11 +321,11 @@ int main(int argc, char* argv[]) {
 
         iter++;
     }
-    /*
+    
     std::cout << "dipole iter = " << iter << ": nviolations = "
               << dipole_nviolations
               << ", <sum_x> = " << dipole_total_score << std::endl;
-    */
+    
     // output to file in binary
     std::stringstream of_p_name;
     of_p_name << "tables/dipole_valence_quark_samples";
@@ -343,7 +343,6 @@ int main(int argc, char* argv[]) {
             for (int i = 0; i < two_quarks; i++) {
                 float x_i = static_cast<float>(triplet_i.Xarr2[i]);
                 of_p.write((char*) &(x_i), sizeof(float));
-                std::cout<<x_i<<std::endl;
             }
         }
     }
