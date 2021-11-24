@@ -235,8 +235,8 @@ int main(int argc, char* argv[]) {
     }
     // the quark's PDF in the dipole, p(x)=x^alpha(1-x)^beta
     double dx=0.002;
-    int lenght=1/dx;
-    double CDF[lenght+100]={0.0};
+    int length=1/dx;
+    double CDF[length+100]={0.0};
     double alpha=2.0;
     double beta=2.0;
     double loopx=0.0;
