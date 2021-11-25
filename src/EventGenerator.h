@@ -25,14 +25,11 @@ class EventGenerator {
     EventGenerator(std::string input_filename, int seed=0);
     ~EventGenerator() {};
 
-    int get_eNpart() const;
     void generate_events(int nev, int event_id_offset=0);
-    void generate_pre_events(int nev, int event_id_offset=0);
+    void generate_pre_events(int nev=1);
     bool event_of_interest_trigger(int Npart, int Ncoll, int Nstrings);
     
-    //// 
     std::vector<CollisionEvent> get_CollisionEventvector();
-    ////
     
 };
 
