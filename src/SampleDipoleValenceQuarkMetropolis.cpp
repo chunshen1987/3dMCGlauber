@@ -6,10 +6,12 @@
 #include <array>
 #include <iostream>
 #include <sstream>
+#include <cmath>
+#include <iomanip>
 #include "eps09.h"
 #include "Random.h"
 #include "LHAPDF/LHAPDF.h"
-
+#include <boost/math/special_functions/beta.hpp>
 using RandomUtil::Random;
 using std::shared_ptr;
 using std::array;
@@ -17,7 +19,7 @@ using std::array;
 const int number_of_quarks = 3;
 const int two_quarks = 2;
 const int number_of_samples = 100000;
-const double acc_violation_fraction = 5e-4;
+const double acc_violation_fraction = 1e-2;
 const double allow_violation_fraction = 0;
 const long int ntol = 5000000;
 const double EPS = 1e-15;
@@ -32,93 +34,23 @@ typedef struct{
     double score;
 } Double_let;
 
-double sample_a_u_quark_momentum_fraction(
-        const bool flag_NPDF, const shared_ptr<LHAPDF::PDF> pdf,
-        const shared_ptr<Random> ran_gen_ptr, const double A) {
-    double x;
-    double xfu, xfubar, tmp, correction;
-    double ruv = 1.;
-    double rdv = 1.;
-    const double Q2 = 1.;
-    do {
-        x = ran_gen_ptr->rand_uniform();
-        if (flag_NPDF) {
-            double ru, rd, rs, rc, rb, rg;
-            eps09(2, 1, A, x, sqrt(Q2), ruv, rdv, ru, rd, rs,
-                  rc, rb, rg);
+
+int binary_search(const double inputarray[], int start, int end, double key) {
+    int ret = -1;
+    int mid;
+    while (start <= end) {
+        mid = start + (end - start) / 2;
+        if (inputarray[mid] <=key && inputarray[mid+1] >= key) {
+            ret = mid;
+            break;
+        } else {
+            if (inputarray[mid] < key)
+                start = mid + 1;
+            else if (inputarray[mid] > key)
+                end = mid - 1;
         }
-
-        xfubar     = pdf->xfxQ2(-2, x, Q2);
-        xfu        = pdf->xfxQ2( 2, x, Q2);
-        tmp        = ran_gen_ptr->rand_uniform();
-        correction = 1.0;
-    } while (tmp > ((xfu - xfubar)*ruv*correction));
-    return(x);
-}
-
-
-double sample_a_d_quark_momentum_fraction(
-        const bool flag_NPDF, const shared_ptr<LHAPDF::PDF> pdf,
-        const shared_ptr<Random> ran_gen_ptr, const double A) {
-    double x;
-    double xfd, xfdbar, tmp, correction;
-    double ruv = 1.;
-    double rdv = 1.;
-    const double Q2 = 1.;
-    do {
-        x = ran_gen_ptr->rand_uniform();
-        if (flag_NPDF) {
-            double ru, rd, rs, rc, rb, rg;
-            eps09(2, 1, A, x, sqrt(Q2), ruv, rdv, ru, rd, rs,
-                  rc, rb, rg);
-        }
-        // ruv seems to be always equal to rdv,
-        // so I am fine not distinguishing proton and neutron here
-
-        xfdbar     = pdf->xfxQ2(-1, x, Q2);
-        xfd        = pdf->xfxQ2( 1, x, Q2);
-        tmp        = ran_gen_ptr->rand_uniform();
-        correction = 1.0;
-    } while (tmp > ((xfd - xfdbar)*rdv*correction));
-    return(x);
-}
-
-// sample a (anti-)quark's momentum fraction of the meson or dipole
-double sample_a_quark_momentum_fraction_in_diople(
-         double CDF[], int size,const shared_ptr<Random> ran_gen_ptr,double dx) {
-    double x;       
-    int ndivided=10; 
-    int index1=size/ndivided;
-    int startid;
-    int simble=0;
-    int simble2=0;
-    double tmp = ran_gen_ptr->rand_uniform();
-    if(tmp<=CDF[index1]){
-      startid=index1*0;
-      simble2=1;
-    }else{
-    if(tmp>CDF[index1*ndivided-index1]){
-      startid=index1*ndivided-index1;
-      simble2=1;
     }
-    }
-    if(simble2==0){
-      for (int k=1;k<ndivided-1;k++){
-          if(tmp>CDF[index1*k] && tmp<=CDF[index1*k+index1]){startid=index1*k;simble2=1;}
-          if(simble2==1)break;
-      }
-    }
-    
-    for (int i = startid; i < index1+startid; i++) {
-        if(tmp<CDF[i+1]){
-           x=i*1.0*dx+dx/2.0;
-           simble=1;
-        }
-        if(simble==1)break;
-    }
-    //if(simble==0)x=0.999;
-    //std::cout<<"priliminary x "<<x<<" "<<simble<<std::endl;
-    return (x);
+    return ret;
 }
 
 
@@ -134,7 +66,8 @@ void compute_score(Double_let &triplet_i) {
 }
 
 
-void swap_two_quarks(Double_let &triplet_1, Double_let &triplet_2, const int q_id) {
+void swap_two_quarks(Double_let &triplet_1, Double_let &triplet_2,
+                     const int q_id) {
     double swap = triplet_1.Xarr2[q_id];
     triplet_1.Xarr2[q_id] = triplet_2.Xarr2[q_id];
     triplet_2.Xarr2[q_id] = swap;
@@ -147,7 +80,8 @@ void swap_two_quarks(Double_let &triplet_1, Double_let &triplet_2, const int q_i
 
 void one_metropolis_step(
     shared_ptr<Random> ran_int_gen_1, shared_ptr<Random> ran_int_gen_2,
-    array<Double_let, number_of_samples> &quark_samples, int flag_force_violation,
+    array<Double_let, number_of_samples> &quark_samples,
+    int flag_force_violation,
     double &delta_score, int &delta_violations) {
 
     int sample1 = ran_int_gen_1->rand_int_uniform();
@@ -224,46 +158,42 @@ int number_of_violations(
 
 
 int main(int argc, char* argv[]) {
-    // create LHA pdf object
-    const std::string setname = "CT10nnlo";
-    const int imem = 0;
-    shared_ptr<LHAPDF::PDF> pdf;
-    pdf = shared_ptr<LHAPDF::PDF>(LHAPDF::mkPDF(setname, imem));
-
-    int A = 1;          // proton
-    if (argc > 1) {
-        A = std::stoi(*(argv + 1));
-    }
+    // Please use std::beta function for CDF !!!
     // the quark's PDF in the dipole, p(x)=x^alpha(1-x)^beta
-    double dx=0.01;
+    double dx=0.0001;
     int lenght=1/dx;
     double CDF[lenght+100]={0.0};
-    double alpha=2.0;
-    double beta=2.0;
+    double inverseCDF[lenght+100];
+    double Alpha=2.0;
+    double Beta=2.0;
     double loopx=0.0;
     int index=0;
+
     while(loopx<1.0){
-        double dipole_px=pow(loopx,alpha)*pow(1-loopx,beta)*dx;
+        double fbeta=pow(loopx,Alpha)*pow(1.0-loopx,Beta);
         if(index==0){
-            CDF[index]=dipole_px;
+            CDF[index]=0.0;
         }else{
-            CDF[index]=dipole_px+CDF[index-1];
+            CDF[index]=fbeta+CDF[index-1];
         }
-        
         loopx=loopx+dx;
         index++;
     }
+
     for(int i=0;i<index;i++){
         CDF[i]=CDF[i]/CDF[index-1];
-        //std::cout<<" "<<i<<" "<<index-1<<" "<<CDF[i]<<std::endl;
     }
-    // define nuclear pdf
-    bool flag_NPDF = false;
-    if (A == 197 || A == 208) flag_NPDF = true;
+    // get the inverse CDF array
+    inverseCDF[0]=0.0;
+    for(int j=1;j<index-1;j++){
+        double sampleprab=j*1.0*dx;
+        int cdfindex=binary_search(CDF,0,index-1,sampleprab);
+        inverseCDF[j]=cdfindex*dx;
+    }
+    inverseCDF[index-1]=1.0;
 
     // create quark sample lists for protons and neutrons
     array<Double_let, number_of_samples> dipole_quark_samples;
-    //array<Triplet, number_of_samples> neutron_quark_samples;
 
     // create random number generator
     int ran_seed = -1;
@@ -278,8 +208,11 @@ int main(int argc, char* argv[]) {
     for (int i = 0; i < number_of_samples; i++) {
         array<double, two_quarks> d_x;
         for (int iq = 0; iq < two_quarks; iq++) {
-            d_x[iq] = sample_a_quark_momentum_fraction_in_diople(CDF, index,
-                                                         ran_gen_ptr, dx);
+            double tmp = ran_gen_ptr->rand_uniform();
+            int xindex = static_cast<int>(tmp/dx);
+            d_x[iq] = (inverseCDF[xindex]
+                       + (tmp/dx - xindex*1.0)*
+                         (inverseCDF[xindex+1] - inverseCDF[xindex]));
         }
         dipole_quark_samples[i].Xarr2[0] = d_x[0];
         dipole_quark_samples[i].Xarr2[1] = d_x[1];
@@ -292,13 +225,11 @@ int main(int argc, char* argv[]) {
     long long int iter = 0;
     long int itol = 0;
     while (dipole_nviolations > 0 && itol < ntol) {
-        /*
         if (iter % 1000000 == 0) {
             std::cout << "dipole iter = " << iter << ": nviolations = "
                       << dipole_nviolations
                       << ", <sum_x> = " << dipole_total_score << std::endl;
         }
-        */
         double delta_p;
         int delta_violation_p;
 
@@ -321,21 +252,12 @@ int main(int argc, char* argv[]) {
 
         iter++;
     }
-    /*
     std::cout << "dipole iter = " << iter << ": nviolations = "
               << dipole_nviolations
               << ", <sum_x> = " << dipole_total_score << std::endl;
-    */
     // output to file in binary
     std::stringstream of_p_name;
-    of_p_name << "tables/dipole_valence_quark_samples";
-    if (A == 197) {
-        of_p_name << "_NPDFAu.dat";
-    } else if (A == 208) {
-        of_p_name << "_NPDFPb.dat";
-    } else {
-        of_p_name << ".dat";
-    }
+    of_p_name << "tables/dipole_valence_quark_samples.dat";
     std::ofstream of_p(of_p_name.str().c_str(),
                        std::ios::out | std::ios::binary | std::ofstream::app);
     for (const auto triplet_i: dipole_quark_samples) {

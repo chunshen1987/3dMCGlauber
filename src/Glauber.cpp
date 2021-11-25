@@ -82,7 +82,7 @@ void Glauber::make_nuclei() {
         projectile->accelerate_dipole(parameter_list.get_roots(), 1);
     }
     int Nucleus_target = target->get_nucleus_A();
-    if (Nucleus_target > 0) j{
+    if (Nucleus_target > 0) {
          target->accelerate_nucleus(parameter_list.get_roots(), -1);
     } else {
          target->accelerate_dipole(parameter_list.get_roots(), -1);
