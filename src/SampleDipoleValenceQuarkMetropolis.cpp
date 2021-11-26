@@ -6,82 +6,69 @@
 #include <array>
 #include <iostream>
 #include <sstream>
-#include <cmath>
-#include <iomanip>
 #include "eps09.h"
 #include "Random.h"
 #include "LHAPDF/LHAPDF.h"
-#include <boost/math/special_functions/beta.hpp>
 using RandomUtil::Random;
 using std::shared_ptr;
 using std::array;
 
-const int number_of_quarks = 3;
 const int two_quarks = 2;
 const int number_of_samples = 100000;
-const double acc_violation_fraction = 1e-2;
+const double acc_violation_fraction = 5e-4;
 const double allow_violation_fraction = 0;
 const long int ntol = 5000000;
 const double EPS = 1e-15;
-
-typedef struct{
-    array<double, number_of_quarks> Xarr;
-    double score;
-} Triplet;
 
 typedef struct{
     array<double, two_quarks> Xarr2;
     double score;
 } Double_let;
 
-
 int binary_search(const double inputarray[], int start, int end, double key) {
-    int ret = -1;
+    int ret = -1;     
     int mid;
     while (start <= end) {
-        mid = start + (end - start) / 2;
-        if (inputarray[mid] <=key && inputarray[mid+1] >= key) {
-            ret = mid;
-            break;
-        } else {
-            if (inputarray[mid] < key)
-                start = mid + 1;
-            else if (inputarray[mid] > key)
-                end = mid - 1;
+        mid = start + (end - start) / 2; 
+        if(inputarray[mid] <=key && inputarray[mid+1] >= key){
+        ret = mid;  
+        break;
+        }else {
+            if (inputarray[mid] < key)start = mid + 1;
+            else if(inputarray[mid] > key)
+                   end = mid - 1;
         }
-    }
-    return ret;
+	}
+	return ret;    
 }
 
 
-void compute_score(Double_let &triplet_i) {
+void compute_score(Double_let &doublet_i) {
     double sum = 0.;
     for (int iq = 0; iq < two_quarks; iq++) {
-        sum += triplet_i.Xarr2[iq];
+        sum += doublet_i.Xarr2[iq];
     }
     if (sum > 1.)
-        triplet_i.score = 0.;
+        doublet_i.score = 0.;
     else
-        triplet_i.score = sum;
+        doublet_i.score = sum;
 }
 
 
-void swap_two_quarks(Double_let &triplet_1, Double_let &triplet_2,
-                     const int q_id) {
-    double swap = triplet_1.Xarr2[q_id];
-    triplet_1.Xarr2[q_id] = triplet_2.Xarr2[q_id];
-    triplet_2.Xarr2[q_id] = swap;
+void swap_two_quarks(Double_let &doublet_1, Double_let &doublet_2, const int q_id) {
+    double swap = doublet_1.Xarr2[q_id];
+    doublet_1.Xarr2[q_id] = doublet_2.Xarr2[q_id];
+    doublet_2.Xarr2[q_id] = swap;
 
     // recompute the scores
-    compute_score(triplet_1);
-    compute_score(triplet_2);
+    compute_score(doublet_1);
+    compute_score(doublet_2);
 }
 
 
 void one_metropolis_step(
     shared_ptr<Random> ran_int_gen_1, shared_ptr<Random> ran_int_gen_2,
-    array<Double_let, number_of_samples> &quark_samples,
-    int flag_force_violation,
+    array<Double_let, number_of_samples> &quark_samples, int flag_force_violation,
     double &delta_score, int &delta_violations) {
 
     int sample1 = ran_int_gen_1->rand_int_uniform();
@@ -137,8 +124,8 @@ void one_metropolis_step(
 double compute_total_score(
         const array<Double_let, number_of_samples> &quark_samples) {
     double sum = 0.;
-    for (const auto &triplet_i : quark_samples) {
-        sum += triplet_i.score;
+    for (const auto &doublet_i : quark_samples) {
+        sum += doublet_i.score;
     }
     sum /= quark_samples.size();
     return(sum);
@@ -148,8 +135,8 @@ double compute_total_score(
 int number_of_violations(
         const array<Double_let, number_of_samples> &quark_samples) {
     int n_voilations = 0;
-    for (const auto &triplet_i : quark_samples) {
-        if (triplet_i.score < EPS) {
+    for (const auto &doublet_i : quark_samples) {
+        if (doublet_i.score < EPS) {
             n_voilations++;
         }
     }
@@ -158,12 +145,17 @@ int number_of_violations(
 
 
 int main(int argc, char* argv[]) {
-    // Please use std::beta function for CDF !!!
+    // create LHA pdf object
+    const std::string setname = "CT10nnlo";
+    const int imem = 0;
+    shared_ptr<LHAPDF::PDF> pdf;
+    pdf = shared_ptr<LHAPDF::PDF>(LHAPDF::mkPDF(setname, imem));
+
     // the quark's PDF in the dipole, p(x)=x^alpha(1-x)^beta
-    double dx=0.0001;
+    double dx=0.001;
     int lenght=1/dx;
-    double CDF[lenght+100]={0.0};
-    double inverseCDF[lenght+100];
+    double CDF[lenght]={0.0};
+    double inverseCDF[lenght];
     double Alpha=2.0;
     double Beta=2.0;
     double loopx=0.0;
@@ -179,21 +171,20 @@ int main(int argc, char* argv[]) {
         loopx=loopx+dx;
         index++;
     }
-
+    
     for(int i=0;i<index;i++){
         CDF[i]=CDF[i]/CDF[index-1];
     }
     // get the inverse CDF array
-    inverseCDF[0]=0.0;
-    for(int j=1;j<index-1;j++){
+    for(int j=0;j<index;j++){
         double sampleprab=j*1.0*dx;
         int cdfindex=binary_search(CDF,0,index-1,sampleprab);
         inverseCDF[j]=cdfindex*dx;
     }
-    inverseCDF[index-1]=1.0;
-
+    
     // create quark sample lists for protons and neutrons
     array<Double_let, number_of_samples> dipole_quark_samples;
+    //array<Triplet, number_of_samples> neutron_quark_samples;
 
     // create random number generator
     int ran_seed = -1;
@@ -209,13 +200,13 @@ int main(int argc, char* argv[]) {
         array<double, two_quarks> d_x;
         for (int iq = 0; iq < two_quarks; iq++) {
             double tmp = ran_gen_ptr->rand_uniform();
-            int xindex = static_cast<int>(tmp/dx);
-            d_x[iq] = (inverseCDF[xindex]
-                       + (tmp/dx - xindex*1.0)*
-                         (inverseCDF[xindex+1] - inverseCDF[xindex]));
+            int xindex=tmp/dx;
+            d_x[iq]=inverseCDF[xindex]+(tmp/dx-xindex*1.0)*
+                    (inverseCDF[xindex+1]-inverseCDF[xindex]);
         }
         dipole_quark_samples[i].Xarr2[0] = d_x[0];
         dipole_quark_samples[i].Xarr2[1] = d_x[1];
+        //std::cout<<d_x[0]<<" "<<d_x[1]<<std::endl;// the preliminary x
         compute_score(dipole_quark_samples[i]);
     }
 
@@ -260,12 +251,11 @@ int main(int argc, char* argv[]) {
     of_p_name << "tables/dipole_valence_quark_samples.dat";
     std::ofstream of_p(of_p_name.str().c_str(),
                        std::ios::out | std::ios::binary | std::ofstream::app);
-    for (const auto triplet_i: dipole_quark_samples) {
-        if (triplet_i.score < 1.) {
+    for (const auto doublet_i: dipole_quark_samples) {
+        if (doublet_i.score < 1.) {
             for (int i = 0; i < two_quarks; i++) {
-                float x_i = static_cast<float>(triplet_i.Xarr2[i]);
+                float x_i = static_cast<float>(doublet_i.Xarr2[i]);
                 of_p.write((char*) &(x_i), sizeof(float));
-                std::cout<<x_i<<std::endl;
             }
         }
     }
