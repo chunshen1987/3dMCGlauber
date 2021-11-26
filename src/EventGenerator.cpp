@@ -8,6 +8,9 @@
 
 namespace MCGlb {
 
+std::vector<CollisionEvent> EventGenerator::get_CollisionEventvector() {
+    return mc_glauber_ptr_->get_collision_information();
+}
 
 EventGenerator::EventGenerator(std::string input_filename, int seed) {
     parameter_list_.read_in_parameters_from_file(input_filename);
@@ -23,6 +26,31 @@ EventGenerator::EventGenerator(std::string input_filename, int seed) {
     statistics_only_ = parameter_list_.get_only_event_statistics();
 }
 
+/* get the collisions information for the JETSCAPE framework*/
+void EventGenerator::generate_pre_events(int nev, int event_id_offset) {
+    messager << "Random seed = " << ran_gen_ptr_->get_seed();
+    messager.flush("info");
+    messager << "Generating " << nev << " events ... ";
+    messager.flush("info");
+    // this file records all the essential information for the generated events
+    std::ofstream record_file("events_summary.dat", std::ios::out);
+    record_file << "# event_id  Npart  Ncoll  Nstrings  b(fm)" << std::endl;
+
+    int iev = 0;
+    int icollisions = 0;
+    int nev_progress = std::max(1, nev/10);
+    int mean_Npart = 0;
+    while (iev < nev) {
+        mc_glauber_ptr_->make_nuclei();
+        auto Ncoll = mc_glauber_ptr_->make_collision_schedule();
+        auto Npart = mc_glauber_ptr_->get_Npart();
+        auto Nstrings = mc_glauber_ptr_->decide_QCD_strings_production();
+        if (event_of_interest_trigger(Npart, Ncoll, Nstrings))  {
+            iev++;
+        }
+        icollisions++;
+    }
+}
 
 void EventGenerator::generate_events(int nev, int event_id_offset) {
     messager << "Random seed = " << ran_gen_ptr_->get_seed();
@@ -80,6 +108,7 @@ void EventGenerator::generate_events(int nev, int event_id_offset) {
              << " b";
     messager.flush("info");
 }
+
 
 
 bool EventGenerator::event_of_interest_trigger(int Npart, int Ncoll,

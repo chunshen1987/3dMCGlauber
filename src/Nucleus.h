@@ -40,6 +40,7 @@ class Nucleus {
 
     std::vector< std::array<float, 3> > proton_valence_quark_x_;
     std::vector< std::array<float, 3> > neutron_valence_quark_x_;
+    std::vector< std::array<float, 2> > dipole_valence_quark_x_;
 
     int system_status_;
     int number_of_valence_quark_samples_;
@@ -126,14 +127,17 @@ class Nucleus {
     void rotate_nucleus(real phi, real theta);
 
     void accelerate_nucleus(real ecm, int direction);
+    void accelerate_dipole(real ecm, int direction);
     void lorentz_contraction(real gamma);
     void set_nucleons_momentum_with_collision_energy(real beam_rapidity);
+    void set_dipole_momentum_with_collision_energy(real beam_rapidity);
     real get_z_min() const;
     real get_z_max() const;
 
     void output_nucleon_positions(std::string filename) const;
 
     void sample_valence_quarks_inside_nucleons(real ecm, int direction);
+    void sample_valence_quarks_inside_dipole(real ecm, int direction);
     void add_soft_parton_ball(real ecm, int direction);
 
     real sample_a_u_quark_momentum_fraction(const bool flag_NPDF) const;
@@ -142,6 +146,10 @@ class Nucleus {
                                         const int number_of_quarks,
                                         const int electric_charge,
                                         const real ecm) const;
+    void sample_quark_momentum_fraction_in_dipole(
+            std::vector<real> &xQuark, const int number_of_quarks,
+            const real ecm) const;
+
     SpatialVec sample_valence_quark_position() const;
     real ExponentialDistribution(const real a, const real r) const;
 };

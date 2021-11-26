@@ -24,8 +24,10 @@ class Glauber {
     std::unique_ptr<Nucleus> projectile;
     std::unique_ptr<Nucleus> target;
     std::set<shared_ptr<CollisionEvent>, compare_collision_time> collision_schedule;
+    
     std::vector<QCDString> QCD_string_list;
     std::vector<QCDString> remnant_string_list_;
+    std::vector<CollisionEvent> collision_schedule_list_;
     std::shared_ptr<RandomUtil::Random> ran_gen_ptr_;
     bool sample_valence_quark;
     bool fluct_Nstrings_per_NN_collision_;
@@ -48,15 +50,19 @@ class Glauber {
     Glauber(const MCGlb::Parameters &param_in,
             shared_ptr<RandomUtil::Random> ran_gen);
     ~Glauber() {};
-
+    
+    std::vector<CollisionEvent> get_collision_information() {
+        return (collision_schedule_list_);
+    }
+    
     void make_nuclei();
     real get_impact_parameter() const {return(impact_b);}
 
-    int make_collision_schedule();
+    int make_collision_schedule();// get the number of binary collisions 
     bool hit(real d2) const;
 
     int get_Npart() const;
-
+    
     //! This function creates a new collision event between two nucleons
     void create_a_collision_event(shared_ptr<Nucleon> proj,
                                   shared_ptr<Nucleon> targ);
@@ -64,6 +70,7 @@ class Glauber {
                              real &t_coll, real &z_coll) const;
 
     real compute_NN_inelastic_cross_section(real ecm) const;
+
 
     //! this function decides which of those binary collisions will produce
     //! QCD strings
@@ -103,7 +110,7 @@ class Glauber {
     void output_QCD_strings(std::string filename, const real Npart,
                             const real Ncoll, const real Nstrings,
                             const real b);
-
+    
     real get_sig_eff(const real siginNN);
 };
 
