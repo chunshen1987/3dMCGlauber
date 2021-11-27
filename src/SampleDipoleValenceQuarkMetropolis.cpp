@@ -144,7 +144,7 @@ int number_of_violations(
 
 int main(int argc, char* argv[]) {
     // the quark's PDF in the dipole, p(x)=x^alpha(1-x)^beta
-    long double dx = 0.001;
+    double dx = 0.001;
     int lengh = 1 / dx;
     double Alpha = 2.0;
     double Beta = 2.0;
