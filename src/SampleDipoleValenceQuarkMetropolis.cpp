@@ -6,18 +6,17 @@
 #include <array>
 #include <iostream>
 #include <sstream>
-#include "eps09.h"
+#include <fstream> 
 #include "Random.h"
-#include "LHAPDF/LHAPDF.h"
 using RandomUtil::Random;
 using std::shared_ptr;
 using std::array;
 
 const int two_quarks = 2;
-const int number_of_samples = 100000;
-const double acc_violation_fraction = 5e-4;
-const double allow_violation_fraction = 0;
-const long int ntol = 5000000;
+const int number_of_samples = 200000;
+const double acc_violation_fraction = 2e-3;
+const double allow_violation_fraction = 0.0;
+const long int ntol = 10000000;
 const double EPS = 1e-15;
 
 typedef struct{
@@ -30,16 +29,15 @@ int binary_search(const double inputarray[], int start, int end, double key) {
     int mid;
     while (start <= end) {
         mid = start + (end - start) / 2; 
-        if(inputarray[mid] <=key && inputarray[mid+1] >= key){
-        ret = mid;  
-        break;
-        }else {
-            if (inputarray[mid] < key)start = mid + 1;
-            else if(inputarray[mid] > key)
-                   end = mid - 1;
+        if (inputarray[mid] <= key && inputarray[mid + 1] >= key){
+            ret = mid;  
+            break;
+        } else {
+            if (inputarray[mid] < key) start = mid + 1;
+            else end = mid - 1;
         }
-	}
-	return ret;    
+    }
+    return ret;    
 }
 
 
@@ -145,46 +143,43 @@ int number_of_violations(
 
 
 int main(int argc, char* argv[]) {
-    // create LHA pdf object
-    const std::string setname = "CT10nnlo";
-    const int imem = 0;
-    shared_ptr<LHAPDF::PDF> pdf;
-    pdf = shared_ptr<LHAPDF::PDF>(LHAPDF::mkPDF(setname, imem));
-
     // the quark's PDF in the dipole, p(x)=x^alpha(1-x)^beta
-    double dx=0.001;
-    int lenght=1/dx;
-    double CDF[lenght]={0.0};
-    double inverseCDF[lenght];
-    double Alpha=2.0;
-    double Beta=2.0;
-    double loopx=0.0;
-    int index=0;
+    long double dx = 0.001;
+    int lengh = 1 / dx;
+    double Alpha = 2.0;
+    double Beta = 2.0;
+    double loopx = 0.0;
+    int index = 0;
+    double CDF[lengh];
+    double InverseCDF[lengh];
 
-    while(loopx<1.0){
-        double fbeta=pow(loopx,Alpha)*pow(1.0-loopx,Beta);
-        if(index==0){
-            CDF[index]=0.0;
-        }else{
-            CDF[index]=fbeta+CDF[index-1];
+
+    while(loopx < 1.0){
+        double fbeta = pow(loopx, Alpha) * pow(1.0 - loopx, Beta);
+        if (index == 0){
+            CDF[index] = 0.0;
+        } else {
+            CDF[index] = fbeta + CDF[index - 1];
         }
-        loopx=loopx+dx;
-        index++;
+        loopx = loopx + dx;
+        index ++;
     }
     
-    for(int i=0;i<index;i++){
-        CDF[i]=CDF[i]/CDF[index-1];
+    for (int i = 0; i < index; i++){
+        CDF[i] = CDF[i] / CDF[index - 1];
     }
+    
     // get the inverse CDF array
-    for(int j=0;j<index;j++){
-        double sampleprab=j*1.0*dx;
-        int cdfindex=binary_search(CDF,0,index-1,sampleprab);
-        inverseCDF[j]=cdfindex*dx;
+    InverseCDF[0] = 0.0;
+    for (int j = 1; j < index - 1; j++){
+        double sampleprab = j * 1.0 * dx;
+        int cdfindex = binary_search(CDF, 0, index - 1, sampleprab);
+        InverseCDF[j] = cdfindex * dx;
     }
+    InverseCDF[index - 1] = 1.0;
     
     // create quark sample lists for protons and neutrons
     array<Double_let, number_of_samples> dipole_quark_samples;
-    //array<Triplet, number_of_samples> neutron_quark_samples;
 
     // create random number generator
     int ran_seed = -1;
@@ -195,21 +190,20 @@ int main(int argc, char* argv[]) {
                     new Random(ran_seed, 0, number_of_samples - 1));
     ran_int_gen_2 = shared_ptr<Random>(
                     new Random(ran_seed, 0, two_quarks - 1));
-
+                    
     for (int i = 0; i < number_of_samples; i++) {
-        array<double, two_quarks> d_x;
+        array<double, two_quarks> quark_x;
         for (int iq = 0; iq < two_quarks; iq++) {
             double tmp = ran_gen_ptr->rand_uniform();
-            int xindex=tmp/dx;
-            d_x[iq]=inverseCDF[xindex]+(tmp/dx-xindex*1.0)*
-                    (inverseCDF[xindex+1]-inverseCDF[xindex]);
+            int xindex = tmp / dx;
+            quark_x[iq] = InverseCDF[xindex] + (tmp / dx - xindex * 1.0) *
+                          (InverseCDF[xindex + 1] - InverseCDF[xindex]);
         }
-        dipole_quark_samples[i].Xarr2[0] = d_x[0];
-        dipole_quark_samples[i].Xarr2[1] = d_x[1];
-        //std::cout<<d_x[0]<<" "<<d_x[1]<<std::endl;// the preliminary x
+        dipole_quark_samples[i].Xarr2[0] = quark_x[0];
+        dipole_quark_samples[i].Xarr2[1] = quark_x[1];
         compute_score(dipole_quark_samples[i]);
     }
-
+    
     // begin Metropolis
     double dipole_total_score = compute_total_score(dipole_quark_samples);
     int dipole_nviolations = number_of_violations(dipole_quark_samples);
@@ -252,7 +246,7 @@ int main(int argc, char* argv[]) {
     std::ofstream of_p(of_p_name.str().c_str(),
                        std::ios::out | std::ios::binary | std::ofstream::app);
     for (const auto doublet_i: dipole_quark_samples) {
-        if (doublet_i.score < 1.) {
+        if (doublet_i.score > 0.) {
             for (int i = 0; i < two_quarks; i++) {
                 float x_i = static_cast<float>(doublet_i.Xarr2[i]);
                 of_p.write((char*) &(x_i), sizeof(float));
