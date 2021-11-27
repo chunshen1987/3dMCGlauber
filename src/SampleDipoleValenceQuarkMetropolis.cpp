@@ -6,7 +6,7 @@
 #include <array>
 #include <iostream>
 #include <sstream>
-#include <fstream> 
+#include <fstream>
 #include "Random.h"
 using RandomUtil::Random;
 using std::shared_ptr;
@@ -25,19 +25,19 @@ typedef struct{
 } Double_let;
 
 int binary_search(const double inputarray[], int start, int end, double key) {
-    int ret = -1;     
+    int ret = -1;
     int mid;
     while (start <= end) {
         mid = start + (end - start) / 2; 
-        if (inputarray[mid] <= key && inputarray[mid + 1] >= key){
-            ret = mid;  
+        if (inputarray[mid] <= key && inputarray[mid + 1] >= key) {
+            ret = mid;
             break;
         } else {
             if (inputarray[mid] < key) start = mid + 1;
             else end = mid - 1;
         }
     }
-    return ret;    
+    return ret;
 }
 
 
@@ -153,24 +153,24 @@ int main(int argc, char* argv[]) {
     double CDF[lengh];
     double InverseCDF[lengh];
 
-    while(loopx < 1.0){
+    while (loopx < 1.0) {
         double fbeta = pow(loopx, Alpha) * pow(1.0 - loopx, Beta);
-        if (index == 0){
+        if (index == 0) {
             CDF[index] = 0.0;
         } else {
-            CDF[index] = fbeta + CDF[index - 1];
+            CDF[index] = fbeta * dx + CDF[index - 1];
         }
         loopx = loopx + dx;
         index ++;
     }
-
-    for (int i = 0; i < index; i++){
-        CDF[i] = CDF[i] / CDF[index - 1];
+    
+    for (int i = 0; i < index; i++) {
+        CDF[i] = CDF[i] / std::beta(Alpha + 1.0, Beta + 1.0);
     }
 
     // get the inverse CDF array
     InverseCDF[0] = 0.0;
-    for (int j = 1; j < index - 1; j++){
+    for (int j = 1; j < index - 1; j++) {
         double sampleprab = j * 1.0 * dx;
         int cdfindex = binary_search(CDF, 0, index - 1, sampleprab);
         InverseCDF[j] = cdfindex * dx;
