@@ -153,7 +153,6 @@ int main(int argc, char* argv[]) {
     double CDF[lengh];
     double InverseCDF[lengh];
 
-
     while(loopx < 1.0){
         double fbeta = pow(loopx, Alpha) * pow(1.0 - loopx, Beta);
         if (index == 0){
@@ -164,11 +163,11 @@ int main(int argc, char* argv[]) {
         loopx = loopx + dx;
         index ++;
     }
-    
+
     for (int i = 0; i < index; i++){
         CDF[i] = CDF[i] / CDF[index - 1];
     }
-    
+
     // get the inverse CDF array
     InverseCDF[0] = 0.0;
     for (int j = 1; j < index - 1; j++){
@@ -177,7 +176,7 @@ int main(int argc, char* argv[]) {
         InverseCDF[j] = cdfindex * dx;
     }
     InverseCDF[index - 1] = 1.0;
-    
+
     // create quark sample lists for protons and neutrons
     array<Double_let, number_of_samples> dipole_quark_samples;
 
@@ -190,7 +189,7 @@ int main(int argc, char* argv[]) {
                     new Random(ran_seed, 0, number_of_samples - 1));
     ran_int_gen_2 = shared_ptr<Random>(
                     new Random(ran_seed, 0, two_quarks - 1));
-                    
+
     for (int i = 0; i < number_of_samples; i++) {
         array<double, two_quarks> quark_x;
         for (int iq = 0; iq < two_quarks; iq++) {
@@ -203,7 +202,7 @@ int main(int argc, char* argv[]) {
         dipole_quark_samples[i].Xarr2[1] = quark_x[1];
         compute_score(dipole_quark_samples[i]);
     }
-    
+
     // begin Metropolis
     double dipole_total_score = compute_total_score(dipole_quark_samples);
     int dipole_nviolations = number_of_violations(dipole_quark_samples);
@@ -237,6 +236,7 @@ int main(int argc, char* argv[]) {
 
         iter++;
     }
+
     std::cout << "dipole iter = " << iter << ": nviolations = "
               << dipole_nviolations
               << ", <sum_x> = " << dipole_total_score << std::endl;
