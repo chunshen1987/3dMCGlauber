@@ -144,7 +144,7 @@ int number_of_violations(
 
 int main(int argc, char* argv[]) {
     // the quark's PDF in the dipole, p(x)=x^alpha(1-x)^beta
-    double dx = 0.001;
+    double dx = 0.0001;
     int lengh = 1 / dx;
     double Alpha = 2.0;
     double Beta = 2.0;
@@ -170,7 +170,7 @@ int main(int argc, char* argv[]) {
 
     // get the inverse CDF array
     InverseCDF[0] = 0.0;
-    for (int j = 1; j < index - 1; j++) {
+    for (int j = 1; j < index; j++) {
         double sampleprab = j * 1.0 * dx;
         int cdfindex = binary_search(CDF, 0, index - 1, sampleprab);
         InverseCDF[j] = cdfindex * dx;
