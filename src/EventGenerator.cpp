@@ -27,10 +27,10 @@ EventGenerator::EventGenerator(std::string input_filename, int seed) {
 }
 
 /* get the collisions information for the JETSCAPE framework*/
-void EventGenerator::generate_pre_events(int nev) {
+void EventGenerator::generate_pre_events() {
     messager << "Random seed = " << ran_gen_ptr_->get_seed();
     messager.flush("info");
-    messager << "Generating " << nev << " events ... ";
+    messager << "Generating 1 events ... ";
     messager.flush("info");
 
     mc_glauber_ptr_->make_nuclei();
