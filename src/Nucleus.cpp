@@ -689,6 +689,11 @@ void Nucleus::accelerate_nucleus(real ecm, int direction) {
     lorentz_contraction(cosh(beam_rapidity));
 }
 
+real Nucleus::get_beam_rapidity(real ecm, int direction) {
+    assert(ecm > 2.*PhysConsts::MProton);
+    real beam_rapidity = direction*acosh(ecm/(2.*PhysConsts::MProton));
+    return(beam_rapidity);
+}
 
 void Nucleus::lorentz_contraction(real gamma) {
     for (auto &it: nucleon_list_) {

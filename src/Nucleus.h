@@ -131,6 +131,8 @@ class Nucleus {
     real get_z_min() const;
     real get_z_max() const;
 
+    real get_beam_rapidity(real ecm, int direction);
+    
     void output_nucleon_positions(std::string filename) const;
 
     void sample_valence_quarks_inside_nucleons(real ecm, int direction);

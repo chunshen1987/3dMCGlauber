@@ -26,7 +26,7 @@ EventGenerator::EventGenerator(std::string input_filename, int seed) {
     statistics_only_ = parameter_list_.get_only_event_statistics();
 }
 
-/* get the collisions information for the JETSCAPE framework*/
+/* get the collisions information for the JETSCAPE framework */
 void EventGenerator::generate_pre_events() {
     messager << "Random seed = " << ran_gen_ptr_->get_seed();
     messager.flush("info");
@@ -37,6 +37,15 @@ void EventGenerator::generate_pre_events() {
     auto Ncoll = mc_glauber_ptr_->make_collision_schedule();
     auto Npart = mc_glauber_ptr_->get_Npart();
 }
+
+/* calculate the nucleon density for the JETSCAPE framework */
+double EventGenerator::MCGlb_nucleon_density(double t, double x,
+                                           double y, double z) {
+    double nucleon_density = mc_glauber_ptr_->get_nucleon_density(
+                                                        t, x, y, z);
+    return (nucleon_density);
+}
+
 
 void EventGenerator::generate_events(int nev, int event_id_offset) {
     messager << "Random seed = " << ran_gen_ptr_->get_seed();

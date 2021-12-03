@@ -29,6 +29,9 @@ class EventGenerator {
     void generate_pre_events();
     bool event_of_interest_trigger(int Npart, int Ncoll, int Nstrings);
     
+    double MCGlb_nucleon_density(double t, double x,
+                                 double y, double z);
+                                                  
     std::vector<CollisionEvent> get_CollisionEventvector();
     
 };
