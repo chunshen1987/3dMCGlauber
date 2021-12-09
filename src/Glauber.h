@@ -100,11 +100,12 @@ class Glauber {
     double get_nucleon_density(double t, double x,
                                double y, double z);
 
-    //! This function gets the target nucleon density at Lab frame at t, x, y, z
+    //! This function gets the target/projectile nucleon density at Lab frame at t, x, y, z
     //! The unit is 1/fm^3
     double get_targ_nucleon_density(double t, double x,
                                     double y, double z);
-                               
+    double get_proj_nucleon_density(double t, double x,
+                                    double y, double z);
     //! This function performs string production between each nucleon pair
     int perform_string_production();
     void produce_remnant_strings();

@@ -48,7 +48,7 @@ double EventGenerator::MCGlb_nucleon_density(double t, double x,
     return (nucleon_density);
 }
 
-/* calculate the target nucleon density at Lab frame,
+/* calculate the target/projectile nucleon density at Lab frame,
    unit is 1/fm^3
 */
 double EventGenerator::MCGlb_target_nucleon_density(double t, double x,
@@ -56,6 +56,13 @@ double EventGenerator::MCGlb_target_nucleon_density(double t, double x,
     double targ_nucleon_density = mc_glauber_ptr_->get_targ_nucleon_density(
                                                                   t, x, y, z);
     return (targ_nucleon_density);
+}
+
+double EventGenerator::MCGlb_projectile_nucleon_density(double t, double x,
+                                                        double y, double z) {
+    double proj_nucleon_density = mc_glauber_ptr_->get_proj_nucleon_density(
+                                                                  t, x, y, z);
+    return (proj_nucleon_density);
 }
 
 void EventGenerator::generate_events(int nev, int event_id_offset) {
