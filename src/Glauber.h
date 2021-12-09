@@ -95,10 +95,16 @@ class Glauber {
     real sample_junction_rapidity_right(real y_left, real y_right) const;
     real sample_junction_rapidity_left(real y_left, real y_right) const;
     
-    //! This function gets the nucleon density at t, x, y, z
+    //! This function gets the total nucleon density at Lab frame at t, x, y, z
+    //! The unit is 1/fm^3
     double get_nucleon_density(double t, double x,
                                double y, double z);
-                                    
+
+    //! This function gets the target nucleon density at Lab frame at t, x, y, z
+    //! The unit is 1/fm^3
+    double get_targ_nucleon_density(double t, double x,
+                                    double y, double z);
+                               
     //! This function performs string production between each nucleon pair
     int perform_string_production();
     void produce_remnant_strings();

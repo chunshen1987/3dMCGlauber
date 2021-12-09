@@ -38,14 +38,25 @@ void EventGenerator::generate_pre_events() {
     auto Npart = mc_glauber_ptr_->get_Npart();
 }
 
-/* calculate the nucleon density for the JETSCAPE framework */
+/* calculate the total nucleon density at Lab frame,
+   unit is 1/fm^3
+*/
 double EventGenerator::MCGlb_nucleon_density(double t, double x,
-                                           double y, double z) {
+                                             double y, double z) {
     double nucleon_density = mc_glauber_ptr_->get_nucleon_density(
                                                         t, x, y, z);
     return (nucleon_density);
 }
 
+/* calculate the target nucleon density at Lab frame,
+   unit is 1/fm^3
+*/
+double EventGenerator::MCGlb_target_nucleon_density(double t, double x,
+                                                    double y, double z) {
+    double targ_nucleon_density = mc_glauber_ptr_->get_targ_nucleon_density(
+                                                                  t, x, y, z);
+    return (targ_nucleon_density);
+}
 
 void EventGenerator::generate_events(int nev, int event_id_offset) {
     messager << "Random seed = " << ran_gen_ptr_->get_seed();

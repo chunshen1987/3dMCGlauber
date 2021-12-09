@@ -31,7 +31,10 @@ class EventGenerator {
     
     double MCGlb_nucleon_density(double t, double x,
                                  double y, double z);
-                                                  
+
+    double MCGlb_target_nucleon_density(double t, double x,
+                                        double y, double z);
+                                 
     std::vector<CollisionEvent> get_CollisionEventvector();
     
 };
