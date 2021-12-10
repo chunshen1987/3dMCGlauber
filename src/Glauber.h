@@ -103,6 +103,7 @@ class Glauber {
     void output_QCD_strings(std::string filename, const real Npart,
                             const real Ncoll, const real Nstrings,
                             const real b);
+    void output_spectators(std::string filename);
 
     real get_sig_eff(const real siginNN);
 };

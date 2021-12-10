@@ -118,11 +118,13 @@ int Glauber::make_collision_schedule() {
     return(collision_schedule.size());
 }
 
+
 int Glauber::get_Npart() const {
     int Npart = (projectile->get_number_of_wounded_nucleons()
                   + target->get_number_of_wounded_nucleons());
     return(Npart);
 }
+
 
 bool Glauber::hit(real d2) const {
     //real G = 0.92;  // from Glassando
@@ -132,6 +134,7 @@ bool Glauber::hit(real d2) const {
     const real hit_treshold = 1. - exp(-sigma_eff_*T_nn);
     return (ran_gen_ptr_->rand_uniform() < hit_treshold);
 }
+
 
 void Glauber::create_a_collision_event(shared_ptr<Nucleon> proj,
                                        shared_ptr<Nucleon> targ) {
@@ -157,6 +160,7 @@ void Glauber::create_a_collision_event(shared_ptr<Nucleon> proj,
     }
 }
 
+
 bool Glauber::get_collision_point(real t, real z1, real v1, real z2, real v2,
                                   real &t_coll, real &z_coll) const {
     bool collided = false;
@@ -171,6 +175,7 @@ bool Glauber::get_collision_point(real t, real z1, real v1, real z2, real v2,
     }
     return(collided);
 }
+
 
 real Glauber::compute_NN_inelastic_cross_section(real ecm) const {
     real s = ecm*ecm;
@@ -706,6 +711,7 @@ void Glauber::update_collision_schedule(
         create_a_collision_event(it.lock(), targ);
 }
 
+
 void Glauber::output_QCD_strings(std::string filename, const real Npart,
                                  const real Ncoll, const real Nstrings,
                                  const real b) {
@@ -870,6 +876,40 @@ void Glauber::output_QCD_strings(std::string filename, const real Npart,
             for (auto &ival : output_array) {
                 output << std::setw(15) << ival << "  ";
             }
+            output << endl;
+        }
+    }
+    output.close();
+}
+
+
+void Glauber::output_spectators(std::string filename) {
+    std::ofstream output(filename.c_str());
+    output << "# t[fm]  x[fm]  y[fm]  z[fm]  E[GeV]  px[GeV]  py[GeV]  pz[GeV]"
+           << endl;
+    auto proj_nucleon_list = projectile->get_nucleon_list();
+    for (auto &iproj: (*proj_nucleon_list)) {
+        if (!iproj->is_wounded()) {
+            output << std::scientific << std::setprecision(6);
+            auto proj_x = iproj->get_x();
+            for (const auto &x_i : proj_x)
+                output << std::setw(10) << x_i << "  ";
+            auto proj_p = iproj->get_p();
+            for (const auto &p_i : proj_p)
+                output << std::setw(10) << p_i << "  ";
+            output << endl;
+        }
+    }
+    auto targ_nucleon_list = target->get_nucleon_list();
+    for (auto &itarg: (*targ_nucleon_list)) {
+        if (!itarg->is_wounded()) {
+            output << std::scientific << std::setprecision(6);
+            auto targ_x = itarg->get_x();
+            for (const auto &x_i : targ_x)
+                output << std::setw(10) << x_i << "  ";
+            auto targ_p = itarg->get_p();
+            for (const auto &p_i : targ_p)
+                output << std::setw(10) << p_i << "  ";
             output << endl;
         }
     }
