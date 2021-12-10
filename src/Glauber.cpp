@@ -884,6 +884,7 @@ void Glauber::output_QCD_strings(std::string filename, const real Npart,
 
 
 void Glauber::output_spectators(std::string filename) {
+    const real eps = 1e-16;
     std::ofstream output(filename.c_str());
     output << "# t[fm]  x[fm]  y[fm]  z[fm]  E[GeV]  px[GeV]  py[GeV]  pz[GeV]"
            << endl;
@@ -892,9 +893,12 @@ void Glauber::output_spectators(std::string filename) {
         if (!iproj->is_wounded()) {
             output << std::scientific << std::setprecision(6);
             auto proj_x = iproj->get_x();
+            auto proj_p = iproj->get_p();
+            real vz = proj_p[3]/proj_p[0];
+            proj_x[0] = proj_x[0] + (0. - proj_x[3])/(vz + eps);
+            proj_x[3] = 0.;
             for (const auto &x_i : proj_x)
                 output << std::setw(10) << x_i << "  ";
-            auto proj_p = iproj->get_p();
             for (const auto &p_i : proj_p)
                 output << std::setw(10) << p_i << "  ";
             output << endl;
@@ -905,9 +909,12 @@ void Glauber::output_spectators(std::string filename) {
         if (!itarg->is_wounded()) {
             output << std::scientific << std::setprecision(6);
             auto targ_x = itarg->get_x();
+            auto targ_p = itarg->get_p();
+            real vz = targ_p[3]/targ_p[0];
+            targ_x[0] = targ_x[0] + (0. - targ_x[3])/(vz + eps);
+            targ_x[3] = 0.;
             for (const auto &x_i : targ_x)
                 output << std::setw(10) << x_i << "  ";
-            auto targ_p = itarg->get_p();
             for (const auto &p_i : targ_p)
                 output << std::setw(10) << p_i << "  ";
             output << endl;
