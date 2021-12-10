@@ -105,6 +105,7 @@ class Nucleus {
                                         real &r, real &costheta) const;
     //! Fermi Distribution 
     real fermi_distribution(real r, real R_WS, real a_WS) const;
+    real getAvgWoodsSaxonDensity(real r) const;
     real spherical_harmonics(int l, real ct) const;
 
     int get_number_of_nucleons() const {return(nucleon_list_.size());}
@@ -135,6 +136,8 @@ class Nucleus {
 
     void sample_valence_quarks_inside_nucleons(real ecm, int direction);
     void add_soft_parton_ball(real ecm, int direction);
+
+    void sample_fermi_momentum();
 
     real sample_a_u_quark_momentum_fraction(const bool flag_NPDF) const;
     real sample_a_d_quark_momentum_fraction(const bool flag_NPDF) const;

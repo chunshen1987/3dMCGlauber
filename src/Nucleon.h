@@ -26,6 +26,7 @@ class Nucleon : public Particle {
     std::vector<int> connected_times_;
     MomentumVec remnant_p_ = {0.0, 0.0, 0.0, 0.0};
     SpatialVec remnant_x_frez_ = {0.0, 0.0, 0.0, 0.0};
+    MomentumVec fermi_momentum_ = {0.0, 0.0, 0.0, 0.0};
 
  public:
     Nucleon() = default;
@@ -99,6 +100,13 @@ class Nucleon : public Particle {
         for (int i = 0; i < 4; i++)
             remnant_p_[i] -= p_q[i];
     }
+
+    void set_fermi_momentum(real px, real py, real pz) {
+        fermi_momentum_[1] = px;
+        fermi_momentum_[2] = py;
+        fermi_momentum_[3] = pz;
+    }
+    MomentumVec get_fermi_momentum() const {return(fermi_momentum_);}
 
     void set_remnant_x_frez(SpatialVec x_in) {remnant_x_frez_ = x_in;}
     SpatialVec get_remnant_x_frez() const {return(remnant_x_frez_);}

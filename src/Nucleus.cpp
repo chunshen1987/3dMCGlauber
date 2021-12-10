@@ -157,6 +157,8 @@ void Nucleus::generate_nucleus_3d_configuration() {
 
     recenter_nucleus();
 
+    sample_fermi_momentum();
+
     real phi   = 2.*M_PI*ran_gen_ptr->rand_uniform();
     real theta = acos(1. - 2.*ran_gen_ptr->rand_uniform());
     rotate_nucleus(phi, theta);
@@ -204,6 +206,27 @@ void Nucleus::rotate_nucleus(real phi, real theta) {
         auto z_new = -sth    *x_vec[1] + 0.  *x_vec[2] + cth     *x_vec[3];
         x_vec[1] = x_new; x_vec[2] = y_new; x_vec[3] = z_new;
         nucleon_i->set_x(x_vec);
+    }
+}
+
+
+void Nucleus::sample_fermi_momentum() {
+    const real pi2_3 = 3.*M_PI*M_PI;
+    for (auto &nucleon_i : nucleon_list_) {
+        auto x_vec = nucleon_i->get_x();
+        real r = sqrt(x_vec[1]*x_vec[1] + x_vec[2]*x_vec[2]
+                      + x_vec[3]*x_vec[3]);
+        real avgDensity = getAvgWoodsSaxonDensity(r);
+        real denFrac = static_cast<real>(Z_)/static_cast<real>(A_);
+        if (nucleon_i->get_electric_charge() == 0)
+            denFrac = 1. - denFrac;
+        real p_F = PhysConsts::HBARC*pow(pi2_3*avgDensity*denFrac
+                                         *ran_gen_ptr->rand_uniform(), 1./3.);
+        real phi = 2.*M_PI*ran_gen_ptr->rand_uniform();
+        real theta = acos(1. - 2.*ran_gen_ptr->rand_uniform());
+        nucleon_i->set_fermi_momentum(p_F*sin(theta)*cos(phi),
+                                      p_F*sin(theta)*sin(phi),
+                                      p_F*cos(theta));
     }
 }
 
@@ -658,8 +681,16 @@ void Nucleus::generate_nucleus_configuration_with_deformed_woods_saxon() {
 
 
 real Nucleus::fermi_distribution(real r, real R_WS, real a_WS) const {
-    real f = 1./(1. + exp((r - R_WS)/a_WS));
+    real f = 1./(1. + exp((r - R_WS)/(a_WS + 1e-16)));
     return (f);
+}
+
+
+real Nucleus::getAvgWoodsSaxonDensity(real r) const {
+    const real rho_0 = WS_param_vec[0];  // 1/fm^3
+    real density = rho_0*fermi_distribution(r, WS_param_vec[2],
+                                            WS_param_vec[3]);
+    return(density);  // 1/fm^3
 }
 
 

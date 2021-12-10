@@ -894,12 +894,23 @@ void Glauber::output_spectators(std::string filename) {
             auto proj_x = iproj->get_x();
             auto proj_p = iproj->get_p();
             auto mass = iproj->get_mass();
-            auto rap = iproj->get_rapidity();
+
+            // compute the when and where the spectator nucleon enters the
+            // light cone
             real vz = proj_p[3]/proj_p[0];
             proj_x[3] = vz/(1. + vz)*(proj_x[3]/vz - proj_x[0]);
             proj_x[0] = -proj_x[3];
+
+            // output spectator's position and momentum
             for (const auto &x_i : proj_x)
                 output << std::setw(10) << x_i << "  ";
+
+            auto fermiMomentum = iproj->get_fermi_momentum();
+            cout << "check: p_F = " << fermiMomentum[1] << "  " << fermiMomentum[2] << "  " << fermiMomentum[3] << endl;
+            for (int i = 1; i < 4; i++)
+                proj_p[i] += fermiMomentum[i];
+            auto rap = asinh(proj_p[3]/(sqrt(mass*mass + proj_p[1]*proj_p[1]
+                                             + proj_p[2]*proj_p[2])));
             output << std::setw(10) << mass << "  "
                    << std::setw(10) << proj_p[1] << "  "
                    << std::setw(10) << proj_p[2] << "  "
@@ -913,12 +924,23 @@ void Glauber::output_spectators(std::string filename) {
             auto targ_x = itarg->get_x();
             auto targ_p = itarg->get_p();
             auto mass = itarg->get_mass();
-            auto rap = itarg->get_rapidity();
+
+            // compute the when and where the spectator nucleon enters the
+            // light cone
             real vz = targ_p[3]/targ_p[0];
             targ_x[3] = vz/(1. - vz)*(targ_x[3]/vz - targ_x[0]);
             targ_x[0] = targ_x[3];
+
+            // output spectator's position and momentum
             for (const auto &x_i : targ_x)
                 output << std::setw(10) << x_i << "  ";
+
+            auto fermiMomentum = itarg->get_fermi_momentum();
+            cout << "check: p_F = " << fermiMomentum[1] << "  " << fermiMomentum[2] << "  " << fermiMomentum[3] << endl;
+            for (int i = 1; i < 4; i++)
+                targ_p[i] += fermiMomentum[i];
+            auto rap = asinh(targ_p[3]/(sqrt(mass*mass + targ_p[1]*targ_p[1]
+                                             + targ_p[2]*targ_p[2])));
             output << std::setw(10) << mass << "  "
                    << std::setw(10) << targ_p[1] << "  "
                    << std::setw(10) << targ_p[2] << "  "
