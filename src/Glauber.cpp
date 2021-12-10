@@ -886,7 +886,7 @@ void Glauber::output_QCD_strings(std::string filename, const real Npart,
 void Glauber::output_spectators(std::string filename) {
     const real eps = 1e-16;
     std::ofstream output(filename.c_str());
-    output << "# t[fm]  x[fm]  y[fm]  z[fm]  E[GeV]  px[GeV]  py[GeV]  pz[GeV]"
+    output << "# t[fm]  x[fm]  y[fm]  z[fm]  m[GeV]  px[GeV]  py[GeV]  y"
            << endl;
     auto proj_nucleon_list = projectile->get_nucleon_list();
     for (auto &iproj: (*proj_nucleon_list)) {
@@ -894,14 +894,17 @@ void Glauber::output_spectators(std::string filename) {
             output << std::scientific << std::setprecision(6);
             auto proj_x = iproj->get_x();
             auto proj_p = iproj->get_p();
+            auto mass = iproj->get_mass();
+            auto rap = iproj->get_rapidity();
             real vz = proj_p[3]/proj_p[0];
             proj_x[0] = proj_x[0] + (0. - proj_x[3])/(vz + eps);
             proj_x[3] = 0.;
             for (const auto &x_i : proj_x)
                 output << std::setw(10) << x_i << "  ";
-            for (const auto &p_i : proj_p)
-                output << std::setw(10) << p_i << "  ";
-            output << endl;
+            output << std::setw(10) << mass << "  "
+                   << std::setw(10) << proj_p[1] << "  "
+                   << std::setw(10) << proj_p[2] << "  "
+                   << std::setw(10) << rap << endl;
         }
     }
     auto targ_nucleon_list = target->get_nucleon_list();
@@ -910,14 +913,17 @@ void Glauber::output_spectators(std::string filename) {
             output << std::scientific << std::setprecision(6);
             auto targ_x = itarg->get_x();
             auto targ_p = itarg->get_p();
+            auto mass = itarg->get_mass();
+            auto rap = itarg->get_rapidity();
             real vz = targ_p[3]/targ_p[0];
             targ_x[0] = targ_x[0] + (0. - targ_x[3])/(vz + eps);
             targ_x[3] = 0.;
             for (const auto &x_i : targ_x)
                 output << std::setw(10) << x_i << "  ";
-            for (const auto &p_i : targ_p)
-                output << std::setw(10) << p_i << "  ";
-            output << endl;
+            output << std::setw(10) << mass << "  "
+                   << std::setw(10) << targ_p[1] << "  "
+                   << std::setw(10) << targ_p[2] << "  "
+                   << std::setw(10) << rap << endl;
         }
     }
     output.close();
