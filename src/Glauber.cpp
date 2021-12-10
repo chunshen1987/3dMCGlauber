@@ -884,7 +884,6 @@ void Glauber::output_QCD_strings(std::string filename, const real Npart,
 
 
 void Glauber::output_spectators(std::string filename) {
-    const real eps = 1e-16;
     std::ofstream output(filename.c_str());
     output << "# t[fm]  x[fm]  y[fm]  z[fm]  m[GeV]  px[GeV]  py[GeV]  y"
            << endl;
@@ -897,8 +896,8 @@ void Glauber::output_spectators(std::string filename) {
             auto mass = iproj->get_mass();
             auto rap = iproj->get_rapidity();
             real vz = proj_p[3]/proj_p[0];
-            proj_x[0] = proj_x[0] + (0. - proj_x[3])/(vz + eps);
-            proj_x[3] = 0.;
+            proj_x[3] = vz/(1. + vz)*(proj_x[3]/vz - proj_x[0]);
+            proj_x[0] = -proj_x[3];
             for (const auto &x_i : proj_x)
                 output << std::setw(10) << x_i << "  ";
             output << std::setw(10) << mass << "  "
@@ -916,8 +915,8 @@ void Glauber::output_spectators(std::string filename) {
             auto mass = itarg->get_mass();
             auto rap = itarg->get_rapidity();
             real vz = targ_p[3]/targ_p[0];
-            targ_x[0] = targ_x[0] + (0. - targ_x[3])/(vz + eps);
-            targ_x[3] = 0.;
+            targ_x[3] = vz/(1. - vz)*(targ_x[3]/vz - targ_x[0]);
+            targ_x[0] = targ_x[3];
             for (const auto &x_i : targ_x)
                 output << std::setw(10) << x_i << "  ";
             output << std::setw(10) << mass << "  "
