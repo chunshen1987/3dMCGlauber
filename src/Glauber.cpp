@@ -885,7 +885,7 @@ void Glauber::output_QCD_strings(std::string filename, const real Npart,
 
 void Glauber::output_spectators(std::string filename) {
     std::ofstream output(filename.c_str());
-    output << "# t[fm]  x[fm]  y[fm]  z[fm]  m[GeV]  px[GeV]  py[GeV]  y"
+    output << "# t[fm]  x[fm]  y[fm]  z[fm]  m[GeV]  px[GeV]  py[GeV]  y  e"
            << endl;
     auto proj_nucleon_list = projectile->get_nucleon_list();
     for (auto &iproj: (*proj_nucleon_list)) {
@@ -906,7 +906,6 @@ void Glauber::output_spectators(std::string filename) {
                 output << std::setw(10) << x_i << "  ";
 
             auto fermiMomentum = iproj->get_fermi_momentum();
-            cout << "check: p_F = " << fermiMomentum[1] << "  " << fermiMomentum[2] << "  " << fermiMomentum[3] << endl;
             for (int i = 1; i < 4; i++)
                 proj_p[i] += fermiMomentum[i];
             auto rap = asinh(proj_p[3]/(sqrt(mass*mass + proj_p[1]*proj_p[1]
@@ -914,7 +913,8 @@ void Glauber::output_spectators(std::string filename) {
             output << std::setw(10) << mass << "  "
                    << std::setw(10) << proj_p[1] << "  "
                    << std::setw(10) << proj_p[2] << "  "
-                   << std::setw(10) << rap << endl;
+                   << std::setw(10) << rap << "  "
+                   << iproj->get_electric_charge() << endl;
         }
     }
     auto targ_nucleon_list = target->get_nucleon_list();
@@ -936,7 +936,6 @@ void Glauber::output_spectators(std::string filename) {
                 output << std::setw(10) << x_i << "  ";
 
             auto fermiMomentum = itarg->get_fermi_momentum();
-            cout << "check: p_F = " << fermiMomentum[1] << "  " << fermiMomentum[2] << "  " << fermiMomentum[3] << endl;
             for (int i = 1; i < 4; i++)
                 targ_p[i] += fermiMomentum[i];
             auto rap = asinh(targ_p[3]/(sqrt(mass*mass + targ_p[1]*targ_p[1]
@@ -944,7 +943,8 @@ void Glauber::output_spectators(std::string filename) {
             output << std::setw(10) << mass << "  "
                    << std::setw(10) << targ_p[1] << "  "
                    << std::setw(10) << targ_p[2] << "  "
-                   << std::setw(10) << rap << endl;
+                   << std::setw(10) << rap << "  "
+                   << itarg->get_electric_charge() << endl;
         }
     }
     output.close();
