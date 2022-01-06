@@ -26,19 +26,26 @@ class EventGenerator {
     ~EventGenerator() {};
 
     void generate_events(int nev, int event_id_offset=0);
+
+    //! get the collisions information for the JETSCAPE framework
     void generate_pre_events();
+
     bool event_of_interest_trigger(int Npart, int Ncoll, int Nstrings);
-    
+
+    //! calculate the total nucleon density at Lab frame, unit is 1/fm^3
     double MCGlb_nucleon_density(double t, double x,
                                  double y, double z);
-
+    //! calculate the target/projectile nucleon density at Lab frame,
+    //
+    //! unit is 1/fm^3
     double MCGlb_target_nucleon_density(double t, double x,
                                         double y, double z);
+
     double MCGlb_projectile_nucleon_density(double t, double x,
                                             double y, double z);
-                                        
+
     std::vector<CollisionEvent> get_CollisionEventvector();
-    
+
 };
 
 };

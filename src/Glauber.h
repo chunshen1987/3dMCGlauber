@@ -24,7 +24,7 @@ class Glauber {
     std::unique_ptr<Nucleus> projectile;
     std::unique_ptr<Nucleus> target;
     std::set<shared_ptr<CollisionEvent>, compare_collision_time> collision_schedule;
-    
+
     std::vector<QCDString> QCD_string_list;
     std::vector<QCDString> remnant_string_list_;
     std::vector<CollisionEvent> collision_schedule_list_;
@@ -50,11 +50,11 @@ class Glauber {
     Glauber(const MCGlb::Parameters &param_in,
             shared_ptr<RandomUtil::Random> ran_gen);
     ~Glauber() {};
-    
+
     std::vector<CollisionEvent> get_collision_information() {
         return (collision_schedule_list_);
     }
-    
+
     void make_nuclei();
     real get_impact_parameter() const {return(impact_b);}
 
@@ -62,7 +62,7 @@ class Glauber {
     bool hit(real d2) const;
 
     int get_Npart() const;
-    
+
     //! This function creates a new collision event between two nucleons
     void create_a_collision_event(shared_ptr<Nucleon> proj,
                                   shared_ptr<Nucleon> targ);
@@ -94,18 +94,18 @@ class Glauber {
 
     real sample_junction_rapidity_right(real y_left, real y_right) const;
     real sample_junction_rapidity_left(real y_left, real y_right) const;
-    
+
+    //! This function gets the target/projectile nucleon density at Lab frame
+    //! at t, x, y, z The unit is 1/fm^3
+    double get_nucleus_density(double t, double x, double y, double z,
+                               std::unique_ptr<Nucleus> &nucleus_ptr);
+    double get_targ_nucleon_density(double t, double x, double y, double z);
+    double get_proj_nucleon_density(double t, double x, double y, double z);
+
     //! This function gets the total nucleon density at Lab frame at t, x, y, z
     //! The unit is 1/fm^3
-    double get_nucleon_density(double t, double x,
-                               double y, double z);
+    double get_nucleon_density(double t, double x, double y, double z);
 
-    //! This function gets the target/projectile nucleon density at Lab frame at t, x, y, z
-    //! The unit is 1/fm^3
-    double get_targ_nucleon_density(double t, double x,
-                                    double y, double z);
-    double get_proj_nucleon_density(double t, double x,
-                                    double y, double z);
     //! This function performs string production between each nucleon pair
     int perform_string_production();
     void produce_remnant_strings();
@@ -121,7 +121,7 @@ class Glauber {
     void output_QCD_strings(std::string filename, const real Npart,
                             const real Ncoll, const real Nstrings,
                             const real b);
-    
+
     real get_sig_eff(const real siginNN);
 };
 

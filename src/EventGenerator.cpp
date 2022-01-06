@@ -12,6 +12,7 @@ std::vector<CollisionEvent> EventGenerator::get_CollisionEventvector() {
     return mc_glauber_ptr_->get_collision_information();
 }
 
+
 EventGenerator::EventGenerator(std::string input_filename, int seed) {
     parameter_list_.read_in_parameters_from_file(input_filename);
     parameter_list_.print_parameter_list();
@@ -26,7 +27,7 @@ EventGenerator::EventGenerator(std::string input_filename, int seed) {
     statistics_only_ = parameter_list_.get_only_event_statistics();
 }
 
-/* get the collisions information for the JETSCAPE framework */
+
 void EventGenerator::generate_pre_events() {
     messager << "Random seed = " << ran_gen_ptr_->get_seed();
     messager.flush("info");
@@ -38,32 +39,24 @@ void EventGenerator::generate_pre_events() {
     auto Npart = mc_glauber_ptr_->get_Npart();
 }
 
-/* calculate the total nucleon density at Lab frame,
-   unit is 1/fm^3
-*/
+
 double EventGenerator::MCGlb_nucleon_density(double t, double x,
                                              double y, double z) {
-    double nucleon_density = mc_glauber_ptr_->get_nucleon_density(
-                                                        t, x, y, z);
-    return (nucleon_density);
+    return(mc_glauber_ptr_->get_nucleon_density(t, x, y, z));
 }
 
-/* calculate the target/projectile nucleon density at Lab frame,
-   unit is 1/fm^3
-*/
+
 double EventGenerator::MCGlb_target_nucleon_density(double t, double x,
                                                     double y, double z) {
-    double targ_nucleon_density = mc_glauber_ptr_->get_targ_nucleon_density(
-                                                                  t, x, y, z);
-    return (targ_nucleon_density);
+    return(mc_glauber_ptr_->get_targ_nucleon_density(t, x, y, z));
 }
+
 
 double EventGenerator::MCGlb_projectile_nucleon_density(double t, double x,
                                                         double y, double z) {
-    double proj_nucleon_density = mc_glauber_ptr_->get_proj_nucleon_density(
-                                                                  t, x, y, z);
-    return (proj_nucleon_density);
+    return(mc_glauber_ptr_->get_proj_nucleon_density(t, x, y, z));
 }
+
 
 void EventGenerator::generate_events(int nev, int event_id_offset) {
     messager << "Random seed = " << ran_gen_ptr_->get_seed();
@@ -121,7 +114,6 @@ void EventGenerator::generate_events(int nev, int event_id_offset) {
              << " b";
     messager.flush("info");
 }
-
 
 
 bool EventGenerator::event_of_interest_trigger(int Npart, int Ncoll,

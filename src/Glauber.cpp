@@ -93,106 +93,53 @@ void Glauber::make_nuclei() {
     //target->output_nucleon_positions("target.dat");
 }
 
-/* get the total nucleon density at Lab frame for jetscape. The unit is 1/fm^3*/
-double Glauber::get_nucleon_density(double t, double x,
-                                    double y, double z) {
-    auto proj_rapidity = projectile->get_beam_rapidity(parameter_list.get_roots(), 1);
-    auto targ_rapidity = target->get_beam_rapidity(parameter_list.get_roots(), -1);
-    auto proj_nucleon_list = projectile->get_nucleon_list();
-    auto targ_nucleon_list = target->get_nucleon_list();
-    double nucleon_density = 0.0;
-    double width_xy = 0.5; //fm
-    double width_z = width_xy / cosh(proj_rapidity); // fm
-    double prefactor = 1. / width_xy / width_xy /
-                       width_z / (pow(M_PI * 2. , 1.5));
-    for (auto &iproj: (*proj_nucleon_list)) {
-        auto proj_x = iproj->get_x();
-        auto z_shifted = z - tanh(proj_rapidity) * t;
-        auto dis_square_xy = (x - proj_x[1]) * (x - proj_x[1]) +
-                             (y - proj_x[2]) * (y - proj_x[2]);
-        auto dis_square_z = (z_shifted - proj_x[3]) * (z_shifted - proj_x[3]);
-        if (dis_square_xy < width_xy * width_xy * 200. 
-            && dis_square_z < width_z * width_z * 100.) {
-            nucleon_density +=  prefactor * exp (-1. * dis_square_xy / (2. * width_xy * width_xy) -
-                                dis_square_z / (2. * width_z * width_z)); //Gaussion smearing 
-        } else {
-            continue;
-        }
+
+real Glauber::get_nucleus_density(double t, double x,
+                                  double y, double z,
+                                  std::unique_ptr<Nucleus> &nucleus_ptr) {
+    auto nuclues_rapidity = nucleus_ptr->get_beam_rapidity(
+                                    parameter_list.get_roots(), 1);
+    const real width_xy = 0.5;      // fm
+    const real width_z = width_xy/cosh(nuclues_rapidity);   // fm
+    const real prefactor = 1./(width_xy*width_xy*width_z)/pow(M_PI*2, 1.5);
+
+    auto nucleon_list = nucleus_ptr->get_nucleon_list();
+    real nucleon_density = 0.0;
+    for (auto &inucleon: (*nucleon_list)) {
+        auto nucl_x = inucleon->get_x();
+        auto dis_square_xy = ((x - nucl_x[1])*(x - nucl_x[1]) +
+                              (y - nucl_x[2])*(y - nucl_x[2]));
+        if (dis_square_xy > width_xy*width_xy*200.) continue;
+
+        auto z_shifted = z - tanh(nuclues_rapidity)*t;
+        auto dis_square_z = (z_shifted - nucl_x[3])*(z_shifted - nucl_x[3]);
+        if (dis_square_z > width_z*width_z*100.) continue;
+
+        nucleon_density += exp(- dis_square_xy/(2.*width_xy*width_xy)
+                               - dis_square_z/(2.*width_z*width_z));
     }
-    
-    for (auto &itarg: (*targ_nucleon_list)) {
-        auto targ_x = itarg->get_x();
-        auto z_shifted = z - tanh(targ_rapidity) * t;
-        auto dis_square_xy = (x - targ_x[1]) * (x - targ_x[1]) +
-                             (y - targ_x[2]) * (y - targ_x[2]);
-        auto dis_square_z = (z_shifted - targ_x[3]) * (z_shifted - targ_x[3]);
-        if (dis_square_xy < width_xy * width_xy * 200. &&
-            dis_square_z < width_z * width_z * 100.) {
-            nucleon_density +=  prefactor * exp (-1. * dis_square_xy / (2. * width_xy * width_xy) -
-                                 dis_square_z / (2. * width_z * width_z)); //Gaussion smearing 
-        } else {
-            continue;
-        }
-    }
-    
+    return (nucleon_density*prefactor);
+}
+
+
+real Glauber::get_proj_nucleon_density(double t, double x,
+                                       double y, double z) {
+    return get_nucleus_density(t, x, y, z, projectile);
+}
+
+
+real Glauber::get_targ_nucleon_density(double t, double x,
+                                       double y, double z) {
+    return get_nucleus_density(t, x, y, z, target);
+}
+
+
+real Glauber::get_nucleon_density(double t, double x, double y, double z) {
+    auto nucleon_density = (get_proj_nucleon_density(t, x, y, z)
+                            + get_targ_nucleon_density(t, x, y, z));
     return (nucleon_density);
 }
 
-/* get the projectile nucleon density at Lab frame for jetscape. The unit is 1/fm^3*/
-double Glauber::get_proj_nucleon_density(double t, double x,
-                                         double y, double z) {
-    auto proj_rapidity = projectile->get_beam_rapidity(parameter_list.get_roots(), 1);
-    auto proj_nucleon_list = projectile->get_nucleon_list();
-    double nucleon_density = 0.0;
-    double width_xy = 0.5; //fm
-    double width_z = width_xy / cosh(proj_rapidity); // fm
-    double prefactor = 1. / width_xy / width_xy /
-                       width_z / (pow(M_PI * 2. , 1.5));
-    for (auto &iproj: (*proj_nucleon_list)) {
-        auto proj_x = iproj->get_x();
-        auto z_shifted = z - tanh(proj_rapidity) * t;
-        auto dis_square_xy = (x - proj_x[1]) * (x - proj_x[1]) +
-                             (y - proj_x[2]) * (y - proj_x[2]);
-        auto dis_square_z = (z_shifted - proj_x[3]) * (z_shifted - proj_x[3]);
-        if (dis_square_xy < width_xy * width_xy * 200. 
-            && dis_square_z < width_z * width_z * 100.) {
-            nucleon_density +=  prefactor * exp (-1. * dis_square_xy / (2. * width_xy * width_xy) -
-                                dis_square_z / (2. * width_z * width_z)); //Gaussion smearing 
-        } else {
-            continue;
-        }
-    }
-    
-    return (nucleon_density);
-}
-
-/* get the target nucleon density at Lab frame for jetscape. The unit is 1/fm^3*/
-double Glauber::get_targ_nucleon_density(double t, double x,
-                                         double y, double z) {
-    auto targ_rapidity = target->get_beam_rapidity(parameter_list.get_roots(), -1);
-    auto targ_nucleon_list = target->get_nucleon_list();
-    double nucleon_density = 0.0;
-    double width_xy = 0.5; //fm
-    double width_z = width_xy / cosh(targ_rapidity); // fm
-    double prefactor = 1. / width_xy / width_xy /
-                       width_z / (pow(M_PI * 2. , 1.5));
-    for (auto &itarg: (*targ_nucleon_list)) {
-        auto targ_x = itarg->get_x();
-        auto z_shifted = z - tanh(targ_rapidity) * t;
-        auto dis_square_xy = (x - targ_x[1]) * (x - targ_x[1]) +
-                             (y - targ_x[2]) * (y - targ_x[2]);
-        auto dis_square_z = (z_shifted - targ_x[3]) * (z_shifted - targ_x[3]);
-        if (dis_square_xy < width_xy * width_xy * 200. &&
-            dis_square_z < width_z * width_z * 100.) {
-            nucleon_density +=  prefactor * exp (-1. * dis_square_xy / (2. * width_xy * width_xy) -
-                                 dis_square_z / (2. * width_z * width_z)); //Gaussion smearing 
-        } else {
-            continue;
-        }
-    }
-    
-    return (nucleon_density);
-}
 
 int Glauber::make_collision_schedule() {
     collision_schedule.clear();
@@ -215,16 +162,13 @@ int Glauber::make_collision_schedule() {
             }
         }
     }
-    
-    // copy the collision_schedule information to outside 
+
+    // copy the collision_schedule information to outside
     collision_schedule_list_.clear();
     int pos=0;
     for (auto &it: collision_schedule) {
-        collision_schedule_list_.push_back(*it);  // collision list is time ordered
-        /* The way to check the collision information:
-        auto xvec = collision_schedule_list_[pos].get_collision_position();
-        std::cout << xvec[0] <<" "<< xvec[1] <<" "<< xvec[2] <<" "<< xvec[3] <<" " << std::endl;
-        */
+        // collision list is time ordered
+        collision_schedule_list_.push_back(*it);
         pos++;
     }
         get_collision_information();
