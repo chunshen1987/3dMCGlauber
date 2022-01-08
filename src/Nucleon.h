@@ -78,7 +78,7 @@ class Nucleon : public Particle {
     int get_number_of_connections(std::shared_ptr<Nucleon> targ) const;
 
     bool is_connected_with(std::shared_ptr<Nucleon> targ);
-    void accelerate_quarks(real ecm, int direction);
+    void accelerate_quarks(real nucleon_pz, int direction);
     void lorentz_contraction(real gamma);
 
     std::shared_ptr<Quark> get_a_valence_quark();

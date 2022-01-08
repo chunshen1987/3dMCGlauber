@@ -19,6 +19,8 @@ class EventGenerator {
     std::unique_ptr<Glauber> mc_glauber_ptr_;
     bool statistics_only_;
     pretty_ostream messager;
+    int Ncoll_;
+    int Npart_;
 
  public:
     EventGenerator() = default;
@@ -29,6 +31,10 @@ class EventGenerator {
 
     //! get the collisions information for the JETSCAPE framework
     void generate_pre_events();
+
+    //! after substracted the parton's momentum, 
+    //! generate the 3D Glauber initial conditions for MUSIC
+    void generate_posterior_events();
 
     bool event_of_interest_trigger(int Npart, int Ncoll, int Nstrings);
 

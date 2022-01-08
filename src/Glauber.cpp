@@ -3,6 +3,7 @@
 #include "Glauber.h"
 #include "data_structs.h"
 #include "PhysConsts.h"
+#include "MCGlauberWrapper.h"
 
 #include <string>
 #include <iomanip>
@@ -165,11 +166,9 @@ int Glauber::make_collision_schedule() {
 
     // copy the collision_schedule information to outside
     collision_schedule_list_.clear();
-    int pos=0;
     for (auto &it: collision_schedule) {
         // collision list is time ordered
         collision_schedule_list_.push_back(*it);
-        pos++;
     }
         get_collision_information();
     return(collision_schedule.size());
@@ -238,6 +237,41 @@ real Glauber::compute_NN_inelastic_cross_section(real ecm) const {
 }
 
 
+void Glauber::Pick_and_subtract_hard_parton_momentum_in_nucleon() {
+    // Positions and Momentum for the leading hard partons.
+    HardPartonPosAndMomProj_ = MCGWrapper->GetHardPartonPosAndMomentumProj();
+    HardPartonPosAndMomTarg_ = MCGWrapper->GetHardPartonPosAndMomentumTarg();
+    real binary_collision_x = HardPartonPosAndMomProj_[1];
+    real binary_collision_y = HardPartonPosAndMomProj_[2];
+    // pick out the colliding nucleon pair generated hard partons
+    for (auto &it: collision_schedule_list_) {
+        // collision list is time ordered
+        auto xvec = it.get_collision_position();
+        if ( ( abs( xvec[1] - binary_collision_x ) < 1.e-4 ) && 
+             ( abs( xvec[2] - binary_collision_y ) < 1.e-4 ) ) {
+             // substract the four momentum from the colliding nucleon pair
+             auto proj_collided = it.get_proj_nucleon_ptr().lock();
+             auto targ_collided = it.get_targ_nucleon_ptr().lock();
+             MomentumVec ori_collide_mom_proj = proj_collided->get_p();
+             MomentumVec ori_collide_mom_targ = targ_collided->get_p();
+             MomentumVec sub_collide_mom_proj = {
+                         ori_collide_mom_proj[0] - HardPartonPosAndMomProj_[4],
+                         ori_collide_mom_proj[1] - HardPartonPosAndMomProj_[5],
+                         ori_collide_mom_proj[2] - HardPartonPosAndMomProj_[6],
+                         ori_collide_mom_proj[3] - HardPartonPosAndMomProj_[7]};
+             MomentumVec sub_collide_mom_targ = {
+                         ori_collide_mom_targ[0] - HardPartonPosAndMomTarg_[4],
+                         ori_collide_mom_targ[1] - HardPartonPosAndMomTarg_[5],
+                         ori_collide_mom_targ[2] - HardPartonPosAndMomTarg_[6],
+                         ori_collide_mom_targ[3] - HardPartonPosAndMomTarg_[7]};
+             proj_collided->set_p(sub_collide_mom_proj);
+             targ_collided->set_p(sub_collide_mom_targ);
+             break;
+        }
+    }
+}
+
+
 int Glauber::decide_produce_string_num(
                                 shared_ptr<CollisionEvent> event_ptr) const {
     int form_n_string = 0;
@@ -281,12 +315,10 @@ int Glauber::decide_produce_string_num(
 
 int Glauber::decide_QCD_strings_production() {
     if (sample_valence_quark) {
-        projectile->sample_valence_quarks_inside_nucleons(
-                                    parameter_list.get_roots(), 1);
-        target->sample_valence_quarks_inside_nucleons(
-                                    parameter_list.get_roots(), -1);
-        projectile->add_soft_parton_ball(parameter_list.get_roots(), 1);
-        target->add_soft_parton_ball(parameter_list.get_roots(), -1);
+        projectile->sample_valence_quarks_inside_nucleons(1);
+        target->sample_valence_quarks_inside_nucleons(-1);
+        projectile->add_soft_parton_ball(1);
+        target->add_soft_parton_ball(-1);
     }
     std::vector<shared_ptr<CollisionEvent>> collision_list;
     for (auto &it: collision_schedule)
