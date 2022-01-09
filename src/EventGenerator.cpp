@@ -61,14 +61,14 @@ double EventGenerator::MCGlb_projectile_nucleon_density(double t, double x,
 void EventGenerator::generate_strings() {
     messager << "Random seed = " << ran_gen_ptr_->get_seed();
     messager.flush("info");
-    messager << "Generating 1 events after substracted four momentum of hard partons ... ";
+    messager << "Generating 1 events after subtracted four momentum of hard partons ... ";
     messager.flush("info");
     // this file records all the essential information for the generated events
     std::ofstream record_file("events_summary.dat", std::ios::out);
     record_file << "# event_id  Npart  Ncoll  Nstrings  b(fm)" << std::endl;
 
     int iev = 0;
-    int mean_Npart = 0;
+    real mean_Npart = 0;
     mc_glauber_ptr_->Pick_and_subtract_hard_parton_momentum_in_nucleon();
     auto Nstrings = mc_glauber_ptr_->decide_QCD_strings_production();
     if (event_of_interest_trigger(Npart_, Ncoll_, Nstrings))  {
