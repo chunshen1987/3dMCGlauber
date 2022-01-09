@@ -58,7 +58,7 @@ double EventGenerator::MCGlb_projectile_nucleon_density(double t, double x,
 }
 
 
-void EventGenerator::generate_posterior_events() {
+void EventGenerator::generate_strings() {
     messager << "Random seed = " << ran_gen_ptr_->get_seed();
     messager.flush("info");
     messager << "Generating 1 events after substracted four momentum of hard partons ... ";

@@ -34,7 +34,7 @@ class EventGenerator {
 
     //! after substracted the parton's momentum, 
     //! generate the 3D Glauber initial conditions for MUSIC
-    void generate_posterior_events();
+    void generate_strings();
 
     bool event_of_interest_trigger(int Npart, int Ncoll, int Nstrings);
 

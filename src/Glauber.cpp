@@ -252,20 +252,16 @@ void Glauber::Pick_and_subtract_hard_parton_momentum_in_nucleon() {
              // substract the four momentum from the colliding nucleon pair
              auto proj_collided = it.get_proj_nucleon_ptr().lock();
              auto targ_collided = it.get_targ_nucleon_ptr().lock();
-             MomentumVec ori_collide_mom_proj = proj_collided->get_p();
-             MomentumVec ori_collide_mom_targ = targ_collided->get_p();
-             MomentumVec sub_collide_mom_proj = {
-                         ori_collide_mom_proj[0] - HardPartonPosAndMomProj_[4],
-                         ori_collide_mom_proj[1] - HardPartonPosAndMomProj_[5],
-                         ori_collide_mom_proj[2] - HardPartonPosAndMomProj_[6],
-                         ori_collide_mom_proj[3] - HardPartonPosAndMomProj_[7]};
-             MomentumVec sub_collide_mom_targ = {
-                         ori_collide_mom_targ[0] - HardPartonPosAndMomTarg_[4],
-                         ori_collide_mom_targ[1] - HardPartonPosAndMomTarg_[5],
-                         ori_collide_mom_targ[2] - HardPartonPosAndMomTarg_[6],
-                         ori_collide_mom_targ[3] - HardPartonPosAndMomTarg_[7]};
-             proj_collided->set_p(sub_collide_mom_proj);
-             targ_collided->set_p(sub_collide_mom_targ);
+             MomentumVec HardPartonMomProj_ = { HardPartonPosAndMomProj_[4], 
+                                                HardPartonPosAndMomProj_[5],
+                                                HardPartonPosAndMomProj_[6],
+                                                HardPartonPosAndMomProj_[7] };
+             MomentumVec HardPartonMomTarg_ = { HardPartonPosAndMomTarg_[4], 
+                                                HardPartonPosAndMomTarg_[5],
+                                                HardPartonPosAndMomTarg_[6],
+                                                HardPartonPosAndMomTarg_[7] };
+             proj_collided->substract_momentum_from_remnant(HardPartonMomProj_);
+             targ_collided->substract_momentum_from_remnant(HardPartonMomTarg_);
              break;
         }
     }
