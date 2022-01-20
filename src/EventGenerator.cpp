@@ -57,6 +57,13 @@ double EventGenerator::MCGlb_projectile_nucleon_density(double t, double x,
     return(mc_glauber_ptr_->get_proj_nucleon_density(t, x, y, z));
 }
 
+std::vector<double> EventGenerator::MCGlb_projectile_nucleon_z() {
+    return(mc_glauber_ptr_->get_all_proj_nucleon_z());
+}
+
+std::vector<double> EventGenerator::MCGlb_target_nucleon_z() {
+    return(mc_glauber_ptr_->get_all_targ_nucleon_z());
+}
 
 void EventGenerator::generate_strings() {
     messager << "Random seed = " << ran_gen_ptr_->get_seed();

@@ -50,6 +50,9 @@ class EventGenerator {
     double MCGlb_projectile_nucleon_density(double t, double x,
                                             double y, double z);
 
+    std::vector<double> MCGlb_projectile_nucleon_z();
+    std::vector<double> MCGlb_target_nucleon_z();
+
     std::vector<CollisionEvent> get_CollisionEventvector();
 
 };

@@ -31,6 +31,8 @@ class Glauber {
     std::shared_ptr<RandomUtil::Random> ran_gen_ptr_;
     std::vector<double> HardPartonPosAndMomProj_;
     std::vector<double> HardPartonPosAndMomTarg_;
+    std::vector<double> Proj_nucleonz_;
+    std::vector<double> Targ_nucleonz_;
     MCGlauberWrapper* MCGWrapper;
     bool sample_valence_quark;
     bool fluct_Nstrings_per_NN_collision_;
@@ -109,6 +111,8 @@ class Glauber {
     //! The unit is 1/fm^3
     double get_nucleon_density(double t, double x, double y, double z);
 
+    std::vector<double> get_all_proj_nucleon_z();
+    std::vector<double> get_all_targ_nucleon_z();
     //! This function performs string production between each nucleon pair
     int perform_string_production();
     void produce_remnant_strings();

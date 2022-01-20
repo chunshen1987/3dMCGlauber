@@ -142,6 +142,28 @@ real Glauber::get_nucleon_density(double t, double x, double y, double z) {
 }
 
 
+std::vector<double>  Glauber::get_all_proj_nucleon_z() {
+    Proj_nucleonz_.clear();
+    auto nucleon_list = projectile->get_nucleon_list();
+    for (auto &inucleon: (*nucleon_list)) {
+        auto nucl_x = inucleon->get_x();
+        Proj_nucleonz_.push_back(nucl_x[3]);
+    }
+    return (Proj_nucleonz_);
+}
+
+
+std::vector<double>  Glauber::get_all_targ_nucleon_z() {
+    Targ_nucleonz_.clear();
+    auto nucleon_list = target->get_nucleon_list();
+    for (auto &inucleon: (*nucleon_list)) {
+        auto nucl_x = inucleon->get_x();
+        Targ_nucleonz_.push_back(nucl_x[3]);
+    }
+    return (Targ_nucleonz_);
+}
+
+
 int Glauber::make_collision_schedule() {
     collision_schedule.clear();
     auto proj_nucleon_list = projectile->get_nucleon_list();
