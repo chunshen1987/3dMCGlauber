@@ -96,10 +96,10 @@ void Glauber::make_nuclei() {
 
 
 real Glauber::get_nucleus_density(double t, double x,
-                                  double y, double z,
+                                  double y, double z, int direction,
                                   std::unique_ptr<Nucleus> &nucleus_ptr) {
     auto nuclues_rapidity = nucleus_ptr->get_beam_rapidity(
-                                    parameter_list.get_roots(), 1);
+                                    parameter_list.get_roots(), direction);
     const real width_xy = 0.5;      // fm
     const real width_z = width_xy/cosh(nuclues_rapidity);   // fm
     const real prefactor = 1./(width_xy*width_xy*width_z)/pow(M_PI*2, 1.5);
@@ -125,13 +125,13 @@ real Glauber::get_nucleus_density(double t, double x,
 
 real Glauber::get_proj_nucleon_density(double t, double x,
                                        double y, double z) {
-    return get_nucleus_density(t, x, y, z, projectile);
+    return get_nucleus_density(t, x, y, z, 1, projectile);
 }
 
 
 real Glauber::get_targ_nucleon_density(double t, double x,
                                        double y, double z) {
-    return get_nucleus_density(t, x, y, z, target);
+    return get_nucleus_density(t, x, y, z, -1, target);
 }
 
 

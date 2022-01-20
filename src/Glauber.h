@@ -102,7 +102,7 @@ class Glauber {
 
     //! This function gets the target/projectile nucleon density at Lab frame
     //! at t, x, y, z The unit is 1/fm^3
-    double get_nucleus_density(double t, double x, double y, double z,
+    double get_nucleus_density(double t, double x, double y, double z, int direction,
                                std::unique_ptr<Nucleus> &nucleus_ptr);
     double get_targ_nucleon_density(double t, double x, double y, double z);
     double get_proj_nucleon_density(double t, double x, double y, double z);
