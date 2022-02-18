@@ -11,8 +11,6 @@
 #include <string>
 #include <memory>
 
-#include "LHAPDF/LHAPDF.h"
-
 namespace MCGlb {
 
 class Nucleus {
@@ -26,7 +24,6 @@ class Nucleus {
     WoodsSaxonParam WS_param_vec;       // rho, w, R, a, beta2, beta4
     real d_min_;                         // minimum distance between nucleons
     bool sample_valence_quarks;
-    std::unique_ptr<LHAPDF::PDF> pdf;
     real Q2;                            // Q2 when sampling valence quark
     real BG_;
 
@@ -139,8 +136,6 @@ class Nucleus {
 
     void sample_fermi_momentum();
 
-    real sample_a_u_quark_momentum_fraction(const bool flag_NPDF) const;
-    real sample_a_d_quark_momentum_fraction(const bool flag_NPDF) const;
     void sample_quark_momentum_fraction(std::vector<real> &xQuark,
                                         const int number_of_quarks,
                                         const int electric_charge,

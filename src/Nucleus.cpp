@@ -13,7 +13,6 @@
 #include <utility>
 
 #include "eps09.h"
-#include "LHAPDF/LHAPDF.h"
 
 using std::cout;
 using std::endl;
@@ -781,52 +780,6 @@ void Nucleus::output_nucleon_positions(std::string filename) const {
            << std::endl;
     }
     of.close();
-}
-
-
-real Nucleus::sample_a_d_quark_momentum_fraction(const bool flag_NPDF) const {
-    real x;
-    real xfd, xfdbar, tmp, correction;
-    real ruv = 1.;
-    real rdv = 1.;
-    do {
-        x = ran_gen_ptr->rand_uniform();
-        if (flag_NPDF) {
-            real ru, rd, rs, rc, rb, rg;
-            eps09(2, 1, A_, x, sqrt(Q2), ruv, rdv, ru, rd, rs,
-                  rc, rb, rg);
-        }
-        // ruv seems to be always equal to rdv,
-        // so I am fine not distinguishing proton and neutron here
-
-        xfdbar     = pdf->xfxQ2(-1, x, Q2);
-        xfd        = pdf->xfxQ2( 1, x, Q2);
-        tmp        = ran_gen_ptr->rand_uniform();
-        correction = 1.0;
-    } while (tmp > ((xfd - xfdbar)*rdv*correction));
-    return(x);
-}
-
-
-real Nucleus::sample_a_u_quark_momentum_fraction(const bool flag_NPDF) const {
-    real x;
-    real xfu, xfubar, tmp, correction;
-    real ruv = 1.;
-    real rdv = 1.;
-    do {
-        x = ran_gen_ptr->rand_uniform();
-        if (flag_NPDF) {
-            real ru, rd, rs, rc, rb, rg;
-            eps09(2, 1, A_, x, sqrt(Q2), ruv, rdv, ru, rd, rs,
-                  rc, rb, rg);
-        }
-
-        xfubar     = pdf->xfxQ2(-2, x, Q2);
-        xfu        = pdf->xfxQ2( 2, x, Q2);
-        tmp        = ran_gen_ptr->rand_uniform();
-        correction = 1.0;
-    } while (tmp > ((xfu - xfubar)*ruv*correction));
-    return(x);
 }
 
 
