@@ -883,6 +883,42 @@ void Glauber::output_QCD_strings(std::string filename, const real Npart,
 }
 
 
+void Glauber::outputParticipants(std::string filename) {
+    std::ofstream output(filename.c_str());
+    output << "# t[fm]  x[fm]  y[fm]  z[fm]  dir  e"
+           << endl;
+    auto proj_nucleon_list = projectile->get_nucleon_list();
+    int dir = 1;
+    for (auto &iproj: (*proj_nucleon_list)) {
+        if (iproj->is_wounded()) {
+            output << std::scientific << std::setprecision(6);
+            auto proj_x = iproj->get_x();
+            // output participant nucleon's position
+            for (const auto &x_i : proj_x)
+                output << std::setw(10) << x_i << "  ";
+
+            output << std::setw(10) << dir << "  "
+                   << iproj->get_electric_charge() << endl;
+        }
+    }
+    dir = -1;
+    auto targ_nucleon_list = target->get_nucleon_list();
+    for (auto &itarg: (*targ_nucleon_list)) {
+        if (!itarg->is_wounded()) {
+            output << std::scientific << std::setprecision(6);
+            auto targ_x = itarg->get_x();
+            // output participant nucleon's position
+            for (const auto &x_i : targ_x)
+                output << std::setw(10) << x_i << "  ";
+
+            output << std::setw(10) << dir << "  "
+                   << itarg->get_electric_charge() << endl;
+        }
+    }
+    output.close();
+}
+
+
 void Glauber::output_spectators(std::string filename) {
     std::ofstream output(filename.c_str());
     output << "# t[fm]  x[fm]  y[fm]  z[fm]  m[GeV]  px[GeV]  py[GeV]  y  e"
