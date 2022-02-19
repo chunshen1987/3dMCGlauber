@@ -200,4 +200,17 @@ real Parameters::get_BG() const {
     return(BG);
 }
 
+real Parameters::get_BG_proj() const {
+    real BG = static_cast<real>(get_param_double("BG_proj"));
+    assert(BG > 0.);
+    return(BG);
+}
+
+real Parameters::get_BG_targ() const {
+    real BG = static_cast<real>(get_param_double("BG_targ"));
+    assert(BG > 0.);
+    return(BG);
+}
+
+
 }
