@@ -904,7 +904,7 @@ void Glauber::outputParticipants(std::string filename) {
     dir = -1;
     auto targ_nucleon_list = target->get_nucleon_list();
     for (auto &itarg: (*targ_nucleon_list)) {
-        if (!itarg->is_wounded()) {
+        if (itarg->is_wounded()) {
             output << std::scientific << std::setprecision(6);
             auto targ_x = itarg->get_x();
             // output participant nucleon's position
