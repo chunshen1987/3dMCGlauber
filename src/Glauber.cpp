@@ -3,8 +3,6 @@
 #include "Glauber.h"
 #include "data_structs.h"
 #include "PhysConsts.h"
-#include "MCGlauberWrapper.h"
-
 #include <string>
 #include <iomanip>
 #include <fstream>
@@ -17,7 +15,6 @@
 using std::cout;
 using std::endl;
 using std::shared_ptr;
-
 
 namespace MCGlb {
 
@@ -259,12 +256,11 @@ real Glauber::compute_NN_inelastic_cross_section(real ecm) const {
 }
 
 
-void Glauber::Pick_and_subtract_hard_parton_momentum_in_nucleon() {
+void Glauber::Pick_and_subtract_hard_parton_momentum_in_nucleon(std::vector<double> &HardPartonPosAndMomProj_,
+                                                                std::vector<double> &HardPartonPosAndMomTarg_) {
     // Positions and Momentum for the leading hard partons.
-    HardPartonPosAndMomProj_ = MCGWrapper->GetHardPartonPosAndMomentumProj();
-    HardPartonPosAndMomTarg_ = MCGWrapper->GetHardPartonPosAndMomentumTarg();
-    real binary_collision_x = HardPartonPosAndMomProj_[1];
-    real binary_collision_y = HardPartonPosAndMomProj_[2];
+    auto binary_collision_x = HardPartonPosAndMomProj_[1];
+    auto binary_collision_y = HardPartonPosAndMomProj_[2];
     // pick out the colliding nucleon pair generated hard partons
     for (auto &it: collision_schedule_list_) {
         // collision list is time ordered

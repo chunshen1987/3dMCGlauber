@@ -65,6 +65,31 @@ std::vector<double> EventGenerator::MCGlb_target_nucleon_z() {
     return(mc_glauber_ptr_->get_all_targ_nucleon_z());
 }
 
+void EventGenerator::GetMomandPos_Proj(double &t, double &x, double &y, double &z,
+                                       double &E, double &px, double &py, double &pz) {
+    proj_t_ = t;
+    proj_x_ = x;
+    proj_y_ = y;
+    proj_z_ = z;
+    proj_E_ = E;
+    proj_px_ = px;
+    proj_py_ = py;
+    proj_pz_ = pz;
+}
+
+void EventGenerator::GetMomandPos_Targ(double &t, double &x, double &y, double &z,
+                                       double &E, double &px, double &py, double &pz) {
+    targ_t_ = t;
+    targ_x_ = x;
+    targ_y_ = y;
+    targ_z_ = z;
+    targ_E_ = E;
+    targ_px_ = px;
+    targ_py_ = py;
+    targ_pz_ = pz;
+}
+
+
 void EventGenerator::generate_strings() {
     messager << "Random seed = " << ran_gen_ptr_->get_seed();
     messager.flush("info");
@@ -76,7 +101,29 @@ void EventGenerator::generate_strings() {
 
     int iev = 0;
     real mean_Npart = 0;
-    mc_glauber_ptr_->Pick_and_subtract_hard_parton_momentum_in_nucleon();
+
+    HardPartonPosAndMomProj_.clear();
+    HardPartonPosAndMomProj_.push_back(proj_t_);
+    HardPartonPosAndMomProj_.push_back(proj_x_);
+    HardPartonPosAndMomProj_.push_back(proj_y_);
+    HardPartonPosAndMomProj_.push_back(proj_z_);
+    HardPartonPosAndMomProj_.push_back(proj_E_);
+    HardPartonPosAndMomProj_.push_back(proj_px_);
+    HardPartonPosAndMomProj_.push_back(proj_py_);
+    HardPartonPosAndMomProj_.push_back(proj_pz_);
+
+    HardPartonPosAndMomTarg_.clear();
+    HardPartonPosAndMomTarg_.push_back(targ_t_);
+    HardPartonPosAndMomTarg_.push_back(targ_x_);
+    HardPartonPosAndMomTarg_.push_back(targ_y_);
+    HardPartonPosAndMomTarg_.push_back(targ_z_);
+    HardPartonPosAndMomTarg_.push_back(targ_E_);
+    HardPartonPosAndMomTarg_.push_back(targ_px_);
+    HardPartonPosAndMomTarg_.push_back(targ_py_);
+    HardPartonPosAndMomTarg_.push_back(targ_pz_);
+
+    mc_glauber_ptr_->Pick_and_subtract_hard_parton_momentum_in_nucleon(
+                     HardPartonPosAndMomProj_, HardPartonPosAndMomTarg_);
     auto Nstrings = mc_glauber_ptr_->decide_QCD_strings_production();
     if (event_of_interest_trigger(Npart_, Ncoll_, Nstrings))  {
         int event_id = iev;
