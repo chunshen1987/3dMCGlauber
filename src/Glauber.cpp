@@ -265,8 +265,8 @@ void Glauber::Pick_and_subtract_hard_parton_momentum_in_nucleon(std::vector<doub
     for (auto &it: collision_schedule_list_) {
         // collision list is time ordered
         auto xvec = it.get_collision_position();
-        if ( ( abs( xvec[1] - binary_collision_x ) < 1.e-4 ) && 
-             ( abs( xvec[2] - binary_collision_y ) < 1.e-4 ) ) {
+        if ( ( abs((xvec[1] - binary_collision_x)/xvec[1]) < 1.e-3 ) && 
+             ( abs((xvec[2] - binary_collision_y)/xvec[2]) < 1.e-3 ) ) {
              // substract the four momentum from the colliding nucleon pair
              auto proj_collided = it.get_proj_nucleon_ptr().lock();
              auto targ_collided = it.get_targ_nucleon_ptr().lock();
