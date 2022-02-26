@@ -61,6 +61,10 @@ void EventGenerator::generate_events(int nev, int event_id_offset) {
                 std::ostringstream specFileName;
                 specFileName << "spectators_event_" << event_id << ".dat";
                 mc_glauber_ptr_->output_spectators(specFileName.str());
+
+                std::ostringstream partFileName;
+                partFileName << "participants_event_" << event_id << ".dat";
+                mc_glauber_ptr_->outputParticipants(partFileName.str());
             }
 
             // write event information to the record file

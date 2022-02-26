@@ -104,6 +104,7 @@ class Glauber {
                             const real Ncoll, const real Nstrings,
                             const real b);
     void output_spectators(std::string filename);
+    void outputParticipants(std::string filename);
 
     real get_sig_eff(const real siginNN);
 };
