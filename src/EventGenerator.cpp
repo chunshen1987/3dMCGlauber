@@ -33,10 +33,14 @@ void EventGenerator::generate_pre_events() {
     messager.flush("info");
     messager << "Generating 1 events ... ";
     messager.flush("info");
-
-    mc_glauber_ptr_->make_nuclei();
-    Ncoll_ = mc_glauber_ptr_->make_collision_schedule();
-    Npart_ = mc_glauber_ptr_->get_Npart();
+    int iev =0;
+    while (iev < 1) {
+        mc_glauber_ptr_->make_nuclei();
+        Ncoll_ = mc_glauber_ptr_->make_collision_schedule();
+        Npart_ = mc_glauber_ptr_->get_Npart();
+        auto Nstrings = mc_glauber_ptr_->decide_QCD_strings_production();
+        if (event_of_interest_trigger(Npart_, Ncoll_, Nstrings))iev++;
+    }
 }
 
 
@@ -122,26 +126,23 @@ void EventGenerator::generate_strings() {
     HardPartonPosAndMomTarg_.push_back(targ_py_);
     HardPartonPosAndMomTarg_.push_back(targ_pz_);
 
-    mc_glauber_ptr_->Pick_and_subtract_hard_parton_momentum_in_nucleon(
-                     HardPartonPosAndMomProj_, HardPartonPosAndMomTarg_);
     auto Nstrings = mc_glauber_ptr_->decide_QCD_strings_production();
-    if (event_of_interest_trigger(Npart_, Ncoll_, Nstrings))  {
-        int event_id = iev;
-        mean_Npart += Npart_;
-
-        Ncoll_ = mc_glauber_ptr_->perform_string_production();
-        auto b = mc_glauber_ptr_->get_impact_parameter();
-        if (!statistics_only_) {
-            std::ostringstream filename;
-            filename << "strings_event_" << event_id << ".dat";
-            mc_glauber_ptr_->output_QCD_strings(filename.str(), Npart_,
-                                                Ncoll_, Nstrings, b);
-        }
-
-        // write event information to the record file
-        record_file << event_id << "  " << Npart_ << "  " << Ncoll_ << "  "
-                    << Nstrings << "  " << b << std::endl;
+    int event_id = iev;
+    mean_Npart += Npart_;
+    mc_glauber_ptr_->Pick_and_subtract_hard_parton_momentum_in_nucleon(
+                        HardPartonPosAndMomProj_, HardPartonPosAndMomTarg_);
+    Ncoll_ = mc_glauber_ptr_->perform_string_production();
+    auto b = mc_glauber_ptr_->get_impact_parameter();
+    if (!statistics_only_) {
+        std::ostringstream filename;
+        filename << "strings_event_" << event_id << ".dat";
+        mc_glauber_ptr_->output_QCD_strings(filename.str(), Npart_,
+                                            Ncoll_, Nstrings, b);
     }
+
+    // write event information to the record file
+    record_file << event_id << "  " << Npart_ << "  " << Ncoll_ << "  "
+                << Nstrings << "  " << b << std::endl;
     record_file.close();
     mean_Npart = static_cast<real>(mean_Npart);
     messager << "Completed. <Npart> = " << mean_Npart;
