@@ -329,10 +329,12 @@ int Glauber::decide_produce_string_num(
 
 int Glauber::decide_QCD_strings_production() {
     if (sample_valence_quark) {
-        projectile->sample_valence_quarks_inside_nucleons(1);
-        target->sample_valence_quarks_inside_nucleons(-1);
-        projectile->add_soft_parton_ball(1);
-        target->add_soft_parton_ball(-1);
+        projectile->sample_valence_quarks_inside_nucleons(
+                                    parameter_list.get_roots(), 1);
+        target->sample_valence_quarks_inside_nucleons(
+                                    parameter_list.get_roots(), -1);
+        projectile->add_soft_parton_ball(parameter_list.get_roots(), 1);
+        target->add_soft_parton_ball(parameter_list.get_roots(), -1);
     }
     std::vector<shared_ptr<CollisionEvent>> collision_list;
     for (auto &it: collision_schedule)

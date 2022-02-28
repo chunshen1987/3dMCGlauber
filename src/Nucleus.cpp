@@ -208,29 +208,28 @@ void Nucleus::rotate_nucleus(real phi, real theta) {
 }
 
 
-void Nucleus::sample_valence_quarks_inside_nucleons(int direction) {
+void Nucleus::sample_valence_quarks_inside_nucleons(real ecm, int direction) {
     const int number_of_quarks = PhysConsts::NumValenceQuark;
     for (auto &nucleon_i: nucleon_list_) {
         if (nucleon_i->is_wounded()
             && nucleon_i->get_number_of_quarks() == 0) {
             std::vector<real> xQuark;
-            MomentumVec nuleon_momentum = nucleon_i->get_p();
             sample_quark_momentum_fraction(xQuark, number_of_quarks,
                                            nucleon_i->get_electric_charge(),
-                                           nuleon_momentum);
+                                           ecm);
             for (int i = 0; i < number_of_quarks; i++) {
                 auto xvec = sample_valence_quark_position();
                 std::shared_ptr<Quark> quark_ptr(new Quark(xvec, xQuark[i]));
                 nucleon_i->push_back_quark(quark_ptr);
             }
-            real nucleon_pz = nuleon_momentum[3];
-            nucleon_i->accelerate_quarks(nucleon_pz, direction);
+            nucleon_i->accelerate_quarks(ecm, direction);
         }
     }
 }
 
 
-void Nucleus::add_soft_parton_ball(int direction) {
+
+void Nucleus::add_soft_parton_ball(real ecm, int direction) {
     for (auto &nucleon_i: nucleon_list_) {
         if (nucleon_i->is_wounded()
             && nucleon_i->get_number_of_quarks() != 0) {
@@ -660,7 +659,7 @@ void Nucleus::generate_nucleus_configuration_with_deformed_woods_saxon() {
 
 
 real Nucleus::fermi_distribution(real r, real R_WS, real a_WS) const {
-    real f = 1./(1. + exp((r - R_WS)/a_WS));
+    real f = 1./(1. + exp((r - R_WS)/a_WS + 1.0e-16));
     return (f);
 }
 
@@ -809,7 +808,7 @@ real Nucleus::sample_a_u_quark_momentum_fraction(const bool flag_NPDF) const {
 void Nucleus::sample_quark_momentum_fraction(std::vector<real> &xQuark,
                                              const int number_of_quarks,
                                              const int electric_charge,
-                                             const MomentumVec nucleon_mom) const {
+                                             const real ecm) const {
     if (!sample_valence_quarks) {
         for (int i = 0; i < number_of_quarks; i++) {
             xQuark.push_back(1./number_of_quarks);
@@ -818,8 +817,10 @@ void Nucleus::sample_quark_momentum_fraction(std::vector<real> &xQuark,
     }
 
     const real mq = PhysConsts::MQuarkValence;
+    const real mp = PhysConsts::MProton;
+    const real ybeam = acosh(ecm/(2.*mp));
     real total_energy = 0.;
-    real E_proton = nucleon_mom[0];
+    real E_proton = mp*cosh(ybeam);
     do {
         auto sample_idx = static_cast<int>(
             ran_gen_ptr->rand_uniform()*number_of_valence_quark_samples_);
@@ -833,7 +834,7 @@ void Nucleus::sample_quark_momentum_fraction(std::vector<real> &xQuark,
         }
         total_energy = 0.;
         for (int i = 0; i < number_of_quarks; i++) {
-            real rap_local = asinh(xQuark[i]*nucleon_mom[3]/mq);
+            real rap_local = asinh(xQuark[i]*mp/mq*sinh(ybeam));
             real E_local = mq*cosh(rap_local);
             total_energy += E_local;
         }
