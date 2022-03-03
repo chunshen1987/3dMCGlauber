@@ -726,6 +726,7 @@ int Glauber::perform_string_production() {
 }
 
 
+
 void Glauber::produce_remnant_strings() {
     // create strings for the beam remnants
     const auto string_evolution_mode = -4;
@@ -739,16 +740,24 @@ void Glauber::produce_remnant_strings() {
 
             auto p_i = iproj->get_remnant_p();
             if (p_i[0] <= 0.) continue;
+            auto pT_i = std::sqrt(p_i[1]*p_i[1] + p_i[2]*p_i[2]);
             auto y_rem = ybeam;
-            if (std::abs(p_i[3]) < p_i[0]) {
-                // a time-like beam remnant
-                y_rem = 0.5*log((p_i[0] + p_i[3])/(p_i[0] - p_i[3]));
+            if (p_i[0] < pT_i) {
+                std::cout<< " Warning: E < pT in the remnant, regular it. " << std::endl;
+                p_i[1] = p_i[1]*p_i[0]/pT_i;
+                p_i[2] = p_i[2]*p_i[0]/pT_i;
+                pT_i   = std::sqrt(p_i[1]*p_i[1] + p_i[2]*p_i[2]);
+                y_rem  = 0.0;
             }
-            auto cosh_y_rem = cosh(y_rem);
-            auto m_rem = p_i[0]/cosh_y_rem;
-            p_i[1] = 0.;
-            p_i[2] = 0.;
-            p_i[3] = m_rem*sinh(y_rem);
+            auto virtuality = p_i[0]*p_i[0] - pT_i*pT_i - p_i[3]*p_i[3];
+            if (virtuality < 0.) {
+                std::cout<< " Warning: The beam remnant of projectile is space-like vector." << std::endl;
+                std::cout<< " Now change beam rapidity from " <<y_rem;
+                auto mT = std::sqrt(pT_i*pT_i + 1.e-4);
+                y_rem = acosh(p_i[0]/mT);
+                std::cout<< " to " << y_rem <<std::endl;
+                p_i[3] = mT * sinh(y_rem);
+            }
             MomentumVec targ_p_vec = {p_i[0], p_i[1], p_i[2], -p_i[3]};
 
             get_tau_form_and_moversigma(string_evolution_mode, y_rem,
@@ -768,19 +777,26 @@ void Glauber::produce_remnant_strings() {
     for (auto &itarg: (*targ_nucleon_list)) {
         if (itarg->is_wounded()) {
             auto x_i = itarg->get_remnant_x_frez();
-
             auto p_i = itarg->get_remnant_p();
             if (p_i[0] <= 0.) continue;
+            auto pT_i = std::sqrt(p_i[1]*p_i[1] + p_i[2]*p_i[2]);
             auto y_rem = -ybeam;
-            if (std::abs(p_i[3]) < p_i[0]) {
-                // a time-like beam remnant
-                y_rem = 0.5*log((p_i[0] + p_i[3])/(p_i[0] - p_i[3]));
+            if (p_i[0] < pT_i) {
+                std::cout<< " Warning: E < pT in the remnant, regular it. " << std::endl;
+                p_i[1] = p_i[1]*p_i[0]/pT_i;
+                p_i[2] = p_i[2]*p_i[0]/pT_i;
+                pT_i   = std::sqrt(p_i[1]*p_i[1] + p_i[2]*p_i[2]);
+                y_rem  = 0.0;
             }
-            auto cosh_y_rem = cosh(y_rem);
-            auto m_rem = p_i[0]/cosh_y_rem;
-            p_i[1] = 0.;
-            p_i[2] = 0.;
-            p_i[3] = m_rem*sinh(y_rem);
+            auto virtuality = p_i[0]*p_i[0] - pT_i*pT_i - p_i[3]*p_i[3];
+            if (virtuality < 0.) {
+                std::cout<< " Warning: The beam remnant of target is space-like vector." << std::endl;
+                std::cout<< " Now change beam rapidity from " <<y_rem;
+                auto mT = std::sqrt(pT_i*pT_i + 1.e-4);
+                y_rem = -acosh(p_i[0]/mT);
+                std::cout<< " to " << y_rem <<std::endl;
+                p_i[3] = mT * sinh(y_rem);
+            }
             MomentumVec proj_p_vec = {p_i[0], p_i[1], p_i[2], -p_i[3]};
 
             get_tau_form_and_moversigma(string_evolution_mode, std::abs(y_rem),
