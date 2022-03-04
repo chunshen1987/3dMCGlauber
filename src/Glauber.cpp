@@ -741,7 +741,7 @@ void Glauber::produce_remnant_strings() {
             if (p_i[0] <= 1.e-3) continue;
             auto pT_i = std::sqrt(p_i[1]*p_i[1] + p_i[2]*p_i[2]);
             auto y_rem = ybeam;
-            if ((p_i[0]+1.e-3) <= pT_i) {
+            if ((p_i[0]-1.e-3) <= pT_i) {
                 std::cout<< " Warning: E < pT in the remnant, regular it. " << std::endl;
                 p_i[1] = p_i[1]*(p_i[0]-1.e-3)/pT_i;
                 p_i[2] = p_i[2]*(p_i[0]-1.e-3)/pT_i;
@@ -780,7 +780,7 @@ void Glauber::produce_remnant_strings() {
             if (p_i[0] <= 1.e-3) continue;
             auto pT_i = std::sqrt(p_i[1]*p_i[1] + p_i[2]*p_i[2]);
             auto y_rem = -ybeam;
-            if ((p_i[0]+1.e-3) <= pT_i) {
+            if ((p_i[0]-1.e-3) <= pT_i) {
                 std::cout<< " Warning: E < pT in the remnant, regular it. " << std::endl;
                 p_i[1] = p_i[1]*(p_i[0]-1.e-3)/pT_i;
                 p_i[2] = p_i[2]*(p_i[0]-1.e-3)/pT_i;
