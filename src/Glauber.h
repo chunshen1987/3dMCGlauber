@@ -29,8 +29,6 @@ class Glauber {
     std::vector<QCDString> remnant_string_list_;
     std::vector<CollisionEvent> collision_schedule_list_;
     std::shared_ptr<RandomUtil::Random> ran_gen_ptr_;
-    //std::vector<double> GenHardPartonPosAndMomProj_;
-    //std::vector<double> GenHardPartonPosAndMomTarg_;
     std::vector<double> Proj_nucleonz_;
     std::vector<double> Targ_nucleonz_;
     bool sample_valence_quark;

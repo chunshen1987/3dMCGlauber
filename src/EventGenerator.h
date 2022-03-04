@@ -21,12 +21,12 @@ class EventGenerator {
     pretty_ostream messager;
     int Ncoll_;
     int Npart_;
-    std::vector<double> HardPartonPosAndMomProj_;
-    std::vector<double> HardPartonPosAndMomTarg_;
-    double proj_t_, proj_x_, proj_y_, proj_z_;
-    double proj_E_, proj_px_, proj_py_, proj_pz_;
-    double targ_t_, targ_x_, targ_y_, targ_z_;
-    double targ_E_, targ_px_, targ_py_, targ_pz_;
+    std::vector<double> HardPartonPosAndMomProj;
+    std::vector<double> HardPartonPosAndMomTarg;
+    double proj_t, proj_x, proj_y, proj_z;
+    double proj_E, proj_px, proj_py, proj_pz;
+    double targ_t, targ_x, targ_y, targ_z;
+    double targ_E, targ_px, targ_py, targ_pz;
  public:
     EventGenerator() = default;
     EventGenerator(std::string input_filename, int seed=0);
