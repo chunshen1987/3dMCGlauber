@@ -32,6 +32,7 @@ class QCDString {
     shared_ptr<Quark> targ_q;
     real m_over_sigma;
     real mass_;
+    real px_, py_;
 
  public:
     QCDString() = default;
@@ -51,6 +52,9 @@ class QCDString {
               bool has_baryon_right_in, bool has_baryon_left_in);
 
     real get_string_mass() const {return(mass_);}
+
+    real get_string_px() const {return(px_);}
+    real get_string_py() const {return(py_);}
 
     void set_tau_form(real tau_form_in) {tau_form = tau_form_in;}
     real get_tau_form() const {return(tau_form);}

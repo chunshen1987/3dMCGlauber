@@ -737,26 +737,25 @@ void Glauber::produce_remnant_strings() {
     for (auto &iproj: (*proj_nucleon_list)) {
         if (iproj->is_wounded()) {
             auto x_i = iproj->get_remnant_x_frez();
-
             auto p_i = iproj->get_remnant_p();
-            if (p_i[0] <= 0.) continue;
+            if (p_i[0] <= 1.e-3) continue;
             auto pT_i = std::sqrt(p_i[1]*p_i[1] + p_i[2]*p_i[2]);
             auto y_rem = ybeam;
-            if (p_i[0] < pT_i) {
+            if ((p_i[0]+1.e-3) <= pT_i) {
                 std::cout<< " Warning: E < pT in the remnant, regular it. " << std::endl;
-                p_i[1] = p_i[1]*p_i[0]/pT_i;
-                p_i[2] = p_i[2]*p_i[0]/pT_i;
+                p_i[1] = p_i[1]*(p_i[0]-1.e-3)/pT_i;
+                p_i[2] = p_i[2]*(p_i[0]-1.e-3)/pT_i;
                 pT_i   = std::sqrt(p_i[1]*p_i[1] + p_i[2]*p_i[2]);
-                y_rem  = 0.0;
+                p_i[3] = std::sqrt(p_i[0]*p_i[0] - pT_i*pT_i -1.e-6);
+                y_rem = 0.5*log((p_i[0] + p_i[3])/(p_i[0] - p_i[3]));
             }
             auto virtuality = p_i[0]*p_i[0] - pT_i*pT_i - p_i[3]*p_i[3];
-            if (virtuality < 0.) {
+            if (virtuality <= 1.e-6) {
                 std::cout<< " Warning: The beam remnant of projectile is space-like vector." << std::endl;
                 std::cout<< " Now change beam rapidity from " <<y_rem;
-                auto mT = std::sqrt(pT_i*pT_i + 1.e-4);
-                y_rem = acosh(p_i[0]/mT);
-                std::cout<< " to " << y_rem <<std::endl;
-                p_i[3] = mT * sinh(y_rem);
+                p_i[3] = std::sqrt(p_i[0]*p_i[0] - pT_i*pT_i -1.e-6);
+                y_rem = 0.5*log((p_i[0] + p_i[3])/(p_i[0] - p_i[3]));
+                std::cout<< " to " << y_rem << std::endl;
             }
             MomentumVec targ_p_vec = {p_i[0], p_i[1], p_i[2], -p_i[3]};
 
@@ -778,24 +777,24 @@ void Glauber::produce_remnant_strings() {
         if (itarg->is_wounded()) {
             auto x_i = itarg->get_remnant_x_frez();
             auto p_i = itarg->get_remnant_p();
-            if (p_i[0] <= 0.) continue;
+            if (p_i[0] <= 1.e-3) continue;
             auto pT_i = std::sqrt(p_i[1]*p_i[1] + p_i[2]*p_i[2]);
             auto y_rem = -ybeam;
-            if (p_i[0] < pT_i) {
+            if ((p_i[0]+1.e-3) <= pT_i) {
                 std::cout<< " Warning: E < pT in the remnant, regular it. " << std::endl;
-                p_i[1] = p_i[1]*p_i[0]/pT_i;
-                p_i[2] = p_i[2]*p_i[0]/pT_i;
+                p_i[1] = p_i[1]*(p_i[0]-1.e-3)/pT_i;
+                p_i[2] = p_i[2]*(p_i[0]-1.e-3)/pT_i;
                 pT_i   = std::sqrt(p_i[1]*p_i[1] + p_i[2]*p_i[2]);
-                y_rem  = 0.0;
+                p_i[3] = std::sqrt(p_i[0]*p_i[0] - pT_i*pT_i -1.e-6);
+                y_rem = -0.5*log((p_i[0] + p_i[3])/(p_i[0] - p_i[3]));
             }
             auto virtuality = p_i[0]*p_i[0] - pT_i*pT_i - p_i[3]*p_i[3];
-            if (virtuality < 0.) {
+            if (virtuality < 1.e-6) {
                 std::cout<< " Warning: The beam remnant of target is space-like vector." << std::endl;
                 std::cout<< " Now change beam rapidity from " <<y_rem;
-                auto mT = std::sqrt(pT_i*pT_i + 1.e-4);
-                y_rem = -acosh(p_i[0]/mT);
+                p_i[3] = std::sqrt(p_i[0]*p_i[0] - pT_i*pT_i -1.e-6);
+                y_rem = -0.5*log((p_i[0] + p_i[3])/(p_i[0] - p_i[3]));
                 std::cout<< " to " << y_rem <<std::endl;
-                p_i[3] = mT * sinh(y_rem);
             }
             MomentumVec proj_p_vec = {p_i[0], p_i[1], p_i[2], -p_i[3]};
 
@@ -865,7 +864,7 @@ void Glauber::output_QCD_strings(std::string filename, const real Npart,
            << "eta_s_left  eta_s_right  y_l  y_r  remnant_l  remnant_r "
            << "y_l_i  y_r_i "
            << "eta_s_baryon_left  eta_s_baryon_right  y_l_baryon  y_r_baryon  "
-           << "baryon_fraction_l  baryon_fraction_r"
+           << "baryon_fraction_l  baryon_fraction_r px py"
            << endl;
 
     // output strings
@@ -918,6 +917,7 @@ void Glauber::output_QCD_strings(std::string filename, const real Npart,
             it.get_eta_s_baryon_left(), it.get_eta_s_baryon_right(),
             it.get_y_f_baryon_left(), it.get_y_f_baryon_right(),
             baryon_fraction_left, baryon_fraction_right,
+            it.get_string_px(), it.get_string_py(),
         };
 
         output << std::scientific << std::setprecision(8);
@@ -975,16 +975,17 @@ void Glauber::output_QCD_strings(std::string filename, const real Npart,
                 x_left[1] - x_o, x_left[2] - y_o,
                 x_right[1] - x_o, x_right[2] - y_o,
                 eta_s_left, eta_s_right,
-                remnant_left*it.get_y_f_left() + (1. - remnant_left)*eta_s_left,
-                remnant_right*it.get_y_f_right() + (1. - remnant_right)*eta_s_right,
-                remnant_left, remnant_right,
-                remnant_left*it.get_y_i_left() + (1. - remnant_left)*eta_s_left,
-                remnant_right*it.get_y_i_right() + (1. - remnant_right)*eta_s_right,
+                remnant_left*it.get_y_f_left() + (1. - remnant_left)*eta_s_left,//13
+                remnant_right*it.get_y_f_right() + (1. - remnant_right)*eta_s_right,//14
+                remnant_left, remnant_right,//15 16 weight 0 or 1
+                remnant_left*it.get_y_i_left() + (1. - remnant_left)*eta_s_left, //17 
+                remnant_right*it.get_y_i_right() + (1. - remnant_right)*eta_s_right,//18
                 remnant_left*it.get_eta_s_baryon_left(),
                 remnant_right*it.get_eta_s_baryon_right(),
                 remnant_left*it.get_y_f_baryon_left(),
                 remnant_right*it.get_y_f_baryon_right(),
                 baryon_fraction_left, baryon_fraction_right,
+                it.get_string_px(), it.get_string_py(),
             };
 
             output << std::scientific << std::setprecision(8);
