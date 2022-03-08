@@ -733,7 +733,7 @@ void Glauber::produce_remnant_strings() {
     real tau_form = 0.5;
     real m_over_sigma = 1.0;  // [fm]
     real y_loss = 0.;
-    real mass_min = 1.e-6;
+    real mass_min = 1.e-3;
     auto proj_nucleon_list = projectile->get_nucleon_list();
     for (auto &iproj: (*proj_nucleon_list)) {
         if (iproj->is_wounded()) {
