@@ -712,12 +712,10 @@ void Glauber::update_collision_schedule(
 }
 
 
-void Glauber::output_QCD_strings(std::string filename, const real Npart,
-                                 const real Ncoll, const real Nstrings,
-                                 const real b) {
+void Glauber::computeCenterOfMass(real &x_o, real &y_o) {
     // compute the center of mass
-    real x_o = 0.;
-    real y_o = 0.;
+    x_o = 0.;
+    y_o = 0.;
     int n_strings = QCD_string_list.size();
     for (auto &it: QCD_string_list) {
         auto x_prod = it.get_x_production();
@@ -734,6 +732,16 @@ void Glauber::output_QCD_strings(std::string filename, const real Npart,
     }
     x_o /= n_strings;
     y_o /= n_strings;
+}
+
+
+void Glauber::output_QCD_strings(std::string filename, const real Npart,
+                                 const real Ncoll, const real Nstrings,
+                                 const real b) {
+    // compute the center of mass
+    real x_o = 0.;
+    real y_o = 0.;
+    computeCenterOfMass(x_o, y_o);
 
     std::ofstream output(filename.c_str());
     real total_energy = Npart*parameter_list.get_roots()/2.;
@@ -884,6 +892,11 @@ void Glauber::output_QCD_strings(std::string filename, const real Npart,
 
 
 void Glauber::outputParticipants(std::string filename) {
+    // compute the center of mass
+    real x_o = 0.;
+    real y_o = 0.;
+    computeCenterOfMass(x_o, y_o);
+
     std::ofstream output(filename.c_str());
     output << "# t[fm]  x[fm]  y[fm]  z[fm]  dir  e"
            << endl;
@@ -893,6 +906,8 @@ void Glauber::outputParticipants(std::string filename) {
         if (iproj->is_wounded()) {
             output << std::scientific << std::setprecision(6);
             auto proj_x = iproj->get_x();
+            proj_x[1] -= x_o;
+            proj_x[2] -= y_o;
             // output participant nucleon's position
             for (const auto &x_i : proj_x)
                 output << std::setw(10) << x_i << "  ";
@@ -907,6 +922,8 @@ void Glauber::outputParticipants(std::string filename) {
         if (itarg->is_wounded()) {
             output << std::scientific << std::setprecision(6);
             auto targ_x = itarg->get_x();
+            targ_x[1] -= x_o;
+            targ_x[2] -= y_o;
             // output participant nucleon's position
             for (const auto &x_i : targ_x)
                 output << std::setw(10) << x_i << "  ";
@@ -920,6 +937,11 @@ void Glauber::outputParticipants(std::string filename) {
 
 
 void Glauber::output_spectators(std::string filename) {
+    // compute the center of mass
+    real x_o = 0.;
+    real y_o = 0.;
+    computeCenterOfMass(x_o, y_o);
+
     std::ofstream output(filename.c_str());
     output << "# t[fm]  x[fm]  y[fm]  z[fm]  m[GeV]  px[GeV]  py[GeV]  y  e"
            << endl;
@@ -936,6 +958,8 @@ void Glauber::output_spectators(std::string filename) {
             real vz = proj_p[3]/proj_p[0];
             proj_x[3] = vz/(1. + vz)*(proj_x[3]/vz - proj_x[0]);
             proj_x[0] = -proj_x[3];
+            proj_x[1] -= x_o;
+            proj_x[2] -= y_o;
 
             // output spectator's position and momentum
             for (const auto &x_i : proj_x)
@@ -966,6 +990,8 @@ void Glauber::output_spectators(std::string filename) {
             real vz = targ_p[3]/targ_p[0];
             targ_x[3] = vz/(1. - vz)*(targ_x[3]/vz - targ_x[0]);
             targ_x[0] = targ_x[3];
+            targ_x[1] -= x_o;
+            targ_x[2] -= y_o;
 
             // output spectator's position and momentum
             for (const auto &x_i : targ_x)
