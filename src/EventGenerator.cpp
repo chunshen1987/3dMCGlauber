@@ -57,7 +57,8 @@ void EventGenerator::generate_events(int nev, int event_id_offset) {
                 std::ostringstream filename;
                 filename << "strings_event_" << event_id << ".dat";
                 mc_glauber_ptr_->output_QCD_strings(filename.str(), Npart,
-                                                    Ncoll, Nstrings, b);
+                                                    Ncoll, Nstrings, b,
+                                                    ran_gen_ptr_->get_seed());
                 std::ostringstream specFileName;
                 specFileName << "spectators_event_" << event_id << ".dat";
                 mc_glauber_ptr_->output_spectators(specFileName.str());

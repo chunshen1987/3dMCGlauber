@@ -737,7 +737,7 @@ void Glauber::computeCenterOfMass(real &x_o, real &y_o) {
 
 void Glauber::output_QCD_strings(std::string filename, const real Npart,
                                  const real Ncoll, const real Nstrings,
-                                 const real b) {
+                                 const real b, const unsigned int seed) {
     // compute the center of mass
     real x_o = 0.;
     real y_o = 0.;
@@ -751,7 +751,8 @@ void Glauber::output_QCD_strings(std::string filename, const real Npart,
     output << "# b = " << b << " fm " << "Npart = " << Npart
            << " Ncoll = " << Ncoll << " Nstrings = " << Nstrings
            << " total_energy = " << total_energy << " GeV, "
-           << "net_Pz = " << net_Pz << " GeV" << endl;
+           << "net_Pz = " << net_Pz << " GeV, "
+           << "seed = " << seed << endl;
 
     output << "# mass[GeV]  m_over_sigma[fm]  tau_form[fm]  tau_0[fm]  eta_s_0  "
            << "x_perp[fm]  y_perp[fm]  x_l[fm]  y_l[fm]  x_r[fm]  y_r[fm]  "

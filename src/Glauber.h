@@ -103,7 +103,7 @@ class Glauber {
     void computeCenterOfMass(real &x_o, real &y_o);
     void output_QCD_strings(std::string filename, const real Npart,
                             const real Ncoll, const real Nstrings,
-                            const real b);
+                            const real b, const unsigned int seed);
     void output_spectators(std::string filename);
     void outputParticipants(std::string filename);
 
