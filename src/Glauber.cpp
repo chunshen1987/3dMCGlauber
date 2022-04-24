@@ -255,21 +255,32 @@ real Glauber::compute_NN_inelastic_cross_section(real ecm) const {
     return(sigma_NN_inel);
 }
 
-
-void Glauber::Pick_and_subtract_hard_parton_momentum_in_nucleon(std::vector<double> &HardPartonPosAndMomProj_,
-                                                                std::vector<double> &HardPartonPosAndMomTarg_) {
+void Glauber::Set_hard_parton_momentum(std::vector<double> &HardMomandPosProj,
+                                       std::vector<double> &HardMomandPosTarg) {
+    HardPartonPosAndMomProj_.clear();
+    HardPartonPosAndMomTarg_.clear();
+    for (unsigned int i=0; i<HardMomandPosProj.size(); i++) {
+        HardPartonPosAndMomProj_.push_back(HardMomandPosProj[i]);
+        HardPartonPosAndMomTarg_.push_back(HardMomandPosTarg[i]);
+    }
+}
+            
+void Glauber::Pick_and_subtract_hard_parton_momentum(real ecm_) {
     // Positions and Momentum for the leading hard partons.
     auto binary_collision_x = HardPartonPosAndMomProj_[1];
     auto binary_collision_y = HardPartonPosAndMomProj_[2];
-    // pick out the colliding nucleon pair generated hard partons
+    // pick up the colliding nucleon pair generated hard partons
     for (auto &it: collision_schedule_list_) {
         // collision list is time ordered
         auto xvec = it.get_collision_position();
         if ((abs(xvec[1] - binary_collision_x) < 1.e-5) && 
             (abs(xvec[2] - binary_collision_y) < 1.e-5)) {
-             // substract the four momentum from the colliding nucleon pair
+             // Pick up one valence quark,
+             // substract the four momentum from this valence quark
              auto proj_collided = it.get_proj_nucleon_ptr().lock();
              auto targ_collided = it.get_targ_nucleon_ptr().lock();
+             proj_collided->set_hard_collided(true);
+             targ_collided->set_hard_collided(true);
              MomentumVec HardPartonMomProj_ = { HardPartonPosAndMomProj_[4], 
                                                 HardPartonPosAndMomProj_[5],
                                                 HardPartonPosAndMomProj_[6],
@@ -278,9 +289,60 @@ void Glauber::Pick_and_subtract_hard_parton_momentum_in_nucleon(std::vector<doub
                                                 HardPartonPosAndMomTarg_[5],
                                                 HardPartonPosAndMomTarg_[6],
                                                 HardPartonPosAndMomTarg_[7] };
-             proj_collided->substract_momentum_from_remnant(HardPartonMomProj_);
-             targ_collided->substract_momentum_from_remnant(HardPartonMomTarg_);
-             break;
+             // Pick up the valence quark 
+             if (sample_valence_quark) {
+                 if (HardPartonMomProj_[0] > ecm_/2.1 || HardPartonMomTarg_[0] > ecm_/2.1) {
+                    std::cout << "Sorry for the too large hard collision energy,";
+                    std::cout << " Bye ~~" << std::endl;
+                    exit(-1);
+                 }
+                 std::shared_ptr<Quark> proj_q;
+                 std::shared_ptr<Quark> targ_q;
+                 MomentumVec p_q;
+                 int do_resample_proj = 1;
+                 while (do_resample_proj == 1) {
+                     proj_q = proj_collided->get_a_valence_quark_sub_mom(HardPartonMomProj_[0]);
+                     p_q = proj_q->get_p();
+                     if(p_q[0]<=HardPartonMomProj_[0]) {
+                         // resample the valence quark
+                         proj_collided->resample_valence_quarks(ecm_, 1, 
+                                            proj_collided->get_electric_charge(), 
+                                            parameter_list.get_BG(), ran_gen_ptr_);
+                         proj_collided->readd_soft_parton_ball(ecm_, 1, parameter_list.get_BG(), 
+                                            proj_collided->get_p(), proj_collided->get_quark_list(),
+                                            ran_gen_ptr_);
+                         std::cout << " re-sample the valence quark in proj." <<std::endl;
+                     } else {
+                         proj_q->set_subtracted(true);
+                         do_resample_proj = 0;
+                     }
+                 }
+                 proj_collided->erase_one_quark();
+                 int do_resample_targ = 1;
+                 while (do_resample_targ == 1) {
+                     targ_q = targ_collided->get_a_valence_quark_sub_mom(HardPartonMomTarg_[0]);
+                     p_q = targ_q->get_p();
+                     if(p_q[0]<=HardPartonMomTarg_[0]) {
+                         // resample the valence quark
+                         targ_collided->resample_valence_quarks(ecm_, -1, 
+                                            targ_collided->get_electric_charge(), 
+                                            parameter_list.get_BG(), ran_gen_ptr_);
+                         targ_collided->readd_soft_parton_ball(ecm_, -1, parameter_list.get_BG(), 
+                                            targ_collided->get_p(), targ_collided->get_quark_list(),
+                                            ran_gen_ptr_);
+                         std::cout << " re-sample the valence quark in targ." <<std::endl;
+                     } else {
+                         targ_q->set_subtracted(true);
+                         do_resample_targ = 0;
+                     }
+                }
+                targ_collided->erase_one_quark();
+                break;
+            } else {
+                proj_collided->substract_momentum_from_remnant(HardPartonMomProj_);
+                targ_collided->substract_momentum_from_remnant(HardPartonMomTarg_);
+                break;
+            }
         }
     }
 }
@@ -478,8 +540,6 @@ int Glauber::perform_string_production() {
     real lambdaB = parameter_list.get_lambdaB();
     lambdaB = std::min(1., lambdaB);
 
-    //cout << lambdaB <<endl;
-
     real t_current = 0.0;
     int number_of_collided_events = 0;
     while (collision_schedule.size() > 0) {
@@ -564,6 +624,27 @@ int Glauber::perform_string_production() {
                 update_momentum_quark(targ_q,  y_shift);
             }
         }
+        auto proj = first_event->get_proj_nucleon_ptr().lock();
+        auto targ = first_event->get_targ_nucleon_ptr().lock();
+        if (proj->is_hard_collided() && !proj->is_subtracted()) {
+            MomentumVec HardPartonMomProj_ = { HardPartonPosAndMomProj_[4], 
+                                               HardPartonPosAndMomProj_[5],
+                                               HardPartonPosAndMomProj_[6],
+                                               HardPartonPosAndMomProj_[7] };
+            proj->substract_momentum_from_remnant(HardPartonMomProj_);
+            proj->set_hard_subtracted(true);
+            std::cout << "Subtract four momentum from picked up nucleon in proj." << std::endl;
+        }
+        if (targ->is_hard_collided() && !targ->is_subtracted()) {
+            MomentumVec HardPartonMomTarg_ = { HardPartonPosAndMomTarg_[4], 
+                                               HardPartonPosAndMomTarg_[5],
+                                               HardPartonPosAndMomTarg_[6],
+                                               HardPartonPosAndMomTarg_[7] };
+            targ->substract_momentum_from_remnant(HardPartonMomTarg_);
+            targ->set_hard_subtracted(true);
+            std::cout << "Subtract four momentum from picked up nucleon in targ." << std::endl;
+        }
+
         update_collision_schedule(first_event);
         collision_schedule.erase((*collision_schedule.begin()));
     }
@@ -1105,7 +1186,7 @@ real Glauber::sample_junction_rapidity_left(real y_left, real y_right) const {
 }
 
 
-// This function computes the sigeff(s) from the formula
+//  This function computes the sigeff(s) from the formula
 //  sigmaNN_in(s) = int d^2b [1 - exp(-sigeff(s)*Tpp(b))]
 //  Reads sigmaNN, returns guassian width
 real Glauber::get_sig_eff(const real siginNN) {

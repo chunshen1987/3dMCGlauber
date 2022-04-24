@@ -53,6 +53,10 @@ class Particle {
                 - p_in[2]*p_in[2] - p_in[3]*p_in[3]) >= 0.);
         p = p_in;
     }
+    void set_p_first(MomentumVec p_in) {
+        assert(p_in[0] >= 0.);
+        p = p_in;
+    }
     MomentumVec get_p() const {return(p);}
 
     void set_mass(real mass_in) {

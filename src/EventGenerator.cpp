@@ -25,6 +25,7 @@ EventGenerator::EventGenerator(std::string input_filename, int seed) {
                     new Glauber(parameter_list_, ran_gen_ptr_));
 
     statistics_only_ = parameter_list_.get_only_event_statistics();
+    ecm_ = parameter_list_.get_roots();
 }
 
 
@@ -129,8 +130,9 @@ void EventGenerator::generate_strings() {
     auto Nstrings = mc_glauber_ptr_->decide_QCD_strings_production();
     int event_id = iev;
     mean_Npart += Npart_;
-    mc_glauber_ptr_->Pick_and_subtract_hard_parton_momentum_in_nucleon(
-                        HardPartonPosAndMomProj, HardPartonPosAndMomTarg);
+    mc_glauber_ptr_->Set_hard_parton_momentum(
+                     HardPartonPosAndMomProj, HardPartonPosAndMomTarg);
+    mc_glauber_ptr_->Pick_and_subtract_hard_parton_momentum(ecm_);
     Ncoll_ = mc_glauber_ptr_->perform_string_production();
     auto b = mc_glauber_ptr_->get_impact_parameter();
     if (!statistics_only_) {

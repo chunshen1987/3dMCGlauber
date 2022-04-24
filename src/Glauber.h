@@ -31,6 +31,8 @@ class Glauber {
     std::shared_ptr<RandomUtil::Random> ran_gen_ptr_;
     std::vector<double> Proj_nucleonz_;
     std::vector<double> Targ_nucleonz_;
+    std::vector<double> HardPartonPosAndMomProj_;
+    std::vector<double> HardPartonPosAndMomTarg_;
     bool sample_valence_quark;
     bool fluct_Nstrings_per_NN_collision_;
     real remnant_energy_loss_fraction_;
@@ -125,9 +127,10 @@ class Glauber {
     void output_QCD_strings(std::string filename, const real Npart,
                             const real Ncoll, const real Nstrings,
                             const real b);
-    void Pick_and_subtract_hard_parton_momentum_in_nucleon(std::vector<double> &HardPartonPosAndMomProj_,
-                                                           std::vector<double> &HardPartonPosAndMomTarg_);
-
+    //void Pick_and_subtract_hard_parton_momentum_in_nucleon();
+    void Pick_and_subtract_hard_parton_momentum(real ecm_);
+    void Set_hard_parton_momentum(std::vector<double> &HardMomandPosProj,
+                                  std::vector<double> &HardMomandPosTarg);
     real get_sig_eff(const real siginNN);
 };
 

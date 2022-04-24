@@ -5,10 +5,11 @@
 
 #include "Particle.h"
 #include "Quark.h"
+#include "Random.h"
 #include <vector>
 #include <memory>
 #include <algorithm>
-
+#include <string>
 namespace MCGlb {
 
 class Nucleon : public Particle {
@@ -21,12 +22,17 @@ class Nucleon : public Particle {
     bool baryon_used = false;
     bool remnant_set_ = false;
     bool remnant_carry_baryon_number_ = false;
+    bool collided_ = false;
+    bool subtracted_ = false;
     std::vector<std::weak_ptr<Nucleon>> collide_with;
     std::vector<std::weak_ptr<Nucleon>> connected_with;
     std::vector<int> connected_times_;
     MomentumVec remnant_p_ = {0.0, 0.0, 0.0, 0.0};
     SpatialVec remnant_x_frez_ = {0.0, 0.0, 0.0, 0.0};
-
+    std::vector< std::array<float, 3> > proton_resample_quark_x_;
+    std::vector< std::array<float, 3> > neutron_resample_quark_x_;
+    int number_of_valence_quark_resamples_;
+    int nucleon_system_status_;
  public:
     Nucleon() = default;
     Nucleon(SpatialVec x_in, MomentumVec p_in);
@@ -39,9 +45,12 @@ class Nucleon : public Particle {
 
     void set_electric_charge(int charge) {electric_charge_ = charge;}
     int get_electric_charge() const {return(electric_charge_);}
+    int re_readin_valence_quark_samples();
 
     int get_number_of_quarks() const {return(quark_list.size());}
     void push_back_quark(std::shared_ptr<Quark> q) {quark_list.push_back(q);}
+    void erase_quarks() {quark_list.erase(quark_list.begin(), quark_list.end());}
+    void erase_one_quark();
     std::vector<std::shared_ptr<Quark>> get_quark_list() {return(quark_list);}
 
     bool is_wounded() const {return(wounded_);}
@@ -78,13 +87,20 @@ class Nucleon : public Particle {
     int get_number_of_connections(std::shared_ptr<Nucleon> targ) const;
 
     bool is_connected_with(std::shared_ptr<Nucleon> targ);
-    void accelerate_quarks(real nucleon_pz, int direction);
+    void accelerate_quarks(real ecm, int direction);
     void lorentz_contraction(real gamma);
 
     std::shared_ptr<Quark> get_a_valence_quark();
+    std::shared_ptr<Quark> get_a_valence_quark_sub_mom(real sub_E);
 
     bool is_remnant_set() const {return(remnant_set_);}
     void set_remnant(bool remnant) {remnant_set_ = remnant;}
+
+    bool is_hard_collided() const {return(collided_);}
+    void set_hard_collided(bool collided_index) {collided_ = collided_index;}
+
+    bool is_subtracted() const {return(subtracted_);}
+    void set_hard_subtracted(bool subtracted_index) {subtracted_ = subtracted_index;}
 
     bool is_remnant_carry_baryon_number() const {
         return(remnant_carry_baryon_number_);
@@ -99,6 +115,18 @@ class Nucleon : public Particle {
         for (int i = 0; i < 4; i++)
             remnant_p_[i] -= p_q[i];
     }
+
+    void resample_quark_momentum_fraction(std::vector<real> &xQuark,
+                          const int electric_charge, const real ecm, 
+                          std::shared_ptr<RandomUtil::Random> nucleon_ran_gen_ptr) const;
+    void resample_valence_quarks(real ecm, int direction, real charge, real BG_,
+                                 std::shared_ptr<RandomUtil::Random> nucleon_ran_gen_ptr);
+    void readd_soft_parton_ball(real ecm, int direction, real BG_, MomentumVec soft_pvec, 
+                                std::vector<std::shared_ptr<Quark>> valence_quark_list,
+                                std::shared_ptr<RandomUtil::Random> nucleon_ran_gen_ptr);
+
+    SpatialVec resample_valence_quark_position(real BG_, 
+               std::shared_ptr<RandomUtil::Random> nucleon_ran_gen_ptr) const;
 
     void set_remnant_x_frez(SpatialVec x_in) {remnant_x_frez_ = x_in;}
     SpatialVec get_remnant_x_frez() const {return(remnant_x_frez_);}

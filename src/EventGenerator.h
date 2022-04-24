@@ -27,6 +27,7 @@ class EventGenerator {
     double proj_E, proj_px, proj_py, proj_pz;
     double targ_t, targ_x, targ_y, targ_z;
     double targ_E, targ_px, targ_py, targ_pz;
+    real ecm_;
  public:
     EventGenerator() = default;
     EventGenerator(std::string input_filename, int seed=0);
