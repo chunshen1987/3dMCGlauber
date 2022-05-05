@@ -51,6 +51,14 @@ real Parameters::get_roots() const {
     return(roots);
 }
 
+bool Parameters::use_roots_distribution() const {
+    int flag = get_param_int("use_roots_distribution");
+    if (flag == 1)
+        return(true);
+    else
+        return(false);
+}
+
 real Parameters::get_lambdaB() const {
     real lambdaB = static_cast<real>(get_param_double("lambdaB"));
     assert(lambdaB >= 0.);

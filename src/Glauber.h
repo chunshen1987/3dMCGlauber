@@ -39,7 +39,7 @@ class Glauber {
     real yloss_param_b;
 
     real ybeam;
-
+    real collision_energy;
     int system_status_;
 
     real sigma_eff_;
@@ -71,6 +71,7 @@ class Glauber {
 
     real compute_NN_inelastic_cross_section(real ecm) const;
 
+    real get_roots_from_distribution(real roots, std::string nucleus_name);
 
     //! this function decides which of those binary collisions will produce
     //! QCD strings

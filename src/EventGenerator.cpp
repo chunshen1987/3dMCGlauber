@@ -71,7 +71,11 @@ void EventGenerator::generate_events(int nev, int event_id_offset) {
                 mc_glauber_ptr_->output_QCD_strings(filename.str(), Npart,
                                                     Ncoll, Nstrings, b);
             }
-
+            /*
+            real collision_energy_test = mc_glauber_ptr_->get_roots_from_distribution(
+                                         parameter_list_.get_roots(),
+                                         parameter_list_.get_target_nucleus_name());
+            */
             // write event information to the record file
             record_file << event_id << "  " << Npart << "  " << Ncoll << "  "
                         << Nstrings << "  " << b << std::endl;

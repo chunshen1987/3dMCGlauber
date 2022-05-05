@@ -12,6 +12,8 @@
 #include <iostream>
 #include <algorithm>
 #include <memory>
+#include <math.h>
+#include <vector>
 
 using std::cout;
 using std::endl;
@@ -62,14 +64,58 @@ Glauber::Glauber(const MCGlb::Parameters &param_in,
     real alpha = alpha2/alpha1;
     yloss_param_a = alpha/(1. - alpha);
     yloss_param_b = alpha2/yloss_param_a;
-
-    ybeam = acosh(parameter_list.get_roots()/(2.*PhysConsts::MProton));
-
-    real siginNN = compute_NN_inelastic_cross_section(
-                                            parameter_list.get_roots());
+    collision_energy = parameter_list.get_roots();
+    if (parameter_list.use_roots_distribution()) {
+        collision_energy = get_roots_from_distribution(parameter_list.get_roots(),
+                           parameter_list.get_target_nucleus_name());
+    }
+    ybeam = acosh(collision_energy/(2.*PhysConsts::MProton));
+    real siginNN = compute_NN_inelastic_cross_section(collision_energy);
     sigma_eff_ = get_sig_eff(siginNN);
-    cout << "sqrt{s} = " << parameter_list.get_roots() << " GeV, "
+    cout << "sqrt{s} = " << collision_energy << " GeV, "
          << "siginNN = " << siginNN << " mb" << endl;
+}
+
+real Glauber::get_roots_from_distribution(real roots, std::string nucleus_name) {
+    real radius; int Z_in;
+    if (nucleus_name.compare("Au") == 0) {
+        radius = 6.38; Z_in = 79;
+    } else if (nucleus_name.compare("Pb") == 0) {
+        radius = 6.62; Z_in = 82;
+    } else {
+        cout << "[Error] Unknown_nucleus: " << nucleus_name << endl;
+        cout << "Exiting... " << endl;
+        exit(1);
+    }
+    double gammaL = roots/2./PhysConsts::MProton;
+    double rootgammaN_low_cut = 2.0;
+    double rootgammaN_up_cut = roots/2.0;
+    double probability_sum = 0.0;
+    real rootgammaN_sampled = roots;
+    std::vector<double> dNdrootgammaN;
+    for (double rootgammaN=rootgammaN_low_cut; rootgammaN < rootgammaN_up_cut; rootgammaN++) {
+        double k = rootgammaN * rootgammaN/2./roots;
+        double omegaAA = 2.* k * radius / gammaL;
+        // The dN/dk get from the Eq. (6) in arXiv: 0706.3356
+        double temp = rootgammaN/roots*2. * Z_in*Z_in/M_PI/k *
+                      (omegaAA * std::cyl_bessel_k(0,omegaAA)*std::cyl_bessel_k(1,omegaAA) 
+                      - omegaAA * omegaAA/2. *
+                      (std::cyl_bessel_k(1,omegaAA)*std::cyl_bessel_k(1,omegaAA) 
+                      - std::cyl_bessel_k(0,omegaAA)*std::cyl_bessel_k(0,omegaAA)));
+        dNdrootgammaN.push_back(temp);
+        probability_sum = probability_sum + temp;
+    }
+    real MCprobability = ran_gen_ptr_->rand_uniform();
+    int index = 0;
+    for (double rootgammaN=rootgammaN_low_cut; rootgammaN < rootgammaN_up_cut; rootgammaN++) {
+        MCprobability = MCprobability - dNdrootgammaN[index]/probability_sum;
+        if (MCprobability <= 0.) {
+            rootgammaN_sampled = rootgammaN+1.;
+            break;
+        }
+        index++;
+    }
+    return(rootgammaN_sampled);
 }
 
 void Glauber::make_nuclei() {
@@ -77,15 +123,15 @@ void Glauber::make_nuclei() {
     target->generate_nucleus_3d_configuration();
     int Nucleus_projectile = projectile->get_nucleus_A();
     if (Nucleus_projectile > 0) {
-        projectile->accelerate_nucleus(parameter_list.get_roots(), 1);
+        projectile->accelerate_nucleus(collision_energy, 1);
     } else {
-        projectile->accelerate_dipole(parameter_list.get_roots(), 1);
+        projectile->accelerate_dipole(collision_energy, 1);
     }
     int Nucleus_target = target->get_nucleus_A();
     if (Nucleus_target > 0) {
-         target->accelerate_nucleus(parameter_list.get_roots(), -1);
+         target->accelerate_nucleus(collision_energy, -1);
     } else {
-         target->accelerate_dipole(parameter_list.get_roots(), -1);
+         target->accelerate_dipole(collision_energy, -1);
     }
 
     // sample impact parameters
@@ -248,21 +294,21 @@ int Glauber::decide_QCD_strings_production() {
         int Nucleus_projectile = projectile->get_nucleus_A();
         if (Nucleus_projectile > 0) {
             projectile->sample_valence_quarks_inside_nucleons(
-                                    parameter_list.get_roots(), 1);
+                                           collision_energy, 1);
         } else {
             projectile->sample_valence_quarks_inside_dipole(
-                                    parameter_list.get_roots(), 1);
+                                           collision_energy, 1);
         }
         int Nucleus_target=target->get_nucleus_A();
         if (Nucleus_target>0) {
             target->sample_valence_quarks_inside_nucleons(
-                                    parameter_list.get_roots(), -1);
+                                           collision_energy, -1);
         } else {
             target->sample_valence_quarks_inside_dipole(
-                                    parameter_list.get_roots(), -1);
+                                           collision_energy, -1);
         }
-        projectile->add_soft_parton_ball(parameter_list.get_roots(), 1);
-        target->add_soft_parton_ball(parameter_list.get_roots(), -1);
+        projectile->add_soft_parton_ball(collision_energy, 1);
+        target->add_soft_parton_ball(collision_energy, -1);
     }
     std::vector<shared_ptr<CollisionEvent>> collision_list;
     for (auto &it: collision_schedule)
@@ -771,10 +817,10 @@ void Glauber::output_QCD_strings(std::string filename, const real Npart,
     y_o /= n_strings;
 
     std::ofstream output(filename.c_str());
-    real total_energy = Npart*parameter_list.get_roots()/2.;
+    real total_energy = Npart*collision_energy/2.;
     real net_Pz = ((projectile->get_number_of_wounded_nucleons()
                     - target->get_number_of_wounded_nucleons())
-                   *parameter_list.get_roots()/2.);
+                    * collision_energy/2.);
     output << "# b = " << b << " fm " << "Npart = " << Npart
            << " Ncoll = " << Ncoll << " Nstrings = " << Nstrings
            << " total_energy = " << total_energy << " GeV, "

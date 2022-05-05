@@ -70,7 +70,7 @@ void Nucleus::set_nucleus_parameters(std::string nucleus_name) {
     if (nucleus_name.compare("p") == 0) {
         set_woods_saxon_parameters(1, 1, 0.17, 0.0, 1.0, 1.0, 0.0, 0.0, 3);
     }else if (nucleus_name.compare("dipole") == 0) {
-        set_woods_saxon_parameters(0, 0, 0.17, 0.0, 1.0, 1.0, 0.0, 0.0, 8); //????
+        set_woods_saxon_parameters(0, 0, 0.17, 0.0, 1.0, 1.0, 0.0, 0.0, 8);
     }else if (nucleus_name.compare("d") == 0) {
         set_woods_saxon_parameters(2, 1, 0.17, 1.18, 1.0, 0.228, 0.0, 0.0, 8);
     } else if (nucleus_name.compare("He3") == 0) {
