@@ -65,11 +65,16 @@ Glauber::Glauber(const MCGlb::Parameters &param_in,
     yloss_param_a = alpha/(1. - alpha);
     yloss_param_b = alpha2/yloss_param_a;
     collision_energy = parameter_list.get_roots();
+    real ybeam_AA = acosh(collision_energy/(2.*PhysConsts::MProton));
     if (parameter_list.use_roots_distribution()) {
         collision_energy = get_roots_from_distribution(parameter_list.get_roots(),
                            parameter_list.get_target_nucleus_name());
     }
     ybeam = acosh(collision_energy/(2.*PhysConsts::MProton));
+    std::ofstream output_rapidity_shift("rapidity_shift");
+    output_rapidity_shift << parameter_list.use_roots_distribution() << "  "
+                          << collision_energy << "  " << ybeam - ybeam_AA << endl;
+    output_rapidity_shift.close();
     real siginNN = compute_NN_inelastic_cross_section(collision_energy);
     sigma_eff_ = get_sig_eff(siginNN);
     cout << "sqrt{s} = " << collision_energy << " GeV, "
