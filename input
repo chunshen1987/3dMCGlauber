@@ -7,6 +7,9 @@ nucleon_configuration_from_file 1    # use nucleon configuration from file
 roots 5020.                          # collision energy (GeV)
 use_roots_distribution 1             # The collision energy is sampled from a distribution
                                      # Only for the gamma* + A collisions currenty
+use_roots_cut 0                      # Do the trigger for the gamma* + A collisions
+roots_low_cut 100.                   # The lower cut the center-of-mass energy for gamma* + A
+roots_up_cut 200.                    # The upper cut the center-of-mass energy for gamma* + A
 useQuarks 1                          # switch to use valence quarks
 Q2 1.                                # the scale when evaluating the pdf
 b_min 0.                             # minimum impact parameter (fm)

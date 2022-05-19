@@ -32,8 +32,12 @@ class Parameters : public ParametersMap {
     real get_quarks_Q2() const;
 
     real get_roots() const;
-    bool use_roots_distribution() const;
+    real get_UPC_root_low_cut() const;
+    real get_UPC_root_up_cut() const;
 
+    bool use_roots_distribution() const;
+    bool use_roots_cut() const;
+    
     real get_lambdaB() const;
     real get_shadowing_factor() const;
 

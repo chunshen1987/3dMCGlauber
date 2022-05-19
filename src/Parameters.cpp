@@ -51,8 +51,28 @@ real Parameters::get_roots() const {
     return(roots);
 }
 
+real Parameters::get_UPC_root_low_cut() const {
+    real roots = static_cast<real>(get_param_double("roots_low_cut"));
+    assert(roots > 0.);
+    return(roots);
+}
+
+real Parameters::get_UPC_root_up_cut() const {
+    real roots = static_cast<real>(get_param_double("roots_up_cut"));
+    assert(roots > 0.);
+    return(roots);
+}
+
 bool Parameters::use_roots_distribution() const {
     int flag = get_param_int("use_roots_distribution");
+    if (flag == 1)
+        return(true);
+    else
+        return(false);
+}
+
+bool Parameters::use_roots_cut() const {
+    int flag = get_param_int("use_roots_cut");
     if (flag == 1)
         return(true);
     else

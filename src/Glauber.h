@@ -71,7 +71,8 @@ class Glauber {
 
     real compute_NN_inelastic_cross_section(real ecm) const;
 
-    real get_roots_from_distribution(real roots, std::string nucleus_name);
+    real get_roots_from_distribution(real roots, real rootgammaN_low_cut, 
+                                     real rootgammaN_up_cut, std::string nucleus_name);
 
     //! this function decides which of those binary collisions will produce
     //! QCD strings

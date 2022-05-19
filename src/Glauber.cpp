@@ -66,8 +66,16 @@ Glauber::Glauber(const MCGlb::Parameters &param_in,
     yloss_param_b = alpha2/yloss_param_a;
     collision_energy = parameter_list.get_roots();
     real ybeam_AA = acosh(collision_energy/(2.*PhysConsts::MProton));
+    real rootgammaN_low = 2.0;
+    real rootgammaN_up = parameter_list.get_roots()/2.0;
+
     if (parameter_list.use_roots_distribution()) {
-        collision_energy = get_roots_from_distribution(parameter_list.get_roots(),
+        if (parameter_list.use_roots_cut()) {
+            rootgammaN_low = parameter_list.get_UPC_root_low_cut();
+            rootgammaN_up  = parameter_list.get_UPC_root_up_cut();
+        }
+        collision_energy = get_roots_from_distribution(parameter_list.get_roots(), 
+                           rootgammaN_low, rootgammaN_up,
                            parameter_list.get_target_nucleus_name());
     }
     ybeam = acosh(collision_energy/(2.*PhysConsts::MProton));
@@ -81,7 +89,8 @@ Glauber::Glauber(const MCGlb::Parameters &param_in,
          << "siginNN = " << siginNN << " mb" << endl;
 }
 
-real Glauber::get_roots_from_distribution(real roots, std::string nucleus_name) {
+real Glauber::get_roots_from_distribution(real roots, real rootgammaN_low_cut, 
+                                          real rootgammaN_up_cut, std::string nucleus_name) {
     real radius; int Z_in;
     if (nucleus_name.compare("Au") == 0) {
         radius = 6.38; Z_in = 79;
@@ -93,14 +102,12 @@ real Glauber::get_roots_from_distribution(real roots, std::string nucleus_name) 
         exit(1);
     }
     double gammaL = roots/2./PhysConsts::MProton;
-    double rootgammaN_low_cut = 2.0;
-    double rootgammaN_up_cut = roots/2.0;
     double probability_sum = 0.0;
     real rootgammaN_sampled = roots;
     std::vector<double> dNdrootgammaN;
     for (double rootgammaN=rootgammaN_low_cut; rootgammaN < rootgammaN_up_cut; rootgammaN++) {
         double k = rootgammaN * rootgammaN/2./roots;
-        double omegaAA = 2.* k * radius / gammaL;
+        double omegaAA = 2.* k * radius / gammaL / PhysConsts::HBARC;
         // The dN/dk get from the Eq. (6) in arXiv: 0706.3356
         double temp = rootgammaN/roots*2. * Z_in*Z_in/M_PI/k *
                       (omegaAA * std::cyl_bessel_k(0,omegaAA)*std::cyl_bessel_k(1,omegaAA) 
