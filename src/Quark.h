@@ -14,6 +14,7 @@ class Quark : public Particle {
     real rapidity_q;
     bool remnant_set_ = false;
     bool subtracted_quark_ = false;
+    bool connected_quark_ = false;
     int number_of_connections = 0;
 
  public:
@@ -45,9 +46,12 @@ class Quark : public Particle {
     bool is_remnant_set() const {return(remnant_set_);}
     void set_remnant(bool remnant) {remnant_set_ = remnant;}
 
-    bool is_subtracted() const {return(subtracted_quark_);}
+    bool quark_is_subtracted() const {return(subtracted_quark_);}
     void set_subtracted(bool subtracted_quark) {subtracted_quark_ = subtracted_quark;}
 
+    bool quark_is_connected() const {return(connected_quark_);}
+    void set_connected(bool connected_quark) {connected_quark_ = connected_quark;}
+    
     void add_a_connection() {number_of_connections++;}
     int get_number_of_connections() const {return(number_of_connections);}
 };

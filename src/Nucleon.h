@@ -99,7 +99,7 @@ class Nucleon : public Particle {
     bool is_hard_collided() const {return(collided_);}
     void set_hard_collided(bool collided_index) {collided_ = collided_index;}
 
-    bool is_subtracted() const {return(subtracted_);}
+    bool nucleon_is_subtracted() const {return(subtracted_);}
     void set_hard_subtracted(bool subtracted_index) {subtracted_ = subtracted_index;}
 
     bool is_remnant_carry_baryon_number() const {

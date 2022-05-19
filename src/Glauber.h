@@ -79,7 +79,7 @@ class Glauber {
     //! this function decides which of those binary collisions will produce
     //! QCD strings
     int decide_QCD_strings_production();
-
+    int decide_QCD_strings_production_second_stage();
     //! this function determines whether a given binary collision event
     //! will produce a string
     int decide_produce_string_num(shared_ptr<CollisionEvent> event_ptr) const;

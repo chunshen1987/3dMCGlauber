@@ -232,7 +232,7 @@ std::shared_ptr<Quark> Nucleon::get_a_valence_quark_sub_mom(real sub_E) {
 
 void Nucleon::erase_one_quark() {
     for (unsigned int idx = 0; idx < quark_list.size(); idx++) {
-        if (quark_list[idx]->is_subtracted()) {
+        if (quark_list[idx]->quark_is_subtracted()) {
             quark_list.erase(quark_list.begin()+idx);
             std::cout << " Successfully erase one quark." << std::endl;
             break;

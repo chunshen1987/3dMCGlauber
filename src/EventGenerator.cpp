@@ -106,7 +106,6 @@ void EventGenerator::generate_strings() {
 
     int iev = 0;
     real mean_Npart = 0;
-
     HardPartonPosAndMomProj.clear();
     HardPartonPosAndMomProj.push_back(proj_t);
     HardPartonPosAndMomProj.push_back(proj_x);
@@ -127,12 +126,12 @@ void EventGenerator::generate_strings() {
     HardPartonPosAndMomTarg.push_back(targ_py);
     HardPartonPosAndMomTarg.push_back(targ_pz);
 
-    auto Nstrings = mc_glauber_ptr_->decide_QCD_strings_production();
     int event_id = iev;
     mean_Npart += Npart_;
     mc_glauber_ptr_->Set_hard_parton_momentum(
                      HardPartonPosAndMomProj, HardPartonPosAndMomTarg);
     mc_glauber_ptr_->Pick_and_subtract_hard_parton_momentum(ecm_);
+    auto Nstrings = mc_glauber_ptr_->decide_QCD_strings_production_second_stage();
     Ncoll_ = mc_glauber_ptr_->perform_string_production();
     auto b = mc_glauber_ptr_->get_impact_parameter();
     if (!statistics_only_) {
