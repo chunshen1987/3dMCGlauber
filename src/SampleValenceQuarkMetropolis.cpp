@@ -10,7 +10,7 @@
 #include "Random.h"
 #include "LHAPDF/LHAPDF.h"
 
-using RandomUtil::Random;
+using MCGlb::RandomUtil::Random;
 using std::shared_ptr;
 using std::array;
 

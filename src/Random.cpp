@@ -2,6 +2,8 @@
 
 #include "Random.h"
 
+namespace MCGlb {
+
 namespace RandomUtil {
 
 Random::Random(int seed, double min, double max) :
@@ -42,3 +44,4 @@ Random::Random(int seed, double min, double max, double Gamma_beta) :
 
 }
 
+}

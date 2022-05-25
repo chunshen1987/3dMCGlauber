@@ -6,6 +6,8 @@
 #include <random>
 #include <memory>
 
+namespace MCGlb {
+
 namespace RandomUtil {
 
 class Random {
@@ -35,6 +37,8 @@ class Random {
     int get_seed() const {return(seed_);}
     double get_Gamma_beta() const {return(Gamma_beta_);}
 };
+
+}
 
 }
 
