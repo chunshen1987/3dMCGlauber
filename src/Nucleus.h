@@ -5,7 +5,7 @@
 
 #include "data_structs.h"
 #include "Nucleon.h"
-#include "Random.h"
+#include "RandomUlty.h"
 
 #include <vector>
 #include <string>

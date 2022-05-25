@@ -7,7 +7,7 @@
 #include <string>
 #include "Glauber.h"
 #include "Parameters.h"
-#include "Random.h"
+#include "RandomUlty.h"
 #include "pretty_ostream.h"
 
 namespace MCGlb {

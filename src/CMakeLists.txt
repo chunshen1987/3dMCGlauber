@@ -3,7 +3,7 @@ set (SOURCES
     ParametersMap.cpp
     EventGenerator.cpp
     Glauber.cpp
-    Random.cpp
+    RandomUlty.cpp
     Nucleus.cpp
     Nucleon.cpp
     CollisionEvent.cpp
@@ -63,7 +63,7 @@ if (unittest)
     add_executable (unittest_Particle.e Particle_UnitTest.cpp)
     add_executable (unittest_Util.e Util_UnitTest.cpp)
     target_link_libraries (unittest_Util.e ${libname} ${LIBS})
-    add_executable (unittest_Random.e Random_UnitTest.cpp)
+    add_executable (unittest_Random.e RandomUlty_UnitTest.cpp)
     target_link_libraries (unittest_Random.e ${libname} ${LIBS})
     add_executable (unittest_ParametersMap.e ParametersMap_UnitTest.cpp)
     target_link_libraries (unittest_ParametersMap.e ${libname} ${LIBS})

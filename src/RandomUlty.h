@@ -1,7 +1,7 @@
 // Copyright @ Chun Shen 2018
 
-#ifndef SRC_RANDOM_H_
-#define SRC_RANDOM_H_
+#ifndef SRC_RANDOMULTY_H_
+#define SRC_RANDOMULTY_H_
 
 #include <random>
 #include <memory>
@@ -42,4 +42,4 @@ class Random {
 
 }
 
-#endif  // SRC_RANDOM_H_
+#endif  // SRC_RANDOMULTY_H_
