@@ -189,9 +189,36 @@ int Glauber::make_collision_schedule() {
         // collision list is time ordered
         collision_schedule_list_.push_back(*it);
     }
-        get_collision_information();
+    get_collision_information();
     return(collision_schedule.size());
 }
+
+int Glauber::make_collision_schedule_second_stage() {
+    collision_schedule.clear();
+    auto proj_nucleon_list = projectile->get_nucleon_list();
+    auto targ_nucleon_list = target->get_nucleon_list();
+    for (auto &iproj: (*proj_nucleon_list)) {
+        for (auto &itarg: (*targ_nucleon_list)) {
+            create_a_collision_event(iproj, itarg);
+            projectile->add_a_participant(iproj);
+            target->add_a_participant(itarg);
+            iproj->set_wounded(true);
+            itarg->set_wounded(true);
+            iproj->add_collide_nucleon(itarg);
+            itarg->add_collide_nucleon(iproj);
+        }
+    }
+
+    // copy the collision_schedule information to outside
+    collision_schedule_list_.clear();
+    for (auto &it: collision_schedule) {
+        // collision list is time ordered
+        collision_schedule_list_.push_back(*it);
+    }
+    get_collision_information();
+    return(collision_schedule.size());
+}
+
 
 int Glauber::get_Npart() const {
     int Npart = (projectile->get_number_of_wounded_nucleons()
@@ -609,9 +636,6 @@ int Glauber::perform_string_production() {
             std::shared_ptr<Quark> targ_q;
             if (sample_valence_quark) {
                 proj_q = proj->get_a_valence_quark();
-                targ_q = targ->get_a_valence_quark();
-                if (proj_q->quark_is_connected() ||
-                    targ_q->quark_is_connected()) continue;
                 if (proj_q->get_number_of_connections() == 1) {
                     // first time pick-up the valence quark
                     // we need to substract the valence quark energy-momentum
@@ -621,6 +645,7 @@ int Glauber::perform_string_production() {
                     proj_q->set_connected(true);
                 }
 
+                targ_q = targ->get_a_valence_quark();
                 if (targ_q->get_number_of_connections() == 1) {
                     // first time pick-up the valence quark
                     // we need to substract the valence quark energy-momentum

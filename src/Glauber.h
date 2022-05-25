@@ -63,6 +63,7 @@ class Glauber {
     real get_impact_parameter() const {return(impact_b);}
 
     int make_collision_schedule();// get the number of binary collisions 
+    int make_collision_schedule_second_stage();
     bool hit(real d2) const;
 
     int get_Npart() const;
