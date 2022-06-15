@@ -63,7 +63,7 @@ class Nucleus {
     void set_nucleus_parameters(std::string nucleus_name);
     void set_woods_saxon_parameters(int A_in, int Z_in,
                                     real rho, real w, real R, real a,
-                                    real beta2, real beta4,
+                                    real beta2, real beta3, real beta4,
                                     int density_function_type_in);
     void set_dmin (real d_min) {d_min_ = d_min;}
     real get_nucleon_minimum_distance() const {return(d_min_);}
