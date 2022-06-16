@@ -21,7 +21,9 @@ class Parameters : public ParametersMap {
     string get_projectle_nucleus_name() const {
         return(get_param_val("Projectile"));
     }
-    string get_target_nucleus_name() const {return(get_param_val("Target"));}
+    string get_target_nucleus_name() const {
+        return(get_param_val("Target"));
+    }
 
     void set_b_max(real b_in);
     real get_b_max() const;
@@ -70,6 +72,14 @@ class Parameters : public ParametersMap {
     real get_BG_targ() const;
 
     bool nucleon_configuration_from_file() const;
+
+    bool get_run_isobar() const;
+    real get_gamma() const;
+    real get_beta2() const;
+    real get_beta3() const;
+    real get_rho0() const;
+    real get_R() const;
+    real get_a() const;
 };
 
 }

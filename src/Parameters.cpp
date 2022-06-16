@@ -221,6 +221,44 @@ bool Parameters::nucleon_configuration_from_file() const {
     }
 }
 
+bool Parameters::get_run_isobar() const {
+    int flag = get_param_int("run_isobar");
+    if (flag == 0) {
+        return(false);
+    } else {
+        return(true);
+    }
+}
+
+real Parameters::get_gamma() const {
+    real gamma_isobar = static_cast<real>(get_param_double("gamma_isobar"));
+    return(gamma_isobar);
+}
+
+real Parameters::get_beta2() const {
+    real beta2_isobar = static_cast<real>(get_param_double("beta2_isobar"));
+    return(beta2_isobar);
+}
+
+real Parameters::get_beta3() const {
+    real beta3_isobar = static_cast<real>(get_param_double("beta3_isobar"));
+    return(beta3_isobar);
+}
+
+real Parameters::get_rho0() const {
+    real temp = static_cast<real>(get_param_double("rho0_isobar"));
+    return(temp);
+}
+
+real Parameters::get_R() const {
+    real temp = static_cast<real>(get_param_double("R_isobar"));
+    return(temp);
+}
+
+real Parameters::get_a() const {
+    real temp = static_cast<real>(get_param_double("a_isobar"));
+    return(temp);
+}
 
 real Parameters::get_BG() const {
     real BG = static_cast<real>(get_param_double("BG"));

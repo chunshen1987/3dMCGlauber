@@ -29,7 +29,13 @@ class Nucleus {
     std::unique_ptr<LHAPDF::PDF> pdf;
     real Q2;                            // Q2 when sampling valence quark
     real BG_;
-
+    real gamma_isobar_;
+    real beta2_isobar_;
+    real beta3_isobar_;
+    real R_isobar_;
+    real a_isobar_;
+    real rho0_isobar_;
+    bool run_isobar_;
     std::vector<std::shared_ptr<Nucleon>> nucleon_list_;
     std::vector<std::shared_ptr<Nucleon>> participant_list_;
     std::shared_ptr<RandomUtil::Random> ran_gen_ptr;
@@ -50,7 +56,10 @@ class Nucleus {
     Nucleus(std::string nucleus_name,
             std::shared_ptr<RandomUtil::Random> ran_gen,
             bool sample_valence_quarks=false, real BG=4.,
-            real d_min=0.9, bool deformed=true, bool confFromFile=false);
+            real d_min=0.9, bool deformed=true, real gamma_isobar=0.0,
+            real beta2_isobar=0.0, real beta3_isobar=0.0, 
+            real rho0_isobar=0.0, real R_isobar=0.0, real a_isobar=0.0,
+            bool run_isobar=false, bool confFromFile=false);
     ~Nucleus();
 
     std::string get_name() const {return(name);}
@@ -103,10 +112,11 @@ class Nucleus {
     void generate_nucleus_configuration_with_deformed_woods_saxon();
     real sample_r_from_woods_saxon() const;
     void sample_r_and_costheta_from_deformed_woods_saxon(
-                                        real &r, real &costheta) const;
+                                    real phi, real &r, real &costheta) const;
     //! Fermi Distribution 
     real fermi_distribution(real r, real R_WS, real a_WS) const;
     real spherical_harmonics(int l, real ct) const;
+    real spherical_harmonics_Y22(int l, real ct, real phi) const;
 
     int get_number_of_nucleons() const {return(nucleon_list_.size());}
     std::shared_ptr<Nucleon> get_nucleon(unsigned int idx) {
