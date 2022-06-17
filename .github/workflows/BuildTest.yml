@@ -32,4 +32,4 @@ jobs:
       - name: UnitTests
         run: |
           cd $GITHUB_WORKSPACE/test
-          ./run_all_UniteTests.sh
+          ./run_all_UnitTests.sh
