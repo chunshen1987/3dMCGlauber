@@ -44,31 +44,14 @@ Glauber::Glauber(const MCGlb::Parameters &param_in,
     real d_min = 0.9;
     bool deformed = true;
     bool nucleonConfFromFile = parameter_list.nucleon_configuration_from_file();
-    real gamma_isobar = 0.0;
-    real beta2_isobar = 0.0;
-    real beta3_isobar = 0.0;
-    real rho0_isobar = 0.0;
-    real R_isobar = 0.17;
-    real a_isobar = 0.0;
-    bool run_isobar = parameter_list.get_run_isobar();
-    if (run_isobar) {
-        gamma_isobar = parameter_list.get_gamma();
-        beta2_isobar = parameter_list.get_beta2();
-        beta3_isobar = parameter_list.get_beta3();
-        rho0_isobar = parameter_list.get_rho0();
-        R_isobar = parameter_list.get_R();
-        a_isobar = parameter_list.get_a();
-    }
     projectile = std::unique_ptr<Nucleus>(
             new Nucleus(parameter_list.get_projectle_nucleus_name(), ran_gen,
                         sample_valence_quark, parameter_list.get_BG_proj(),
-                        d_min, deformed, gamma_isobar, beta2_isobar, beta3_isobar, 
-                        rho0_isobar, R_isobar, a_isobar, run_isobar, nucleonConfFromFile));
+                        d_min, deformed, nucleonConfFromFile));
     target = std::unique_ptr<Nucleus>(
             new Nucleus(parameter_list.get_target_nucleus_name(), ran_gen,
                         sample_valence_quark, parameter_list.get_BG_targ(),
-                        d_min, deformed, gamma_isobar, beta2_isobar, beta3_isobar,
-                        rho0_isobar, R_isobar, a_isobar, run_isobar, nucleonConfFromFile));
+                        d_min, deformed, nucleonConfFromFile));
     if (sample_valence_quark) {
         projectile->set_valence_quark_Q2(parameter_list.get_quarks_Q2());
         target->set_valence_quark_Q2(parameter_list.get_quarks_Q2());
