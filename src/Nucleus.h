@@ -26,13 +26,13 @@ class Nucleus {
     bool sample_valence_quarks;
     real Q2;                            // Q2 when sampling valence quark
     real BG_;
-    real gamma_isobar_;
-    real beta2_isobar_;
-    real beta3_isobar_;
-    real R_isobar_;
-    real a_isobar_;
-    real rho0_isobar_;
-    bool run_isobar_;
+    real WS_gamma_;
+    real WS_beta2_;
+    real WS_beta3_;
+    real WS_R_;
+    real WS_a_;
+    real WS_rho0_;
+    bool WS_run_;
 
     std::vector<std::shared_ptr<Nucleon>> nucleon_list_;
     std::vector<std::shared_ptr<Nucleon>> participant_list_;
@@ -53,9 +53,9 @@ class Nucleus {
     Nucleus(std::string nucleus_name,
             std::shared_ptr<RandomUtil::Random> ran_gen,
             bool sample_valence_quarks=false, real BG=4.,
-            real d_min=0.9, bool deformed=true, real gamma_isobar=0.0,
-            real beta2_isobar=0.0, real beta3_isobar=0.0, 
-            real rho0_isobar=0.0, real R_isobar=0.0, real a_isobar=0.0,
+            real d_min=0.9, bool deformed=true, real gamma=0.0,
+            real beta2=0.0, real beta3=0.0, 
+            real rho0=0.0, real R=0.0, real a=0.0,
             bool confFromFile=false);
     ~Nucleus();
 

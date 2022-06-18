@@ -36,33 +36,33 @@ real Parameters::get_d_min() const {
     return(b);
 }
 
-real Parameters::get_gamma() const {
-    real gamma_isobar = static_cast<real>(get_param_double("gamma_isobar"));
-    return(gamma_isobar);
-}
-
-real Parameters::get_beta2() const {
-    real beta2_isobar = static_cast<real>(get_param_double("beta2_isobar"));
-    return(beta2_isobar);
-}
-
-real Parameters::get_beta3() const {
-    real beta3_isobar = static_cast<real>(get_param_double("beta3_isobar"));
-    return(beta3_isobar);
-}
-
-real Parameters::get_rho0() const {
-    real temp = static_cast<real>(get_param_double("rho0_isobar"));
+real Parameters::get_WS_gamma() const {
+    real temp = static_cast<real>(get_param_double("WS_gamma"));
     return(temp);
 }
 
-real Parameters::get_R() const {
-    real temp = static_cast<real>(get_param_double("R_isobar"));
+real Parameters::get_WS_beta2() const {
+    real temp = static_cast<real>(get_param_double("WS_beta2"));
     return(temp);
 }
 
-real Parameters::get_a() const {
-    real temp = static_cast<real>(get_param_double("a_isobar"));
+real Parameters::get_WS_beta3() const {
+    real temp = static_cast<real>(get_param_double("WS_beta3"));
+    return(temp);
+}
+
+real Parameters::get_WS_rho0() const {
+    real temp = static_cast<real>(get_param_double("WS_rho0"));
+    return(temp);
+}
+
+real Parameters::get_WS_R() const {
+    real temp = static_cast<real>(get_param_double("WS_R"));
+    return(temp);
+}
+
+real Parameters::get_WS_a() const {
+    real temp = static_cast<real>(get_param_double("WS_a"));
     return(temp);
 }
 

@@ -60,12 +60,12 @@ class Parameters : public ParametersMap {
     real get_tau_form_fluct_gamma_beta() const;
 
     real get_BG() const;
-    real get_gamma() const;
-    real get_beta2() const;
-    real get_beta3() const;
-    real get_rho0() const;
-    real get_R() const;
-    real get_a() const;
+    real get_WS_gamma() const;
+    real get_WS_beta2() const;
+    real get_WS_beta3() const;
+    real get_WS_rho0() const;
+    real get_WS_R() const;
+    real get_WS_a() const;
     real get_d_min() const;
     bool nucleon_configuration_from_file() const;
 };

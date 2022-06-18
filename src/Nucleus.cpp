@@ -22,16 +22,16 @@ namespace MCGlb {
 Nucleus::Nucleus(std::string nucleus_name,
                  std::shared_ptr<RandomUtil::Random> ran_gen,
                  bool sample_valence_quarks_in, real BG,
-                 real d_min, bool deformed, real gamma_isobar, 
-                 real beta2_isobar, real beta3_isobar, 
-                 real rho0_isobar, real R_isobar, real a_isobar,
+                 real d_min, bool deformed, real WS_gamma, 
+                 real WS_beta2, real WS_beta3, 
+                 real WS_rho0, real WS_R, real WS_a,
                  bool confFromFile) {
-    gamma_isobar_ = gamma_isobar;
-    beta2_isobar_ = beta2_isobar;
-    beta3_isobar_ = beta3_isobar;
-    rho0_isobar_  = rho0_isobar;
-    R_isobar_     = R_isobar;
-    a_isobar_     = a_isobar;
+    WS_gamma_ = WS_gamma;
+    WS_beta2_ = WS_beta2;
+    WS_beta3_ = WS_beta3;
+    WS_rho0_  = WS_rho0;
+    WS_R_     = WS_R;
+    WS_a_     = WS_a;
     d_min_        = d_min;
     deformed_     = deformed;
     confFromFile_ = confFromFile;
@@ -99,12 +99,12 @@ void Nucleus::set_nucleus_parameters(std::string nucleus_name) {
                             63, 29, 0.17, 0.0, 4.163, 0.606, 0.162, 0.0, 0.006, 3);
     } else if (nucleus_name.compare("Zr") == 0) {
         set_woods_saxon_parameters(
-                            96, 40, rho0_isobar_, 0.0, R_isobar_, a_isobar_,
-                            beta2_isobar_, beta3_isobar_, 0.0, 3);
+                            96, 40, WS_rho0_, 0.0, WS_R_, WS_a_,
+                            WS_beta2_, WS_beta3_, 0.0, 3);
     } else if (nucleus_name.compare("Ru") == 0) {
         set_woods_saxon_parameters(
-                            96, 44, rho0_isobar_, 0.0, R_isobar_, a_isobar_,
-                            beta2_isobar_, beta3_isobar_, 0.0, 3);
+                            96, 44, WS_rho0_, 0.0, WS_R_, WS_a_,
+                            WS_beta2_, WS_beta3_, 0.0, 3);
     } else if (nucleus_name.compare("In") == 0) {
         set_woods_saxon_parameters(
                             115, 49, 0.17, 0.0, 5.35, 0.55, 0.0, 0.0, 0.0, 3);
@@ -585,7 +585,7 @@ void Nucleus::sample_r_and_costheta_from_deformed_woods_saxon(
         real y40  = spherical_harmonics(4, costheta);
         real y2_2 = spherical_harmonics_Y22(22, costheta, phi);
         R_WS_theta = R_WS*(1.0 + 
-                           beta2*(cos(gamma_isobar_)*y20+sin(gamma_isobar_)*y2_2)
+                           beta2*(cos(WS_gamma_)*y20+sin(WS_gamma_)*y2_2)
                            + beta3*y30 + beta4*y40);
     } while (ran_gen_ptr->rand_uniform()
              > fermi_distribution(r, R_WS_theta, a_WS));
@@ -645,22 +645,22 @@ void Nucleus::generate_nucleus_configuration_with_woods_saxon() {
 void Nucleus::generate_nucleus_configuration_with_deformed_woods_saxon() {
     std::vector<real> r_array(A_, 0.);
     std::vector<real> costheta_array(A_, 0.);
-    std::vector<real> phi_isobar(A_, 0.);
+    std::vector<real> phi(A_, 0.);
     std::vector<std::pair<real, real>> pair_array;
     for (int i = 0; i < A_; i++) {
-        phi_isobar[i] = 2.*M_PI*ran_gen_ptr->rand_uniform();
-        sample_r_and_costheta_from_deformed_woods_saxon(phi_isobar[i], r_array[i],
+        phi[i] = 2.*M_PI*ran_gen_ptr->rand_uniform();
+        sample_r_and_costheta_from_deformed_woods_saxon(phi[i], r_array[i],
                                                         costheta_array[i]);
         pair_array.push_back(std::make_pair(r_array[i], costheta_array[i]));
     }
-    if (gamma_isobar_==0.0) std::sort(pair_array.begin(), pair_array.end());
+    if (WS_gamma_==0.0) std::sort(pair_array.begin(), pair_array.end());
 
     std::vector<real> x_array(A_, 0.), y_array(A_, 0.), z_array(A_, 0.);
     const real d_min_sq = d_min_*d_min_;
     for (int i = 0; i < A_; i++) {
         const real r_i     = pair_array[i].first;
         const real theta_i = acos(pair_array[i].second);
-        const real phi_temp = phi_isobar[i];
+        const real phi_temp = phi[i];
         int reject_flag = 0;
         int iter = 0;
         real x_i, y_i, z_i;
@@ -668,7 +668,7 @@ void Nucleus::generate_nucleus_configuration_with_deformed_woods_saxon() {
             iter++;
             reject_flag = 0;
             real phi    = 2.*M_PI*ran_gen_ptr->rand_uniform();
-            if (gamma_isobar_!=0.0) phi = phi_temp;
+            if (WS_gamma_!=0.0) phi = phi_temp;
             x_i = r_i*sin(theta_i)*cos(phi);
             y_i = r_i*sin(theta_i)*sin(phi);
             z_i = r_i*cos(theta_i);

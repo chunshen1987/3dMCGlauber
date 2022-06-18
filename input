@@ -18,12 +18,12 @@ shadowing_factor 1.0                 # a shadowning factor for producing strings
 baryon_junctions 1                   # 0: baryon number assumed to be at string end
                                      # 1: baryon number transported assuming baryon junctions
                                      #    (at smaller x) see arXiv:nucl-th/9602027
-gamma_isobar 0.0
-beta2_isobar 0.0
-beta3_isobar 0.16
-rho0_isobar 0.17
-R_isobar 5.021
-a_isobar 0.524
+WS_gamma 0.0
+WS_beta2 0.0
+WS_beta3 0.16
+WS_rho0 0.17
+WS_R 5.021
+WS_a 0.524
 d_min 0.9
 lambdaB 0.2                          # parameter the controls the strength of the baryon junction stopping
 BG 16.                               # Gaussian width square for sampling the valence quark positions (GeV^2)
