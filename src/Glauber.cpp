@@ -84,6 +84,8 @@ Glauber::Glauber(const MCGlb::Parameters &param_in,
 void Glauber::make_nuclei() {
     projectile->generate_nucleus_3d_configuration();
     target->generate_nucleus_3d_configuration();
+    //projectile->output_nucleon_positions("projectile_before_accelaration.dat");
+    //target->output_nucleon_positions("target_before_accelaration.dat");
     projectile->accelerate_nucleus(parameter_list.get_roots(), 1);
     target->accelerate_nucleus(parameter_list.get_roots(), -1);
 
