@@ -42,6 +42,12 @@ class Glauber {
 
     real sigma_eff_;
     real nucleon_width_;
+    real R_isobar_;
+    real gamma_isobar_;
+    real beta2_isobar_;
+    real beta3_isobar_;
+    real rho0_isobar_;
+    real a_isobar_;
 
  public:
     Glauber() = default;

@@ -30,6 +30,41 @@ real Parameters::get_b_min() const {
     return(b);
 }
 
+real Parameters::get_d_min() const {
+    real b = static_cast<real>(get_param_double("d_min"));
+    assert(b >= 0.);
+    return(b);
+}
+
+real Parameters::get_gamma() const {
+    real gamma_isobar = static_cast<real>(get_param_double("gamma_isobar"));
+    return(gamma_isobar);
+}
+
+real Parameters::get_beta2() const {
+    real beta2_isobar = static_cast<real>(get_param_double("beta2_isobar"));
+    return(beta2_isobar);
+}
+
+real Parameters::get_beta3() const {
+    real beta3_isobar = static_cast<real>(get_param_double("beta3_isobar"));
+    return(beta3_isobar);
+}
+
+real Parameters::get_rho0() const {
+    real temp = static_cast<real>(get_param_double("rho0_isobar"));
+    return(temp);
+}
+
+real Parameters::get_R() const {
+    real temp = static_cast<real>(get_param_double("R_isobar"));
+    return(temp);
+}
+
+real Parameters::get_a() const {
+    real temp = static_cast<real>(get_param_double("a_isobar"));
+    return(temp);
+}
 
 int Parameters::get_use_quarks() const {
     int flag = get_param_int("useQuarks");
