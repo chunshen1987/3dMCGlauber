@@ -131,6 +131,8 @@ TEST_CASE("Test Woods-Saxon sampling") {
             rho_r[idx] += weight;
         }
     }
+    real sum_th = 0;
+    real sum_sampled = 0;
     std::ofstream of("check_Woods_Saxon_sampling.dat");
     of << "# r  WS  Sampled" << std::endl;
     for (int i = 0; i < n_r; i++) {
@@ -140,9 +142,12 @@ TEST_CASE("Test Woods-Saxon sampling") {
         }
         real WS_local = r_mean*r_mean/(exp((r_mean - R_WS)/a_WS) + 1.)/norm_WS;
         of << r_mean << "   " << WS_local << "  " << rho_r[i] << std::endl;
+        sum_th += WS_local;
+        sum_sampled += rho_r[i];
     }
     std::cout << "please check the output file check_Woods_Saxon_sampling.dat"
               << std::endl;
+    CHECK(std::abs(sum_th - sum_sampled)/sum_th < 0.001);
 }
 
 
@@ -213,6 +218,8 @@ TEST_CASE("Test sampled nuclear density distribution") {
     of << "# Nucleus: " << test_nucleus.get_name() << std::endl;
     of << "# r  WS  Sampled" << std::endl;
 
+    real sum_th = 0;
+    real sum_sampled = 0;
     for (int i = 0; i < n_r; i++) {
         real r_mean = r_min + i*dr;
         if (rho_r[i] > 0) {
@@ -220,11 +227,13 @@ TEST_CASE("Test sampled nuclear density distribution") {
         }
         real WS_local = r_mean*r_mean/(exp((r_mean - R_WS)/a_WS) + 1.)/norm_WS;
         of << r_mean << "   " << WS_local << "  " << rho_r[i] << std::endl;
+        sum_th += WS_local;
+        sum_sampled += rho_r[i];
     }
 
     std::cout << "please check the output file "
               << "check_sampled_nucleon_distribution.dat" << std::endl;
-    CHECK(0.0 == 0.0);
+    CHECK(std::abs(sum_th - sum_sampled)/sum_th < 0.001);
 }
 
 
@@ -325,16 +334,21 @@ TEST_CASE("Test sampled valence quark spatial distribution") {
     std::ofstream of("check_sampled_valence_quark_spatial_distribution.dat");
     of << "# r  ExponentialDistribution  Sampled" << std::endl;
 
+    real sum_th = 0;
+    real sum_sampled = 0;
     for (int i = 0; i < n_r; i++) {
-        real r_mean = r[i]/rho_r[i];
-        of << r_mean << "   "
-           << test_nucleus.ExponentialDistribution(a, r_mean)/norm_WS << "  "
-           << rho_r[i] << std::endl;
+        real r_mean = r_min + i*dr;
+        if (rho_r[i] > 0) {
+            r_mean = r[i]/rho_r[i];
+        }
+        real prob_th = test_nucleus.ExponentialDistribution(a, r_mean)/norm_WS;
+        sum_th += prob_th;
+        sum_sampled += rho_r[i];
     }
 
     std::cout << "please check the output file "
               << "check_sampled_valence_quark_spatial_distribution.dat"
               << std::endl;
-    CHECK(0.0 == 0.0);
+    CHECK(std::abs(sum_th - sum_sampled)/sum_th < 0.01);
 }
 
