@@ -29,7 +29,7 @@ TEST_CASE("Test set nucleus parameters") {
     CHECK(test_nucleus.get_nucleus_A() == 1);
     CHECK(test_nucleus.get_nucleus_Z() == 1);
     auto WS_params = test_nucleus.get_woods_saxon_parameters();
-    WoodsSaxonParam WS_params_p = {0.17, 0.0, 1.0, 1.0, 0.0, 0.0};
+    WoodsSaxonParam WS_params_p = {0.17, 0.0, 1.0, 1.0, 0.0, 0.0, 0.0};
     CHECK(WS_params == WS_params_p);
 
     test_nucleus.set_nucleus_parameters("Au");
@@ -37,7 +37,7 @@ TEST_CASE("Test set nucleus parameters") {
     CHECK(test_nucleus.get_nucleus_Z() == 79);
     WS_params = test_nucleus.get_woods_saxon_parameters();
     WoodsSaxonParam WS_params_Au = {
-                                0.17, 0.0, 6.38, 0.505, -0.13, -0.03};
+                                0.17, 0.0, 6.38, 0.505, -0.13, 0.0, -0.03};
     CHECK(WS_params == WS_params_Au);
 }
 
