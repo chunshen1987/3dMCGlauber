@@ -6,6 +6,7 @@
 #include <vector>
 #include <iostream>
 #include "LHAPDF/LHAPDF.h"
+#include "Parameters.h"
 
 using MCGlb::Nucleus;
 using MCGlb::real;
@@ -121,7 +122,7 @@ TEST_CASE("Test Woods-Saxon sampling") {
         norm_WS += r_local*r_local/(exp((r_local - R_WS)/a_WS) + 1.)*dr;
     }
 
-    int n_samples = 1000000;
+    int n_samples = 10000000;
     auto weight   = 1./(n_samples*dr);
     for (int i = 0; i < n_samples; i++) {
         auto r_sample = test_nucleus.sample_r_from_woods_saxon();
@@ -145,6 +146,83 @@ TEST_CASE("Test Woods-Saxon sampling") {
               << std::endl;
 }
 
+TEST_CASE("Test deformed Woods-Saxon sampling") {
+    std::shared_ptr<RandomUtil::Random> ran_gen_ptr(
+                                    new RandomUtil::Random(-1, 0., 1.));
+    std::cout << "Testing the Woods-Saxon sampling routine..." << std::endl;
+    Nucleus test_nucleus("Zr", ran_gen_ptr);
+    test_nucleus.set_woods_saxon_parameters(
+                            96, 40, 0.17, 0.0, 5.021, 0.524,
+                            0.16, 0.16, 0.0, 0.33, 3);
+    auto WS_params = test_nucleus.get_woods_saxon_parameters();
+    auto a_WS = WS_params[3];
+    auto R_WS = WS_params[2];
+    auto beta2 = WS_params[4];
+    auto beta3 = WS_params[5];
+    auto gamma = WS_params[7];
+
+    const real r_min = 0.0, r_max = 20.0, dr = 0.1;
+    const real dct = 0.01,  diphi = 0.01;
+    const int n_r = static_cast<int>((r_max - r_min)/dr) + 1;
+    std::vector<real> r(n_r, 0.);
+    std::vector<real> rho_r(n_r, 0.);
+    std::vector<real> WS(n_r, 0.);
+    real norm_WS = 0.;
+    real two_pi = 2. * M_PI;
+    for (int i = 0; i < n_r; i++) {
+        real r_local  = r_min + i*dr;
+        for (real iphi=0.; iphi<two_pi; ) {
+            for (real ct=-1.; ct<1.; ) {
+                real y20  = 0.31539156525252005*(3.0*ct*ct-1.0);
+                real y30  = (5.0*ct*ct*ct - 3.0*ct) *0.3731763325901154;
+                real y2_2 = 0.5462742152960397*cos(2.*iphi)*(1.0-ct*ct);
+                real R_WS_deformed = R_WS*(1.0 + beta2*(cos(gamma)*y20+sin(gamma)*y2_2)
+                                           + beta3*y30);
+                norm_WS += r_local*r_local/(exp((r_local - 
+                                            R_WS_deformed)/a_WS) + 1.)*dr*dct*diphi;
+                ct = ct + dct;
+            }
+            iphi = iphi + diphi;
+        }
+    }
+    int n_samples = 1000000;
+    auto weight   = 1./(n_samples*dr);
+    for (int i = 0; i < n_samples; i++) {
+        auto r_sample = test_nucleus.sample_r_from_deformed_woods_saxon();
+        int idx       = static_cast<int>((r_sample - r_min)/dr);
+        if (idx >= 0 && idx < n_r) {
+            r[idx]     += weight*r_sample;
+            rho_r[idx] += weight;
+        }
+    }
+    std::ofstream of("check_deformed_Woods_Saxon_sampling.dat");
+    of << "# r  WS  Sampled" << std::endl;
+    for (int i = 0; i < n_r; i++) {
+        real r_mean = r_min + i*dr;
+        if (rho_r[i] > 0) {
+            r_mean = r[i]/rho_r[i];
+        }
+        real WS_local_temp = 0.0;
+        for (real iphi=0.; iphi<two_pi; ) {
+            for (real ct=-1.; ct<1.; ) {
+                real y20  = 0.31539156525252005*(3.0*ct*ct-1.0);
+                real y30  = (5.0*ct*ct*ct - 3.0*ct) *0.3731763325901154;
+                real y2_2 = 0.5462742152960397*cos(2.*iphi)*(1.0-ct*ct);
+                real R_WS_deformed = R_WS*(1.0 + beta2*(cos(gamma)*y20+sin(gamma)*y2_2)
+                                           + beta3*y30);
+                WS_local_temp += r_mean*r_mean/(exp((r_mean - 
+                                            R_WS_deformed)/a_WS) + 1.)*dct*diphi;
+                ct = ct + dct;
+            }
+            iphi = iphi + diphi;
+        }
+
+        real WS_local = WS_local_temp/norm_WS;
+        of << r_mean << "   " << WS_local << "  " << rho_r[i] << std::endl;
+    }
+    std::cout << "please check the output file check_deformed_Woods_Saxon_sampling.dat"
+              << std::endl;
+}
 
 TEST_CASE("Test deformed nucleus") {
     std::shared_ptr<RandomUtil::Random> ran_gen_ptr(

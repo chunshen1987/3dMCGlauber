@@ -70,7 +70,7 @@ class Nucleus {
     void set_woods_saxon_parameters(int A_in, int Z_in,
                                     real rho, real w, real R, real a,
                                     real beta2, real beta3, real beta4,
-                                    int density_function_type_in);
+                                    real gamma, int density_function_type_in);
     void set_dmin (real d_min) {d_min_ = d_min;}
     real get_nucleon_minimum_distance() const {return(d_min_);}
     int get_nucleus_A() const {return(A_);}
@@ -108,6 +108,7 @@ class Nucleus {
     void generate_nucleus_configuration_with_woods_saxon();
     void generate_nucleus_configuration_with_deformed_woods_saxon();
     real sample_r_from_woods_saxon() const;
+    real sample_r_from_deformed_woods_saxon() const;
     void sample_r_and_costheta_from_deformed_woods_saxon(
                                     real phi, real &r, real &costheta) const;
     //! Fermi Distribution 
