@@ -674,28 +674,31 @@ void Nucleus::generate_nucleus_configuration_with_deformed_woods_saxon() {
     std::vector<real> costheta_array(A_, 0.);
     std::vector<real> phi(A_, 0.);
     std::vector<std::pair<real, real>> pair_array;
+    std::vector<std::pair<real, real>> pair_array2;
     for (int i = 0; i < A_; i++) {
         phi[i] = 2.*M_PI*ran_gen_ptr->rand_uniform();
         sample_r_and_costheta_from_deformed_woods_saxon(phi[i], r_array[i],
                                                         costheta_array[i]);
         pair_array.push_back(std::make_pair(r_array[i], costheta_array[i]));
+        pair_array2.push_back(std::make_pair(r_array[i], phi[i]));
     }
-    if (WS_gamma_==0.0) std::sort(pair_array.begin(), pair_array.end());
+    std::sort(pair_array.begin(), pair_array.end());
+    std::sort(pair_array2.begin(), pair_array2.end());
 
     std::vector<real> x_array(A_, 0.), y_array(A_, 0.), z_array(A_, 0.);
     const real d_min_sq = d_min_*d_min_;
     for (int i = 0; i < A_; i++) {
         const real r_i     = pair_array[i].first;
         const real theta_i = acos(pair_array[i].second);
-        const real phi_temp = phi[i];
+        const real phi_temp = pair_array2[i].first;
         int reject_flag = 0;
         int iter = 0;
         real x_i, y_i, z_i;
         do {
             iter++;
             reject_flag = 0;
-            real phi    = 2.*M_PI*ran_gen_ptr->rand_uniform();
-            if (WS_gamma_!=0.0) phi = phi_temp;
+            //real phi    = 2.*M_PI*ran_gen_ptr->rand_uniform();
+            real phi = phi_temp;
             x_i = r_i*sin(theta_i)*cos(phi);
             y_i = r_i*sin(theta_i)*sin(phi);
             z_i = r_i*cos(theta_i);
