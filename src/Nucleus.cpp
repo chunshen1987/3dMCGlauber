@@ -24,7 +24,7 @@ Nucleus::Nucleus(std::string nucleus_name,
                  bool sample_valence_quarks_in, real BG,
                  real d_min, bool deformed, real WS_gamma, 
                  real WS_beta2, real WS_beta3, 
-                 real WS_rho0, real WS_R, real WS_a,
+                 real WS_rho0, real WS_R, real WS_a, bool loop_d,
                  bool confFromFile) {
     WS_gamma_ = WS_gamma;
     WS_beta2_ = WS_beta2;
@@ -32,8 +32,9 @@ Nucleus::Nucleus(std::string nucleus_name,
     WS_rho0_  = WS_rho0;
     WS_R_     = WS_R;
     WS_a_     = WS_a;
-    d_min_        = d_min;
-    deformed_     = deformed;
+    d_min_    = d_min;
+    deformed_ = deformed;
+    loop_d_   = loop_d;
     confFromFile_ = confFromFile;
     BG_ = BG;
     ran_gen_ptr = ran_gen;
@@ -595,7 +596,7 @@ real Nucleus::sample_r_from_deformed_woods_saxon() const {
 }
 
 void Nucleus::sample_r_and_costheta_from_deformed_woods_saxon(
-                                    real phi, real &r, real &costheta) const {
+                                    real &phi, real &r, real &costheta) const {
     real a_WS = WS_param_vec[3];
     real R_WS = WS_param_vec[2];
     real beta2 = WS_param_vec[4];
@@ -607,6 +608,7 @@ void Nucleus::sample_r_and_costheta_from_deformed_woods_saxon(
     do {
         r = rmaxCut*pow(ran_gen_ptr->rand_uniform(), 1.0/3.0);
         costheta  = 1.0 - 2.0*ran_gen_ptr->rand_uniform();
+        phi       = 2.*M_PI*ran_gen_ptr->rand_uniform();
         real y20  = spherical_harmonics(2, costheta);
         real y30  = spherical_harmonics(3, costheta);
         real y40  = spherical_harmonics(4, costheta);
@@ -672,15 +674,14 @@ void Nucleus::generate_nucleus_configuration_with_woods_saxon() {
 void Nucleus::generate_nucleus_configuration_with_deformed_woods_saxon() {
     std::vector<real> r_array(A_, 0.);
     std::vector<real> costheta_array(A_, 0.);
-    std::vector<real> phi(A_, 0.);
+    std::vector<real> phi_array(A_, 0.);
     std::vector<std::pair<real, real>> pair_array;
     std::vector<std::pair<real, real>> pair_array2;
     for (int i = 0; i < A_; i++) {
-        phi[i] = 2.*M_PI*ran_gen_ptr->rand_uniform();
-        sample_r_and_costheta_from_deformed_woods_saxon(phi[i], r_array[i],
+        sample_r_and_costheta_from_deformed_woods_saxon(phi_array[i], r_array[i],
                                                         costheta_array[i]);
         pair_array.push_back(std::make_pair(r_array[i], costheta_array[i]));
-        pair_array2.push_back(std::make_pair(r_array[i], phi[i]));
+        pair_array2.push_back(std::make_pair(r_array[i], phi_array[i]));
     }
     std::sort(pair_array.begin(), pair_array.end());
     std::sort(pair_array2.begin(), pair_array2.end());
@@ -697,8 +698,10 @@ void Nucleus::generate_nucleus_configuration_with_deformed_woods_saxon() {
         do {
             iter++;
             reject_flag = 0;
-            //real phi    = 2.*M_PI*ran_gen_ptr->rand_uniform();
             real phi = phi_temp;
+            if (loop_d_ && WS_gamma_ == 0.) {
+                phi = 2.*M_PI*ran_gen_ptr->rand_uniform();
+            }
             x_i = r_i*sin(theta_i)*cos(phi);
             y_i = r_i*sin(theta_i)*sin(phi);
             z_i = r_i*cos(theta_i);

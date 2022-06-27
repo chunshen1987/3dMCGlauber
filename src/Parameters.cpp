@@ -101,6 +101,13 @@ bool Parameters::get_cached_tabels() const {
         return(false);
 }
 
+bool Parameters::get_loop_d() const {
+    int flag = get_param_int("loop_d");
+    if (flag == 1)
+        return(true);
+    else
+        return(false);
+}
 
 bool Parameters::get_fluct_Nstrings_per_NN_collision() const {
     int flag = get_param_int("fluct_Nstrings_per_NN_collision");

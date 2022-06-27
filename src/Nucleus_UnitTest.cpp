@@ -153,7 +153,7 @@ TEST_CASE("Test deformed Woods-Saxon sampling") {
     Nucleus test_nucleus("Zr", ran_gen_ptr);
     test_nucleus.set_woods_saxon_parameters(
                             96, 40, 0.17, 0.0, 5.021, 0.524,
-                            0.16, 0.16, 0.0, 0.33, 3);
+                            0.5, 0.16, 0.0, 1.0, 3);
     auto WS_params = test_nucleus.get_woods_saxon_parameters();
     auto a_WS = WS_params[3];
     auto R_WS = WS_params[2];

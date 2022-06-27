@@ -32,6 +32,7 @@ class Nucleus {
     real WS_R_;
     real WS_a_;
     real WS_rho0_;
+    bool loop_d_;
     bool WS_run_;
 
     std::vector<std::shared_ptr<Nucleon>> nucleon_list_;
@@ -55,7 +56,7 @@ class Nucleus {
             bool sample_valence_quarks=false, real BG=4.,
             real d_min=0.9, bool deformed=true, real gamma=0.0,
             real beta2=0.0, real beta3=0.0, 
-            real rho0=0.0, real R=0.0, real a=0.0,
+            real rho0=0.0, real R=0.0, real a=0.0, bool loop_d=false,
             bool confFromFile=false);
     ~Nucleus();
 
@@ -110,7 +111,7 @@ class Nucleus {
     real sample_r_from_woods_saxon() const;
     real sample_r_from_deformed_woods_saxon() const;
     void sample_r_and_costheta_from_deformed_woods_saxon(
-                                    real phi, real &r, real &costheta) const;
+                                    real &phi, real &r, real &costheta) const;
     //! Fermi Distribution 
     real fermi_distribution(real r, real R_WS, real a_WS) const;
     real getAvgWoodsSaxonDensity(real r) const;
