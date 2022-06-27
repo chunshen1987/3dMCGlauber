@@ -689,9 +689,9 @@ void Nucleus::generate_nucleus_configuration_with_deformed_woods_saxon() {
     std::vector<real> x_array(A_, 0.), y_array(A_, 0.), z_array(A_, 0.);
     const real d_min_sq = d_min_*d_min_;
     for (int i = 0; i < A_; i++) {
-        const real r_i     = pair_array[i].first;
-        const real theta_i = acos(pair_array[i].second);
-        const real phi_temp = pair_array2[i].first;
+        const real r_i      = pair_array[i].first;
+        const real theta_i  = acos(pair_array[i].second);
+        const real phi_temp = pair_array2[i].second;
         int reject_flag = 0;
         int iter = 0;
         real x_i, y_i, z_i;
