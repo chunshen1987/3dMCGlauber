@@ -10,12 +10,6 @@ b_min 0.                        # minimum impact parameter (fm)
 b_max 10.                       # maximum impact parameter (fm)
 seed -1                         # random seed (-1: system)
 only_event_statistics 1         # flag to only output the event_summary file
-gamma_isobar 0.0
-beta2_isobar 0.0
-beta3_isobar 0.16
-rho0_isobar 0.17
-R_isobar 5.021
-a_isobar 0.524
 d_min 0.9
 ###############################################################
 # control parameters for string production

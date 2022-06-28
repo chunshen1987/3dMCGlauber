@@ -18,13 +18,6 @@ shadowing_factor 1.0                 # a shadowning factor for producing strings
 baryon_junctions 1                   # 0: baryon number assumed to be at string end
                                      # 1: baryon number transported assuming baryon junctions
                                      #    (at smaller x) see arXiv:nucl-th/9602027
-projWS_gamma 1.0
-WS_beta2 0.50
-WS_beta3 0.16
-WS_rho0 0.17
-WS_R 5.021
-WS_a 0.524
-
 d_min 0.0                            # the minimum distance between nucleon pairs [fm]
 
 lambdaB 0.2                          # parameter the controls the strength of the baryon junction stopping

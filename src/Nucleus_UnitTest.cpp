@@ -22,6 +22,7 @@ TEST_CASE("Test random seed") {
     CHECK(test_nucleus.get_random_seed() == seed);
 }
 
+
 TEST_CASE("Test set nucleus parameters") {
     std::shared_ptr<RandomUtil::Random> ran_gen_ptr(
                                     new RandomUtil::Random(-1, 0., 1.));
@@ -41,6 +42,7 @@ TEST_CASE("Test set nucleus parameters") {
                                 0.17, 0.0, 6.38, 0.505, -0.13, 0.0, -0.03};
     CHECK(WS_params == WS_params_Au);
 }
+
 
 TEST_CASE("Test generate nucleus configuratin") {
     std::shared_ptr<RandomUtil::Random> ran_gen_ptr(
@@ -74,6 +76,7 @@ TEST_CASE("Test generate nucleus configuratin") {
     CHECK(test_nucleus.get_nucleon_minimum_distance() == 1.5);
 }
 
+
 TEST_CASE("Test shift the nucleus") {
     std::shared_ptr<RandomUtil::Random> ran_gen_ptr(
                                     new RandomUtil::Random(-1, 0., 1.));
@@ -83,6 +86,7 @@ TEST_CASE("Test shift the nucleus") {
     test_nucleus.shift_nucleus(x_shift);
     CHECK(test_nucleus.get_nucleon(0)->get_x() == x_shift);
 }
+
 
 TEST_CASE("Test recenter the nucleus") {
     std::shared_ptr<RandomUtil::Random> ran_gen_ptr(
@@ -101,6 +105,7 @@ TEST_CASE("Test recenter the nucleus") {
     CHECK(meany == 0.0);
     CHECK(meanz == 0.0);
 }
+
 
 TEST_CASE("Test Woods-Saxon sampling") {
     std::shared_ptr<RandomUtil::Random> ran_gen_ptr(
@@ -151,14 +156,15 @@ TEST_CASE("Test Woods-Saxon sampling") {
     CHECK(std::abs(sum_th - sum_sampled)/sum_th < 0.001);
 }
 
+
 TEST_CASE("Test deformed Woods-Saxon sampling") {
     std::shared_ptr<RandomUtil::Random> ran_gen_ptr(
                                     new RandomUtil::Random(-1, 0., 1.));
-    std::cout << "Testing the Woods-Saxon sampling routine..." << std::endl;
+    std::cout << "Testing the Woods-Saxon deformed sampling routine..."
+              << std::endl;
     Nucleus test_nucleus("Zr", ran_gen_ptr);
     test_nucleus.set_woods_saxon_parameters(
-                            96, 40, 0.17, 0.0, 5.021, 0.524,
-                            0.5, 0.16, 0.0, 1.0, 3);
+            96, 40, 0.17, 0.0, 5.021, 0.524, 0.5, 0.16, 0.0, 1.0, 3);
     auto WS_params = test_nucleus.get_woods_saxon_parameters();
     auto a_WS = WS_params[3];
     auto R_WS = WS_params[2];
@@ -181,10 +187,10 @@ TEST_CASE("Test deformed Woods-Saxon sampling") {
                 real y20  = 0.31539156525252005*(3.0*ct*ct-1.0);
                 real y30  = (5.0*ct*ct*ct - 3.0*ct) *0.3731763325901154;
                 real y2_2 = 0.5462742152960397*cos(2.*iphi)*(1.0-ct*ct);
-                real R_WS_deformed = R_WS*(1.0 + beta2*(cos(gamma)*y20+sin(gamma)*y2_2)
-                                           + beta3*y30);
-                norm_WS += r_local*r_local/(exp((r_local - 
-                                            R_WS_deformed)/a_WS) + 1.)*dr*dct*diphi;
+                real R_WS_deformed = R_WS*(
+                    1. + beta2*(cos(gamma)*y20 + sin(gamma)*y2_2) + beta3*y30);
+                norm_WS += r_local*r_local/(
+                        exp((r_local - R_WS_deformed)/a_WS) + 1.)*dr*dct*diphi;
                 ct = ct + dct;
             }
             iphi = iphi + diphi;
@@ -200,6 +206,8 @@ TEST_CASE("Test deformed Woods-Saxon sampling") {
             rho_r[idx] += weight;
         }
     }
+    real sum_th = 0;
+    real sum_sampled = 0;
     std::ofstream of("check_deformed_Woods_Saxon_sampling.dat");
     of << "# r  WS  Sampled" << std::endl;
     for (int i = 0; i < n_r; i++) {
@@ -213,10 +221,10 @@ TEST_CASE("Test deformed Woods-Saxon sampling") {
                 real y20  = 0.31539156525252005*(3.0*ct*ct-1.0);
                 real y30  = (5.0*ct*ct*ct - 3.0*ct) *0.3731763325901154;
                 real y2_2 = 0.5462742152960397*cos(2.*iphi)*(1.0-ct*ct);
-                real R_WS_deformed = R_WS*(1.0 + beta2*(cos(gamma)*y20+sin(gamma)*y2_2)
-                                           + beta3*y30);
-                WS_local_temp += r_mean*r_mean/(exp((r_mean - 
-                                            R_WS_deformed)/a_WS) + 1.)*dct*diphi;
+                real R_WS_deformed = R_WS*(
+                    1. + beta2*(cos(gamma)*y20 + sin(gamma)*y2_2) + beta3*y30);
+                WS_local_temp += r_mean*r_mean/(
+                        exp((r_mean - R_WS_deformed)/a_WS) + 1.)*dct*diphi;
                 ct = ct + dct;
             }
             iphi = iphi + diphi;
@@ -224,10 +232,14 @@ TEST_CASE("Test deformed Woods-Saxon sampling") {
 
         real WS_local = WS_local_temp/norm_WS;
         of << r_mean << "   " << WS_local << "  " << rho_r[i] << std::endl;
+        sum_th += WS_local;
+        sum_sampled += rho_r[i];
     }
-    std::cout << "please check the output file check_deformed_Woods_Saxon_sampling.dat"
-              << std::endl;
+    std::cout << "please check the output file "
+              << "check_deformed_Woods_Saxon_sampling.dat" << std::endl;
+    CHECK(std::abs(sum_th - sum_sampled)/sum_th < 0.001);
 }
+
 
 TEST_CASE("Test deformed nucleus") {
     std::shared_ptr<RandomUtil::Random> ran_gen_ptr(
