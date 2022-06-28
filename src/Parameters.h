@@ -46,7 +46,6 @@ class Parameters : public ParametersMap {
 
     bool get_only_event_statistics() const;
     bool get_cached_tabels() const;
-    bool get_loop_d() const;
 
     bool get_fluct_Nstrings_per_NN_collision() const;
     real get_remnant_energy_loss_fraction() const;
@@ -61,12 +60,8 @@ class Parameters : public ParametersMap {
     real get_tau_form_fluct_gamma_beta() const;
 
     real get_BG() const;
-    real get_WS_gamma() const;
-    real get_WS_beta2() const;
-    real get_WS_beta3() const;
-    real get_WS_rho0() const;
-    real get_WS_R() const;
-    real get_WS_a() const;
+    real getParam(std::string paramName, real defaultValue) const;
+
     real get_d_min() const;
     bool nucleon_configuration_from_file() const;
 };

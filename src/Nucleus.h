@@ -21,19 +21,11 @@ class Nucleus {
     int Z_;
     bool deformed_;
     bool confFromFile_;
-    WoodsSaxonParam WS_param_vec;       // rho, w, R, a, beta2, beta4
-    real d_min_;                         // minimum distance between nucleons
+    WoodsSaxonParam WS_param_vec;       // rho, w, R, a, beta2, beta3, beta4, gamma
+    real d_min_;                        // minimum distance between nucleons
     bool sample_valence_quarks;
     real Q2;                            // Q2 when sampling valence quark
     real BG_;
-    real WS_gamma_;
-    real WS_beta2_;
-    real WS_beta3_;
-    real WS_R_;
-    real WS_a_;
-    real WS_rho0_;
-    bool loop_d_;
-    bool WS_run_;
 
     std::vector<std::shared_ptr<Nucleon>> nucleon_list_;
     std::vector<std::shared_ptr<Nucleon>> participant_list_;
@@ -54,9 +46,7 @@ class Nucleus {
     Nucleus(std::string nucleus_name,
             std::shared_ptr<RandomUtil::Random> ran_gen,
             bool sample_valence_quarks=false, real BG=4.,
-            real d_min=0.9, bool deformed=true, real gamma=0.0,
-            real beta2=0.0, real beta3=0.0, 
-            real rho0=0.0, real R=0.0, real a=0.0, bool loop_d=false,
+            real d_min=0.9, bool deformed=true,
             bool confFromFile=false);
     ~Nucleus();
 
@@ -72,6 +62,9 @@ class Nucleus {
                                     real rho, real w, real R, real a,
                                     real beta2, real beta3, real beta4,
                                     real gamma, int density_function_type_in);
+    void setWoodsSaxonParameters(real rho, real w, real R, real a,
+                                 real beta2, real beta3, real beta4,
+                                 real gamma);
     void set_dmin (real d_min) {d_min_ = d_min;}
     real get_nucleon_minimum_distance() const {return(d_min_);}
     int get_nucleus_A() const {return(A_);}

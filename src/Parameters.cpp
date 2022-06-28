@@ -30,41 +30,18 @@ real Parameters::get_b_min() const {
     return(b);
 }
 
+
 real Parameters::get_d_min() const {
     real b = static_cast<real>(get_param_double("d_min"));
     assert(b >= 0.);
     return(b);
 }
 
-real Parameters::get_WS_gamma() const {
-    real temp = static_cast<real>(get_param_double("WS_gamma"));
-    return(temp);
+
+real Parameters::getParam(std::string paramName, real defaultValue) const {
+    return(static_cast<real>(get_param_double(paramName, defaultValue)));
 }
 
-real Parameters::get_WS_beta2() const {
-    real temp = static_cast<real>(get_param_double("WS_beta2"));
-    return(temp);
-}
-
-real Parameters::get_WS_beta3() const {
-    real temp = static_cast<real>(get_param_double("WS_beta3"));
-    return(temp);
-}
-
-real Parameters::get_WS_rho0() const {
-    real temp = static_cast<real>(get_param_double("WS_rho0"));
-    return(temp);
-}
-
-real Parameters::get_WS_R() const {
-    real temp = static_cast<real>(get_param_double("WS_R"));
-    return(temp);
-}
-
-real Parameters::get_WS_a() const {
-    real temp = static_cast<real>(get_param_double("WS_a"));
-    return(temp);
-}
 
 int Parameters::get_use_quarks() const {
     int flag = get_param_int("useQuarks");
@@ -101,13 +78,6 @@ bool Parameters::get_cached_tabels() const {
         return(false);
 }
 
-bool Parameters::get_loop_d() const {
-    int flag = get_param_int("loop_d");
-    if (flag == 1)
-        return(true);
-    else
-        return(false);
-}
 
 bool Parameters::get_fluct_Nstrings_per_NN_collision() const {
     int flag = get_param_int("fluct_Nstrings_per_NN_collision");
