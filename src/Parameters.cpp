@@ -31,6 +31,18 @@ real Parameters::get_b_min() const {
 }
 
 
+real Parameters::get_d_min() const {
+    real b = static_cast<real>(get_param_double("d_min"));
+    assert(b >= 0.);
+    return(b);
+}
+
+
+real Parameters::getParam(std::string paramName, real defaultValue) const {
+    return(static_cast<real>(get_param_double(paramName, defaultValue)));
+}
+
+
 int Parameters::get_use_quarks() const {
     int flag = get_param_int("useQuarks");
     assert(flag >= 0 && flag < 3);

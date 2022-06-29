@@ -21,8 +21,8 @@ class Nucleus {
     int Z_;
     bool deformed_;
     bool confFromFile_;
-    WoodsSaxonParam WS_param_vec;       // rho, w, R, a, beta2, beta4
-    real d_min_;                         // minimum distance between nucleons
+    WoodsSaxonParam WS_param_vec;       // rho, w, R, a, beta2, beta3, beta4, gamma
+    real d_min_;                        // minimum distance between nucleons
     bool sample_valence_quarks;
     real Q2;                            // Q2 when sampling valence quark
     real BG_;
@@ -46,7 +46,8 @@ class Nucleus {
     Nucleus(std::string nucleus_name,
             std::shared_ptr<RandomUtil::Random> ran_gen,
             bool sample_valence_quarks=false, real BG=4.,
-            real d_min=0.9, bool deformed=true, bool confFromFile=false);
+            real d_min=0.9, bool deformed=true,
+            bool confFromFile=false);
     ~Nucleus();
 
     std::string get_name() const {return(name);}
@@ -59,8 +60,11 @@ class Nucleus {
     void set_nucleus_parameters(std::string nucleus_name);
     void set_woods_saxon_parameters(int A_in, int Z_in,
                                     real rho, real w, real R, real a,
-                                    real beta2, real beta4,
-                                    int density_function_type_in);
+                                    real beta2, real beta3, real beta4,
+                                    real gamma, int density_function_type_in);
+    void setWoodsSaxonParameters(real rho, real w, real R, real a,
+                                 real beta2, real beta3, real beta4,
+                                 real gamma);
     void set_dmin (real d_min) {d_min_ = d_min;}
     real get_nucleon_minimum_distance() const {return(d_min_);}
     int get_nucleus_A() const {return(A_);}
@@ -98,12 +102,14 @@ class Nucleus {
     void generate_nucleus_configuration_with_woods_saxon();
     void generate_nucleus_configuration_with_deformed_woods_saxon();
     real sample_r_from_woods_saxon() const;
+    real sample_r_from_deformed_woods_saxon() const;
     void sample_r_and_costheta_from_deformed_woods_saxon(
-                                        real &r, real &costheta) const;
+                                    real &phi, real &r, real &costheta) const;
     //! Fermi Distribution 
     real fermi_distribution(real r, real R_WS, real a_WS) const;
     real getAvgWoodsSaxonDensity(real r) const;
     real spherical_harmonics(int l, real ct) const;
+    real spherical_harmonics_Y22(int l, real ct, real phi) const;
 
     int get_number_of_nucleons() const {return(nucleon_list_.size());}
     std::shared_ptr<Nucleon> get_nucleon(unsigned int idx) {

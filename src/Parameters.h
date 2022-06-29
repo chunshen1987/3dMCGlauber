@@ -60,7 +60,9 @@ class Parameters : public ParametersMap {
     real get_tau_form_fluct_gamma_beta() const;
 
     real get_BG() const;
+    real getParam(std::string paramName, real defaultValue) const;
 
+    real get_d_min() const;
     bool nucleon_configuration_from_file() const;
 };
 

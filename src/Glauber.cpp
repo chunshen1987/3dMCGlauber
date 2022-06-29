@@ -39,17 +39,58 @@ Glauber::Glauber(const MCGlb::Parameters &param_in,
         }
     }
 
-    real d_min = 0.9;
+    real d_min = parameter_list.get_d_min();
+
     bool deformed = true;
     bool nucleonConfFromFile = parameter_list.nucleon_configuration_from_file();
     projectile = std::unique_ptr<Nucleus>(
             new Nucleus(parameter_list.get_projectle_nucleus_name(), ran_gen,
                         sample_valence_quark, parameter_list.get_BG(),
                         d_min, deformed, nucleonConfFromFile));
+    real resetProjWS = parameter_list.getParam("resetProjWS", 0.0);
+    if (resetProjWS > 0.) {
+        auto defaultWSParam = projectile->get_woods_saxon_parameters();
+        real WS_rho = parameter_list.getParam(
+                                    "ProjWS_rho0", defaultWSParam[0]);
+        real WS_w = parameter_list.getParam("ProjWS_w", defaultWSParam[1]);
+        real WS_R = parameter_list.getParam("ProjWS_R", defaultWSParam[2]);
+        real WS_a = parameter_list.getParam("ProjWS_a", defaultWSParam[3]);
+        real WS_beta2 = parameter_list.getParam(
+                                    "ProjWS_beta2", defaultWSParam[4]);
+        real WS_beta3 = parameter_list.getParam(
+                                    "ProjWS_beta3", defaultWSParam[5]);
+        real WS_beta4 = parameter_list.getParam(
+                                    "ProjWS_beta4", defaultWSParam[6]);
+        real WS_gamma = parameter_list.getParam(
+                                    "ProjWS_gamma", defaultWSParam[7]);
+        projectile->setWoodsSaxonParameters(
+            WS_rho, WS_w, WS_R, WS_a, WS_beta2, WS_beta3, WS_beta4, WS_gamma);
+    }
+
     target = std::unique_ptr<Nucleus>(
             new Nucleus(parameter_list.get_target_nucleus_name(), ran_gen,
                         sample_valence_quark, parameter_list.get_BG(),
                         d_min, deformed, nucleonConfFromFile));
+    real resetTargWS = parameter_list.getParam("resetTargWS", 0.0);
+    if (resetTargWS > 0.) {
+        auto defaultWSParam = target->get_woods_saxon_parameters();
+        real WS_rho = parameter_list.getParam(
+                                    "TargWS_rho0", defaultWSParam[0]);
+        real WS_w = parameter_list.getParam("TargWS_w", defaultWSParam[1]);
+        real WS_R = parameter_list.getParam("TargWS_R", defaultWSParam[2]);
+        real WS_a = parameter_list.getParam("TargWS_a", defaultWSParam[3]);
+        real WS_beta2 = parameter_list.getParam(
+                                    "TargWS_beta2", defaultWSParam[4]);
+        real WS_beta3 = parameter_list.getParam(
+                                    "TargWS_beta3", defaultWSParam[5]);
+        real WS_beta4 = parameter_list.getParam(
+                                    "TargWS_beta4", defaultWSParam[6]);
+        real WS_gamma = parameter_list.getParam(
+                                    "TargWS_gamma", defaultWSParam[7]);
+        target->setWoodsSaxonParameters(
+            WS_rho, WS_w, WS_R, WS_a, WS_beta2, WS_beta3, WS_beta4, WS_gamma);
+    }
+
     if (sample_valence_quark) {
         projectile->set_valence_quark_Q2(parameter_list.get_quarks_Q2());
         target->set_valence_quark_Q2(parameter_list.get_quarks_Q2());
@@ -75,6 +116,8 @@ Glauber::Glauber(const MCGlb::Parameters &param_in,
 void Glauber::make_nuclei() {
     projectile->generate_nucleus_3d_configuration();
     target->generate_nucleus_3d_configuration();
+    //projectile->output_nucleon_positions("projectile_before_accelaration.dat");
+    //target->output_nucleon_positions("target_before_accelaration.dat");
     projectile->accelerate_nucleus(parameter_list.get_roots(), 1);
     target->accelerate_nucleus(parameter_list.get_roots(), -1);
 
