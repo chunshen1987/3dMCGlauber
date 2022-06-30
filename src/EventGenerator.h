@@ -60,8 +60,14 @@ class EventGenerator {
                            double &E, double &px, double &py, double &pz);
     void GetMomandPos_Targ(double &t, double &x, double &y, double &z,
                            double &E, double &px, double &py, double &pz);
+    void GetMom_Proj(double &E, double &px, double &py, double &pz);
+    void GetMom_Targ(double &E, double &px, double &py, double &pz);
+    void GetHardPos(double &t, double &x, double &y, double &z);
+
     std::vector<double> MCGlb_projectile_nucleon_z();
     std::vector<double> MCGlb_target_nucleon_z();
+    std::vector<double> GetQuarkPosProj();
+    std::vector<double> GetQuarkPosTarg();
 
     std::vector<CollisionEvent> get_CollisionEventvector();
 };

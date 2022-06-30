@@ -93,6 +93,8 @@ class Nucleon : public Particle {
     std::shared_ptr<Quark> get_a_valence_quark();
     std::shared_ptr<Quark> get_a_valence_quark_sub_mom(real sub_E);
 
+    std::vector<double> output_quark_pos();
+
     bool is_remnant_set() const {return(remnant_set_);}
     void set_remnant(bool remnant) {remnant_set_ = remnant;}
 

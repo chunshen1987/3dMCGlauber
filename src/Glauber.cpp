@@ -291,8 +291,58 @@ void Glauber::Set_hard_parton_momentum(std::vector<double> &HardMomandPosProj,
         HardPartonPosAndMomTarg_.push_back(HardMomandPosTarg[i]);
     }
 }
-            
-void Glauber::Pick_and_subtract_hard_parton_momentum(real ecm_) {
+
+void Glauber::Set_hard_collisions_Pos(std::vector<double> &HardPosProj) {
+    HardPartonPos_.clear();
+    for (unsigned int i=0; i<HardPosProj.size(); i++) {
+        HardPartonPos_.push_back(HardPosProj[i]);
+    }
+}
+
+std::vector<double>  Glauber::OutputquarkPosProj() {
+    auto binary_collision_x = HardPartonPos_[1];
+    auto binary_collision_y = HardPartonPos_[2];
+    std::vector<double> quark_xvec;
+    // pick up the colliding nucleon pair generated hard partons
+    for (auto &it: collision_schedule_list_) {
+        // collision list is time ordered
+        auto xvec = it.get_collision_position();
+        if ((abs(xvec[1] - binary_collision_x) < 1.e-5) && 
+            (abs(xvec[2] - binary_collision_y) < 1.e-5)) {
+             // Pick up one valence quark,
+             auto nucleon_collided = it.get_proj_nucleon_ptr().lock();
+             if (sample_valence_quark) {
+                 quark_xvec = nucleon_collided->output_quark_pos();
+                 break;
+            }
+        }
+    }
+    return(quark_xvec);
+}
+
+std::vector<double>  Glauber::OutputquarkPosTarg() {
+    auto binary_collision_x = HardPartonPos_[1];
+    auto binary_collision_y = HardPartonPos_[2];
+    std::vector<double> quark_xvec;
+    // pick up the colliding nucleon pair generated hard partons
+    for (auto &it: collision_schedule_list_) {
+        // collision list is time ordered
+        auto xvec = it.get_collision_position();
+        if ((abs(xvec[1] - binary_collision_x) < 1.e-5) && 
+            (abs(xvec[2] - binary_collision_y) < 1.e-5)) {
+             // Pick up one valence quark,
+             auto nucleon_collided = it.get_targ_nucleon_ptr().lock();
+             if (sample_valence_quark) {
+                 quark_xvec = nucleon_collided->output_quark_pos();
+                 break;
+            }
+        }
+    }
+    return(quark_xvec);
+}
+
+void Glauber::Pick_and_subtract_hard_parton_momentum() {
+    real ecm_ = parameter_list.get_roots();
     // Positions and Momentum for the leading hard partons.
     auto binary_collision_x = HardPartonPosAndMomProj_[1];
     auto binary_collision_y = HardPartonPosAndMomProj_[2];

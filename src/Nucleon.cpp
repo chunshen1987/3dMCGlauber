@@ -202,6 +202,17 @@ void Nucleon::lorentz_contraction(real gamma) {
     }
 }
 
+std::vector<double> Nucleon::output_quark_pos() {
+    std::vector<double> quark_xvec;
+    for (auto &it: quark_list) {
+        auto xvec = it->get_x();
+        for (unsigned int i=1; i<4; i++) {
+            quark_xvec.push_back(xvec[i]);
+        }
+    }
+    return (quark_xvec);
+}
+
 
 std::shared_ptr<Quark> Nucleon::get_a_valence_quark() {
     // return the quark with the minimum number of connections

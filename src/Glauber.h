@@ -33,6 +33,7 @@ class Glauber {
     std::vector<double> Targ_nucleonz_;
     std::vector<double> HardPartonPosAndMomProj_;
     std::vector<double> HardPartonPosAndMomTarg_;
+    std::vector<double> HardPartonPos_;
     bool sample_valence_quark;
     bool fluct_Nstrings_per_NN_collision_;
     real remnant_energy_loss_fraction_;
@@ -113,6 +114,9 @@ class Glauber {
 
     std::vector<double> get_all_proj_nucleon_z();
     std::vector<double> get_all_targ_nucleon_z();
+
+    std::vector<double>  OutputquarkPosProj();
+    std::vector<double>  OutputquarkPosTarg();
     //! This function performs string production between each nucleon pair
     int perform_string_production();
     void produce_remnant_strings();
@@ -129,9 +133,10 @@ class Glauber {
                             const real Ncoll, const real Nstrings,
                             const real b);
     //void Pick_and_subtract_hard_parton_momentum_in_nucleon();
-    void Pick_and_subtract_hard_parton_momentum(real ecm_);
+    void Pick_and_subtract_hard_parton_momentum();
     void Set_hard_parton_momentum(std::vector<double> &HardMomandPosProj,
                                   std::vector<double> &HardMomandPosTarg);
+    void Set_hard_collisions_Pos(std::vector<double> &HardPosProj);
     real get_sig_eff(const real siginNN);
 };
 
