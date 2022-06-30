@@ -82,6 +82,8 @@ class Glauber {
     real sample_rapidity_loss_shell(real y_init) const;
     real sample_rapidity_loss_from_the_LEXUS_model(const real y_init) const;
     real sample_rapidity_loss_from_parametrization(const real y_init) const;
+    real sample_rapidity_loss_from_piecewise_parametrization(
+                                                const real y_init) const;
     real sample_rapidity_loss_from_parametrization_with_fluct(
                                                 const real y_init) const;
 
