@@ -382,10 +382,11 @@ void Glauber::Pick_and_subtract_hard_parton_momentum() {
                      p_q = proj_q->get_p();
                      if(p_q[0]<=HardPartonMomProj_[0]) {
                          // resample the valence quark
+                         std::vector<double> xvec_q = proj_collided->output_quark_pos();
                          proj_collided->resample_valence_quarks(ecm_, 1, 
                                             proj_collided->get_electric_charge(), 
-                                            parameter_list.get_BG(), ran_gen_ptr_);
-                         proj_collided->readd_soft_parton_ball(ecm_, 1, parameter_list.get_BG(), 
+                                            xvec_q, ran_gen_ptr_);
+                         proj_collided->readd_soft_parton_ball(ecm_, 1, xvec_q, parameter_list.get_BG(), 
                                             proj_collided->get_p(), proj_collided->get_quark_list(),
                                             ran_gen_ptr_);
                          std::cout << " re-sample the valence quark in proj." <<std::endl;
@@ -401,10 +402,11 @@ void Glauber::Pick_and_subtract_hard_parton_momentum() {
                      p_q = targ_q->get_p();
                      if(p_q[0]<=HardPartonMomTarg_[0]) {
                          // resample the valence quark
+                         std::vector<double> xvec_q = targ_collided->output_quark_pos();
                          targ_collided->resample_valence_quarks(ecm_, -1, 
                                             targ_collided->get_electric_charge(), 
-                                            parameter_list.get_BG(), ran_gen_ptr_);
-                         targ_collided->readd_soft_parton_ball(ecm_, -1, parameter_list.get_BG(), 
+                                            xvec_q, ran_gen_ptr_);
+                         targ_collided->readd_soft_parton_ball(ecm_, -1, xvec_q, parameter_list.get_BG(), 
                                             targ_collided->get_p(), targ_collided->get_quark_list(),
                                             ran_gen_ptr_);
                          std::cout << " re-sample the valence quark in targ." <<std::endl;

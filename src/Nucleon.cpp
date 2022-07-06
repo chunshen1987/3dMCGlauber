@@ -159,7 +159,8 @@ SpatialVec Nucleon::resample_valence_quark_position(real BG_,
     return(xq);
 }
 
-void Nucleon::resample_valence_quarks(real ecm, int direction, real charge, real BG_,
+void Nucleon::resample_valence_quarks(real ecm, int direction, real charge, 
+                   std::vector<double> xvec_q,
                    std::shared_ptr<RandomUtil::Random> nucleon_ran_gen_ptr) {
     const int number_of_quarks = PhysConsts::NumValenceQuark;
     erase_quarks();
@@ -167,14 +168,15 @@ void Nucleon::resample_valence_quarks(real ecm, int direction, real charge, real
     resample_quark_momentum_fraction(xQuark, charge, ecm,
                                      nucleon_ran_gen_ptr);
     for (int i = 0; i < number_of_quarks; i++) {
-        auto xvec = resample_valence_quark_position(BG_, nucleon_ran_gen_ptr);
+        SpatialVec xvec = {0.0, xvec_q[i*3], xvec_q[i*3+1], xvec_q[i*3+2]}; 
         std::shared_ptr<Quark> quark_ptr(new Quark(xvec, xQuark[i]));
         push_back_quark(quark_ptr);
     }
     accelerate_quarks(ecm, direction);
 }
 
-void Nucleon::readd_soft_parton_ball(real ecm, int direction, real BG_, MomentumVec soft_pvec, 
+void Nucleon::readd_soft_parton_ball(real ecm, int direction, std::vector<double> xvec_q,
+                                     real BG_, MomentumVec soft_pvec, 
                                      std::vector<std::shared_ptr<Quark>> valence_quark_list,
                                      std::shared_ptr<RandomUtil::Random> nucleon_ran_gen_ptr) {
     for (const auto & q_i: valence_quark_list) {
@@ -187,7 +189,12 @@ void Nucleon::readd_soft_parton_ball(real ecm, int direction, real BG_, Momentum
     if (soft_pvec[0] > mass) {
         real rapidity = direction*acosh(soft_pvec[0]/mass);
         soft_pvec[3] = mass*sinh(rapidity);
-        auto xvec = resample_valence_quark_position(BG_, nucleon_ran_gen_ptr);
+        SpatialVec xvec;
+        if (xvec_q.size()<10) {
+            xvec = resample_valence_quark_position(BG_, nucleon_ran_gen_ptr);
+        } else {
+            xvec = {0.0, xvec_q[9], xvec_q[10], xvec_q[11]};
+        }
         std::shared_ptr<Quark> quark_ptr(new Quark(xvec, soft_pvec));
         quark_ptr->set_rapidity(rapidity);
         push_back_quark(quark_ptr);

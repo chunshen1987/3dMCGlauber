@@ -121,9 +121,11 @@ class Nucleon : public Particle {
     void resample_quark_momentum_fraction(std::vector<real> &xQuark,
                           const int electric_charge, const real ecm, 
                           std::shared_ptr<RandomUtil::Random> nucleon_ran_gen_ptr) const;
-    void resample_valence_quarks(real ecm, int direction, real charge, real BG_,
+    void resample_valence_quarks(real ecm, int direction, real charge, 
+                                 std::vector<double> xvec_q,
                                  std::shared_ptr<RandomUtil::Random> nucleon_ran_gen_ptr);
-    void readd_soft_parton_ball(real ecm, int direction, real BG_, MomentumVec soft_pvec, 
+    void readd_soft_parton_ball(real ecm, int direction, std::vector<double> xvec_q,
+                                real BG_, MomentumVec soft_pvec, 
                                 std::vector<std::shared_ptr<Quark>> valence_quark_list,
                                 std::shared_ptr<RandomUtil::Random> nucleon_ran_gen_ptr);
 
