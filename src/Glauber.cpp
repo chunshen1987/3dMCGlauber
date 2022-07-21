@@ -460,8 +460,14 @@ int Glauber::perform_string_production() {
                     parameter_list.get_QCD_string_evolution_mode());
     const auto baryon_junctions = parameter_list.get_baryon_junctions();
 
-    // sqrt(parameter_list.get_roots()); // ~s^{-1/4} 
-    real lambdaB = parameter_list.get_lambdaB();
+    // sqrt(parameter_list.get_roots()); // ~s^{-1/4}
+    real lambdaB;
+    if ( parameter_list.use_E_dependent_LB() ) {
+        // lambdaB = CB / s^{1/4}
+        lambdaB = parameter_list.get_CB() / sqrt(collision_energy);
+    } else {
+        lambdaB = parameter_list.get_lambdaB();
+    }
     lambdaB = std::min(1., lambdaB);
 
     //cout << lambdaB <<endl;

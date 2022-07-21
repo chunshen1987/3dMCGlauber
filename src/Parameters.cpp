@@ -79,12 +79,25 @@ bool Parameters::use_roots_cut() const {
         return(false);
 }
 
+bool Parameters::use_E_dependent_LB() const {
+    int flag = get_param_int("use_E_dependent_LB");
+    if (flag == 1)
+        return(true);
+    else
+        return(false);
+}
+
 real Parameters::get_lambdaB() const {
     real lambdaB = static_cast<real>(get_param_double("lambdaB"));
     assert(lambdaB >= 0.);
     return(lambdaB);
 }
 
+real Parameters::get_CB() const {
+    real CB = static_cast<real>(get_param_double("CB"));
+    assert(CB >= 0.);
+    return(CB);
+}
 
 bool Parameters::get_cached_tabels() const {
     int flag = get_param_int("cache_tables");
