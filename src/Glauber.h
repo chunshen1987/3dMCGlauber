@@ -34,6 +34,8 @@ class Glauber {
     std::vector<double> HardPartonPosAndMomProj_;
     std::vector<double> HardPartonPosAndMomTarg_;
     std::vector<double> HardPartonPos_;
+    std::vector<double> Mom_remnant_proj_;
+    std::vector<double> Mom_remnant_targ_;
     bool sample_valence_quark;
     bool fluct_Nstrings_per_NN_collision_;
     real remnant_energy_loss_fraction_;
@@ -117,6 +119,14 @@ class Glauber {
 
     std::vector<double>  OutputquarkPosProj();
     std::vector<double>  OutputquarkPosTarg();
+
+    std::vector<double>  GetRemMomTarg() {
+        return(Mom_remnant_targ_);
+    }
+    std::vector<double>  GetRemMomProj() {
+        return(Mom_remnant_proj_);
+    }
+
     //! This function performs string production between each nucleon pair
     int perform_string_production();
     void produce_remnant_strings();

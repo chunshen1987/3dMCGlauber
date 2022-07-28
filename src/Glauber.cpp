@@ -943,6 +943,11 @@ void Glauber::produce_remnant_strings() {
         if (iproj->is_wounded()) {
             auto x_i = iproj->get_remnant_x_frez();
             auto p_i = iproj->get_remnant_p();
+            if (iproj->is_hard_collided() && !iproj->nucleon_is_subtracted()) {
+                for (int ip=0; ip<p_i.size(); ip++) {
+                    Mom_remnant_proj_.push_back(p_i[ip]);
+                }
+            }
             if (p_i[0] <= mass_min) {
                 std::cout << " No remnant." << std::endl;
                 continue;
@@ -989,6 +994,11 @@ void Glauber::produce_remnant_strings() {
         if (itarg->is_wounded()) {
             auto x_i = itarg->get_remnant_x_frez();
             auto p_i = itarg->get_remnant_p();
+            if (itarg->is_hard_collided() && !itarg->nucleon_is_subtracted()) {
+                for (int ip=0; ip<p_i.size(); ip++) {
+                    Mom_remnant_targ_.push_back(p_i[ip]);
+                }
+            }
             if (p_i[0] <= mass_min) {
                 std::cout << " No remnant." << std::endl;
                 continue;

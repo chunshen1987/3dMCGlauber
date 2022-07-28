@@ -139,6 +139,16 @@ std::vector<double> EventGenerator::GetQuarkPosTarg() {
     return(quarkxvec);
 }
 
+std::vector<double> EventGenerator::GetRemMom_Proj() {
+    std::vector<double> RemMomProj = mc_glauber_ptr_->GetRemMomProj();
+    return(RemMomProj);
+}
+
+std::vector<double> EventGenerator::GetRemMom_Targ() {
+    std::vector<double> RemMomTarg = mc_glauber_ptr_->GetRemMomTarg();
+    return(RemMomTarg);
+}
+
 void EventGenerator::generate_strings() {
     messager << "Random seed = " << ran_gen_ptr_->get_seed();
     messager.flush("info");

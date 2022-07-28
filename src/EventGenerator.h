@@ -68,6 +68,8 @@ class EventGenerator {
     std::vector<double> MCGlb_target_nucleon_z();
     std::vector<double> GetQuarkPosProj();
     std::vector<double> GetQuarkPosTarg();
+    std::vector<double> GetRemMom_Proj();
+    std::vector<double> GetRemMom_Targ();
 
     std::vector<CollisionEvent> get_CollisionEventvector();
 };
