@@ -65,6 +65,10 @@ Glauber::Glauber(const MCGlb::Parameters &param_in,
 
     real siginNN = compute_NN_inelastic_cross_section(
                                             parameter_list.get_roots());
+    if (parameter_list.use_GG_distribution()) {
+        siginNN = compute_NN_inelastic_cross_section_GG(parameter_list.get_roots(), 
+                  parameter_list.get_Omega_GG());
+    }
     sigma_eff_ = get_sig_eff(siginNN);
     cout << "sqrt{s} = " << parameter_list.get_roots() << " GeV, "
          << "siginNN = " << siginNN << " mb" << endl;
@@ -290,6 +294,44 @@ void Glauber::Set_hard_parton_momentum(std::vector<double> &HardMomandPosProj,
         HardPartonPosAndMomProj_.push_back(HardMomandPosProj[i]);
         HardPartonPosAndMomTarg_.push_back(HardMomandPosTarg[i]);
     }
+}
+
+real Glauber::compute_NN_inelastic_cross_section_GG(real ecm, real Omega) const {
+   // Fluctuate the sigma_NN by Glauber-Gribov, 
+   // Eq. (6) in ArXiv: 1408.2549 
+    real s = ecm*ecm;
+    real sigma_NN_total = 44.4 - 2.9*log(s) + 0.33*log(s)*log(s);
+    real sigma_NN_inel  = (sigma_NN_total
+                           - (11.4 - 1.52*log(s) + 0.13*log(s)*log(s)));
+    std::vector<real> Prob_GG;
+    real temp_nor = 0.;
+    real temp_dnor = 0.;
+    real probability_sum = 0.;
+    for (real i=0.; i<sigma_NN_inel*3.; i++) {
+        temp_nor  = temp_nor + i * GG_probality(i, 1., Omega, sigma_NN_inel);
+        temp_dnor = temp_dnor + GG_probality(i, 1., Omega, sigma_NN_inel);
+    }
+    real Lambda = sigma_NN_inel / (temp_nor/temp_dnor);
+    for (real i=0.; i<sigma_NN_inel*3.; i++) {
+        probability_sum  = probability_sum + 
+            GG_probality(i, Lambda, Omega, sigma_NN_inel);
+        Prob_GG.push_back(GG_probality(i, Lambda, Omega, sigma_NN_inel));
+    }
+    real MCprobability = ran_gen_ptr_->rand_uniform();
+    real sigma_NN_inel_GG = sigma_NN_inel*3.;
+    for (real i=0; i < sigma_NN_inel*3.; i++) {
+        MCprobability = MCprobability - Prob_GG[int(i)]/probability_sum;
+        if (MCprobability <= 0.) {
+            sigma_NN_inel_GG = i;
+            break;
+        }
+    }
+    return(sigma_NN_inel_GG);
+}
+
+real Glauber::GG_probality(real x, real Lambda, real Omega, real Sigma0) const {
+    return( 1./Lambda * x/Lambda / (x/Lambda + Sigma0) *
+            exp(-1 * pow(x/Lambda/Sigma0 - 1., 2.) / Omega/Omega));
 }
 
 void Glauber::Set_hard_collisions_Pos(std::vector<double> &HardPosProj) {

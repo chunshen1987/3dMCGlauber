@@ -40,6 +40,9 @@ class Parameters : public ParametersMap {
     int get_QCD_string_evolution_mode() const;
     int get_rapidity_loss_method() const;
 
+    bool use_GG_distribution() const;
+    real get_Omega_GG() const;
+
     // if False do assume baryon number at string ends
     // if True transport baryon number according to cosh(y*/2)
     bool get_baryon_junctions() const;

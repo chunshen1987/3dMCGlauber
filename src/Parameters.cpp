@@ -75,6 +75,22 @@ bool Parameters::get_fluct_Nstrings_per_NN_collision() const {
         return(false);
 }
 
+bool Parameters::use_GG_distribution() const {
+    int flag = get_param_int("use_GG_distribution");
+    if (flag == 0) {
+        return(false);
+    } else {
+        return(true);
+    }
+}
+
+real Parameters::get_Omega_GG() const {
+    real Omega_GG = static_cast<real>(
+            get_param_double("Omega_GG"));
+    assert(Omega_GG > 0.);
+    return(Omega_GG);
+}
+
 
 double Parameters::get_remnant_energy_loss_fraction() const {
     real frac = static_cast<real>(
