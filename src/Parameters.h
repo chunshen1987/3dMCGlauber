@@ -53,6 +53,7 @@ class Parameters : public ParametersMap {
 
     bool get_only_event_statistics() const;
     bool get_cached_tabels() const;
+    bool set_remnant_x_ori() const;
 
     bool get_fluct_Nstrings_per_NN_collision() const;
     real get_remnant_energy_loss_fraction() const;

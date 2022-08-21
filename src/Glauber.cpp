@@ -687,13 +687,27 @@ int Glauber::perform_string_production() {
             if (!proj_n->is_remnant_set()) {
                 proj_n->set_remnant(true);
                 auto x_frez = proj_n->get_x();
-                proj_n->set_remnant_x_frez(x_frez);
+                if (parameter_list.set_remnant_x_ori()) {
+                    proj_n->set_remnant_x_frez(x_frez);
+                } else {
+                    std::shared_ptr<Quark> remnant_q = proj_n->get_a_valence_quark();
+                    auto remnant_q_xvec = remnant_q->get_x();
+                    SpatialVec xvec_rem_q = {x_frez[0], remnant_q_xvec[1], remnant_q_xvec[2], x_frez[3]};
+                    proj_n->set_remnant_x_frez(xvec_rem_q);
+                }
             }
             auto targ_n = it->get_targ();
             if (!targ_n->is_remnant_set()) {
                 targ_n->set_remnant(true);
                 auto x_frez = targ_n->get_x();
-                targ_n->set_remnant_x_frez(x_frez);
+                if (parameter_list.set_remnant_x_ori()) {
+                    targ_n->set_remnant_x_frez(x_frez);
+                } else {
+                    std::shared_ptr<Quark> remnant_q = targ_n->get_a_valence_quark();
+                    auto remnant_q_xvec = remnant_q->get_x();
+                    SpatialVec xvec_rem_q = {x_frez[0], remnant_q_xvec[1], remnant_q_xvec[2], x_frez[3]};
+                    targ_n->set_remnant_x_frez(xvec_rem_q);
+                }
             }
 
             // set flags for quark remnants at their last connected strings

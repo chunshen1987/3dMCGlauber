@@ -71,6 +71,14 @@ bool Parameters::use_roots_distribution() const {
         return(false);
 }
 
+bool Parameters::set_remnant_x_ori() const {
+    int flag = get_param_int("remnant_x_is_ori");
+    if (flag == 1)
+        return(true);
+    else
+        return(false);
+}
+
 bool Parameters::use_roots_cut() const {
     int flag = get_param_int("use_roots_cut");
     if (flag == 1)
