@@ -1093,17 +1093,20 @@ real Glauber::sample_rapidity_loss_from_parametrization(
 
 real Glauber::sample_rapidity_loss_from_piecewise_parametrization(
                                                 const real y_init) const {
-    auto y_loss1 = parameter_list.getParam("ylossParam4At2", 1);
-    auto y_loss2 = parameter_list.getParam("ylossParam4At4", 2);
-    auto y_loss3 = parameter_list.getParam("ylossParam4At6", 3);
+    auto y_loss1 = parameter_list.getParam("ylossParam4At2", 1.60);
+    auto y_loss2 = parameter_list.getParam("ylossParam4At4", 2.15);
+    auto y_loss3 = parameter_list.getParam("ylossParam4At6", 2.45);
+    auto y_loss4 = parameter_list.getParam("ylossParam4At10", 2.95);
 
     real y_loss = 0.;
     if (y_init < 2) {
         y_loss = y_loss1/2.*y_init;
     } else if (y_init < 4) {
         y_loss = (y_loss2 - y_loss1)/2.*y_init + (2.*y_loss1 - y_loss2);
-    } else {
+    } else if (y_init < 6) {
         y_loss = (y_loss3 - y_loss2)/2.*y_init + (3.*y_loss2 - 2.*y_loss3);
+    } else {
+        y_loss = (y_loss4 - y_loss3)/4.*y_init + (2.5*y_loss3 - 1.5*y_loss4);
     }
     return(y_loss);
 }
