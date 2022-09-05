@@ -683,8 +683,9 @@ void Glauber::get_tau_form_and_moversigma(const int string_evolution_mode,
         m_over_sigma = tau_form/std::max(eps, sqrt(2.*(cosh(y_loss) - 1.)));
     } else if (string_evolution_mode == -4) {
         // only m_over_sigma fluctuates for Beam Remnants
-        y_loss = (sample_rapidity_loss_shell(y_in_lrf)
-                  *remnant_energy_loss_fraction_);
+        real frac = ran_gen_ptr_->rand_uniform();
+        y_loss = (sample_rapidity_loss_shell(y_in_lrf)*frac);
+        //          *remnant_energy_loss_fraction_);
         m_over_sigma = tau_form/std::max(eps, sqrt(2.*(cosh(y_loss) - 1.)));
     }
 }
@@ -985,9 +986,10 @@ void Glauber::produce_remnant_strings() {
         if (iproj->is_wounded()) {
             auto x_i = iproj->get_remnant_x_frez();
             auto p_i = iproj->get_remnant_p();
-            if (iproj->is_hard_collided() && !iproj->nucleon_is_subtracted()) {
+            if (iproj->is_hard_collided() && iproj->nucleon_is_subtracted()) {
                 for (int ip=0; ip<p_i.size(); ip++) {
                     Mom_remnant_proj_.push_back(p_i[ip]);
+                    p_i[ip] = 0.0;
                 }
             }
             if (p_i[0] <= mass_min) {
@@ -1036,9 +1038,10 @@ void Glauber::produce_remnant_strings() {
         if (itarg->is_wounded()) {
             auto x_i = itarg->get_remnant_x_frez();
             auto p_i = itarg->get_remnant_p();
-            if (itarg->is_hard_collided() && !itarg->nucleon_is_subtracted()) {
+            if (itarg->is_hard_collided() && itarg->nucleon_is_subtracted()) {
                 for (int ip=0; ip<p_i.size(); ip++) {
                     Mom_remnant_targ_.push_back(p_i[ip]);
+                    p_i[ip] = 0.0;
                 }
             }
             if (p_i[0] <= mass_min) {
