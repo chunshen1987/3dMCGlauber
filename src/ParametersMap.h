@@ -6,13 +6,10 @@
 #include <map>
 
 using std::string;
-using std::map;
-using std::stod;
-using std::stoi;
 
 class ParametersMap {
  private:
-    map<string, string> parameter_map;
+     std::map<string, string> parameter_map;
 
  public:
     ParametersMap() = default;
@@ -24,9 +21,9 @@ class ParametersMap {
     void set_parameter(string par, int val);
 
     string get_param_val(string par) const {return(parameter_map.at(par));}
-    int get_param_int(string par, int defaultVal=0) const {
+    long long int get_param_int(string par, int defaultVal=0) const {
         if (checkParamIsDefined(par)) {
-            return(stoi(get_param_val(par)));
+            return(std::stoll(get_param_val(par)));
         } else {
             return(defaultVal);
         }
@@ -34,7 +31,7 @@ class ParametersMap {
 
     double get_param_double(string par, double defaultVal=0.) const {
         if (checkParamIsDefined(par)) {
-            return(stod(get_param_val(par)));
+            return(std::stod(get_param_val(par)));
         } else {
             return(defaultVal);
         }
