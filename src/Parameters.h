@@ -43,6 +43,8 @@ class Parameters : public ParametersMap {
     bool use_GG_distribution() const;
     real get_Omega_GG() const;
 
+    bool subtract_hard_momentum() const;
+
     // if False do assume baryon number at string ends
     // if True transport baryon number according to cosh(y*/2)
     bool get_baryon_junctions() const;

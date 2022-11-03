@@ -400,14 +400,18 @@ void Glauber::Pick_and_subtract_hard_parton_momentum() {
              auto targ_collided = it.get_targ_nucleon_ptr().lock();
              proj_collided->set_hard_collided(true);
              targ_collided->set_hard_collided(true);
-             MomentumVec HardPartonMomProj_ = { HardPartonPosAndMomProj_[4], 
-                                                HardPartonPosAndMomProj_[5],
-                                                HardPartonPosAndMomProj_[6],
-                                                HardPartonPosAndMomProj_[7] };
-             MomentumVec HardPartonMomTarg_ = { HardPartonPosAndMomTarg_[4], 
-                                                HardPartonPosAndMomTarg_[5],
-                                                HardPartonPosAndMomTarg_[6],
-                                                HardPartonPosAndMomTarg_[7] };
+             MomentumVec HardPartonMomProj_ = {0., 0., 0., 0.};
+             MomentumVec HardPartonMomTarg_ = {0., 0., 0., 0.};
+             if (parameter_list.subtract_hard_momentum()) {
+                 HardPartonMomProj_ = { HardPartonPosAndMomProj_[4], 
+                                        HardPartonPosAndMomProj_[5],
+                                        HardPartonPosAndMomProj_[6],
+                                        HardPartonPosAndMomProj_[7] };
+                 HardPartonMomTarg_ = { HardPartonPosAndMomTarg_[4], 
+                                        HardPartonPosAndMomTarg_[5],
+                                        HardPartonPosAndMomTarg_[6],
+                                        HardPartonPosAndMomTarg_[7] };
+             }
              // Pick up the valence quark 
              if (sample_valence_quark) {
                  if (HardPartonMomProj_[0] > ecm_/2.1 || HardPartonMomTarg_[0] > ecm_/2.1) {
@@ -989,7 +993,9 @@ void Glauber::produce_remnant_strings() {
             if (iproj->is_hard_collided() && iproj->nucleon_is_subtracted()) {
                 for (int ip=0; ip<p_i.size(); ip++) {
                     Mom_remnant_proj_.push_back(p_i[ip]);
-                    p_i[ip] = 0.0;
+                    if (parameter_list.subtract_hard_momentum()) {
+                        p_i[ip] = 0.0;
+                    }
                 }
             }
             if (p_i[0] <= mass_min) {
@@ -1041,7 +1047,9 @@ void Glauber::produce_remnant_strings() {
             if (itarg->is_hard_collided() && itarg->nucleon_is_subtracted()) {
                 for (int ip=0; ip<p_i.size(); ip++) {
                     Mom_remnant_targ_.push_back(p_i[ip]);
-                    p_i[ip] = 0.0;
+                    if (parameter_list.subtract_hard_momentum()) {
+                        p_i[ip] = 0.0;
+                    }
                 }
             }
             if (p_i[0] <= mass_min) {

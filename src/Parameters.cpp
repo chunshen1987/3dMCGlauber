@@ -84,6 +84,16 @@ bool Parameters::use_GG_distribution() const {
     }
 }
 
+bool Parameters::subtract_hard_momentum() const {
+    int flag = get_param_int("Subtract_hard_momentum");
+    if (flag == 0) {
+        return(false);
+    } else {
+        return(true);
+    }
+}
+
+
 real Parameters::get_Omega_GG() const {
     real Omega_GG = static_cast<real>(
             get_param_double("Omega_GG"));
