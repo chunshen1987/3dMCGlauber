@@ -400,18 +400,25 @@ void Glauber::Pick_and_subtract_hard_parton_momentum() {
              auto targ_collided = it.get_targ_nucleon_ptr().lock();
              proj_collided->set_hard_collided(true);
              targ_collided->set_hard_collided(true);
-             MomentumVec HardPartonMomProj_ = {0., 0., 0., 0.};
-             MomentumVec HardPartonMomTarg_ = {0., 0., 0., 0.};
-             if (parameter_list.subtract_hard_momentum()) {
-                 HardPartonMomProj_ = { HardPartonPosAndMomProj_[4], 
-                                        HardPartonPosAndMomProj_[5],
-                                        HardPartonPosAndMomProj_[6],
-                                        HardPartonPosAndMomProj_[7] };
-                 HardPartonMomTarg_ = { HardPartonPosAndMomTarg_[4], 
-                                        HardPartonPosAndMomTarg_[5],
-                                        HardPartonPosAndMomTarg_[6],
-                                        HardPartonPosAndMomTarg_[7] };
+             if (!parameter_list.subtract_hard_momentum()) {
+                 HardPartonPosAndMomProj_[4] = 0.0;
+                 HardPartonPosAndMomProj_[5] = 0.0;
+                 HardPartonPosAndMomProj_[6] = 0.0;
+                 HardPartonPosAndMomProj_[7] = 0.0;
+
+                 HardPartonPosAndMomTarg_[4] = 0.0;
+                 HardPartonPosAndMomTarg_[5] = 0.0;
+                 HardPartonPosAndMomTarg_[6] = 0.0;
+                 HardPartonPosAndMomTarg_[7] = 0.0;
              }
+             MomentumVec HardPartonMomProj_ = { HardPartonPosAndMomProj_[4], 
+                                                HardPartonPosAndMomProj_[5],
+                                                HardPartonPosAndMomProj_[6],
+                                                HardPartonPosAndMomProj_[7] };
+             MomentumVec HardPartonMomTarg_ = { HardPartonPosAndMomTarg_[4], 
+                                                HardPartonPosAndMomTarg_[5],
+                                                HardPartonPosAndMomTarg_[6],
+                                                HardPartonPosAndMomTarg_[7] };
              // Pick up the valence quark 
              if (sample_valence_quark) {
                  if (HardPartonMomProj_[0] > ecm_/2.1 || HardPartonMomTarg_[0] > ecm_/2.1) {
