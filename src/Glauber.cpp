@@ -442,7 +442,7 @@ void Glauber::Pick_and_subtract_hard_parton_momentum() {
                          proj_collided->readd_soft_parton_ball(ecm_, 1, xvec_q, parameter_list.get_BG(), 
                                             proj_collided->get_p(), proj_collided->get_quark_list(),
                                             ran_gen_ptr_);
-                         std::cout << " re-sample the valence quark in proj." <<std::endl;
+                         //std::cout << " re-sample the valence quark in proj." <<std::endl;
                      } else {
                          proj_q->set_subtracted(true);
                          do_resample_proj = 0;
@@ -462,7 +462,7 @@ void Glauber::Pick_and_subtract_hard_parton_momentum() {
                          targ_collided->readd_soft_parton_ball(ecm_, -1, xvec_q, parameter_list.get_BG(), 
                                             targ_collided->get_p(), targ_collided->get_quark_list(),
                                             ran_gen_ptr_);
-                         std::cout << " re-sample the valence quark in targ." <<std::endl;
+                         //std::cout << " re-sample the valence quark in targ." <<std::endl;
                      } else {
                          targ_q->set_subtracted(true);
                          do_resample_targ = 0;
@@ -810,7 +810,7 @@ int Glauber::perform_string_production() {
                                                HardPartonPosAndMomProj_[7] };
             proj->substract_momentum_from_remnant(HardPartonMomProj_);
             proj->set_hard_subtracted(true);
-            std::cout << "Subtract four momentum from picked up nucleon in proj." << std::endl;
+            //std::cout << "Subtract four momentum from picked up nucleon in proj." << std::endl;
         }
         if (targ->is_hard_collided() && !targ->nucleon_is_subtracted()) {
             MomentumVec HardPartonMomTarg_ = { HardPartonPosAndMomTarg_[4], 
@@ -819,7 +819,7 @@ int Glauber::perform_string_production() {
                                                HardPartonPosAndMomTarg_[7] };
             targ->substract_momentum_from_remnant(HardPartonMomTarg_);
             targ->set_hard_subtracted(true);
-            std::cout << "Subtract four momentum from picked up nucleon in targ." << std::endl;
+            //std::cout << "Subtract four momentum from picked up nucleon in targ." << std::endl;
         }
 
         update_collision_schedule(first_event);
@@ -1006,7 +1006,7 @@ void Glauber::produce_remnant_strings() {
                 }
             }
             if (p_i[0] <= mass_min) {
-                std::cout << " No remnant." << std::endl;
+                //std::cout << " No remnant." << std::endl;
                 continue;
             }
             auto y_rem = ybeam;
@@ -1060,7 +1060,7 @@ void Glauber::produce_remnant_strings() {
                 }
             }
             if (p_i[0] <= mass_min) {
-                std::cout << " No remnant." << std::endl;
+                //std::cout << " No remnant." << std::endl;
                 continue;
             }
             auto y_rem = -ybeam;
