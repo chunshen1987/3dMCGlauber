@@ -15,7 +15,7 @@ std::vector<CollisionEvent> EventGenerator::get_CollisionEventvector() {
 
 EventGenerator::EventGenerator(std::string input_filename, int seed) {
     parameter_list_.read_in_parameters_from_file(input_filename);
-    parameter_list_.print_parameter_list();
+    //parameter_list_.print_parameter_list();
     int ran_seed = parameter_list_.get_seed();
     if (seed != 0) ran_seed = seed;
     auto gamma_beta = parameter_list_.get_tau_form_fluct_gamma_beta();
