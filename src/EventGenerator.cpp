@@ -30,10 +30,10 @@ EventGenerator::EventGenerator(std::string input_filename, int seed) {
 
 
 void EventGenerator::generate_pre_events() {
-    messager << "Random seed = " << ran_gen_ptr_->get_seed();
-    messager.flush("info");
-    messager << "Generating 1 events ... ";
-    messager.flush("info");
+    //messager << "Random seed = " << ran_gen_ptr_->get_seed();
+    //messager.flush("info");
+    //messager << "Generating 1 events ... ";
+    //messager.flush("info");
     int iev =0;
     while (iev < 1) {
         mc_glauber_ptr_->make_nuclei();
@@ -150,10 +150,10 @@ std::vector<double> EventGenerator::GetRemMom_Targ() {
 }
 
 void EventGenerator::generate_strings() {
-    messager << "Random seed = " << ran_gen_ptr_->get_seed();
-    messager.flush("info");
-    messager << "Generating 1 events after subtracted four momentum of hard partons ... ";
-    messager.flush("info");
+    //messager << "Random seed = " << ran_gen_ptr_->get_seed();
+    //messager.flush("info");
+    //messager << "Generating 1 events after subtracted four momentum of hard partons ... ";
+    //messager.flush("info");
     // this file records all the essential information for the generated events
     std::ofstream record_file("events_summary.dat", std::ios::out);
     record_file << "# event_id  Npart  Ncoll  Nstrings  b(fm)" << std::endl;
@@ -201,23 +201,23 @@ void EventGenerator::generate_strings() {
                 << Nstrings << "  " << b << std::endl;
     record_file.close();
     mean_Npart = static_cast<real>(mean_Npart);
-    messager << "Completed. <Npart> = " << mean_Npart;
-    messager.flush("info");
+    //messager << "Completed. <Npart> = " << mean_Npart;
+    //messager.flush("info");
     auto b_max = parameter_list_.get_b_max();
     auto b_min = parameter_list_.get_b_min();
     auto total_cross_section = (
         M_PI*(b_max*b_max - b_min*b_min)/100.);
-    messager << "Total cross section sig_tot = " << total_cross_section
-             << " b";
-    messager.flush("info");
+    //messager << "Total cross section sig_tot = " << total_cross_section
+    //         << " b";
+    //messager.flush("info");
 }
 
 
 void EventGenerator::generate_events(int nev, int event_id_offset) {
-    messager << "Random seed = " << ran_gen_ptr_->get_seed();
-    messager.flush("info");
-    messager << "Generating " << nev << " events ... ";
-    messager.flush("info");
+    //messager << "Random seed = " << ran_gen_ptr_->get_seed();
+    //messager.flush("info");
+    //messager << "Generating " << nev << " events ... ";
+    //messager.flush("info");
     // this file records all the essential information for the generated events
     std::ofstream record_file("events_summary.dat", std::ios::out);
     record_file << "# event_id  Npart  Ncoll  Nstrings  b(fm)" << std::endl;
@@ -258,16 +258,16 @@ void EventGenerator::generate_events(int nev, int event_id_offset) {
     }
     record_file.close();
     mean_Npart = static_cast<real>(mean_Npart)/static_cast<real>(nev);
-    messager << "Completed. <Npart> = " << mean_Npart;
-    messager.flush("info");
+    //messager << "Completed. <Npart> = " << mean_Npart;
+    //messager.flush("info");
     auto b_max = parameter_list_.get_b_max();
     auto b_min = parameter_list_.get_b_min();
     auto total_cross_section = (
         M_PI*(b_max*b_max - b_min*b_min)*static_cast<real>(nev)
         /static_cast<real>(icollisions)/100.);
-    messager << "Total cross section sig_tot = " << total_cross_section
-             << " b";
-    messager.flush("info");
+    //messager << "Total cross section sig_tot = " << total_cross_section
+    //         << " b";
+    //messager.flush("info");
 }
 
 
