@@ -72,6 +72,13 @@ real Parameters::get_lambdaB() const {
 }
 
 
+real Parameters::get_lambdaBs() const {
+    real lambdaBs = static_cast<real>(get_param_double("lambdaBs", 1.));
+    assert(lambdaBs >= 0.);
+    return(lambdaBs);
+}
+
+
 bool Parameters::get_cached_tabels() const {
     int flag = get_param_int("cache_tables", 1);
     if (flag == 1)

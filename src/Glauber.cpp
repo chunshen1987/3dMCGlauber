@@ -420,6 +420,8 @@ int Glauber::perform_string_production() {
     // sqrt(parameter_list.get_roots()); // ~s^{-1/4} 
     real lambdaB = parameter_list.get_lambdaB();
     lambdaB = std::min(1., lambdaB);
+    real lambdaBs = parameter_list.get_lambdaBs();
+    lambdaBs = std::min(1., lambdaBs);
 
     //cout << lambdaB <<endl;
 
@@ -584,10 +586,15 @@ int Glauber::perform_string_production() {
             real y_baryon_right = 0.;
             if (it.get_has_baryon_right()) {
                 if (ran_gen_ptr_->rand_uniform() < lambdaB) {
-                    // y_baryon_right = sample_junction_rapidity_right(
-                    //              it->get_y_i_left(), it->get_y_i_right());
-                    y_baryon_right = sample_junction_rapidity_right(
+                    if (ran_gen_ptr_->rand_uniform() < lambdaBs) {
+                        // y_baryon_right = sample_junction_rapidity_right(
+                        //          it->get_y_i_left(), it->get_y_i_right());
+                        y_baryon_right = sample_junction_rapidity_right(
                                     it.get_y_f_left(), it.get_y_f_right());
+                    } else {
+                        y_baryon_right = sample_junction_rapidity_uniformed(
+                                    it.get_y_f_left(), it.get_y_f_right());
+                    }
                 } else {
                     // One should use the very initial rapidities of the
                     // colliding nucleons to determine the junction rapidity
@@ -606,10 +613,15 @@ int Glauber::perform_string_production() {
             real y_baryon_left = 0.;
             if (it.get_has_baryon_left()) {
                 if (ran_gen_ptr_->rand_uniform() < lambdaB) {
-                    //y_baryon_left = sample_junction_rapidity_left(
-                    //              it->get_y_i_left(), it->get_y_i_right());
-                    y_baryon_left = sample_junction_rapidity_left(
+                    if (ran_gen_ptr_->rand_uniform() < lambdaBs) {
+                        //y_baryon_left = sample_junction_rapidity_left(
+                        //          it->get_y_i_left(), it->get_y_i_right());
+                        y_baryon_left = sample_junction_rapidity_left(
                                     it.get_y_f_left(), it.get_y_f_right());
+                    } else {
+                        y_baryon_left = sample_junction_rapidity_uniformed(
+                                    it.get_y_f_left(), it.get_y_f_right());
+                    }
                 } else {
                     y_baryon_left = it.get_y_f_left();
                 }
@@ -1172,6 +1184,13 @@ real Glauber::sample_junction_rapidity_left(real y_left, real y_right) const {
                            + 0.5*exp(-0.25*y_right + 0.25*y_left)
                              /sinh(0.25*y_right - 0.25*y_left))
                        *sinh( 0.25 * y_right - 0.25 * y_left)));
+    return(y);
+}
+
+
+// sample y from a uniformed 1/(yp - yt) distribution
+real Glauber::sample_junction_rapidity_uniformed(real y_left, real y_right) const {
+    real y = y_left + ran_gen_ptr_->rand_uniform()*(y_right - y_left);
     return(y);
 }
 

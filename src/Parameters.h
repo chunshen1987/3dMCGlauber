@@ -34,6 +34,7 @@ class Parameters : public ParametersMap {
     real get_roots() const;
 
     real get_lambdaB() const;
+    real get_lambdaBs() const;
     real get_shadowing_factor() const;
 
     int get_QCD_string_production_mode() const;

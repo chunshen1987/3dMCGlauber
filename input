@@ -22,10 +22,11 @@ resetProjWS 0                        # flag to reset Woods-saxon parameter for t
 ProjWS_beta2 0.06
 resetTargWS 0                        # flag to reset Woods-saxon parameter for the target nucleus
 TargWS_beta2 0.06
-d_min 0.0                            # the minimum distance between nucleon pairs [fm]
+d_min 0.9                            # the minimum distance between nucleon pairs [fm]
 
 lambdaB 0.2                          # parameter the controls the strength of the baryon junction stopping
-BG 16.                               # Gaussian width square for sampling the valence quark positions (GeV^2)
+lambdaBs 0.5                         # the fraction of single-to-double junction stopping
+BG 5.                                # Gaussian width square for sampling the valence quark positions (GeV^2)
 ###############################################################
 # control parameters for string production
 ###############################################################
