@@ -790,34 +790,13 @@ void Glauber::computeCenterOfMass(real &x_o, real &y_o) {
 }
 
 
-void Glauber::output_QCD_strings(std::string filename, const real Npart,
-                                 const real Ncoll, const real Nstrings,
-                                 const real b, const unsigned int seed) {
+void Glauber::prepare_output_QCD_strings() {
     // compute the center of mass
     real x_o = 0.;
     real y_o = 0.;
     computeCenterOfMass(x_o, y_o);
 
-    std::ofstream output(filename.c_str());
-    real total_energy = Npart*parameter_list.get_roots()/2.;
-    real net_Pz = ((projectile->get_number_of_wounded_nucleons()
-                    - target->get_number_of_wounded_nucleons())
-                   *parameter_list.get_roots()/2.);
-    output << "# b = " << b << " fm " << "Npart = " << Npart
-           << " Ncoll = " << Ncoll << " Nstrings = " << Nstrings
-           << " total_energy = " << total_energy << " GeV, "
-           << "net_Pz = " << net_Pz << " GeV, "
-           << "seed = " << seed << endl;
-
-    output << "# mass[GeV]  m_over_sigma[fm]  tau_form[fm]  tau_0[fm]  eta_s_0  "
-           << "x_perp[fm]  y_perp[fm]  x_l[fm]  y_l[fm]  x_r[fm]  y_r[fm]  "
-           << "eta_s_left  eta_s_right  y_l  y_r  remnant_l  remnant_r "
-           << "y_l_i  y_r_i "
-           << "eta_s_baryon_left  eta_s_baryon_right  y_l_baryon  y_r_baryon  "
-           << "baryon_fraction_l  baryon_fraction_r"
-           << endl;
-
-    // output strings
+    // prepare output strings
     for (auto &it: QCD_string_list) {
         auto x_prod = it.get_x_production();
         auto x_left = it.get_targ()->get_x();
@@ -868,12 +847,7 @@ void Glauber::output_QCD_strings(std::string filename, const real Npart,
             it.get_y_f_baryon_left(), it.get_y_f_baryon_right(),
             baryon_fraction_left, baryon_fraction_right,
         };
-
-        output << std::scientific << std::setprecision(8);
-        for (auto &ival : output_array) {
-            output << std::setw(15) << ival << "  ";
-        }
-        output << endl;
+        QCD_string_output_arr_.push_back(output_array);
     }
 
     // output the beam remnant strings
@@ -935,13 +909,43 @@ void Glauber::output_QCD_strings(std::string filename, const real Npart,
                 remnant_right*it.get_y_f_baryon_right(),
                 baryon_fraction_left, baryon_fraction_right,
             };
-
-            output << std::scientific << std::setprecision(8);
-            for (auto &ival : output_array) {
-                output << std::setw(15) << ival << "  ";
-            }
-            output << endl;
+            QCD_string_output_arr_.push_back(output_array);
         }
+    }
+}
+
+
+void Glauber::output_QCD_strings(std::string filename, const real Npart,
+                                 const real Ncoll, const real Nstrings,
+                                 const real b, const unsigned int seed) {
+    if (QCD_string_output_arr_.size() == 0)
+        prepare_output_QCD_strings();
+
+    std::ofstream output(filename.c_str());
+    real total_energy = Npart*parameter_list.get_roots()/2.;
+    real net_Pz = ((projectile->get_number_of_wounded_nucleons()
+                    - target->get_number_of_wounded_nucleons())
+                   *parameter_list.get_roots()/2.);
+    output << "# b = " << b << " fm " << "Npart = " << Npart
+           << " Ncoll = " << Ncoll << " Nstrings = " << Nstrings
+           << " total_energy = " << total_energy << " GeV, "
+           << "net_Pz = " << net_Pz << " GeV, "
+           << "seed = " << seed << endl;
+
+    output << "# mass[GeV]  m_over_sigma[fm]  tau_form[fm]  tau_0[fm]  eta_s_0  "
+           << "x_perp[fm]  y_perp[fm]  x_l[fm]  y_l[fm]  x_r[fm]  y_r[fm]  "
+           << "eta_s_left  eta_s_right  y_l  y_r  remnant_l  remnant_r "
+           << "y_l_i  y_r_i "
+           << "eta_s_baryon_left  eta_s_baryon_right  y_l_baryon  y_r_baryon  "
+           << "baryon_fraction_l  baryon_fraction_r"
+           << endl;
+
+    for (auto &string_i : QCD_string_output_arr_) {
+        output << std::scientific << std::setprecision(8);
+        for (auto &ival : string_i) {
+            output << std::setw(15) << ival << "  ";
+        }
+        output << endl;
     }
     output.close();
 }

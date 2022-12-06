@@ -26,6 +26,7 @@ class Glauber {
     std::set<shared_ptr<CollisionEvent>, compare_collision_time> collision_schedule;
     std::vector<QCDString> QCD_string_list;
     std::vector<QCDString> remnant_string_list_;
+    std::vector<std::vector<real>> QCD_string_output_arr_;
     std::shared_ptr<RandomUtil::Random> ran_gen_ptr_;
     bool sample_valence_quark;
     bool fluct_Nstrings_per_NN_collision_;
@@ -103,6 +104,7 @@ class Glauber {
     //! This function updates the collision schedule
     void update_collision_schedule(shared_ptr<CollisionEvent> event_happened);
 
+    void prepare_output_QCD_strings();
     void computeCenterOfMass(real &x_o, real &y_o);
     void output_QCD_strings(std::string filename, const real Npart,
                             const real Ncoll, const real Nstrings,
