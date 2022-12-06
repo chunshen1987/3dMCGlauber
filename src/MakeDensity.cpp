@@ -1,6 +1,7 @@
 // Copyright @ Chun Shen 2022
 
 #include <fstream>
+#include <iostream>
 #include "MakeDensity.h"
 
 namespace MCGlb {

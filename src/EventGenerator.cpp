@@ -60,6 +60,7 @@ void EventGenerator::generate_events(int nev, int event_id_offset) {
             auto b = mc_glauber_ptr_->get_impact_parameter();
             if (!statistics_only_) {
                 if (batchDensityOutput_) {
+                    mc_glauber_ptr_->prepare_output_QCD_strings();
                     density_maker_ptr_->set_QCD_string_output_arr(
                             mc_glauber_ptr_->get_QCD_strings_output_list());
                     density_maker_ptr_->output_netBaryon_eta_distribution(

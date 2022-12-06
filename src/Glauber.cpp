@@ -791,6 +791,7 @@ void Glauber::computeCenterOfMass(real &x_o, real &y_o) {
 
 
 void Glauber::prepare_output_QCD_strings() {
+    QCD_string_output_arr_.clear();
     // compute the center of mass
     real x_o = 0.;
     real y_o = 0.;
