@@ -9,7 +9,7 @@ useQuarks 1                          # switch to use valence quarks
 Q2 1.                                # the scale when evaluating the pdf
 b_min 0.                             # minimum impact parameter (fm)
 b_max 5.                             # maximum impact parameter (fm)
-seed -1                              # random seed (-1: system)
+seed 23                              # random seed (-1: system)
 only_event_statistics 0              # flag to only output the event_summary file
 batch_density_output 0               # output density profile in batch
 cache_tables 1                       # 1: use pre-generated tables for valence quark x

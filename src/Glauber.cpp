@@ -534,13 +534,14 @@ int Glauber::perform_string_production() {
         } else if (idx < Nstrings + Npart_proj) {
             // put baryon of the projectile in the projectile remnant
             auto proj = projectile->get_participant(idx - Nstrings);
-            //auto p_i = proj->get_remnant_p();
+            auto p_i = proj->get_remnant_p();
+            if (p_i[0] <= 0) continue;
             //auto mass = 0.;
             //if (std::abs(p_i[3]) < p_i[0]) {
             //    // a time-like beam remnant
             //    mass = sqrt(p_i[0]*p_i[0] - p_i[3]*p_i[3]);
             //}
-            //if (!proj->baryon_was_used() && mass > 0.1) {
+            //if (!proj->baryon_was_used() && mass > 0.1) {}
             if (!proj->baryon_was_used()) {
                 proj->set_baryon_used(true);
                 proj->set_remnant_carry_baryon_number(true);
@@ -559,19 +560,21 @@ int Glauber::perform_string_production() {
         } else if (idx > Nstrings + Npart_proj - 1) {
             // put baryon of the target in the target remnant
             auto targ = target->get_participant(idx - Nstrings - Npart_proj);
-            //auto p_i = targ->get_remnant_p();
+            auto p_i = targ->get_remnant_p();
+            if (p_i[0] <= 0) continue;
             //auto mass = 0.;
             //if (std::abs(p_i[3]) < p_i[0]) {
             //    // a time-like beam remnant
             //    mass = sqrt(p_i[0]*p_i[0] - p_i[3]*p_i[3]);
             //}
-            //if (!targ->baryon_was_used() && mass > 0.1) {
+            //if (!targ->baryon_was_used() && mass > 0.1) {}
             if (!targ->baryon_was_used()) {
                 targ->set_baryon_used(true);
                 targ->set_remnant_carry_baryon_number(true);
             }
         }
     }
+
 
     // set baryons' rapidities
     for (auto &it: QCD_string_list) {
