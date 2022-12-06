@@ -43,6 +43,7 @@ class Nucleus {
 
     int system_status_;
     int number_of_valence_quark_samples_;
+    static int random_value_;
 
  public:
     Nucleus() = default;
@@ -80,7 +81,7 @@ class Nucleus {
 
     //! This function generates the spatial and momentum configurations
     //! for the nucleus
-    void generate_nucleus_3d_configuration();
+    void generate_nucleus_3d_configuration(int ran_seed);
     //! This function samples the nucleon spatial configuration for deuteron
     void generate_deuteron_configuration();
     //! The inverse CDF of the Hulthen function for deutron wavefunction
@@ -146,6 +147,8 @@ class Nucleus {
                                         const real ecm) const;
     SpatialVec sample_valence_quark_position() const;
     real ExponentialDistribution(const real a, const real r) const;
+    static int get_random_gen(int i) {return random_value_%i;};
+    static void set_random_gen(int i) {random_value_ = i;};
 };
 
 }

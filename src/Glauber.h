@@ -51,6 +51,7 @@ class Glauber {
 
     real sigma_eff_;
     real nucleon_width_;
+    static int random_value_;
 
  public:
     Glauber() = default;
@@ -149,6 +150,8 @@ class Glauber {
                                   std::vector<double> &HardMomandPosTarg);
     void Set_hard_collisions_Pos(std::vector<double> &HardPosProj);
     real get_sig_eff(const real siginNN);
+    static int get_random_gen(int i) {return random_value_%i;}
+    static void set_random_gen(int i) {random_value_ = i;}
 };
 
 }

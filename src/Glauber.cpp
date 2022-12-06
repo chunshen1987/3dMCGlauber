@@ -15,6 +15,7 @@
 using std::cout;
 using std::endl;
 using std::shared_ptr;
+int MCGlb::Glauber::random_value_ = 0; 
 
 namespace MCGlb {
 
@@ -75,8 +76,8 @@ Glauber::Glauber(const MCGlb::Parameters &param_in,
 }
 
 void Glauber::make_nuclei() {
-    projectile->generate_nucleus_3d_configuration();
-    target->generate_nucleus_3d_configuration();
+    projectile->generate_nucleus_3d_configuration(ran_gen_ptr_->get_seed());
+    target->generate_nucleus_3d_configuration(ran_gen_ptr_->get_seed());
     projectile->accelerate_nucleus(parameter_list.get_roots(), 1);
     target->accelerate_nucleus(parameter_list.get_roots(), -1);
 
@@ -431,7 +432,7 @@ void Glauber::Pick_and_subtract_hard_parton_momentum() {
                  MomentumVec p_q;
                  int do_resample_proj = 1;
                  while (do_resample_proj == 1) {
-                     proj_q = proj_collided->get_a_valence_quark_sub_mom(HardPartonMomProj_[0]);
+                     proj_q = proj_collided->get_a_valence_quark_sub_mom(HardPartonMomProj_[0], ran_gen_ptr_->get_seed());
                      p_q = proj_q->get_p();
                      if(p_q[0]<=HardPartonMomProj_[0]) {
                          // resample the valence quark
@@ -451,7 +452,7 @@ void Glauber::Pick_and_subtract_hard_parton_momentum() {
                  proj_collided->erase_one_quark();
                  int do_resample_targ = 1;
                  while (do_resample_targ == 1) {
-                     targ_q = targ_collided->get_a_valence_quark_sub_mom(HardPartonMomTarg_[0]);
+                     targ_q = targ_collided->get_a_valence_quark_sub_mom(HardPartonMomTarg_[0], ran_gen_ptr_->get_seed());
                      p_q = targ_q->get_p();
                      if(p_q[0]<=HardPartonMomTarg_[0]) {
                          // resample the valence quark
@@ -538,7 +539,8 @@ int Glauber::decide_QCD_strings_production() {
                             parameter_list.get_QCD_string_production_mode();
     if (QCD_string_production_mode == 1) {
         // randomly ordered strings
-        std::random_shuffle(collision_list.begin(), collision_list.end());
+        set_random_gen(ran_gen_ptr_->get_seed());
+        std::random_shuffle(collision_list.begin(), collision_list.end(),get_random_gen);
     } else if (QCD_string_production_mode == 2) {
         // anti-time ordered strings
         std::reverse(collision_list.begin(), collision_list.end());
@@ -580,7 +582,8 @@ int Glauber::decide_QCD_strings_production_second_stage() {
                             parameter_list.get_QCD_string_production_mode();
     if (QCD_string_production_mode == 1) {
         // randomly ordered strings
-        std::random_shuffle(collision_list.begin(), collision_list.end());
+        set_random_gen(ran_gen_ptr_->get_seed());
+        std::random_shuffle(collision_list.begin(), collision_list.end(),get_random_gen);
     } else if (QCD_string_production_mode == 2) {
         // anti-time ordered strings
         std::reverse(collision_list.begin(), collision_list.end());
@@ -741,7 +744,7 @@ int Glauber::perform_string_production() {
             std::shared_ptr<Quark> proj_q;
             std::shared_ptr<Quark> targ_q;
             if (sample_valence_quark) {
-                proj_q = proj->get_a_valence_quark();
+                proj_q = proj->get_a_valence_quark(ran_gen_ptr_->get_seed());
                 if (proj_q->get_number_of_connections() == 1) {
                     // first time pick-up the valence quark
                     // we need to substract the valence quark energy-momentum
@@ -751,7 +754,7 @@ int Glauber::perform_string_production() {
                     proj_q->set_connected(true);
                 }
 
-                targ_q = targ->get_a_valence_quark();
+                targ_q = targ->get_a_valence_quark(ran_gen_ptr_->get_seed());
                 if (targ_q->get_number_of_connections() == 1) {
                     // first time pick-up the valence quark
                     // we need to substract the valence quark energy-momentum
@@ -835,7 +838,8 @@ int Glauber::perform_string_production() {
     unsigned int total_length = Nstrings + Npart_proj + Npart_targ;
     for (unsigned int idx = 0; idx < total_length; idx++)
         random_idx.push_back(idx);
-    std::random_shuffle(random_idx.begin(), random_idx.end());
+    set_random_gen(ran_gen_ptr_->get_seed());
+    std::random_shuffle(random_idx.begin(), random_idx.end(), get_random_gen);
     for (auto &idx: random_idx) {
         if (idx < Nstrings) {
             // put baryon of the projectile in the selected string
@@ -860,7 +864,8 @@ int Glauber::perform_string_production() {
             }
         }
     }
-    std::random_shuffle(random_idx.begin(), random_idx.end());
+    set_random_gen(ran_gen_ptr_->get_seed());
+    std::random_shuffle(random_idx.begin(), random_idx.end(), get_random_gen);
     for (auto &idx: random_idx) {
         if (idx < Nstrings) {
             // put baryon of the target in the selected string
@@ -885,7 +890,6 @@ int Glauber::perform_string_production() {
             }
         }
     }
-
     // set baryons' rapidities
     for (auto &it: QCD_string_list) {
         it.evolve_QCD_string();

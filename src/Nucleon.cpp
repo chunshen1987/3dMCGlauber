@@ -15,6 +15,7 @@
 
 #include "eps09.h"
 #include "LHAPDF/LHAPDF.h"
+int MCGlb::Nucleon::random_value_ = 0; 
 
 namespace MCGlb {
 
@@ -221,14 +222,15 @@ std::vector<double> Nucleon::output_quark_pos() {
 }
 
 
-std::shared_ptr<Quark> Nucleon::get_a_valence_quark() {
+std::shared_ptr<Quark> Nucleon::get_a_valence_quark(int ran_seed) {
     // return the quark with the minimum number of connections
     int minimum_connections = 1000;
     for (auto &iq: quark_list) {
         if (minimum_connections > iq->get_number_of_connections())
             minimum_connections = iq->get_number_of_connections();
     }
-    std::random_shuffle(quark_list.begin(), quark_list.end());
+    set_random_gen(ran_seed);
+    std::random_shuffle(quark_list.begin(), quark_list.end(), get_random_gen);
     for (auto &iq: quark_list) {
         if (minimum_connections == iq->get_number_of_connections()) {
             iq->add_a_connection();
@@ -238,9 +240,10 @@ std::shared_ptr<Quark> Nucleon::get_a_valence_quark() {
     return(quark_list[0]);
 }
 
-std::shared_ptr<Quark> Nucleon::get_a_valence_quark_sub_mom(real sub_E) {
+std::shared_ptr<Quark> Nucleon::get_a_valence_quark_sub_mom(real sub_E, int ran_seed) {
     // return the quark to subtract the momentum of hard collision
-    std::random_shuffle(quark_list.begin(), quark_list.end());
+    set_random_gen(ran_seed);
+    std::random_shuffle(quark_list.begin(), quark_list.end(), get_random_gen);
     for (auto &iq: quark_list) {
         auto p_q = iq->get_p();
         if (p_q[0] > sub_E) return(iq);

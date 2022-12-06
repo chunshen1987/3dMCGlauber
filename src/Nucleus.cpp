@@ -17,6 +17,7 @@
 
 using std::cout;
 using std::endl;
+int MCGlb::Nucleus::random_value_ = 0; 
 
 namespace MCGlb {
 
@@ -115,7 +116,7 @@ void Nucleus::set_nucleus_parameters(std::string nucleus_name) {
 }
 
 
-void Nucleus::generate_nucleus_3d_configuration() {
+void Nucleus::generate_nucleus_3d_configuration(int ran_seed) {
     if (nucleon_list_.size() > 0)
         nucleon_list_.clear();
 
@@ -149,8 +150,9 @@ void Nucleus::generate_nucleus_3d_configuration() {
     std::vector<int> electric_charges_arr(A_, 0);
     for (int i = 0; i < Z_; i++)
         electric_charges_arr[i] = 1;
+    set_random_gen(ran_seed);
     std::random_shuffle(electric_charges_arr.begin(),
-                        electric_charges_arr.end());
+                        electric_charges_arr.end(), get_random_gen);
     for (int i = 0; i < A_; i++) {
         nucleon_list_[i]->set_electric_charge(electric_charges_arr[i]);
     }

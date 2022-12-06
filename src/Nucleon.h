@@ -33,6 +33,7 @@ class Nucleon : public Particle {
     std::vector< std::array<float, 3> > neutron_resample_quark_x_;
     int number_of_valence_quark_resamples_;
     int nucleon_system_status_;
+    static int random_value_;
  public:
     Nucleon() = default;
     Nucleon(SpatialVec x_in, MomentumVec p_in);
@@ -90,8 +91,8 @@ class Nucleon : public Particle {
     void accelerate_quarks(real ecm, int direction);
     void lorentz_contraction(real gamma);
 
-    std::shared_ptr<Quark> get_a_valence_quark();
-    std::shared_ptr<Quark> get_a_valence_quark_sub_mom(real sub_E);
+    std::shared_ptr<Quark> get_a_valence_quark(int ran_seed);
+    std::shared_ptr<Quark> get_a_valence_quark_sub_mom(real sub_E, int ran_seed);
 
     std::vector<double> output_quark_pos();
 
@@ -134,6 +135,8 @@ class Nucleon : public Particle {
 
     void set_remnant_x_frez(SpatialVec x_in) {remnant_x_frez_ = x_in;}
     SpatialVec get_remnant_x_frez() const {return(remnant_x_frez_);}
+    static int get_random_gen(int i) {return random_value_%i;}
+    static void set_random_gen(int i) {random_value_ = i;}
 };
 
 }
