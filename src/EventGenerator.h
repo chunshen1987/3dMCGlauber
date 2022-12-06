@@ -6,6 +6,7 @@
 #include <memory>
 #include <string>
 #include "Glauber.h"
+#include "MakeDensity.h"
 #include "Parameters.h"
 #include "Random.h"
 #include "pretty_ostream.h"
@@ -17,7 +18,9 @@ class EventGenerator {
     Parameters parameter_list_;
     std::shared_ptr<RandomUtil::Random> ran_gen_ptr_;
     std::unique_ptr<Glauber> mc_glauber_ptr_;
+    std::unique_ptr<MakeDensity> density_maker_ptr_;
     bool statistics_only_;
+    bool batchDensityOutput_;
     pretty_ostream messager;
 
  public:

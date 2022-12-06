@@ -3,6 +3,7 @@ set (SOURCES
     ParametersMap.cpp
     EventGenerator.cpp
     Glauber.cpp
+    MakeDensity.cpp
     Random.cpp
     Nucleus.cpp
     Nucleon.cpp

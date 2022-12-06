@@ -136,6 +136,16 @@ bool Parameters::get_only_event_statistics() const {
 }
 
 
+bool Parameters::get_batch_density_output() const {
+    int flag = get_param_int("batch_density_output", 0);
+    if (flag == 0) {
+        return(false);
+    } else {
+        return(true);
+    }
+}
+
+
 bool Parameters::get_baryon_junctions() const {
     int flag = get_param_int("baryon_junctions", 0);
     if (flag == 0) {

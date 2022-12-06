@@ -21,6 +21,11 @@ EventGenerator::EventGenerator(std::string input_filename, int seed) {
                     new Glauber(parameter_list_, ran_gen_ptr_));
 
     statistics_only_ = parameter_list_.get_only_event_statistics();
+    batchDensityOutput_ = parameter_list_.get_batch_density_output();
+    if (batchDensityOutput_) {
+        density_maker_ptr_ = std::unique_ptr<MakeDensity>(new MakeDensity());
+        density_maker_ptr_->set_1D_grid_info(72, 0.2);
+    }
 }
 
 
@@ -54,18 +59,25 @@ void EventGenerator::generate_events(int nev, int event_id_offset) {
             Ncoll = mc_glauber_ptr_->perform_string_production();
             auto b = mc_glauber_ptr_->get_impact_parameter();
             if (!statistics_only_) {
-                std::ostringstream filename;
-                filename << "strings_event_" << event_id << ".dat";
-                mc_glauber_ptr_->output_QCD_strings(filename.str(), Npart,
-                                                    Ncoll, Nstrings, b,
-                                                    ran_gen_ptr_->get_seed());
-                std::ostringstream specFileName;
-                specFileName << "spectators_event_" << event_id << ".dat";
-                mc_glauber_ptr_->output_spectators(specFileName.str());
+                if (batchDensityOutput_) {
+                    density_maker_ptr_->set_QCD_string_output_arr(
+                            mc_glauber_ptr_->get_QCD_strings_output_list());
+                    density_maker_ptr_->output_netBaryon_eta_distribution(
+                            "nB_eta_distribution.dat", iev);
+                } else {
+                    std::ostringstream filename;
+                    filename << "strings_event_" << event_id << ".dat";
+                    mc_glauber_ptr_->output_QCD_strings(
+                            filename.str(), Npart, Ncoll, Nstrings, b,
+                            ran_gen_ptr_->get_seed());
+                    std::ostringstream specFileName;
+                    specFileName << "spectators_event_" << event_id << ".dat";
+                    mc_glauber_ptr_->output_spectators(specFileName.str());
 
-                std::ostringstream partFileName;
-                partFileName << "participants_event_" << event_id << ".dat";
-                mc_glauber_ptr_->outputParticipants(partFileName.str());
+                    std::ostringstream partFileName;
+                    partFileName << "participants_event_" << event_id << ".dat";
+                    mc_glauber_ptr_->outputParticipants(partFileName.str());
+                }
             }
 
             // write event information to the record file

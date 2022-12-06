@@ -111,6 +111,9 @@ class Glauber {
                             const real b, const unsigned int seed);
     void output_spectators(std::string filename);
     void outputParticipants(std::string filename);
+    std::vector<std::vector<real>> get_QCD_strings_output_list() {
+        return(QCD_string_output_arr_);
+    }
 
     real get_sig_eff(const real siginNN);
 };
