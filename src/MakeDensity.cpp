@@ -2,6 +2,7 @@
 
 #include <fstream>
 #include <iostream>
+#include <sstream>
 #include "MakeDensity.h"
 
 namespace MCGlb {
@@ -9,7 +10,7 @@ namespace MCGlb {
 void MakeDensity::output_netBaryon_eta_distribution(std::string filename,
                                                     int eventId) {
     // compute the net baryon density profile
-    std::vector<real> eta_arr(gridNx_, 0.);
+    std::vector<float> eta_arr(gridNx_, 0.);
     std::vector<float> nB_arr(gridNx_, 0.);
     for (int i = 0; i < gridNx_; i++) {
         eta_arr[i] = - gridSize_/2. + i*gridDx_;
@@ -48,7 +49,14 @@ void MakeDensity::output_netBaryon_eta_distribution(std::string filename,
     }
 
     std::ofstream outFile;
-    outFile.open(filename.c_str(), modes);
+    std::stringstream fileNameDressed;
+    fileNameDressed << filename << "_N_" << gridNx_ << ".dat";
+    outFile.open(fileNameDressed.str().c_str(), modes);
+    if (eventId == 0) {
+        for (int i = 0; i < gridNx_; i++) {
+            outFile.write((char*) &(eta_arr[i]), sizeof(float));
+        }
+    }
     for (int i = 0; i < gridNx_; i++) {
         outFile.write((char*) &(nB_arr[i]), sizeof(float));
     }

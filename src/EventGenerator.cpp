@@ -64,7 +64,7 @@ void EventGenerator::generate_events(int nev, int event_id_offset) {
                     density_maker_ptr_->set_QCD_string_output_arr(
                             mc_glauber_ptr_->get_QCD_strings_output_list());
                     density_maker_ptr_->output_netBaryon_eta_distribution(
-                            "nB_eta_distribution.dat", iev);
+                            "nB_eta_distribution", iev);
                 } else {
                     std::ostringstream filename;
                     filename << "strings_event_" << event_id << ".dat";

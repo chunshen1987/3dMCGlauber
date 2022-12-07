@@ -277,6 +277,9 @@ void Nucleus::sample_valence_quarks_inside_nucleons(real ecm, int direction) {
 
 
 void Nucleus::add_soft_parton_ball(real ecm, int direction) {
+    real E_rem_min = 0.1;  // GeV
+    real beam_rapidity = direction*acosh(ecm/(2.*PhysConsts::MProton));
+    real Pz_rem_min = E_rem_min*tanh(beam_rapidity);
     for (auto &nucleon_i: nucleon_list_) {
         if (nucleon_i->is_wounded()
             && nucleon_i->get_number_of_quarks() != 0) {
@@ -288,6 +291,8 @@ void Nucleus::add_soft_parton_ball(real ecm, int direction) {
                     soft_pvec[i] -= quark_pvec[i];
                 }
             }
+            soft_pvec[0] -= E_rem_min;
+            soft_pvec[3] -= Pz_rem_min;
             real mass = PhysConsts::MQuarkValence;
             if (soft_pvec[0] > mass) {
                 // assuming the soft parton ball has valence quark mass
