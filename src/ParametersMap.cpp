@@ -12,11 +12,13 @@ ParametersMap::~ParametersMap() {
     parameter_map.clear();
 }
 
+
 void ParametersMap::set_parameter(string par, double val) {
     std::ostringstream param_val;
     param_val << val;
     set_parameter(par, param_val.str());
 }
+
 
 void ParametersMap::set_parameter(string par, int val) {
     std::ostringstream param_val;
@@ -24,11 +26,13 @@ void ParametersMap::set_parameter(string par, int val) {
     set_parameter(par, param_val.str());
 }
 
+
 void ParametersMap::set_parameter(string par, float val) {
     std::ostringstream param_val;
     param_val << val;
     set_parameter(par, param_val.str());
 }
+
 
 void ParametersMap::read_in_parameters_from_file(string filename) {
     std::ifstream input_file(filename);
@@ -46,6 +50,7 @@ void ParametersMap::read_in_parameters_from_file(string filename) {
     }
 }
 
+
 void ParametersMap::print_parameter_list() const {
     std::cout << "==============================================" << std::endl;
     std::cout << "Input Parameter list:" << std::endl;
@@ -54,4 +59,9 @@ void ParametersMap::print_parameter_list() const {
         std::cout << it.first << " = " << it.second << "\n";
     }
     std::cout << "==============================================" << std::endl;
+}
+
+
+bool ParametersMap::checkParamIsDefined(string paramName) const {
+    return(parameter_map.find(paramName) != parameter_map.end());
 }

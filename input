@@ -33,6 +33,7 @@ QCD_string_production_mode 1             # string production mode
 rapidity_loss_method 3                   # 1: LEXUS
                                          # 2: parameterization
                                          # 3: parameterization with logit-normal fluctuation
+                                         # 4: piecewise linear parameterization with logit-normal fluctuation
 remnant_energy_loss_fraction 0.5         # nucleon remnants energy loss fraction (fraction of string's y_loss) [0, 1]
 fluctuation_remnant_energy_loss_fraction 0
 remnant_energy_loss_fraction_var 0.4
