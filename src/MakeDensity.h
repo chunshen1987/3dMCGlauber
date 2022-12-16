@@ -35,7 +35,10 @@ class MakeDensity {
         gridSize_ = gridNx_*gridDx_;
     }
 
-    void output_netBaryon_eta_distribution(std::string filename, int eventId);
+    void output_netBaryon_eta_distribution(std::string filename,
+                                           const int eventId) const;
+    void output_energyDensity_eta_distribution(std::string filename,
+                                               const int eventId) const;
 
 };
 

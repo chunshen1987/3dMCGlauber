@@ -43,8 +43,8 @@ for file_i in fileList:
 
         Estring = mass*(  np.cosh(y_l_i) + np.cosh(y_r_i)
                         - np.cosh(y_l) - np.cosh(y_r))
-        EremL = mass*np.cosh(y_l)
-        EremR = mass*np.cosh(y_r)
+        EremL = frac_l*mass*np.cosh(y_l)
+        EremR = frac_r*mass*np.cosh(y_r)
 
         # energy density
         f1_ed = np.zeros([neta])
