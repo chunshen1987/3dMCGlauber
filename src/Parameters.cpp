@@ -131,7 +131,7 @@ int Parameters::get_QCD_string_evolution_mode() const {
 
 int Parameters::get_rapidity_loss_method() const {
     int flag = get_param_int("rapidity_loss_method", 3);
-    assert(flag > 0 && flag < 4);
+    assert(flag > 0 && flag < 5);
     return(flag);
 }
 

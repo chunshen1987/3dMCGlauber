@@ -29,6 +29,28 @@ EventGenerator::EventGenerator(std::string input_filename, int seed) {
 }
 
 
+//! These functions change the parameter value 
+void EventGenerator::set_parameter(std::string parameter_name, double value) {
+    parameter_list_.set_parameter(parameter_name, value);
+}
+void EventGenerator::set_parameter(std::string parameter_name, int value) {
+    parameter_list_.set_parameter(parameter_name, value);
+}
+void EventGenerator::set_parameter(std::string parameter_name, float value) {
+    parameter_list_.set_parameter(parameter_name, value);
+}
+void EventGenerator::New_Para_pointer(int seed) {
+    int ran_seed = parameter_list_.get_seed();
+    if (seed != 0) ran_seed = seed;
+    auto gamma_beta = parameter_list_.get_tau_form_fluct_gamma_beta();
+    ran_gen_ptr_ = std::shared_ptr<RandomUtil::Random>(
+                    new RandomUtil::Random(ran_seed, 0.0, 1.0, gamma_beta));
+    mc_glauber_ptr_ = std::unique_ptr<Glauber>(
+                    new Glauber(parameter_list_, ran_gen_ptr_));
+    ecm_ = parameter_list_.get_roots();
+}
+
+
 void EventGenerator::generate_pre_events() {
     //messager << "Random seed = " << ran_gen_ptr_->get_seed();
     //messager.flush("info");

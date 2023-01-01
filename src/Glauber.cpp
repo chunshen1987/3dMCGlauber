@@ -698,8 +698,8 @@ void Glauber::get_tau_form_and_moversigma(const int string_evolution_mode,
     } else if (string_evolution_mode == -4) {
         // only m_over_sigma fluctuates for Beam Remnants
         real frac = ran_gen_ptr_->rand_uniform();
-        y_loss = (sample_rapidity_loss_shell(y_in_lrf)*frac);
-        //          *remnant_energy_loss_fraction_);
+        y_loss = (sample_rapidity_loss_shell(y_in_lrf)
+                  *remnant_energy_loss_fraction_);
         m_over_sigma = tau_form/std::max(eps, sqrt(2.*(cosh(y_loss) - 1.)));
     }
 }
