@@ -229,7 +229,7 @@ std::shared_ptr<Quark> Nucleon::get_a_valence_quark(int ran_seed) {
         if (minimum_connections > iq->get_number_of_connections())
             minimum_connections = iq->get_number_of_connections();
     }
-    set_random_gen(ran_seed);
+    set_random_gen(abs(ran_seed));
     std::random_shuffle(quark_list.begin(), quark_list.end(), get_random_gen);
     for (auto &iq: quark_list) {
         if (minimum_connections == iq->get_number_of_connections()) {
@@ -242,7 +242,7 @@ std::shared_ptr<Quark> Nucleon::get_a_valence_quark(int ran_seed) {
 
 std::shared_ptr<Quark> Nucleon::get_a_valence_quark_sub_mom(real sub_E, int ran_seed) {
     // return the quark to subtract the momentum of hard collision
-    set_random_gen(ran_seed);
+    set_random_gen(abs(ran_seed));
     std::random_shuffle(quark_list.begin(), quark_list.end(), get_random_gen);
     for (auto &iq: quark_list) {
         auto p_q = iq->get_p();

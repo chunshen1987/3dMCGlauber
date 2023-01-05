@@ -150,7 +150,7 @@ void Nucleus::generate_nucleus_3d_configuration(int ran_seed) {
     std::vector<int> electric_charges_arr(A_, 0);
     for (int i = 0; i < Z_; i++)
         electric_charges_arr[i] = 1;
-    set_random_gen(ran_seed);
+    set_random_gen(abs(ran_seed));
     std::random_shuffle(electric_charges_arr.begin(),
                         electric_charges_arr.end(), get_random_gen);
     for (int i = 0; i < A_; i++) {

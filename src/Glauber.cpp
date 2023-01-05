@@ -539,7 +539,7 @@ int Glauber::decide_QCD_strings_production() {
                             parameter_list.get_QCD_string_production_mode();
     if (QCD_string_production_mode == 1) {
         // randomly ordered strings
-        set_random_gen(ran_gen_ptr_->get_seed());
+        set_random_gen(abs(ran_gen_ptr_->get_seed()));
         std::random_shuffle(collision_list.begin(), collision_list.end(),get_random_gen);
     } else if (QCD_string_production_mode == 2) {
         // anti-time ordered strings
@@ -582,7 +582,7 @@ int Glauber::decide_QCD_strings_production_second_stage() {
                             parameter_list.get_QCD_string_production_mode();
     if (QCD_string_production_mode == 1) {
         // randomly ordered strings
-        set_random_gen(ran_gen_ptr_->get_seed());
+        set_random_gen(abs(ran_gen_ptr_->get_seed()));
         std::random_shuffle(collision_list.begin(), collision_list.end(),get_random_gen);
     } else if (QCD_string_production_mode == 2) {
         // anti-time ordered strings
@@ -838,7 +838,7 @@ int Glauber::perform_string_production() {
     unsigned int total_length = Nstrings + Npart_proj + Npart_targ;
     for (unsigned int idx = 0; idx < total_length; idx++)
         random_idx.push_back(idx);
-    set_random_gen(ran_gen_ptr_->get_seed());
+    set_random_gen(abs(ran_gen_ptr_->get_seed()));
     std::random_shuffle(random_idx.begin(), random_idx.end(), get_random_gen);
     for (auto &idx: random_idx) {
         if (idx < Nstrings) {
@@ -864,7 +864,7 @@ int Glauber::perform_string_production() {
             }
         }
     }
-    set_random_gen(ran_gen_ptr_->get_seed());
+    set_random_gen(abs(ran_gen_ptr_->get_seed()));
     std::random_shuffle(random_idx.begin(), random_idx.end(), get_random_gen);
     for (auto &idx: random_idx) {
         if (idx < Nstrings) {
