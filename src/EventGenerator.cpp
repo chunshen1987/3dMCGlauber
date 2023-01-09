@@ -24,8 +24,10 @@ EventGenerator::EventGenerator(std::string input_filename, int seed) {
     batchDensityOutput_ = parameter_list_.get_batch_density_output();
     if (batchDensityOutput_) {
         density_maker_ptr_ = std::unique_ptr<MakeDensity>(new MakeDensity());
-        density_maker_ptr_->set_1D_grid_info(72, 0.2);
-        density_maker_ptr_->set_2D_grid_info(72, 0.2, 100, 0.2);
+        density_maker_ptr_->setGaussianWidths(0.2, 0.5);    // sigma_x, sigma_eta
+        density_maker_ptr_->set_1D_grid_info_eta(72, 0.2);
+        density_maker_ptr_->set_2D_grid_info_etax(72, 0.2, 100, 0.2);
+        density_maker_ptr_->set_3D_grid_info(100, 0.2, 100, 0.2, 72, 0.2);
     }
 }
 
@@ -70,6 +72,7 @@ void EventGenerator::generate_events(int nev, int event_id_offset) {
                             "ed_eta_distribution", iev);
                     density_maker_ptr_->output_energyDensity_xeta_distribution(
                             "ed2D_xeta_distribution", iev);
+                    density_maker_ptr_->output_eccentricity("ecc_ed_n", iev);
                 } else {
                     std::ostringstream filename;
                     filename << "strings_event_" << event_id << ".dat";
