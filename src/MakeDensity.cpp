@@ -153,7 +153,7 @@ void MakeDensity::output_eccentricity(std::string filenameHeader,
                 int idxEd = (k*gridNx_ + i)*gridNy_ + j;
                 double rperp = sqrt(  (x_arr[i] - x_o)*(x_arr[i] - x_o)
                                     + (y_arr[j] - y_o)*(y_arr[j] - y_o));
-                double phi = atan2(y_arr[j], x_arr[i]);
+                double phi = atan2(y_arr[j] - y_o, x_arr[i] - x_o);
                 for (int ii = 0; ii < orderMax_; ii++) {
                     int idxEcc = ii*gridNeta_ + k;
                     int iorder = ii + 1;
