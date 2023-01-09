@@ -146,6 +146,26 @@ bool Parameters::get_batch_density_output() const {
 }
 
 
+bool Parameters::get_batch_2Ddensity_output() const {
+    int flag = get_param_int("batch_2Ddensity_output", 0);
+    if (flag == 0) {
+        return(false);
+    } else {
+        return(true);
+    }
+}
+
+
+bool Parameters::get_batch_eccentricity_output() const {
+    int flag = get_param_int("batch_eccentricity_output", 0);
+    if (flag == 0) {
+        return(false);
+    } else {
+        return(true);
+    }
+}
+
+
 bool Parameters::get_baryon_junctions() const {
     int flag = get_param_int("baryon_junctions", 0);
     if (flag == 0) {

@@ -23,11 +23,17 @@ EventGenerator::EventGenerator(std::string input_filename, int seed) {
     statistics_only_ = parameter_list_.get_only_event_statistics();
     batchDensityOutput_ = parameter_list_.get_batch_density_output();
     if (batchDensityOutput_) {
+        batchDensity2DOutput_ = parameter_list_.get_batch_2Ddensity_output();
+        batchEccOutput_ = parameter_list_.get_batch_eccentricity_output();
         density_maker_ptr_ = std::unique_ptr<MakeDensity>(new MakeDensity());
-        density_maker_ptr_->setGaussianWidths(0.2, 0.5);    // sigma_x, sigma_eta
+
+        // set grid information
         density_maker_ptr_->set_1D_grid_info_eta(72, 0.2);
         density_maker_ptr_->set_2D_grid_info_etax(72, 0.2, 100, 0.2);
         density_maker_ptr_->set_3D_grid_info(100, 0.2, 100, 0.2, 72, 0.2);
+
+        // set Gaussian widths for sigma_x, sigma_eta
+        density_maker_ptr_->setGaussianWidths(0.2, 0.5);
     }
 }
 
@@ -61,38 +67,42 @@ void EventGenerator::generate_events(int nev, int event_id_offset) {
 
             Ncoll = mc_glauber_ptr_->perform_string_production();
             auto b = mc_glauber_ptr_->get_impact_parameter();
-            if (!statistics_only_) {
-                if (batchDensityOutput_) {
-                    mc_glauber_ptr_->prepare_output_QCD_strings();
-                    density_maker_ptr_->set_QCD_string_output_arr(
-                            mc_glauber_ptr_->get_QCD_strings_output_list());
-                    density_maker_ptr_->output_netBaryon_eta_distribution(
-                            "nB_eta_distribution", iev);
-                    density_maker_ptr_->output_energyDensity_eta_distribution(
-                            "ed_eta_distribution", iev);
-                    density_maker_ptr_->output_energyDensity_xeta_distribution(
-                            "ed2D_xeta_distribution", iev);
-                    density_maker_ptr_->output_eccentricity("ecc_ed_n", iev);
-                } else {
-                    std::ostringstream filename;
-                    filename << "strings_event_" << event_id << ".dat";
-                    mc_glauber_ptr_->output_QCD_strings(
-                            filename.str(), Npart, Ncoll, Nstrings, b,
-                            ran_gen_ptr_->get_seed());
-                    std::ostringstream specFileName;
-                    specFileName << "spectators_event_" << event_id << ".dat";
-                    mc_glauber_ptr_->output_spectators(specFileName.str());
-
-                    std::ostringstream partFileName;
-                    partFileName << "participants_event_" << event_id << ".dat";
-                    mc_glauber_ptr_->outputParticipants(partFileName.str());
-                }
-            }
-
             // write event information to the record file
             record_file << event_id << "  " << Npart << "  " << Ncoll << "  "
                         << Nstrings << "  " << b << std::endl;
             iev++;
+            if (statistics_only_) continue;
+
+            if (batchDensityOutput_) {
+                mc_glauber_ptr_->prepare_output_QCD_strings();
+                density_maker_ptr_->set_QCD_string_output_arr(
+                        mc_glauber_ptr_->get_QCD_strings_output_list());
+                density_maker_ptr_->output_netBaryon_eta_distribution(
+                        "nB_etas_distribution", event_id);
+                density_maker_ptr_->output_energyDensity_eta_distribution(
+                        "ed_etas_distribution", event_id);
+                if (batchDensity2DOutput_) {
+                    density_maker_ptr_->output_energyDensity_xeta_distribution(
+                                        "ed2D_xetas_distribution", event_id);
+                }
+                if (batchEccOutput_) {
+                    density_maker_ptr_->output_eccentricity("ecc_ed_n",
+                                                            event_id);
+                }
+            } else {
+                std::ostringstream filename;
+                filename << "strings_event_" << event_id << ".dat";
+                mc_glauber_ptr_->output_QCD_strings(
+                        filename.str(), Npart, Ncoll, Nstrings, b,
+                        ran_gen_ptr_->get_seed());
+                std::ostringstream specFileName;
+                specFileName << "spectators_event_" << event_id << ".dat";
+                mc_glauber_ptr_->output_spectators(specFileName.str());
+
+                std::ostringstream partFileName;
+                partFileName << "participants_event_" << event_id << ".dat";
+                mc_glauber_ptr_->outputParticipants(partFileName.str());
+            }
         }
         icollisions++;
     }

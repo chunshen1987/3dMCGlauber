@@ -21,6 +21,8 @@ class EventGenerator {
     std::unique_ptr<MakeDensity> density_maker_ptr_;
     bool statistics_only_;
     bool batchDensityOutput_;
+    bool batchDensity2DOutput_;
+    bool batchEccOutput_;
     pretty_ostream messager;
 
  public:
