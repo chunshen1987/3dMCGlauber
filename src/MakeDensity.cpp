@@ -192,11 +192,11 @@ void MakeDensity::output_eccentricity(std::string filenameHeader,
         }
         for (int i = 0; i < gridNeta_; i++) {
             int idx = (iorder - 1)*gridNeta_ + i;
-            outFile.write((char*) &(eccnReal[idx]), sizeof(float));
+            outFile.write((char*) &(-eccnReal[idx]), sizeof(float));
         }
         for (int i = 0; i < gridNeta_; i++) {
             int idx = (iorder - 1)*gridNeta_ + i;
-            outFile.write((char*) &(eccnImag[idx]), sizeof(float));
+            outFile.write((char*) &(-eccnImag[idx]), sizeof(float));
         }
         outFile.close();
     }
