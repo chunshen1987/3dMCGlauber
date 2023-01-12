@@ -34,6 +34,7 @@ EventGenerator::EventGenerator(std::string input_filename, int seed) {
 
         // set Gaussian widths for sigma_x, sigma_eta
         density_maker_ptr_->setGaussianWidths(0.2, 0.5);
+        density_maker_ptr_->setStringTransShiftFrac(0.0);
     }
 }
 

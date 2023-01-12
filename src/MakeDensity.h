@@ -21,6 +21,7 @@ class MakeDensity {
     double gridDx_, gridDy_, gridDeta_;
     double gridXSize_, gridYSize_, gridEtaSize_;
     double sigma_eta_, sigma_x_;
+    double stringTransverseShiftFrac_;
 
  public:
     MakeDensity() = default;
@@ -34,6 +35,10 @@ class MakeDensity {
     void setGaussianWidths(double sigma_x, double sigma_eta) {
         sigma_x_ = sigma_x;
         sigma_eta_ = sigma_eta;
+    }
+
+    void setStringTransShiftFrac(double stringTransverseShiftFrac) {
+        stringTransverseShiftFrac_ = stringTransverseShiftFrac;
     }
 
     void set_1D_grid_info(int gridNx, double gridDx) {

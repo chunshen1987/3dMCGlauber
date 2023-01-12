@@ -34,7 +34,6 @@ void MakeDensity::compute_energyDensity_3D_distribution(
         eta_arr[i] = - gridEtaSize_/2. + i*gridDeta_;
     }
 
-    double stringTransverseShiftFrac = 0.0;
     double two_sigma_eta_sq = 2.*sigma_eta_*sigma_eta_;
     double sigmaDisEta = 5.*sigma_eta_;
     double two_sigma_x_sq = 2.*sigma_x_*sigma_x_;
@@ -101,9 +100,9 @@ void MakeDensity::compute_energyDensity_3D_distribution(
         for (int k = 0; k < gridNeta_; k++) {
             double etaFrac = (eta_arr[k] - eta_l)/(eta_r - eta_l + 1e-16);
             etaFrac = std::max(0., std::min(1., etaFrac));
-            double xT = (xPerpC + stringTransverseShiftFrac
+            double xT = (xPerpC + stringTransverseShiftFrac_
                                   *(0.5 - etaFrac)*(xPerpL - xPerpR)/2.);
-            double yT = (yPerpC + stringTransverseShiftFrac
+            double yT = (yPerpC + stringTransverseShiftFrac_
                                   *(0.5 - etaFrac)*(yPerpL - yPerpR)/2.);
             for (int i = 0; i < gridNx_; i++) {
                 for (int j = 0; j < gridNy_; j++) {
@@ -225,7 +224,6 @@ void MakeDensity::output_energyDensity_xeta_distribution(
         x_arr[i] = - gridXSize_/2. + i*gridDx_;
     }
 
-    double stringTransverseShiftFrac = 1.0;
     double two_sigma_eta_sq = 2.*sigma_eta_*sigma_eta_;
     double sigmaDisEta = 5.*sigma_eta_;
     double two_sigma_x_sq = 2.*sigma_x_*sigma_x_;
@@ -291,7 +289,7 @@ void MakeDensity::output_energyDensity_xeta_distribution(
             etaFrac = std::max(0., std::min(1., etaFrac));
             for (int j = 0; j < gridNx_; j++) {
                 int idx = i*gridNx_ + j;
-                double xT = (xPerpC + stringTransverseShiftFrac
+                double xT = (xPerpC + stringTransverseShiftFrac_
                                       *(0.5 - etaFrac)*(xPerpL - xPerpR)/2.);
                 double xDis = std::abs(x_arr[j] - xT);
                 double fx = 0.;
