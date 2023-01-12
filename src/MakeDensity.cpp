@@ -34,7 +34,7 @@ void MakeDensity::compute_energyDensity_3D_distribution(
         eta_arr[i] = - gridEtaSize_/2. + i*gridDeta_;
     }
 
-    double stringTransverseShiftFrac = 1.0;
+    double stringTransverseShiftFrac = 0.0;
     double two_sigma_eta_sq = 2.*sigma_eta_*sigma_eta_;
     double sigmaDisEta = 5.*sigma_eta_;
     double two_sigma_x_sq = 2.*sigma_x_*sigma_x_;
@@ -66,6 +66,9 @@ void MakeDensity::compute_energyDensity_3D_distribution(
         double feLNorm = 0.;
         double feRNorm = 0.;
         for (int i = 0; i < gridNeta_; i++) {
+            feC_arr[i] = 0.;
+            feL_arr[i] = 0.;
+            feR_arr[i] = 0.;
             if (eta_arr[i] > eta_l && eta_arr[i] < eta_r) {
                 double y_eta = (y_l + (y_r - y_l)/(eta_r - eta_l)
                                       *(eta_arr[i] - eta_l));
@@ -104,7 +107,7 @@ void MakeDensity::compute_energyDensity_3D_distribution(
                                   *(0.5 - etaFrac)*(yPerpL - yPerpR)/2.);
             for (int i = 0; i < gridNx_; i++) {
                 for (int j = 0; j < gridNy_; j++) {
-                    int idx = (k*gridNx_ + i)*gridNy_ + j;
+                    int idx = getIdx3D(i, j, k);
                     double rDisSq = (  (x_arr[i] - xT)*(x_arr[i] - xT)
                                      + (y_arr[j] - yT)*(y_arr[j] - yT));
                     double fx = 0.;
@@ -140,7 +143,7 @@ void MakeDensity::output_eccentricity(std::string filenameHeader,
         double norm = 0.;
         for (int i = 0; i < gridNx_; i++) {
             for (int j = 0; j < gridNy_; j++) {
-                int idxEd = (k*gridNx_ + i)*gridNy_ + j;
+                int idxEd = getIdx3D(i, j, k);
                 x_o += x_arr[i]*ed_arr[idxEd];
                 y_o += y_arr[j]*ed_arr[idxEd];
                 norm += ed_arr[idxEd];
@@ -149,11 +152,12 @@ void MakeDensity::output_eccentricity(std::string filenameHeader,
         x_o /= norm;
         y_o /= norm;
         for (int i = 0; i < gridNx_; i++) {
+            double x_i = x_arr[i] - x_o;
             for (int j = 0; j < gridNy_; j++) {
-                int idxEd = (k*gridNx_ + i)*gridNy_ + j;
-                double rperp = sqrt(  (x_arr[i] - x_o)*(x_arr[i] - x_o)
-                                    + (y_arr[j] - y_o)*(y_arr[j] - y_o));
-                double phi = atan2(y_arr[j] - y_o, x_arr[i] - x_o);
+                double y_j = y_arr[j] - y_o;
+                int idxEd = getIdx3D(i, j, k);
+                double rperp = sqrt(x_i*x_i + y_j*y_j);
+                double phi = atan2(y_j, x_i);
                 for (int ii = 0; ii < orderMax_; ii++) {
                     int idxEcc = ii*gridNeta_ + k;
                     int iorder = ii + 1;
@@ -166,9 +170,10 @@ void MakeDensity::output_eccentricity(std::string filenameHeader,
         }
     }
 
+    // "-" sign to align the eccentricity vector with the short-axis
     for (unsigned idx = 0; idx < eccnNorm.size(); idx++) {
-        eccnReal[idx] /= eccnNorm[idx];
-        eccnImag[idx] /= eccnNorm[idx];
+        eccnReal[idx] /= -eccnNorm[idx];
+        eccnImag[idx] /= -eccnNorm[idx];
     }
 
     // output results
@@ -192,11 +197,11 @@ void MakeDensity::output_eccentricity(std::string filenameHeader,
         }
         for (int i = 0; i < gridNeta_; i++) {
             int idx = (iorder - 1)*gridNeta_ + i;
-            outFile.write((char*) &(-eccnReal[idx]), sizeof(float));
+            outFile.write((char*) &(eccnReal[idx]), sizeof(float));
         }
         for (int i = 0; i < gridNeta_; i++) {
             int idx = (iorder - 1)*gridNeta_ + i;
-            outFile.write((char*) &(-eccnImag[idx]), sizeof(float));
+            outFile.write((char*) &(eccnImag[idx]), sizeof(float));
         }
         outFile.close();
     }
@@ -249,6 +254,9 @@ void MakeDensity::output_energyDensity_xeta_distribution(
         double feLNorm = 0.;
         double feRNorm = 0.;
         for (int i = 0; i < gridNeta_; i++) {
+            feC_arr[i] = 0.;
+            feL_arr[i] = 0.;
+            feR_arr[i] = 0.;
             if (eta_arr[i] > eta_l && eta_arr[i] < eta_r) {
                 double y_eta = (y_l + (y_r - y_l)/(eta_r - eta_l)
                                       *(eta_arr[i] - eta_l));
@@ -362,6 +370,9 @@ void MakeDensity::output_energyDensity_eta_distribution(
         double feLNorm = 0.;
         double feRNorm = 0.;
         for (int i = 0; i < gridNeta_; i++) {
+            feC_arr[i] = 0.;
+            feL_arr[i] = 0.;
+            feR_arr[i] = 0.;
             if (eta_arr[i] > eta_l && eta_arr[i] < eta_r) {
                 double y_eta = (y_l + (y_r - y_l)/(eta_r - eta_l)
                                       *(eta_arr[i] - eta_l));
