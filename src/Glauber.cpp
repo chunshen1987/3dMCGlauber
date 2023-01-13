@@ -47,8 +47,9 @@ Glauber::Glauber(const MCGlb::Parameters &param_in,
             new Nucleus(parameter_list.get_projectle_nucleus_name(), ran_gen,
                         sample_valence_quark, parameter_list.get_BG(),
                         d_min, deformed, nucleonConfFromFile));
-    real resetProjWS = parameter_list.getParam("resetProjWS", 0.0);
-    if (resetProjWS > 0.) {
+    int resetProjWS = static_cast<int>(
+                            parameter_list.getParam("resetProjWS", 0.0));
+    if (resetProjWS != 0) {
         auto defaultWSParam = projectile->get_woods_saxon_parameters();
         real WS_rho = parameter_list.getParam(
                                     "ProjWS_rho0", defaultWSParam[0]);
@@ -71,22 +72,43 @@ Glauber::Glauber(const MCGlb::Parameters &param_in,
             new Nucleus(parameter_list.get_target_nucleus_name(), ran_gen,
                         sample_valence_quark, parameter_list.get_BG(),
                         d_min, deformed, nucleonConfFromFile));
-    real resetTargWS = parameter_list.getParam("resetTargWS", 0.0);
-    if (resetTargWS > 0.) {
+    int resetTargWS = static_cast<int>(
+                            parameter_list.getParam("resetTargWS", 0.0));
+    if (resetTargWS != 0) {
         auto defaultWSParam = target->get_woods_saxon_parameters();
-        real WS_rho = parameter_list.getParam(
-                                    "TargWS_rho0", defaultWSParam[0]);
-        real WS_w = parameter_list.getParam("TargWS_w", defaultWSParam[1]);
-        real WS_R = parameter_list.getParam("TargWS_R", defaultWSParam[2]);
-        real WS_a = parameter_list.getParam("TargWS_a", defaultWSParam[3]);
-        real WS_beta2 = parameter_list.getParam(
-                                    "TargWS_beta2", defaultWSParam[4]);
-        real WS_beta3 = parameter_list.getParam(
-                                    "TargWS_beta3", defaultWSParam[5]);
-        real WS_beta4 = parameter_list.getParam(
-                                    "TargWS_beta4", defaultWSParam[6]);
-        real WS_gamma = parameter_list.getParam(
-                                    "TargWS_gamma", defaultWSParam[7]);
+        real WS_rho, WS_w, WS_R, WS_a, WS_beta2, WS_beta3, WS_beta4, WS_gamma;
+        if (parameter_list.get_target_nucleus_name()
+                == parameter_list.get_projectle_nucleus_name()) {
+            // if it is a symmetric collision, then use the projectile WS param
+            WS_rho = parameter_list.getParam(
+                                   "ProjWS_rho0", defaultWSParam[0]);
+            WS_w = parameter_list.getParam("ProjWS_w", defaultWSParam[1]);
+            WS_R = parameter_list.getParam("ProjWS_R", defaultWSParam[2]);
+            WS_a = parameter_list.getParam("ProjWS_a", defaultWSParam[3]);
+            WS_beta2 = parameter_list.getParam(
+                                   "ProjWS_beta2", defaultWSParam[4]);
+            WS_beta3 = parameter_list.getParam(
+                                   "ProjWS_beta3", defaultWSParam[5]);
+            WS_beta4 = parameter_list.getParam(
+                                   "ProjWS_beta4", defaultWSParam[6]);
+            WS_gamma = parameter_list.getParam(
+                                   "ProjWS_gamma", defaultWSParam[7]);
+        } else {
+            // for asymmetric collisions, set with target WS params
+            WS_rho = parameter_list.getParam(
+                                   "TargWS_rho0", defaultWSParam[0]);
+            WS_w = parameter_list.getParam("TargWS_w", defaultWSParam[1]);
+            WS_R = parameter_list.getParam("TargWS_R", defaultWSParam[2]);
+            WS_a = parameter_list.getParam("TargWS_a", defaultWSParam[3]);
+            WS_beta2 = parameter_list.getParam(
+                                   "TargWS_beta2", defaultWSParam[4]);
+            WS_beta3 = parameter_list.getParam(
+                                   "TargWS_beta3", defaultWSParam[5]);
+            WS_beta4 = parameter_list.getParam(
+                                   "TargWS_beta4", defaultWSParam[6]);
+            WS_gamma = parameter_list.getParam(
+                                   "TargWS_gamma", defaultWSParam[7]);
+        }
         target->setWoodsSaxonParameters(
             WS_rho, WS_w, WS_R, WS_a, WS_beta2, WS_beta3, WS_beta4, WS_gamma);
     }

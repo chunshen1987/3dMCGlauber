@@ -112,7 +112,7 @@ def calculate_rn_eta(eta_array, eta_min, eta_max, dN_array, vn_array,
         rnn_slope.append([popt[0], np.sqrt(pcov[0, 0])])
 
     f = open(outputFileName, 'w')
-    f.write("#eta  rn(eta)  rn_err(eta)  rnn(eta)  rnn_err(eta)\n")
+    f.write("#eta  rn(eta)  rn_err(eta)  rnn(eta)  rnn_err(eta) (n=2, 3)\n")
     for ieta in range(len(eta_array)-1):
         f.write("%.10e  " % eta_array[ieta])
         for iorder in range(nQn):
@@ -129,22 +129,26 @@ def calculate_rn_eta(eta_array, eta_min, eta_max, dN_array, vn_array,
 ### analysis starts from here ...
 ###############################################################################
 
-filename = "ecc_ed_n_2_Neta_72.dat"
-eccData = np.fromfile(filename, dtype="float32")
-eccData = np.nan_to_num(eccData.reshape(-1, 72))
+ecc2Data = np.fromfile("ecc_ed_n_2_Neta_72.dat", dtype="float32")
+ecc2Data = np.nan_to_num(ecc2Data.reshape(-1, 72))
+ecc3Data = np.fromfile("ecc_ed_n_3_Neta_72.dat", dtype="float32")
+ecc3Data = np.nan_to_num(ecc3Data.reshape(-1, 72))
 edData = np.fromfile("ed_etas_distribution_N_72.dat", dtype="float32")
 edData = np.nan_to_num(edData.reshape(-1, 72))
 
-eta_array = eccData[0, :]
-eccn_array = eccData[1::2, :] + 1j*eccData[2::2, :]
-nev, neta = eccn_array.shape
-eccn_array = eccn_array.reshape(nev, 1, neta)
+eta_array = ecc2Data[0, :]
+ecc2_array = ecc2Data[1::2, :] + 1j*ecc2Data[2::2, :]
+ecc3_array = ecc3Data[1::2, :] + 1j*ecc3Data[2::2, :]
+nev, neta = ecc2_array.shape
+eccn_array = np.zeros([nev, 2, neta]) + 1j*np.zeros([nev, 2, neta])
+eccn_array[:, 0, :] = ecc2_array
+eccn_array[:, 1, :] = ecc3_array
 dEdetas_array = edData[1:, :]
 
 ecc_rnSlopeFile = open("ecc_rnSlope.dat", "w")
-ecc_rnSlopeFile.write("#cen  rn_slope  rn_slope_err\n")
+ecc_rnSlopeFile.write("#cen  rn_slope  rn_slope_err (n=2, 3)\n")
 ecc_rnnSlopeFile = open("ecc_rnnSlope.dat", "w")
-ecc_rnnSlopeFile.write("#cen  rnn_slope  rnn_slope_err\n")
+ecc_rnnSlopeFile.write("#cen  rnn_slope  rnn_slope_err (n=2, 3)\n")
 
 # calculate the longitudinal flow decorrelation with STAR cut
 etaMin = 2.5; etaMax = 4
