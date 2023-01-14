@@ -33,8 +33,8 @@ d_min 0.9                            # the minimum distance between nucleon pair
 lambdaB 0.2                          # parameter the controls the strength of the baryon junction stopping
 lambdaBs 0.0                         # the fraction of single-to-double junction stopping
 BG 5.                                # Gaussian width square for sampling the valence quark positions (GeV^2)
-cenMin 0.
-cenMax 20.
+cenMin 20.
+cenMax 21.
 ###############################################################
 # control parameters for string production
 ###############################################################

@@ -52,11 +52,16 @@ void EventGenerator::generateMinBiasEventList() {
     real cenMax = parameter_list_.getParam("cenMax", 100.);
     if (cenMin < 1e-8 && 100 - cenMax < 1e-8) return;
 
+    auto b_max_tmp = parameter_list_.get_b_max();
+    auto b_min_tmp = parameter_list_.get_b_min();
     messager << "Random seed = " << ran_gen_ptr_->get_seed();
     messager.flush("info");
     const int nev = 50000;
     messager << "Generating minimum bias with " << nev << " events ... ";
     messager.flush("info");
+    parameter_list_.set_b_min(0.);
+    parameter_list_.set_b_max(25.);
+    auto b_max_local = 0.;
 
     int iev = 0;
     int icollisions = 0;
@@ -69,10 +74,16 @@ void EventGenerator::generateMinBiasEventList() {
 
         if (Npart < 2) continue;
 
+        auto b = mc_glauber_ptr_->get_impact_parameter();
+        if (b > b_max_local) b_max_local = b;
+
         if (iev%nev_progress == 0) {
             messager << "Progress: " << iev << " out of " << nev
                       << " is done.";
             messager.flush("info");
+            if (iev > 0) {
+                parameter_list_.set_b_max(b_max_local + 1.);
+            }
         }
 
         auto Nstrings = mc_glauber_ptr_->decide_QCD_strings_production();
@@ -85,21 +96,15 @@ void EventGenerator::generateMinBiasEventList() {
 
     int idx = std::min(nev - 1, static_cast<int>(nev*cenMax/100.));
     cenEstMin_ = cenEstMinBiasList_[idx];
-    idx = std::min(0, static_cast<int>(nev*cenMin/100.));
+    idx = std::max(0, static_cast<int>(nev*cenMin/100.));
     cenEstMax_ = cenEstMinBiasList_[idx];
     messager << "centrality cut [" << cenMin << ", " << cenMax
              << "]: cenEstMin = " << cenEstMin_ << ", cenEstMax = "
              << cenEstMax_;
     messager.flush("info");
 
-    auto b_max = parameter_list_.get_b_max();
-    auto b_min = parameter_list_.get_b_min();
-    auto total_cross_section = (
-        M_PI*(b_max*b_max - b_min*b_min)*static_cast<real>(nev)
-        /static_cast<real>(icollisions)/100.);
-    messager << "Total cross section sig_tot = " << total_cross_section
-             << " b";
-    messager.flush("info");
+    parameter_list_.set_b_min(b_min_tmp);
+    parameter_list_.set_b_max(b_max_tmp);
 }
 
 
@@ -175,6 +180,17 @@ void EventGenerator::generate_events(int nev, int event_id_offset) {
     mean_Npart = static_cast<real>(mean_Npart)/static_cast<real>(nev);
     messager << "Completed. <Npart> = " << mean_Npart;
     messager.flush("info");
+
+    if (nev > 1000) {
+        auto b_max = parameter_list_.get_b_max();
+        auto b_min = parameter_list_.get_b_min();
+        auto total_cross_section = (
+            M_PI*(b_max*b_max - b_min*b_min)*static_cast<real>(nev)
+            /static_cast<real>(icollisions)/100.);
+        messager << "Total cross section sig_tot = " << total_cross_section
+                 << " b";
+        messager.flush("info");
+    }
 }
 
 
