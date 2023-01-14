@@ -36,6 +36,70 @@ EventGenerator::EventGenerator(std::string input_filename, int seed) {
         density_maker_ptr_->setGaussianWidths(0.2, 0.5);
         density_maker_ptr_->setStringTransShiftFrac(0.0);
     }
+    cenEstMax_ = 1e16;
+    cenEstMin_ = 0;
+}
+
+
+float EventGenerator::computeCenEstimator(const int Npart, const int Ncoll,
+                                          const int Nstrings) const {
+    return(static_cast<float>(Nstrings));
+}
+
+
+void EventGenerator::generateMinBiasEventList() {
+    real cenMin = parameter_list_.getParam("cenMin", 0.);
+    real cenMax = parameter_list_.getParam("cenMax", 100.);
+    if (cenMin < 1e-8 && 100 - cenMax < 1e-8) return;
+
+    messager << "Random seed = " << ran_gen_ptr_->get_seed();
+    messager.flush("info");
+    const int nev = 50000;
+    messager << "Generating minimum bias with " << nev << " events ... ";
+    messager.flush("info");
+
+    int iev = 0;
+    int icollisions = 0;
+    int nev_progress = std::max(1, nev/10);
+    while (iev < nev) {
+        mc_glauber_ptr_->make_nuclei();
+        auto Ncoll = mc_glauber_ptr_->make_collision_schedule();
+        auto Npart = mc_glauber_ptr_->get_Npart();
+        icollisions++;
+
+        if (Npart < 2) continue;
+
+        if (iev%nev_progress == 0) {
+            messager << "Progress: " << iev << " out of " << nev
+                      << " is done.";
+            messager.flush("info");
+        }
+
+        auto Nstrings = mc_glauber_ptr_->decide_QCD_strings_production();
+        cenEstMinBiasList_.push_back(computeCenEstimator(Npart, Ncoll,
+                                                         Nstrings));
+        iev++;
+    }
+    std::sort(cenEstMinBiasList_.begin(), cenEstMinBiasList_.end(),
+              std::greater<int>());
+
+    int idx = std::min(nev - 1, static_cast<int>(nev*cenMax/100.));
+    cenEstMin_ = cenEstMinBiasList_[idx];
+    idx = std::min(0, static_cast<int>(nev*cenMin/100.));
+    cenEstMax_ = cenEstMinBiasList_[idx];
+    messager << "centrality cut [" << cenMin << ", " << cenMax
+             << "]: cenEstMin = " << cenEstMin_ << ", cenEstMax = "
+             << cenEstMax_;
+    messager.flush("info");
+
+    auto b_max = parameter_list_.get_b_max();
+    auto b_min = parameter_list_.get_b_min();
+    auto total_cross_section = (
+        M_PI*(b_max*b_max - b_min*b_min)*static_cast<real>(nev)
+        /static_cast<real>(icollisions)/100.);
+    messager << "Total cross section sig_tot = " << total_cross_section
+             << " b";
+    messager.flush("info");
 }
 
 
@@ -111,24 +175,17 @@ void EventGenerator::generate_events(int nev, int event_id_offset) {
     mean_Npart = static_cast<real>(mean_Npart)/static_cast<real>(nev);
     messager << "Completed. <Npart> = " << mean_Npart;
     messager.flush("info");
-    auto b_max = parameter_list_.get_b_max();
-    auto b_min = parameter_list_.get_b_min();
-    auto total_cross_section = (
-        M_PI*(b_max*b_max - b_min*b_min)*static_cast<real>(nev)
-        /static_cast<real>(icollisions)/100.);
-    messager << "Total cross section sig_tot = " << total_cross_section
-             << " b";
-    messager.flush("info");
 }
 
 
-bool EventGenerator::event_of_interest_trigger(int Npart, int Ncoll,
-                                               int Nstrings) {
+bool EventGenerator::event_of_interest_trigger(const int Npart,
+                                               const int Ncoll,
+                                               const int Nstrings) const {
     bool pick = false;
-    if (Npart > 1) {
-        pick = true;
-    }
+    float cenEst = computeCenEstimator(Npart, Ncoll, Nstrings);
+    pick = (Npart > 1) && (cenEst > cenEstMin_) && (cenEst < cenEstMax_);
     return(pick);
 }
+
 
 };

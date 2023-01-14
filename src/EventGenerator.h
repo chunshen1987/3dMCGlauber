@@ -5,6 +5,7 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 #include "Glauber.h"
 #include "MakeDensity.h"
 #include "Parameters.h"
@@ -24,14 +25,21 @@ class EventGenerator {
     bool batchDensity2DOutput_;
     bool batchEccOutput_;
     pretty_ostream messager;
+    std::vector<float> cenEstMinBiasList_;
+    float cenEstMin_;
+    float cenEstMax_;
 
  public:
     EventGenerator() = default;
     EventGenerator(std::string input_filename, int seed=0);
     ~EventGenerator() {};
 
+    float computeCenEstimator(const int Npart, const int Ncoll,
+                              const int Nstrings) const;
+    void generateMinBiasEventList();
     void generate_events(int nev, int event_id_offset=0);
-    bool event_of_interest_trigger(int Npart, int Ncoll, int Nstrings);
+    bool event_of_interest_trigger(const int Npart, const int Ncoll,
+                                   const int Nstrings) const;
 };
 
 };
