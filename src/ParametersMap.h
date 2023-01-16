@@ -39,6 +39,9 @@ class ParametersMap {
 
     bool checkParamIsDefined(string paramName) const;
     void read_in_parameters_from_file(string filename);
+    void read_in_parameters_from_arguments(int argc, char* argv[],
+                                           string delimiter="=",
+                                           long startFrom=1);
     int get_parameter_list_size() const {return(parameter_map.size());}
     void print_parameter_list() const;
 };

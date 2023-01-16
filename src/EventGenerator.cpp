@@ -9,8 +9,10 @@
 namespace MCGlb {
 
 
-EventGenerator::EventGenerator(std::string input_filename, int seed) {
+EventGenerator::EventGenerator(std::string input_filename,
+                               int argc, char* argv[], int seed) {
     parameter_list_.read_in_parameters_from_file(input_filename);
+    parameter_list_.read_in_parameters_from_arguments(argc, argv, "=", 4);
     parameter_list_.print_parameter_list();
     int ran_seed = parameter_list_.get_seed();
     if (seed != 0) ran_seed = seed;

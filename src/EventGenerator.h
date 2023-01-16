@@ -31,7 +31,8 @@ class EventGenerator {
 
  public:
     EventGenerator() = default;
-    EventGenerator(std::string input_filename, int seed=0);
+    EventGenerator(std::string input_filename, int argc, char* argv[],
+                   int seed=0);
     ~EventGenerator() {};
 
     float computeCenEstimator(const int Npart, const int Ncoll,
