@@ -32,6 +32,8 @@ class Glauber {
     bool fluct_Nstrings_per_NN_collision_;
     real remnant_energy_loss_fraction_;
 
+    std::vector<std::vector<real>> participantList_;
+
     real impact_b;
     real yloss_param_slope;
     real yloss_param_a;
@@ -110,8 +112,16 @@ class Glauber {
                             const real Ncoll, const real Nstrings,
                             const real b, const unsigned int seed);
     void output_spectators(std::string filename);
+    void prepareParticipantList();
+    std::vector<std::vector<real>> getParticipantList() {
+        if (participantList_.size() == 0)
+            prepareParticipantList();
+        return(participantList_);
+    }
     void outputParticipants(std::string filename);
     std::vector<std::vector<real>> get_QCD_strings_output_list() {
+        if (QCD_string_output_arr_.size() == 0)
+            prepare_output_QCD_strings();
         return(QCD_string_output_arr_);
     }
 

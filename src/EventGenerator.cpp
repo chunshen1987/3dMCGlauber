@@ -146,9 +146,11 @@ void EventGenerator::generate_events(int nev, int event_id_offset) {
             if (statistics_only_) continue;
 
             if (batchDensityOutput_) {
-                mc_glauber_ptr_->prepare_output_QCD_strings();
                 density_maker_ptr_->set_QCD_string_output_arr(
                         mc_glauber_ptr_->get_QCD_strings_output_list());
+                density_maker_ptr_->setParticipantList(
+                        mc_glauber_ptr_->getParticipantList());
+
                 density_maker_ptr_->output_netBaryon_eta_distribution(
                         "nB_etas_distribution", event_id);
                 density_maker_ptr_->output_energyDensity_eta_distribution(

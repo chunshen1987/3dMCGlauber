@@ -977,46 +977,63 @@ void Glauber::output_QCD_strings(std::string filename, const real Npart,
 }
 
 
-void Glauber::outputParticipants(std::string filename) {
+void Glauber::prepareParticipantList() {
+    participantList_.clear();
     // compute the center of mass
     real x_o = 0.;
     real y_o = 0.;
     computeCenterOfMass(x_o, y_o);
-
-    std::ofstream output(filename.c_str());
-    output << "# t[fm]  x[fm]  y[fm]  z[fm]  dir  e"
-           << endl;
     auto proj_nucleon_list = projectile->get_nucleon_list();
     int dir = 1;
     for (auto &iproj: (*proj_nucleon_list)) {
         if (iproj->is_wounded()) {
-            output << std::scientific << std::setprecision(6);
             auto proj_x = iproj->get_x();
             proj_x[1] -= x_o;
             proj_x[2] -= y_o;
-            // output participant nucleon's position
-            for (const auto &x_i : proj_x)
-                output << std::setw(10) << x_i << "  ";
-
-            output << std::setw(10) << dir << "  "
-                   << iproj->get_electric_charge() << endl;
+            std::vector<real> part_i;
+            part_i.push_back(proj_x[0]);
+            part_i.push_back(proj_x[1]);
+            part_i.push_back(proj_x[2]);
+            part_i.push_back(proj_x[3]);
+            part_i.push_back(dir);
+            part_i.push_back(iproj->get_electric_charge());
+            participantList_.push_back(part_i);
         }
     }
     dir = -1;
     auto targ_nucleon_list = target->get_nucleon_list();
     for (auto &itarg: (*targ_nucleon_list)) {
         if (itarg->is_wounded()) {
-            output << std::scientific << std::setprecision(6);
             auto targ_x = itarg->get_x();
             targ_x[1] -= x_o;
             targ_x[2] -= y_o;
-            // output participant nucleon's position
-            for (const auto &x_i : targ_x)
-                output << std::setw(10) << x_i << "  ";
-
-            output << std::setw(10) << dir << "  "
-                   << itarg->get_electric_charge() << endl;
+            std::vector<real> part_i;
+            part_i.push_back(targ_x[0]);
+            part_i.push_back(targ_x[1]);
+            part_i.push_back(targ_x[2]);
+            part_i.push_back(targ_x[3]);
+            part_i.push_back(dir);
+            part_i.push_back(itarg->get_electric_charge());
+            participantList_.push_back(part_i);
         }
+    }
+}
+
+
+void Glauber::outputParticipants(std::string filename) {
+    if (participantList_.size() == 0) {
+        prepareParticipantList();
+    }
+
+    std::ofstream output(filename.c_str());
+    output << "# t[fm]  x[fm]  y[fm]  z[fm]  dir  e"
+           << endl;
+    for (auto &ipart: participantList_) {
+        output << std::scientific << std::setprecision(6);
+        for (auto &x_i: ipart) {
+            output << std::setw(10) << x_i << "  ";
+        }
+        output << endl;
     }
     output.close();
 }

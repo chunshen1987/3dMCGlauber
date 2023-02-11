@@ -15,6 +15,7 @@ class MakeDensity {
 
  private:
     std::vector<std::vector<real>> QCD_string_output_arr_;
+    std::vector<std::vector<real>> participantList_;
     pretty_ostream messager_;
     const int orderMax_ = 3;
     int gridNx_, gridNy_, gridNeta_;
@@ -30,6 +31,11 @@ class MakeDensity {
     void set_QCD_string_output_arr(
             std::vector<std::vector<real>> QCD_string_output_arr) {
         QCD_string_output_arr_ = QCD_string_output_arr;
+    }
+
+
+    void setParticipantList(std::vector<std::vector<real>> participantList) {
+        participantList_ = participantList;
     }
 
     void setGaussianWidths(double sigma_x, double sigma_eta) {
