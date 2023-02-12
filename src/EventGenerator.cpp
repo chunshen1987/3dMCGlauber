@@ -36,7 +36,7 @@ EventGenerator::EventGenerator(std::string input_filename,
 
         // set Gaussian widths for sigma_x, sigma_eta
         density_maker_ptr_->setGaussianWidths(0.4, 0.5);
-        density_maker_ptr_->setStringTransShiftFrac(1.0);
+        density_maker_ptr_->setStringTransShiftFrac(0.0);
     }
     cenEstMax_ = 1e16;
     cenEstMin_ = 0;
