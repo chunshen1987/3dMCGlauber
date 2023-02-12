@@ -175,7 +175,7 @@ void MakeDensity::outputTATBEccentricity(std::string filenameHeader,
     std::vector<float> x_arr, y_arr, TA_arr, TB_arr;
     computeTATB(x_arr, y_arr, TA_arr, TB_arr);
 
-    const int Nconfig = 4;
+    const int Nconfig = 6;
     std::vector<float> eccnReal(Nconfig*orderMax_, 0.);
     std::vector<float> eccnImag(Nconfig*orderMax_, 0.);
     std::vector<float> eccnNorm(Nconfig*orderMax_, 0.);
@@ -200,6 +200,10 @@ void MakeDensity::outputTATBEccentricity(std::string filenameHeader,
                     ed_arr[idxEd] = pow(TA_arr[idxEd]*TB_arr[idxEd], 2./3.);
                 } else if (iconfig == 3) {
                     ed_arr[idxEd] = TA_arr[idxEd]*TB_arr[idxEd];
+                } else if (iconfig == 4) {
+                    ed_arr[idxEd] = TA_arr[idxEd];
+                } else if (iconfig == 5) {
+                    ed_arr[idxEd] = TB_arr[idxEd];
                 }
                 x_o += x_arr[i]*ed_arr[idxEd];
                 y_o += y_arr[j]*ed_arr[idxEd];
