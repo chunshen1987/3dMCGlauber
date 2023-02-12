@@ -35,8 +35,8 @@ EventGenerator::EventGenerator(std::string input_filename,
         density_maker_ptr_->set_3D_grid_info(100, 0.2, 100, 0.2, 72, 0.2);
 
         // set Gaussian widths for sigma_x, sigma_eta
-        density_maker_ptr_->setGaussianWidths(0.2, 0.5);
-        density_maker_ptr_->setStringTransShiftFrac(0.0);
+        density_maker_ptr_->setGaussianWidths(0.4, 0.5);
+        density_maker_ptr_->setStringTransShiftFrac(1.0);
     }
     cenEstMax_ = 1e16;
     cenEstMin_ = 0;
@@ -162,6 +162,8 @@ void EventGenerator::generate_events(int nev, int event_id_offset) {
                 if (batchEccOutput_) {
                     density_maker_ptr_->output_eccentricity("ecc_ed_n",
                                                             event_id);
+                    density_maker_ptr_->outputTATBEccentricity("ecc_ed_n",
+                                                               event_id);
                 }
             } else {
                 std::ostringstream filename;

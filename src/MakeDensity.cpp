@@ -123,6 +123,143 @@ void MakeDensity::compute_energyDensity_3D_distribution(
 }
 
 
+void MakeDensity::computeTATB(
+        std::vector<float> &x_arr, std::vector<float> &y_arr,
+        std::vector<float> &TA_arr, std::vector<float> &TB_arr) const {
+    // compute the nuclear thickness function TA and TB from participant list
+    x_arr.clear();
+    y_arr.clear();
+    TA_arr.clear();
+    TB_arr.clear();
+    x_arr.resize(gridNx_, 0.);
+    y_arr.resize(gridNy_, 0.);
+    TA_arr.resize(gridNx_*gridNy_, 0.);
+    TB_arr.resize(gridNx_*gridNy_, 0.);
+
+    for (int i = 0; i < gridNx_; i++) {
+        x_arr[i] = - gridXSize_/2. + i*gridDx_;
+    }
+    for (int i = 0; i < gridNy_; i++) {
+        y_arr[i] = - gridYSize_/2. + i*gridDy_;
+    }
+
+    double two_sigma_x_sq = 2.*sigma_x_*sigma_x_;
+    double sigmaDisXsq = 25.*sigma_x_*sigma_x_;
+    double normX = 1./(2.*M_PI*sigma_x_*sigma_x_);
+    for (auto &part_i : participantList_) {
+        real xT = part_i[1];
+        real yT = part_i[2];
+        real dir = part_i[4];
+        for (int i = 0; i < gridNx_; i++) {
+            for (int j = 0; j < gridNy_; j++) {
+                int idx = getIdx3D(i, j, 0);
+                double rDisSq = (  (x_arr[i] - xT)*(x_arr[i] - xT)
+                                 + (y_arr[j] - yT)*(y_arr[j] - yT));
+                double fx = 0.;
+                if (rDisSq < sigmaDisXsq) {
+                    fx = normX*exp(-rDisSq/two_sigma_x_sq);
+                }
+                if (dir > 0) {
+                    TA_arr[idx] += fx;
+                } else {
+                    TB_arr[idx] += fx;
+                }
+            }
+        }
+    }
+}
+
+
+void MakeDensity::outputTATBEccentricity(std::string filenameHeader,
+                                         const int eventId) const {
+    std::vector<float> x_arr, y_arr, TA_arr, TB_arr;
+    computeTATB(x_arr, y_arr, TA_arr, TB_arr);
+
+    const int Nconfig = 4;
+    std::vector<float> eccnReal(Nconfig*orderMax_, 0.);
+    std::vector<float> eccnImag(Nconfig*orderMax_, 0.);
+    std::vector<float> eccnNorm(Nconfig*orderMax_, 0.);
+
+    std::vector<int> rPow(orderMax_, 3);
+    for (int i = 1; i < orderMax_; i++) {
+        rPow[i] = i + 1;
+    }
+    for (int iconfig = 0; iconfig < Nconfig; iconfig++) {
+        double x_o = 0.;
+        double y_o = 0.;
+        double norm = 0.;
+        std::vector<float> ed_arr(gridNx_*gridNy_, 0.);
+        for (int i = 0; i < gridNx_; i++) {
+            for (int j = 0; j < gridNy_; j++) {
+                int idxEd = getIdx3D(i, j, 0);
+                if (iconfig == 0) {
+                    ed_arr[idxEd] = TA_arr[idxEd] + TB_arr[idxEd];
+                } else if (iconfig == 1) {
+                    ed_arr[idxEd] = sqrt(TA_arr[idxEd]*TB_arr[idxEd]);
+                } else if (iconfig == 2) {
+                    ed_arr[idxEd] = pow(TA_arr[idxEd]*TB_arr[idxEd], 2./3.);
+                } else if (iconfig == 3) {
+                    ed_arr[idxEd] = TA_arr[idxEd]*TB_arr[idxEd];
+                }
+                x_o += x_arr[i]*ed_arr[idxEd];
+                y_o += y_arr[j]*ed_arr[idxEd];
+                norm += ed_arr[idxEd];
+            }
+        }
+        x_o /= norm;
+        y_o /= norm;
+        for (int i = 0; i < gridNx_; i++) {
+            double x_i = x_arr[i] - x_o;
+            for (int j = 0; j < gridNy_; j++) {
+                double y_j = y_arr[j] - y_o;
+                int idxEd = getIdx3D(i, j, 0);
+                double rperp = sqrt(x_i*x_i + y_j*y_j);
+                double phi = atan2(y_j, x_i);
+                for (int ii = 0; ii < orderMax_; ii++) {
+                    int idxEcc = ii*Nconfig + iconfig;
+                    int iorder = ii + 1;
+                    double weight = pow(rperp, rPow[ii])*ed_arr[idxEd];
+                    eccnNorm[idxEcc] += weight;
+                    eccnReal[idxEcc] += weight*cos(iorder*phi);
+                    eccnImag[idxEcc] += weight*sin(iorder*phi);
+                }
+            }
+        }
+    }
+
+    // "-" sign to align the eccentricity vector with the short-axis
+    for (unsigned idx = 0; idx < eccnNorm.size(); idx++) {
+        eccnReal[idx] /= -eccnNorm[idx];
+        eccnImag[idx] /= -eccnNorm[idx];
+    }
+
+    // output results
+    std::ios_base::openmode modes;
+    if (eventId == 0) {
+        modes = std::ios::out | std::ios::binary;
+    } else {
+        modes = std::ios::app | std::ios::binary;
+    }
+
+    for (int iorder = 1; iorder <= orderMax_; iorder++) {
+        std::ofstream outFile;
+        std::stringstream fileNameDressed;
+        fileNameDressed << filenameHeader << "_" << iorder
+                        << "_TATB_Nconfig_" << Nconfig << ".dat";
+        outFile.open(fileNameDressed.str().c_str(), modes);
+        for (int i = 0; i < Nconfig; i++) {
+            int idx = (iorder - 1)*Nconfig + i;
+            outFile.write((char*) &(eccnReal[idx]), sizeof(float));
+        }
+        for (int i = 0; i < Nconfig; i++) {
+            int idx = (iorder - 1)*Nconfig + i;
+            outFile.write((char*) &(eccnImag[idx]), sizeof(float));
+        }
+        outFile.close();
+    }
+}
+
+
 void MakeDensity::output_eccentricity(std::string filenameHeader,
                                       const int eventId) const {
     std::vector<float> x_arr, y_arr, eta_arr, ed_arr;
@@ -171,8 +308,8 @@ void MakeDensity::output_eccentricity(std::string filenameHeader,
 
     // "-" sign to align the eccentricity vector with the short-axis
     for (unsigned idx = 0; idx < eccnNorm.size(); idx++) {
-        eccnReal[idx] /= -eccnNorm[idx];
-        eccnImag[idx] /= -eccnNorm[idx];
+        eccnReal[idx] /= -(eccnNorm[idx] + 1e-16);
+        eccnImag[idx] /= -(eccnNorm[idx] + 1e-16);
     }
 
     // output results

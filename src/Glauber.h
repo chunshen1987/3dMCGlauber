@@ -114,14 +114,12 @@ class Glauber {
     void output_spectators(std::string filename);
     void prepareParticipantList();
     std::vector<std::vector<real>> getParticipantList() {
-        if (participantList_.size() == 0)
-            prepareParticipantList();
+        prepareParticipantList();
         return(participantList_);
     }
     void outputParticipants(std::string filename);
     std::vector<std::vector<real>> get_QCD_strings_output_list() {
-        if (QCD_string_output_arr_.size() == 0)
-            prepare_output_QCD_strings();
+        prepare_output_QCD_strings();
         return(QCD_string_output_arr_);
     }
 

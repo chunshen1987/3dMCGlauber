@@ -17,7 +17,7 @@ class MakeDensity {
     std::vector<std::vector<real>> QCD_string_output_arr_;
     std::vector<std::vector<real>> participantList_;
     pretty_ostream messager_;
-    const int orderMax_ = 3;
+    const int orderMax_ = 3;    // the maximum order of eccentricity
     int gridNx_, gridNy_, gridNeta_;
     double gridDx_, gridDy_, gridDeta_;
     double gridXSize_, gridYSize_, gridEtaSize_;
@@ -106,8 +106,14 @@ class MakeDensity {
     void compute_energyDensity_3D_distribution(
         std::vector<float> &x_arr, std::vector<float> &y_arr,
         std::vector<float> &eta_arr, std::vector<float> &ed_arr) const;
+    void computeTATB(
+        std::vector<float> &x_arr, std::vector<float> &y_arr,
+        std::vector<float> &TA_arr, std::vector<float> &TB_arr) const;
+
     void output_eccentricity(std::string filenameHeader,
                              const int eventId) const;
+    void outputTATBEccentricity(std::string filenameHeader,
+                                const int eventId) const;
 };
 
 };

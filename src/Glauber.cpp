@@ -1021,9 +1021,7 @@ void Glauber::prepareParticipantList() {
 
 
 void Glauber::outputParticipants(std::string filename) {
-    if (participantList_.size() == 0) {
-        prepareParticipantList();
-    }
+    prepareParticipantList();
 
     std::ofstream output(filename.c_str());
     output << "# t[fm]  x[fm]  y[fm]  z[fm]  dir  e"
