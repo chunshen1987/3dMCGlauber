@@ -103,6 +103,8 @@ class MakeDensity {
                                                const int eventId) const;
     void output_energyDensity_xeta_distribution(std::string filename,
                                                 const int eventId) const;
+    void output_energyDensity_3d(std::string filenameHeader,
+                                 const int eventId) const;
     void compute_energyDensity_3D_distribution(
         std::vector<float> &x_arr, std::vector<float> &y_arr,
         std::vector<float> &eta_arr, std::vector<float> &ed_arr) const;

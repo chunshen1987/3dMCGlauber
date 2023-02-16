@@ -348,6 +348,53 @@ void MakeDensity::output_eccentricity(std::string filenameHeader,
 }
 
 
+void MakeDensity::output_energyDensity_3d(std::string filenameHeader,
+                                          const int eventId) const {
+    std::vector<float> x_arr, y_arr, eta_arr, ed_arr;
+    compute_energyDensity_3D_distribution(x_arr, y_arr, eta_arr, ed_arr);
+    // output results
+    std::ios_base::openmode modes;
+    if (eventId == 0) {
+        modes = std::ios::out | std::ios::binary;
+    } else {
+        modes = std::ios::app | std::ios::binary;
+    }
+
+    std::ofstream outFile;
+    std::stringstream fileNameDressed;
+    fileNameDressed << filenameHeader << "_Neta_" << gridNeta_
+                    << "_Nx_" << gridNx_ << "_Ny_" << gridNy_ << ".dat";
+    outFile.open(fileNameDressed.str().c_str(), modes);
+    if (eventId == 0) {
+        for (int i = 0; i < gridNeta_; i++) {
+            for (int j = 0; j < gridNx_; j++) {
+                for (int k = 0; k < gridNy_; k++) {
+                    outFile.write((char*) &(eta_arr[i]), sizeof(float));
+                }
+            }
+        }
+        for (int i = 0; i < gridNeta_; i++) {
+            for (int j = 0; j < gridNx_; j++) {
+                for (int k = 0; k < gridNy_; k++) {
+                    outFile.write((char*) &(x_arr[j]), sizeof(float));
+                }
+            }
+        }
+        for (int i = 0; i < gridNeta_; i++) {
+            for (int j = 0; j < gridNx_; j++) {
+                for (int k = 0; k < gridNy_; k++) {
+                    outFile.write((char*) &(y_arr[k]), sizeof(float));
+                }
+            }
+        }
+    }
+    for (int i = 0; i < gridNeta_*gridNx_*gridNy_; i++) {
+        outFile.write((char*) &(ed_arr[i]), sizeof(float));
+    }
+    outFile.close();
+}
+
+
 void MakeDensity::output_energyDensity_xeta_distribution(
         std::string filename, const int eventId) const {
     // compute the 2D local energy density profile in (x, eta_s)

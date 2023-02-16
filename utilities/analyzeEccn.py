@@ -55,6 +55,19 @@ for icen in range(len(cenList) - 1):
     EmidLowCut = EmidSorted[int(cenList[icen+1]/100.*Totev) - 1]
     cenIdx = (Emid > EmidLowCut) & (Emid <= EmidHighCut)
     nev = len(ecc23D[cenIdx, etaIdx])
+
+    #if icen == 3:
+    #    etaRefIdx = (etaArr > 2.5) & (etaArr < 4.0)
+    #    ecc23DSelected = ecc23D[cenIdx, :]
+    #    ecc23D_ref = np.mean(ecc23DSelected[:, etaRefIdx], axis=1).reshape(nev, 1)
+    #    ecc23D_eta = (np.mean(ecc23DSelected*np.conj(ecc23D_ref), axis=0)
+    #                  /np.sqrt(np.mean(abs(ecc23D_ref)**2.)))
+    #    fig = plt.figure()
+    #    ax = plt.axes([0.12, 0.12, 0.85, 0.85])
+    #    idx = etaArr < 2.5
+    #    plt.plot(etaArr[idx], ecc23D_eta[idx])
+    #    plt.show()
+
     ecc23D_rms = np.sqrt(np.mean(np.abs(ecc23D[cenIdx, etaIdx])**2.))
     ecc23D_err = (np.std(np.abs(ecc23D[cenIdx, etaIdx])**2.)/np.sqrt(nev)
                   /(2.*ecc23D_rms))

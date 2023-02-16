@@ -158,6 +158,8 @@ void EventGenerator::generate_events(int nev, int event_id_offset) {
                 if (batchDensity2DOutput_) {
                     density_maker_ptr_->output_energyDensity_xeta_distribution(
                                         "ed2D_xetas_distribution", event_id);
+                    density_maker_ptr_->output_energyDensity_3d(
+                                        "ed3D", event_id);
                 }
                 if (batchEccOutput_) {
                     density_maker_ptr_->output_eccentricity("ecc_ed_n",
