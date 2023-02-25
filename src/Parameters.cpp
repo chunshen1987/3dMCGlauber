@@ -79,6 +79,13 @@ real Parameters::get_lambdaBs() const {
 }
 
 
+real Parameters::get_baryon_in_string_prob() const {
+    real prob = static_cast<real>(get_param_double("baryonInStringProb", 1.));
+    assert(prob >= 0. && prob <= 1.);
+    return(prob);
+}
+
+
 bool Parameters::get_cached_tabels() const {
     int flag = get_param_int("cache_tables", 1);
     if (flag == 1)

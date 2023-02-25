@@ -538,6 +538,7 @@ int Glauber::perform_string_production() {
     // randomize the QCD_string_list and assign the baryon charge to
     // the strings
     std::vector<unsigned int> random_idx;
+    const real baryonInStringProb = parameter_list.get_baryon_in_string_prob();
     unsigned int Nstrings = QCD_string_list.size();
     unsigned int Npart_proj = projectile->get_number_of_wounded_nucleons();
     unsigned int Npart_targ = target->get_number_of_wounded_nucleons();
@@ -550,8 +551,10 @@ int Glauber::perform_string_production() {
             // put baryon of the projectile in the selected string
             auto proj = QCD_string_list[idx].get_proj();
             if (!proj->baryon_was_used()) {
-                proj->set_baryon_used(true);
-                QCD_string_list[idx].set_has_baryon_right(true);
+                if (ran_gen_ptr_->rand_uniform() < baryonInStringProb) {
+                    proj->set_baryon_used(true);
+                    QCD_string_list[idx].set_has_baryon_right(true);
+                }
             }
         } else if (idx < Nstrings + Npart_proj) {
             // put baryon of the projectile in the projectile remnant
@@ -576,8 +579,10 @@ int Glauber::perform_string_production() {
             // put baryon of the target in the selected string
             auto targ = QCD_string_list[idx].get_targ();
             if (!targ->baryon_was_used()) {
-                targ->set_baryon_used(true);
-                QCD_string_list[idx].set_has_baryon_left(true);
+                if (ran_gen_ptr_->rand_uniform() < baryonInStringProb) {
+                    targ->set_baryon_used(true);
+                    QCD_string_list[idx].set_has_baryon_left(true);
+                }
             }
         } else if (idx > Nstrings + Npart_proj - 1) {
             // put baryon of the target in the target remnant
