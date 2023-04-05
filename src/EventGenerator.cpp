@@ -24,19 +24,20 @@ EventGenerator::EventGenerator(std::string input_filename,
 
     statistics_only_ = parameter_list_.get_only_event_statistics();
     batchDensityOutput_ = parameter_list_.get_batch_density_output();
+    batchEccOutput_ = parameter_list_.get_batch_eccentricity_output();
+    density_maker_ptr_ = std::unique_ptr<MakeDensity>(new MakeDensity());
+    // set grid information
+    density_maker_ptr_->set_1D_grid_info_eta(72, 0.2);
+    density_maker_ptr_->set_2D_grid_info_etax(72, 0.2, 100, 0.2);
+    density_maker_ptr_->set_3D_grid_info(100, 0.2, 100, 0.2, 72, 0.2);
+
+    // set Gaussian widths for sigma_x, sigma_eta
+    density_maker_ptr_->setGaussianWidths(0.4, 0.5);
+    density_maker_ptr_->setStringTransShiftFrac(0.0);
     if (batchDensityOutput_) {
         batchDensity2DOutput_ = parameter_list_.get_batch_2Ddensity_output();
-        batchEccOutput_ = parameter_list_.get_batch_eccentricity_output();
-        density_maker_ptr_ = std::unique_ptr<MakeDensity>(new MakeDensity());
-
-        // set grid information
-        density_maker_ptr_->set_1D_grid_info_eta(72, 0.2);
-        density_maker_ptr_->set_2D_grid_info_etax(72, 0.2, 100, 0.2);
-        density_maker_ptr_->set_3D_grid_info(100, 0.2, 100, 0.2, 72, 0.2);
-
-        // set Gaussian widths for sigma_x, sigma_eta
-        density_maker_ptr_->setGaussianWidths(0.4, 0.5);
-        density_maker_ptr_->setStringTransShiftFrac(0.0);
+    } else {
+        batchDensity2DOutput_ = false;
     }
     cenEstMax_ = 1e16;
     cenEstMin_ = 0;
@@ -145,11 +146,13 @@ void EventGenerator::generate_events(int nev, int event_id_offset) {
             iev++;
             if (statistics_only_) continue;
 
-            if (batchDensityOutput_) {
-                density_maker_ptr_->set_QCD_string_output_arr(
+            density_maker_ptr_->set_QCD_string_output_arr(
                         mc_glauber_ptr_->get_QCD_strings_output_list());
-                density_maker_ptr_->setParticipantList(
-                        mc_glauber_ptr_->getParticipantList());
+            if (batchEccOutput_) {
+                density_maker_ptr_->output_eccentricity("ecc_ed_n",
+                                                        event_id);
+            }
+            if (batchDensityOutput_) {
 
                 density_maker_ptr_->output_netBaryon_eta_distribution(
                         "nB_etas_distribution", event_id);
@@ -162,8 +165,8 @@ void EventGenerator::generate_events(int nev, int event_id_offset) {
                                         "ed3D", event_id);
                 }
                 if (batchEccOutput_) {
-                    density_maker_ptr_->output_eccentricity("ecc_ed_n",
-                                                            event_id);
+                    density_maker_ptr_->setParticipantList(
+                                    mc_glauber_ptr_->getParticipantList());
                     density_maker_ptr_->outputTATBEccentricity("ecc_ed_n",
                                                                event_id);
                 }
