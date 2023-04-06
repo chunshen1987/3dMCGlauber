@@ -605,33 +605,6 @@ int Glauber::perform_string_production() {
             }
         }
     }
-    // now assign electric charges randomly to strings and remnants
-    std::random_shuffle(random_idx.begin(), random_idx.end());
-    for (auto &idx: random_idx) {
-        if (idx < Nstrings) {
-            // put baryon of the projectile in the selected string
-            auto proj_q = QCD_string_list[idx].get_proj_q();
-            if (!proj_q->Qe_was_used()) {
-                proj_q->set_Qe_used(true);
-                QCD_string_list[idx].set_Qe_right(proj_q->get_Qe());
-                QCD_string_list[idx].set_eta_s_Qe_right(
-                            QCD_string_list[idx].get_y_f_right());
-            }
-        }
-    }
-    std::random_shuffle(random_idx.begin(), random_idx.end());
-    for (auto &idx: random_idx) {
-        if (idx < Nstrings) {
-            // put baryon of the target in the selected string
-            auto targ_q = QCD_string_list[idx].get_targ_q();
-            if (!targ_q->Qe_was_used()) {
-                targ_q->set_Qe_used(true);
-                QCD_string_list[idx].set_Qe_left(targ_q->get_Qe());
-                QCD_string_list[idx].set_eta_s_Qe_left(
-                            QCD_string_list[idx].get_y_f_left());
-            }
-        }
-    }
 
     // set baryons' rapidities
     for (auto &it: QCD_string_list) {
@@ -687,6 +660,34 @@ int Glauber::perform_string_production() {
                 }
             }
             it.set_final_baryon_rapidities(y_baryon_left, y_baryon_right);
+        }
+    }
+
+    // now assign electric charges randomly to strings and remnants
+    std::random_shuffle(random_idx.begin(), random_idx.end());
+    for (auto &idx: random_idx) {
+        if (idx < Nstrings) {
+            // put baryon of the projectile in the selected string
+            auto proj_q = QCD_string_list[idx].get_proj_q();
+            if (!proj_q->Qe_was_used()) {
+                proj_q->set_Qe_used(true);
+                QCD_string_list[idx].set_Qe_right(proj_q->get_Qe());
+                QCD_string_list[idx].set_eta_s_Qe_right(
+                            QCD_string_list[idx].get_eta_s_right());
+            }
+        }
+    }
+    std::random_shuffle(random_idx.begin(), random_idx.end());
+    for (auto &idx: random_idx) {
+        if (idx < Nstrings) {
+            // put baryon of the target in the selected string
+            auto targ_q = QCD_string_list[idx].get_targ_q();
+            if (!targ_q->Qe_was_used()) {
+                targ_q->set_Qe_used(true);
+                QCD_string_list[idx].set_Qe_left(targ_q->get_Qe());
+                QCD_string_list[idx].set_eta_s_Qe_left(
+                            QCD_string_list[idx].get_eta_s_left());
+            }
         }
     }
 
