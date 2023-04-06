@@ -669,4 +669,60 @@ void MakeDensity::output_netBaryon_eta_distribution(std::string filename,
     outFile.close();
 }
 
+
+void MakeDensity::output_netElectricCharges_eta_distribution(
+                            std::string filename, const int eventId) const {
+    // compute the net electric charge density profile
+    std::vector<float> eta_arr(gridNeta_, 0.);
+    std::vector<float> nQ_arr(gridNeta_, 0.);
+    for (int i = 0; i < gridNeta_; i++) {
+        eta_arr[i] = - gridEtaSize_/2. + i*gridDeta_;
+    }
+
+    double two_sigma_eta_sq = 2.*sigma_eta_*sigma_eta_;
+    double sigmaDis = 5.*sigma_eta_;
+    double norm_eta = 1./(sqrt(2.*M_PI)*sigma_eta_);
+    for (auto &string_i : QCD_string_output_arr_) {
+        double nQ_eta_l = string_i[27];
+        double nQ_eta_r = string_i[28];
+        double nQ_frac_l = string_i[25];
+        double nQ_frac_r = string_i[26];
+        for (int i = 0; i < gridNeta_; i++) {
+            double dis = std::abs(eta_arr[i] - nQ_eta_l);
+            if (dis < sigmaDis) {
+                nQ_arr[i] += nQ_frac_l*exp(-dis*dis/two_sigma_eta_sq);
+            }
+            dis = std::abs(eta_arr[i] - nQ_eta_r);
+            if (dis < sigmaDis) {
+                nQ_arr[i] += nQ_frac_r*exp(-dis*dis/two_sigma_eta_sq);
+            }
+        }
+    }
+    for (int i = 0; i < gridNeta_; i++) {
+        nQ_arr[i] *= norm_eta;
+    }
+
+    // output results
+    std::ios_base::openmode modes;
+    if (eventId == 0) {
+        modes = std::ios::out | std::ios::binary;
+    } else {
+        modes = std::ios::app | std::ios::binary;
+    }
+
+    std::ofstream outFile;
+    std::stringstream fileNameDressed;
+    fileNameDressed << filename << "_N_" << gridNeta_ << ".dat";
+    outFile.open(fileNameDressed.str().c_str(), modes);
+    if (eventId == 0) {
+        for (int i = 0; i < gridNeta_; i++) {
+            outFile.write((char*) &(eta_arr[i]), sizeof(float));
+        }
+    }
+    for (int i = 0; i < gridNeta_; i++) {
+        outFile.write((char*) &(nQ_arr[i]), sizeof(float));
+    }
+    outFile.close();
+}
+
 };

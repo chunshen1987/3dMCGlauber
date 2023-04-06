@@ -99,6 +99,8 @@ class MakeDensity {
 
     void output_netBaryon_eta_distribution(std::string filename,
                                            const int eventId) const;
+    void output_netElectricCharges_eta_distribution(std::string filename,
+                                                    const int eventId) const;
     void output_energyDensity_eta_distribution(std::string filename,
                                                const int eventId) const;
     void output_energyDensity_xeta_distribution(std::string filename,
