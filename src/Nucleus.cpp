@@ -171,9 +171,9 @@ void Nucleus::generate_nucleus_3d_configuration() {
     }
 
     // assign the proton or neutron identity to the nucleons
-    std::vector<int> electric_charges_arr(A_, 0);
+    std::vector<real> electric_charges_arr(A_, 0.);
     for (int i = 0; i < Z_; i++)
-        electric_charges_arr[i] = 1;
+        electric_charges_arr[i] = 1.;
     std::random_shuffle(electric_charges_arr.begin(),
                         electric_charges_arr.end());
     for (int i = 0; i < A_; i++) {
@@ -243,7 +243,7 @@ void Nucleus::sample_fermi_momentum() {
                       + x_vec[3]*x_vec[3]);
         real avgDensity = getAvgWoodsSaxonDensity(r);
         real denFrac = static_cast<real>(Z_)/static_cast<real>(A_);
-        if (nucleon_i->get_electric_charge() == 0)
+        if (std::abs(nucleon_i->get_electric_charge()) < 1e-8)
             denFrac = 1. - denFrac;
         real p_F = PhysConsts::HBARC*pow(pi2_3*avgDensity*denFrac
                                          *ran_gen_ptr->rand_uniform(), 1./3.);
@@ -870,7 +870,7 @@ void Nucleus::output_nucleon_positions(std::string filename) const {
 void Nucleus::sample_quark_momentum_fraction(std::vector<real> &xQuark,
                                              std::vector<real> &eQuark,
                                              const int number_of_quarks,
-                                             const int electric_charge,
+                                             const real electric_charge,
                                              const real ecm) const {
     if (!sample_valence_quarks) {
         for (int i = 0; i < number_of_quarks; i++) {
@@ -889,7 +889,7 @@ void Nucleus::sample_quark_momentum_fraction(std::vector<real> &xQuark,
         auto sample_idx = static_cast<int>(
             ran_gen_ptr->rand_uniform()*number_of_valence_quark_samples_);
         xQuark.clear();
-        if (electric_charge == 1) {
+        if (std::abs(electric_charge - 1) < 1e-8) {
             for (int i = 0; i < number_of_quarks; i++) {
                 xQuark.push_back(proton_valence_quark_x_[sample_idx][i]);
                 if (i == 0) {
