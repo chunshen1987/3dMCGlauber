@@ -27,6 +27,10 @@ QCDString::QCDString(SpatialVec x_in, real tau_form_in,
     eta_s_baryon_right = 0.;
     has_remnant_left_  = false;
     has_remnant_right_ = false;
+    Qe_left_ = 0.;
+    Qe_right_ = 0.;
+    eta_s_Qe_left_  = 0.;
+    eta_s_Qe_right_ = 0.;
 }
 
 
@@ -51,6 +55,10 @@ QCDString::QCDString(SpatialVec x_in, real tau_form_in,
     eta_s_baryon_right = 0.;
     has_remnant_left_  = false;
     has_remnant_right_ = false;
+    Qe_left_ = 0.;
+    Qe_right_ = 0.;
+    eta_s_Qe_left_  = 0.;
+    eta_s_Qe_right_ = 0.;
 }
 
 
@@ -77,6 +85,10 @@ QCDString::QCDString(SpatialVec x_in, real tau_form_in,
     eta_s_baryon_right = 0.;
     has_remnant_left_  = false;
     has_remnant_right_ = false;
+    Qe_left_ = 0.;
+    Qe_right_ = 0.;
+    eta_s_Qe_left_  = 0.;
+    eta_s_Qe_right_ = 0.;
 }
 
 

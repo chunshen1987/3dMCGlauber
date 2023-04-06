@@ -96,9 +96,13 @@ class Nucleon : public Particle {
 
     void set_remnant_p(MomentumVec p_in) {remnant_p_ = p_in;}
     MomentumVec get_remnant_p() const {return(remnant_p_);}
-    void substract_momentum_from_remnant(MomentumVec p_q) {
+    void subtract_momentum_from_remnant(MomentumVec p_q) {
         for (int i = 0; i < 4; i++)
             remnant_p_[i] -= p_q[i];
+    }
+
+    void subtract_electric_charge_from_remnant(real Qe) {
+        electric_charge_ -= Qe;
     }
 
     void set_fermi_momentum(real px, real py, real pz) {
