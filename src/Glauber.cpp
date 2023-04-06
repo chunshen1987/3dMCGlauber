@@ -480,7 +480,9 @@ int Glauber::perform_string_production() {
                     // we need to substract the valence quark energy-momentum
                     // from the nucleon remnant energy-momentum vector
                     auto p_q = proj_q->get_p();
-                    proj->substract_momentum_from_remnant(p_q);
+                    proj->subtract_momentum_from_remnant(p_q);
+                    proj->subtract_electric_charge_from_remnant(
+                                                            proj_q->get_Qe());
                 }
                 targ_q = targ->get_a_valence_quark();
                 if (targ_q->get_number_of_connections() == 1) {
@@ -488,7 +490,9 @@ int Glauber::perform_string_production() {
                     // we need to substract the valence quark energy-momentum
                     // from the nucleon remnant energy-momentum vector
                     auto p_q = targ_q->get_p();
-                    targ->substract_momentum_from_remnant(p_q);
+                    targ->subtract_momentum_from_remnant(p_q);
+                    targ->subtract_electric_charge_from_remnant(
+                                                            targ_q->get_Qe());
                 }
                 y_in_lrf = std::abs(  proj_q->get_rapidity()
                                     - targ_q->get_rapidity())/2.;
@@ -535,8 +539,8 @@ int Glauber::perform_string_production() {
         collision_schedule.erase((*collision_schedule.begin()));
     }
 
-    // randomize the QCD_string_list and assign the baryon charge to
-    // the strings
+    // randomize the QCD_string_list and assign the baryon charges
+    // to strings and remnants
     std::vector<unsigned int> random_idx;
     const real baryonInStringProb = parameter_list.get_baryon_in_string_prob();
     unsigned int Nstrings = QCD_string_list.size();
@@ -601,7 +605,33 @@ int Glauber::perform_string_production() {
             }
         }
     }
-
+    // now assign electric charges randomly to strings and remnants
+    std::random_shuffle(random_idx.begin(), random_idx.end());
+    for (auto &idx: random_idx) {
+        if (idx < Nstrings) {
+            // put baryon of the projectile in the selected string
+            auto proj_q = QCD_string_list[idx].get_proj_q();
+            if (!proj_q->Qe_was_used()) {
+                proj_q->set_Qe_used(true);
+                QCD_string_list[idx].set_Qe_right(proj_q->get_Qe());
+                QCD_string_list[idx].set_eta_s_Qe_right(
+                            QCD_string_list[idx].get_y_f_right());
+            }
+        }
+    }
+    std::random_shuffle(random_idx.begin(), random_idx.end());
+    for (auto &idx: random_idx) {
+        if (idx < Nstrings) {
+            // put baryon of the target in the selected string
+            auto targ_q = QCD_string_list[idx].get_targ_q();
+            if (!targ_q->Qe_was_used()) {
+                targ_q->set_Qe_used(true);
+                QCD_string_list[idx].set_Qe_left(targ_q->get_Qe());
+                QCD_string_list[idx].set_eta_s_Qe_left(
+                            QCD_string_list[idx].get_y_f_left());
+            }
+        }
+    }
 
     // set baryons' rapidities
     for (auto &it: QCD_string_list) {
@@ -746,6 +776,8 @@ void Glauber::produce_remnant_strings() {
             qcd_string.set_has_remnant_right(true);
             qcd_string.evolve_QCD_string();
             qcd_string.set_final_baryon_rapidities(0., y_rem - y_loss);
+            qcd_string.set_Qe_right(iproj->get_electric_charge());
+            qcd_string.set_eta_s_Qe_right(y_rem - y_loss);
             remnant_string_list_.push_back(qcd_string);
         }
     }
@@ -778,6 +810,8 @@ void Glauber::produce_remnant_strings() {
             qcd_string.set_has_remnant_left(true);
             qcd_string.evolve_QCD_string();
             qcd_string.set_final_baryon_rapidities(y_rem + y_loss, 0.);
+            qcd_string.set_Qe_left(itarg->get_electric_charge());
+            qcd_string.set_eta_s_Qe_left(y_rem + y_loss);
             remnant_string_list_.push_back(qcd_string);
         }
     }
@@ -877,6 +911,8 @@ void Glauber::prepare_output_QCD_strings() {
             it.get_eta_s_baryon_left(), it.get_eta_s_baryon_right(),
             it.get_y_f_baryon_left(), it.get_y_f_baryon_right(),
             baryon_fraction_left, baryon_fraction_right,
+            it.get_Qe_left(), it.get_Qe_right(),
+            it.get_eta_s_Qe_left(), it.get_eta_s_Qe_right(),
         };
         QCD_string_output_arr_.push_back(output_array);
     }
@@ -939,6 +975,8 @@ void Glauber::prepare_output_QCD_strings() {
                 remnant_left*it.get_y_f_baryon_left(),
                 remnant_right*it.get_y_f_baryon_right(),
                 baryon_fraction_left, baryon_fraction_right,
+                it.get_Qe_left(), it.get_Qe_right(),
+                it.get_eta_s_Qe_left(), it.get_eta_s_Qe_right(),
             };
             QCD_string_output_arr_.push_back(output_array);
         }
@@ -968,7 +1006,8 @@ void Glauber::output_QCD_strings(std::string filename, const real Npart,
            << "eta_s_left  eta_s_right  y_l  y_r  remnant_l  remnant_r "
            << "y_l_i  y_r_i "
            << "eta_s_baryon_left  eta_s_baryon_right  y_l_baryon  y_r_baryon  "
-           << "baryon_fraction_l  baryon_fraction_r"
+           << "baryon_fraction_l  baryon_fraction_r  "
+           << "Qe_l  Qe_r  eta_s_Qe_l  eta_s_Qe_r"
            << endl;
 
     for (auto &string_i : QCD_string_output_arr_) {
