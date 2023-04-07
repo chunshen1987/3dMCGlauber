@@ -83,7 +83,10 @@ void Nucleus::set_nucleus_parameters(std::string nucleus_name) {
     } else if (nucleus_name.compare("O") == 0) {
         set_woods_saxon_parameters(
                             16, 8, 0.17, -0.051, 2.608, 0.513, 0.0, 0.0, 3);
-    } else if (nucleus_name.compare("Al") == 0) {
+    } else if (nucleus_name.compare("Ne20") == 0) {
+        set_woods_saxon_parameters(
+                            20, 10, 0.17, 0.0, 0.0, 0.0, 0.0, 0.0, 1);
+    }else if (nucleus_name.compare("Al") == 0) {
         set_woods_saxon_parameters(
                             27, 13, 0.17, 0.0, 3.07, 0.519, 0.0, 0.0, 3);
     } else if (nucleus_name.compare("Cu") == 0) {
@@ -522,6 +525,9 @@ void Nucleus::readin_nucleon_positions() {
     } else if (A_ == 16) {  // oxygen
         filename << "tables/oxygen_plaintext.dat";
         n_configuration = 6000;
+    } else if (A_ == 20) {  // Neon
+        filename << "tables/Ne20_plaintext.dat";
+        n_configuration = 20000;
     } else if (A_ == 197) {  // Au
         filename << "tables/au197-sw-full_3Bchains-conf1820.dat";
         n_configuration = 1820;
@@ -557,6 +563,8 @@ void Nucleus::readin_nucleon_positions() {
             int isospin;
             if (A_ == 208) {
                 input >> x_local >> y_local >> z_local >> isospin;
+            } else if (A_ == 20) {
+                input >> x_local >> y_local >> z_local;
             } else if (A_ == 197) {
                 input >> x_local >> y_local >> z_local >> isospin >> dummy;
             } else {
