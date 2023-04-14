@@ -23,6 +23,7 @@ class Nucleus {
     int Z_;
     bool deformed_;
     bool confFromFile_;
+    int lightNucleusOption_;
     WoodsSaxonParam WS_param_vec;       // rho, w, R, a, beta2, beta4
     real d_min_;                         // minimum distance between nucleons
     bool sample_valence_quarks;
@@ -50,7 +51,8 @@ class Nucleus {
     Nucleus(std::string nucleus_name,
             std::shared_ptr<RandomUtil::Random> ran_gen,
             bool sample_valence_quarks=false, real BG=4.,
-            real d_min=0.9, bool deformed=true, bool confFromFile=false);
+            real d_min=0.9, bool deformed=true, bool confFromFile=false,
+            int lightNucleusOption = 1);
     ~Nucleus();
 
     std::string get_name() const {return(name);}

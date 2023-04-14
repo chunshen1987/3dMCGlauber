@@ -23,7 +23,8 @@ namespace MCGlb {
 Nucleus::Nucleus(std::string nucleus_name,
                  std::shared_ptr<RandomUtil::Random> ran_gen,
                  bool sample_valence_quarks_in, real BG,
-                 real d_min, bool deformed, bool confFromFile) {
+                 real d_min, bool deformed, bool confFromFile, 
+                 int lightNucleusOption) {
     d_min_      = d_min;
     deformed_   = deformed;
     confFromFile_ = confFromFile;
@@ -36,6 +37,7 @@ Nucleus::Nucleus(std::string nucleus_name,
         number_of_valence_quark_samples_ = readin_valence_quark_samples();
     }
     nucleon_configuration_loaded_ = false;
+    lightNucleusOption_ = lightNucleusOption;
 }
 
 Nucleus::~Nucleus() {
@@ -85,7 +87,7 @@ void Nucleus::set_nucleus_parameters(std::string nucleus_name) {
                             16, 8, 0.17, -0.051, 2.608, 0.513, 0.0, 0.0, 3);
     } else if (nucleus_name.compare("Ne20") == 0) {
         set_woods_saxon_parameters(
-                            20, 10, 0.17, 0.0, 0.0, 0.0, 0.0, 0.0, 1);
+                            20, 10, 0.17, 0.0, 2.8, 0.57, 0.0, 0.0, 1); // Atomic Data and Nuclear Data Tables, 36, 3, May 1987, 495-536
     }else if (nucleus_name.compare("Al") == 0) {
         set_woods_saxon_parameters(
                             27, 13, 0.17, 0.0, 3.07, 0.519, 0.0, 0.0, 3);
@@ -523,8 +525,14 @@ void Nucleus::readin_nucleon_positions() {
         filename << "tables/carbon_plaintext.dat";
         n_configuration = 6000;
     } else if (A_ == 16) {  // oxygen
-        filename << "tables/oxygen_plaintext.dat";
-        n_configuration = 6000;
+        if (lightNucleusOption_ == 2) {                 // use VMC simula-tions, which use the Argonne v18 two-nucleon
+            filename << "tables/oxygen_plaintext.dat";  // and Urbana X three-nucleon potentials, as provided in
+            n_configuration = 6000;                     // http://www.phy.anl.gov/theory/research/density like in He3
+        }                                               // (arXiv:1309.3794 [nucl-th]; arXiv:1705.04337 [nucl-th])
+        if (lightNucleusOption_ == 3) {                 // use alpha clustered nucleus as described in Phys.Rev. C97
+            filename << "tables/oxygen_alpha_3.dat";    // (2018) 034912/arXiv:1711.00438
+            n_configuration = 12691;
+        }
     } else if (A_ == 20) {  // Neon
         filename << "tables/Ne20_plaintext.dat";
         n_configuration = 20000;
@@ -556,6 +564,9 @@ void Nucleus::readin_nucleon_positions() {
         std::vector< std::array<double, 3> > conf_i;
 
         if (A_ == 12) {
+            input >> dummy >> dummy;
+        }
+        if ( A_ == 16 && lightNucleusOption_ == 3) {
             input >> dummy >> dummy;
         }
         for (int ia = 0; ia < A_; ia++) {

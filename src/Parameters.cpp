@@ -242,6 +242,9 @@ bool Parameters::nucleon_configuration_from_file() const {
     }
 }
 
+int Parameters::lightNucleusOption() const {
+    return get_param_int("lightNucleusOption");
+}
 
 real Parameters::get_BG() const {
     real BG = static_cast<real>(get_param_double("BG"));

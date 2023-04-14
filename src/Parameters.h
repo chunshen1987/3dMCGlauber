@@ -73,6 +73,7 @@ class Parameters : public ParametersMap {
     real get_BG_targ() const;
 
     bool nucleon_configuration_from_file() const;
+    int lightNucleusOption() const;
 };
 
 }
