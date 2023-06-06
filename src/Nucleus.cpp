@@ -172,16 +172,6 @@ void Nucleus::generate_nucleus_3d_configuration() {
         }
     }
 
-    // assign the proton or neutron identity to the nucleons
-    std::vector<real> electric_charges_arr(A_, 0.);
-    for (int i = 0; i < Z_; i++)
-        electric_charges_arr[i] = 1.;
-    std::random_shuffle(electric_charges_arr.begin(),
-                        electric_charges_arr.end());
-    for (int i = 0; i < A_; i++) {
-        nucleon_list_[i]->set_electric_charge(electric_charges_arr[i]);
-    }
-
     recenter_nucleus();
 
     sample_fermi_momentum();
@@ -576,11 +566,12 @@ int Nucleus::sample_nucleon_configuration() {
 }
 
 
-void Nucleus::sample_r_from_woods_saxon(std::vector<real> &r_array) const {
+void Nucleus::sample_r_from_woods_saxon(
+            std::vector<std::pair<real, real>> &r_array) const {
     real a_WS_p = WS_param_vec[3];
-    real a_WS_n = WS_param_vec[3];
+    real a_WS_n = WS_param_vec[3] + WS_param_vec[8];
     real R_WS_p = WS_param_vec[2];
-    real R_WS_n = WS_param_vec[2];
+    real R_WS_n = WS_param_vec[2] + WS_param_vec[9];
     for (int i = 0; i < Z_; i++) {
         real rmaxCut = R_WS_p + 10.*a_WS_p;
         real r = 0.;
@@ -588,7 +579,7 @@ void Nucleus::sample_r_from_woods_saxon(std::vector<real> &r_array) const {
             r = rmaxCut*pow(ran_gen_ptr->rand_uniform(), 1.0/3.0);
         } while (ran_gen_ptr->rand_uniform()
                         > fermi_distribution(r, R_WS_p, a_WS_p));
-        r_array.push_back(r);
+        r_array.push_back(std::make_pair(r, 1.));
     }
 
     for (int i = Z_; i < A_; i++) {
@@ -598,7 +589,7 @@ void Nucleus::sample_r_from_woods_saxon(std::vector<real> &r_array) const {
             r = rmaxCut*pow(ran_gen_ptr->rand_uniform(), 1.0/3.0);
         } while (ran_gen_ptr->rand_uniform()
                         > fermi_distribution(r, R_WS_n, a_WS_n));
-        r_array.push_back(r);
+        r_array.push_back(std::make_pair(r, 0));
     }
 }
 
@@ -629,11 +620,11 @@ real Nucleus::sample_r_from_deformed_woods_saxon() const {
 }
 
 void Nucleus::sample_r_and_costheta_from_deformed_woods_saxon(
-        std::vector<std::tuple<real, real, real>> &nucleonPos_array) const {
+        std::vector<std::array<real, 4>> &nucleonPos_array) const {
     real a_WS_p = WS_param_vec[3];
-    real a_WS_n = WS_param_vec[3];
+    real a_WS_n = WS_param_vec[3] + WS_param_vec[8];
     real R_WS_p = WS_param_vec[2];
-    real R_WS_n = WS_param_vec[2];
+    real R_WS_n = WS_param_vec[2] + WS_param_vec[9];
     real beta2 = WS_param_vec[4];
     real beta3 = WS_param_vec[5];
     real beta4 = WS_param_vec[6];
@@ -655,7 +646,8 @@ void Nucleus::sample_r_and_costheta_from_deformed_woods_saxon(
                                  + beta3*y30 + beta4*y40);
         } while (ran_gen_ptr->rand_uniform()
                  > fermi_distribution(r, R_WS_theta, a_WS_p));
-        nucleonPos_array.push_back(std::make_tuple(r, costheta, phi));
+        std::array<real, 4> sample_i = {r, costheta, phi, 1.};
+        nucleonPos_array.push_back(sample_i);
     }
 
     for (int i = Z_; i < A_; i++) {
@@ -675,20 +667,21 @@ void Nucleus::sample_r_and_costheta_from_deformed_woods_saxon(
                                  + beta3*y30 + beta4*y40);
         } while (ran_gen_ptr->rand_uniform()
                  > fermi_distribution(r, R_WS_theta, a_WS_n));
-        nucleonPos_array.push_back(std::make_tuple(r, costheta, phi));
+        std::array<real, 4> sample_i = {r, costheta, phi, 0.};
+        nucleonPos_array.push_back(sample_i);
     }
 }
 
 
 void Nucleus::generate_nucleus_configuration_with_woods_saxon() {
-    std::vector<real> r_array(A_, 0.);
+    std::vector<std::pair<real, real>> r_array;
     sample_r_from_woods_saxon(r_array);
     std::sort(r_array.begin(), r_array.end());
 
     std::vector<real> x_array(A_, 0.), y_array(A_, 0.), z_array(A_, 0.);
     const real d_min_sq = d_min_*d_min_;
     for (unsigned int i = 0; i < r_array.size(); i++) {
-        real r_i = r_array[i];
+        real r_i = std::get<0>(r_array[i]);
         int reject_flag = 0;
         int iter = 0;
         real x_i, y_i, z_i;
@@ -701,7 +694,8 @@ void Nucleus::generate_nucleus_configuration_with_woods_saxon() {
             y_i = r_i*sin(theta)*sin(phi);
             z_i = r_i*cos(theta);
             for (int j = i - 1; j >= 0; j--) {
-                if ((r_i - r_array[j])*(r_i - r_array[j]) > d_min_sq) break;
+                real r_j = std::get<0>(r_array[j]);
+                if ((r_i - r_j)*(r_i - r_j) > d_min_sq) break;
                 real dsq = (  (x_i - x_array[j])*(x_i - x_array[j])
                             + (y_i - y_array[j])*(y_i - y_array[j])
                             + (z_i - z_array[j])*(z_i - z_array[j]));
@@ -723,6 +717,7 @@ void Nucleus::generate_nucleus_configuration_with_woods_saxon() {
         SpatialVec  x_in = {0.0, x_array[i], y_array[i], z_array[i]};
         MomentumVec p_in = {0.0};
         std::shared_ptr<Nucleon> nucleon_ptr(new Nucleon(x_in, p_in));
+        nucleon_ptr->set_electric_charge(std::get<1>(r_array[i]));
         nucleon_list_.push_back(std::move(nucleon_ptr));
     }
     set_nucleons_momentum_with_collision_energy(0.0);
@@ -730,19 +725,16 @@ void Nucleus::generate_nucleus_configuration_with_woods_saxon() {
 
 
 void Nucleus::generate_nucleus_configuration_with_deformed_woods_saxon() {
-    std::vector<real> r_array(A_, 0.);
-    std::vector<real> costheta_array(A_, 0.);
-    std::vector<real> phi_array(A_, 0.);
-    std::vector<std::tuple<real, real, real>> nucleonPos_array;
+    std::vector<std::array<real, 4>> nucleonPos_array;
     sample_r_and_costheta_from_deformed_woods_saxon(nucleonPos_array);
     std::sort(nucleonPos_array.begin(), nucleonPos_array.end());
 
     std::vector<real> x_array(A_, 0.), y_array(A_, 0.), z_array(A_, 0.);
     const real d_min_sq = d_min_*d_min_;
     for (int i = 0; i < A_; i++) {
-        const real r_i     = std::get<0>(nucleonPos_array[i]);
-        const real theta_i = acos(std::get<1>(nucleonPos_array[i]));
-        real phi_i = std::get<2>(nucleonPos_array[i]);
+        const real r_i     = nucleonPos_array[i][0];
+        const real theta_i = acos(nucleonPos_array[i][1]);
+        real phi_i = nucleonPos_array[i][2];
         int reject_flag = 0;
         int iter = 0;
         real x_i, y_i, z_i;
@@ -753,7 +745,7 @@ void Nucleus::generate_nucleus_configuration_with_deformed_woods_saxon() {
             y_i = r_i*sin(theta_i)*sin(phi_i);
             z_i = r_i*cos(theta_i);
             for (int j = i - 1; j >= 0; j--) {
-                const real r_j = std::get<0>(nucleonPos_array[j]);
+                const real r_j = nucleonPos_array[j][0];
                 if ((r_i - r_j)*(r_i - r_j) > d_min_sq) break;
                 real dsq = (  (x_i - x_array[j])*(x_i - x_array[j])
                             + (y_i - y_array[j])*(y_i - y_array[j])
@@ -777,6 +769,7 @@ void Nucleus::generate_nucleus_configuration_with_deformed_woods_saxon() {
         SpatialVec  x_in = {0.0, x_array[i], y_array[i], z_array[i]};
         MomentumVec p_in = {0.0};
         std::shared_ptr<Nucleon> nucleon_ptr(new Nucleon(x_in, p_in));
+        nucleon_ptr->set_electric_charge(nucleonPos_array[i][3]);
         nucleon_list_.push_back(std::move(nucleon_ptr));
     }
     set_nucleons_momentum_with_collision_energy(0.0);
