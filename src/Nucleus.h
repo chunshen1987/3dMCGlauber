@@ -102,10 +102,11 @@ class Nucleus {
     //! the Fermi Distribution
     void generate_nucleus_configuration_with_woods_saxon();
     void generate_nucleus_configuration_with_deformed_woods_saxon();
-    void sample_r_from_woods_saxon(std::vector<real> &r_array) const;
+    void sample_r_from_woods_saxon(
+        std::vector<std::pair<real, real>> &r_array) const;
     real sample_r_from_deformed_woods_saxon() const;
     void sample_r_and_costheta_from_deformed_woods_saxon(
-        std::vector<std::tuple<real, real, real>> &nucleonPos_array) const;
+        std::vector<std::array<real, 4>> &nucleonPos_array) const;
     //! Fermi Distribution 
     real fermi_distribution(real r, real R_WS, real a_WS) const;
     real getAvgWoodsSaxonDensity(real r) const;

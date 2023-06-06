@@ -22,14 +22,16 @@ shadowing_factor 0.6                 # a shadowning factor for producing strings
 baryon_junctions 1                   # 0: baryon number assumed to be at string end
                                      # 1: baryon number transported assuming baryon junctions
                                      #    (at smaller x) see arXiv:nucl-th/9602027
-resetProjWS 0                        # flag to reset Woods-saxon parameter for the projectile nucleus
-resetTargWS 0                        # flag to reset Woods-saxon parameter for the target nucleus
+resetProjWS 1                        # flag to reset Woods-saxon parameter for the projectile nucleus
+resetTargWS 1                        # flag to reset Woods-saxon parameter for the target nucleus
                                      # if collision is symmetric, use ProjWS params for the target nucleus
 ProjWS_R 5.02
 ProjWS_a 0.52
 ProjWS_beta2 0.06
 ProjWS_beta3 0.2
 ProjWS_gamma 0.0
+ProjWS_da 0.2
+ProjWS_dR 0.5
 d_min 0.9                            # the minimum distance between nucleon pairs [fm]
 
 lambdaB 0.2                          # parameter the controls the strength of the baryon junction stopping
