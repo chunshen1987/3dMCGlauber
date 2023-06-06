@@ -35,6 +35,8 @@ class Parameters : public ParametersMap {
 
     real get_lambdaB() const;
     real get_lambdaBs() const;
+    real get_lambdaQ() const;
+    real get_lambdaQs() const;
     real get_baryon_in_string_prob() const;
     real get_shadowing_factor() const;
 
@@ -45,6 +47,10 @@ class Parameters : public ParametersMap {
     // if False do assume baryon number at string ends
     // if True transport baryon number according to cosh(y*/2)
     bool get_baryon_junctions() const;
+
+    // if False do assume electric charge number at string ends
+    // if True transport electric charge number according to cosh(y*/2)
+    bool get_electric_junctions() const;
 
     bool get_only_event_statistics() const;
     bool get_cached_tabels() const;
