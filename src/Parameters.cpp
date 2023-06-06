@@ -77,6 +77,18 @@ real Parameters::get_lambdaBs() const {
     assert(lambdaBs >= 0.);
     return(lambdaBs);
 }
+real Parameters::get_lambdaQ() const {
+    real lambdaQ = static_cast<real>(get_param_double("lambdaQ", 0.));
+    assert(lambdaQ >= 0.);
+    return(lambdaQ);
+}
+
+
+real Parameters::get_lambdaQs() const {
+    real lambdaQs = static_cast<real>(get_param_double("lambdaQs", 1.));
+    assert(lambdaQs >= 0.);
+    return(lambdaQs);
+}
 
 
 real Parameters::get_baryon_in_string_prob() const {
@@ -172,7 +184,6 @@ bool Parameters::get_batch_eccentricity_output() const {
     }
 }
 
-
 bool Parameters::get_baryon_junctions() const {
     int flag = get_param_int("baryon_junctions", 0);
     if (flag == 0) {
@@ -182,7 +193,14 @@ bool Parameters::get_baryon_junctions() const {
     }
 }
 
-
+bool Parameters::get_electric_junctions() const {
+    int flag = get_param_int("electric_junctions", 0);
+    if (flag == 0) {
+        return(false);
+    } else {
+        return(true);
+    }
+}
 real Parameters::get_shadowing_factor() const {
     real shadowing = static_cast<real>(
                     get_param_double("shadowing_factor", 1.0));

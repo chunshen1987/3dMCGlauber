@@ -453,12 +453,18 @@ int Glauber::perform_string_production() {
     const auto string_evolution_mode = (
                     parameter_list.get_QCD_string_evolution_mode());
     const auto baryon_junctions = parameter_list.get_baryon_junctions();
+    const auto electric_junctions = parameter_list.get_electric_junctions();
 
     // sqrt(parameter_list.get_roots()); // ~s^{-1/4} 
     real lambdaB = parameter_list.get_lambdaB();
     lambdaB = std::min(1., lambdaB);
     real lambdaBs = parameter_list.get_lambdaBs();
     lambdaBs = std::min(1., lambdaBs);
+
+    real lambdaQ = parameter_list.get_lambdaQ();
+    lambdaQ = std::min(1., lambdaQ);
+    real lambdaQs = parameter_list.get_lambdaQs();
+    lambdaQs = std::min(1., lambdaQs);
 
     //cout << lambdaB <<endl;
 
@@ -686,9 +692,32 @@ int Glauber::perform_string_production() {
             auto proj_q = QCD_string_list[idx].get_proj_q();
             if (!proj_q->Qe_was_used()) {
                 proj_q->set_Qe_used(true);
+                real eta_s_right = QCD_string_list[idx].get_eta_s_right();
                 QCD_string_list[idx].set_Qe_right(proj_q->get_Qe());
-                QCD_string_list[idx].set_eta_s_Qe_right(
-                            QCD_string_list[idx].get_eta_s_right());
+
+                if(!electric_junctions) {
+                    QCD_string_list[idx].set_eta_s_Qe_right(eta_s_right);
+                } else {
+                    auto targ_q = QCD_string_list[idx].get_targ_q();
+                    real y_Qe_right = proj_q->get_rapidity();
+                    real y_Qe_left = targ_q->get_rapidity();
+                    real y_electric_right = 0.;
+                    real eta_s_left = QCD_string_list[idx].get_eta_s_left();
+                    if (ran_gen_ptr_->rand_uniform() < lambdaQ) {
+                        if (ran_gen_ptr_->rand_uniform() < lambdaQs) {
+                            y_electric_right = sample_junction_rapidity_right(
+                                        y_Qe_left, y_Qe_right);
+                        } else {
+                            y_electric_right = sample_junction_rapidity_uniformed(
+                                        y_Qe_left, y_Qe_right);
+                        }
+                    } else {
+                        y_electric_right = y_Qe_right;
+                    }
+                    real slope = (eta_s_right - eta_s_left)/(y_Qe_right - y_Qe_left);
+                    real eta_s_electric_right = eta_s_left + slope*(y_electric_right - y_Qe_left);
+                    QCD_string_list[idx].set_eta_s_Qe_right(eta_s_electric_right);
+                }
             }
         }
     }
@@ -699,9 +728,32 @@ int Glauber::perform_string_production() {
             auto targ_q = QCD_string_list[idx].get_targ_q();
             if (!targ_q->Qe_was_used()) {
                 targ_q->set_Qe_used(true);
+                real eta_s_left = QCD_string_list[idx].get_eta_s_left();
                 QCD_string_list[idx].set_Qe_left(targ_q->get_Qe());
-                QCD_string_list[idx].set_eta_s_Qe_left(
-                            QCD_string_list[idx].get_eta_s_left());
+
+                if(!electric_junctions) {
+                    QCD_string_list[idx].set_eta_s_Qe_left(eta_s_left);
+                } else {
+                    auto proj_q = QCD_string_list[idx].get_proj_q();
+                    real y_Qe_right = proj_q->get_rapidity();
+                    real y_Qe_left = targ_q->get_rapidity();
+                    real y_electric_left = 0.;
+                    real eta_s_right = QCD_string_list[idx].get_eta_s_right();
+                    if (ran_gen_ptr_->rand_uniform() < lambdaQ) {
+                        if (ran_gen_ptr_->rand_uniform() < lambdaQs) {
+                            y_electric_left = sample_junction_rapidity_left(
+                                        y_Qe_left, y_Qe_right);
+                        } else {
+                            y_electric_left = sample_junction_rapidity_uniformed(
+                                        y_Qe_left, y_Qe_right);
+                        }
+                    } else {
+                        y_electric_left = y_Qe_left;
+                    }
+                    real slope = (eta_s_right - eta_s_left)/(y_Qe_right - y_Qe_left);
+                    real eta_s_electric_left = eta_s_left + slope*(y_electric_left - y_Qe_left);
+                    QCD_string_list[idx].set_eta_s_Qe_left(eta_s_electric_left);
+                }
             }
         }
     }

@@ -21,6 +21,11 @@ shadowing_factor 0.6                 # a shadowning factor for producing strings
 baryon_junctions 1                   # 0: baryon number assumed to be at string end
                                      # 1: baryon number transported assuming baryon junctions
                                      #    (at smaller x) see arXiv:nucl-th/9602027
+
+electric_junctions 1                 # 0: electric charge number assumed to be at string end
+                                     # 1: electric charge number transported assuming baryon junctions
+                                     #    (at smaller x) see arXiv:nucl-th/9602027
+
 resetProjWS 1                        # flag to reset Woods-saxon parameter for the projectile nucleus
 resetTargWS 1                        # flag to reset Woods-saxon parameter for the target nucleus
                                      # if collision is symmetric, use ProjWS params for the target nucleus
@@ -35,6 +40,8 @@ d_min 0.9                            # the minimum distance between nucleon pair
 
 lambdaB 0.2                          # parameter the controls the strength of the baryon junction stopping
 lambdaBs 0.0                         # the fraction of single-to-double junction stopping
+lambdaQ 0.05                         # parameter the controls the strength of the baryon junction stopping
+lambdaQs 0.0                         # the fraction of single-to-double junction stopping
 baryonInStringProb 1.0               # the relative probility to put a baryon charge in the string
                                      # rather than at the wounded nucleon remnant
 BG 16.                               # Gaussian width square for sampling the valence quark positions (GeV^2)
