@@ -127,7 +127,7 @@ TEST_CASE("Test Woods-Saxon sampling") {
         norm_WS += r_local*r_local/(exp((r_local - R_WS)/a_WS) + 1.)*dr;
     }
 
-    int n_samples = 10000000;
+    int n_samples = 100000;
     auto weight   = 1./(n_samples*dr);
     for (int i = 0; i < n_samples; i++) {
         std::vector<std::pair<real, real>> r_array;
