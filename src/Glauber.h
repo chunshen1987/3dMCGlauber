@@ -53,6 +53,8 @@ class Glauber {
     real nucleon_width_;
     static int random_value_;
 
+    SpatialVec Proj_hot_spot_x_;
+    SpatialVec Targ_hot_spot_x_;
  public:
     Glauber() = default;
     Glauber(const MCGlb::Parameters &param_in,
@@ -130,6 +132,12 @@ class Glauber {
     std::vector<double>  GetRemMomProj() {
         return(Mom_remnant_proj_);
     }
+
+    void set_Proj_hot_spot_x(SpatialVec x) {Proj_hot_spot_x_ = x;}
+    void set_Targ_hot_spot_x(SpatialVec x) {Targ_hot_spot_x_ = x;}
+
+    SpatialVec get_Proj_hot_spot_x() const {return(Proj_hot_spot_x_);}
+    SpatialVec get_Targ_hot_spot_x() const {return(Targ_hot_spot_x_);}
 
     //! This function performs string production between each nucleon pair
     int perform_string_production();

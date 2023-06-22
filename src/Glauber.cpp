@@ -446,6 +446,7 @@ void Glauber::Pick_and_subtract_hard_parton_momentum() {
                          //std::cout << " re-sample the valence quark in proj." <<std::endl;
                      } else {
                          proj_q->set_subtracted(true);
+                         set_Proj_hot_spot_x(proj_q->get_x());
                          do_resample_proj = 0;
                      }
                  }
@@ -466,6 +467,7 @@ void Glauber::Pick_and_subtract_hard_parton_momentum() {
                          //std::cout << " re-sample the valence quark in targ." <<std::endl;
                      } else {
                          targ_q->set_subtracted(true);
+                         set_Proj_hot_spot_x(targ_q->get_x());
                          do_resample_targ = 0;
                      }
                 }
