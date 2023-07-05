@@ -88,6 +88,20 @@ std::vector<double> EventGenerator::MCGlb_projectile_nucleon_z() {
     return(mc_glauber_ptr_->get_all_proj_nucleon_z());
 }
 
+std::vector<double> EventGenerator::MCGlb_Proj_hot_spot_x() {
+    auto Hot_spot_pos = mc_glauber_ptr_->get_Proj_hot_spot_x();
+    std::vector<double> hot_spot_pos = {Hot_spot_pos[0], Hot_spot_pos[1], 
+                                        Hot_spot_pos[2], Hot_spot_pos[3]};
+    return(hot_spot_pos);
+}
+
+std::vector<double> EventGenerator::MCGlb_Targ_hot_spot_x() {
+    auto Hot_spot_pos = mc_glauber_ptr_->get_Targ_hot_spot_x();
+    std::vector<double> hot_spot_pos = {Hot_spot_pos[0], Hot_spot_pos[1], 
+                                        Hot_spot_pos[2], Hot_spot_pos[3]};
+    return(hot_spot_pos);
+}
+
 std::vector<double> EventGenerator::MCGlb_target_nucleon_z() {
     return(mc_glauber_ptr_->get_all_targ_nucleon_z());
 }
