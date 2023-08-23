@@ -522,8 +522,19 @@ void Nucleus::readin_nucleon_positions() {
         filename << "tables/he4_plaintext.dat";
         n_configuration = 6000;
     } else if (A_ == 12) {  // carbon
-        filename << "tables/carbon_plaintext.dat";
-        n_configuration = 6000;
+        if (lightNucleusOption_ == 2) {
+          // use VMC simulations, which use the Argonne v18 two-nucleon
+          // and Urbana X three-nucleon potentials, as provided in
+          // http://www.phy.anl.gov/theory/research/density like in He3
+          // (arXiv:1309.3794 [nucl-th]; arXiv:1705.04337 [nucl-th])
+          filename = "tables/carbon_plaintext.dat";
+          n_configuration = 6000;
+        } else if (lightNucleusOption_ == 3) {
+          // use alpha clustered nucleus as described in Phys.Rev. C97
+          // (2018) 034912/arXiv:1711.00438
+          filename = "tables/carbon_alpha_3.dat";
+          n_configuration = 13668;
+        }
     } else if (A_ == 16) {  // oxygen
         if (lightNucleusOption_ == 2) {                 // use VMC simula-tions, which use the Argonne v18 two-nucleon
             filename << "tables/oxygen_plaintext.dat";  // and Urbana X three-nucleon potentials, as provided in
