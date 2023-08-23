@@ -527,12 +527,12 @@ void Nucleus::readin_nucleon_positions() {
           // and Urbana X three-nucleon potentials, as provided in
           // http://www.phy.anl.gov/theory/research/density like in He3
           // (arXiv:1309.3794 [nucl-th]; arXiv:1705.04337 [nucl-th])
-          filename = "tables/carbon_plaintext.dat";
+          filename << "tables/carbon_plaintext.dat";
           n_configuration = 6000;
         } else if (lightNucleusOption_ == 3) {
           // use alpha clustered nucleus as described in Phys.Rev. C97
           // (2018) 034912/arXiv:1711.00438
-          filename = "tables/carbon_alpha_3.dat";
+          filename << "tables/carbon_alpha_3.dat";
           n_configuration = 13668;
         }
     } else if (A_ == 16) {  // oxygen
