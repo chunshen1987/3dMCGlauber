@@ -88,9 +88,12 @@ void Nucleus::set_nucleus_parameters(std::string nucleus_name) {
     } else if (nucleus_name.compare("Ne20") == 0) {
         set_woods_saxon_parameters(
                             20, 10, 0.17, 0.0, 2.8, 0.57, 0.0, 0.0, 1); // Atomic Data and Nuclear Data Tables, 36, 3, May 1987, 495-536
-    }else if (nucleus_name.compare("Al") == 0) {
+    } else if (nucleus_name.compare("Al") == 0) {
         set_woods_saxon_parameters(
                             27, 13, 0.17, 0.0, 3.07, 0.519, 0.0, 0.0, 3);
+    } else if (nucleus_name.compare("Ar") == 0) {
+        set_woods_saxon_parameters(
+                            40, 18, 0.17, 0.0, 3.61, 0.516, 0.1668, 0.0070, 3);
     } else if (nucleus_name.compare("Cu") == 0) {
         set_woods_saxon_parameters(
                             63, 29, 0.17, 0.0, 4.163, 0.606, 0.162, 0.006, 3);
@@ -550,6 +553,9 @@ void Nucleus::readin_nucleon_positions() {
         }
     } else if (A_ == 20) {  // Neon
         filename << "tables/Ne20_plaintext.dat";        // use nucleus by PGCM
+        n_configuration = 20000;
+    } else if (A_ == 40) {  // Ar40
+        filename << "tables/Ar40_plaintext.dat";        // From Giuliano
         n_configuration = 20000;
     } else if (A_ == 197) {  // Au
         filename << "tables/au197-sw-full_3Bchains-conf1820.dat";
