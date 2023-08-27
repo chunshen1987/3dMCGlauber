@@ -93,7 +93,7 @@ void Nucleus::set_nucleus_parameters(std::string nucleus_name) {
                             27, 13, 0.17, 0.0, 3.07, 0.519, 0.0, 0.0, 3);
     } else if (nucleus_name.compare("Ar") == 0) {
         set_woods_saxon_parameters(
-                            40, 18, 0.17, 0.0, 3.61, 0.516, 0.1668, 0.0070, 3);
+                            40, 18, 0.17, 0.0, 3.61, 0.516, 0.0, 0.0, 3);
     } else if (nucleus_name.compare("Cu") == 0) {
         set_woods_saxon_parameters(
                             63, 29, 0.17, 0.0, 4.163, 0.606, 0.162, 0.006, 3);
