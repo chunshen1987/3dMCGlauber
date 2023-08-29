@@ -822,12 +822,16 @@ real Nucleus::fermi_distribution(real r, real R_WS, real a_WS) const {
 real Nucleus::spherical_harmonics(int l, real ct) const {
     // Currently assuming m=0 and available for Y_{20} and Y_{40}
     // "ct" is cos(theta)
-    assert(l == 2 || l == 4);
+    assert(l == 2 || l == 3 || l == 4);
 
     real ylm = 0.0;
     if (l == 2) {
         ylm = 3.0*ct*ct-1.0;
         ylm *= 0.31539156525252005;  // pow(5.0/16.0/M_PI,0.5);
+    } else if (l == 3) {
+        ylm  = 5.0*ct*ct*ct;
+        ylm -= 3.0*ct;
+        ylm *= 0.3731763325901154;  // pow(7.0/16.0/M_PI,0.5);
     } else if (l == 4) {
         ylm  = 35.0*ct*ct*ct*ct;
         ylm -= 30.0*ct*ct;
