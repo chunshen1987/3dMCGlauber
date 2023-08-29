@@ -48,11 +48,15 @@ Glauber::Glauber(const MCGlb::Parameters &param_in,
     projectile = std::unique_ptr<Nucleus>(
             new Nucleus(parameter_list.get_projectle_nucleus_name(), ran_gen,
                         sample_valence_quark, parameter_list.get_BG_proj(),
-                        d_min, deformed, nucleonConfFromFile, lightNucleusOption));
+                        parameter_list.get_dmin_proj(), parameter_list.get_beta2_proj(), parameter_list.get_beta3_proj(), 
+                        parameter_list.get_beta4_proj(), parameter_list.get_gamma_proj(), parameter_list.setWSDeformParams_proj(), 
+                        deformed, nucleonConfFromFile, lightNucleusOption));
     target = std::unique_ptr<Nucleus>(
             new Nucleus(parameter_list.get_target_nucleus_name(), ran_gen,
                         sample_valence_quark, parameter_list.get_BG_targ(),
-                        d_min, deformed, nucleonConfFromFile, lightNucleusOption));
+                        parameter_list.get_dmin_targ(), parameter_list.get_beta2_targ(), parameter_list.get_beta3_targ(), 
+                        parameter_list.get_beta4_targ(), parameter_list.get_gamma_targ(), parameter_list.setWSDeformParams_targ(),
+                        deformed, nucleonConfFromFile, lightNucleusOption));
     if (sample_valence_quark) {
         projectile->set_valence_quark_Q2(parameter_list.get_quarks_Q2());
         target->set_valence_quark_Q2(parameter_list.get_quarks_Q2());

@@ -54,6 +54,8 @@ class Parameters : public ParametersMap {
     bool get_only_event_statistics() const;
     bool get_cached_tabels() const;
     bool set_remnant_x_ori() const;
+    bool setWSDeformParams_proj() const;
+    bool setWSDeformParams_targ() const;
 
     bool get_fluct_Nstrings_per_NN_collision() const;
     real get_remnant_energy_loss_fraction() const;
@@ -72,6 +74,17 @@ class Parameters : public ParametersMap {
     real get_BG_proj() const;
     real get_BG_targ() const;
 
+    real get_beta2_proj() const;
+    real get_beta2_targ() const;
+    real get_beta3_proj() const;
+    real get_beta3_targ() const;
+    real get_beta4_proj() const;
+    real get_beta4_targ() const;
+    real get_gamma_proj() const;
+    real get_gamma_targ() const;
+    real get_dmin_proj() const;
+    real get_dmin_targ() const;
+    
     bool nucleon_configuration_from_file() const;
     int lightNucleusOption() const;
 };
