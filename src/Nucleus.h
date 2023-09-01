@@ -138,6 +138,7 @@ class Nucleus {
     void shift_nucleus(SpatialVec x_shift);
     void recenter_nucleus();
     void rotate_nucleus(real phi, real theta);
+    void rotate_nucleus_3D(real alpha, real beta, real gamma);
 
     void accelerate_nucleus(real ecm, int direction);
     void accelerate_dipole(real ecm, int direction);
