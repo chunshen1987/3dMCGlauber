@@ -207,9 +207,9 @@ void Nucleus::generate_nucleus_3d_configuration() {
 
         recenter_nucleus();
 
-        real phi   = 2.*M_PI*ran_gen_ptr->rand_uniform();
-        real theta = acos(1. - 2.*ran_gen_ptr->rand_uniform());
-        rotate_nucleus(phi, theta);
+        //real phi   = 2.*M_PI*ran_gen_ptr->rand_uniform();
+        //real theta = acos(1. - 2.*ran_gen_ptr->rand_uniform());
+        //rotate_nucleus(phi, theta);
         
         real alpha_3D = 2*M_PI*ran_gen_ptr->rand_uniform();
         real beta_3D = acos(1. - 2. * ran_gen_ptr->rand_uniform());
