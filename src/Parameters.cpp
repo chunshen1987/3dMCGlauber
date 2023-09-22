@@ -153,6 +153,16 @@ bool Parameters::get_batch_density_output() const {
 }
 
 
+bool Parameters::get_initialEst_output() const {
+    int flag = get_param_int("outputInitialEst", 0);
+    if (flag == 0) {
+        return(false);
+    } else {
+        return(true);
+    }
+}
+
+
 bool Parameters::get_batch_2Ddensity_output() const {
     int flag = get_param_int("batch_2Ddensity_output", 0);
     if (flag == 0) {

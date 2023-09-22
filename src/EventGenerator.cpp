@@ -25,6 +25,7 @@ EventGenerator::EventGenerator(std::string input_filename,
     statistics_only_ = parameter_list_.get_only_event_statistics();
     batchDensityOutput_ = parameter_list_.get_batch_density_output();
     batchEccOutput_ = parameter_list_.get_batch_eccentricity_output();
+    initialEstOutput_ = parameter_list_.get_initialEst_output();
     density_maker_ptr_ = std::unique_ptr<MakeDensity>(new MakeDensity());
     // set grid information
     density_maker_ptr_->set_1D_grid_info_eta(72, 0.2);
@@ -148,12 +149,15 @@ void EventGenerator::generate_events(int nev, int event_id_offset) {
 
             density_maker_ptr_->set_QCD_string_output_arr(
                         mc_glauber_ptr_->get_QCD_strings_output_list());
-            if (batchEccOutput_) {
+            if (initialEstOutput_) {
                 density_maker_ptr_->output_eccentricity("ecc_ed_n",
-                                                        event_id);
+                                                        event_id, 1);
+                density_maker_ptr_->output_netBaryon_eta_distribution(
+                        "nB_etas_distribution", event_id, 1);
+                density_maker_ptr_->output_energyDensity_eta_distribution(
+                        "ed_etas_distribution", event_id, 1);
             }
             if (batchDensityOutput_) {
-
                 density_maker_ptr_->output_netBaryon_eta_distribution(
                         "nB_etas_distribution", event_id);
                 density_maker_ptr_->output_energyDensity_eta_distribution(
@@ -165,6 +169,8 @@ void EventGenerator::generate_events(int nev, int event_id_offset) {
                                         "ed3D", event_id);
                 }
                 if (batchEccOutput_) {
+                    density_maker_ptr_->output_eccentricity("ecc_ed_n",
+                                                            event_id);
                     density_maker_ptr_->setParticipantList(
                                     mc_glauber_ptr_->getParticipantList());
                     density_maker_ptr_->outputTATBEccentricity("ecc_ed_n",

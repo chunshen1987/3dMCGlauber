@@ -51,6 +51,7 @@ class Parameters : public ParametersMap {
     bool get_batch_density_output() const;
     bool get_batch_2Ddensity_output() const;
     bool get_batch_eccentricity_output() const;
+    bool get_initialEst_output() const;
 
     bool get_fluct_Nstrings_per_NN_collision() const;
     real get_remnant_energy_loss_fraction() const;
