@@ -154,6 +154,8 @@ void EventGenerator::generate_events(int nev, int event_id_offset) {
                                                         event_id, 1);
                 density_maker_ptr_->output_netBaryon_eta_distribution(
                         "nB_etas_distribution", event_id, 1);
+                density_maker_ptr_->output_netElectricCharges_eta_distribution(
+                        "nQ_etas_distribution", event_id, 1);
                 density_maker_ptr_->output_energyDensity_eta_distribution(
                         "ed_etas_distribution", event_id, 1);
             }

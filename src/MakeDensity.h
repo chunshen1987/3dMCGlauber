@@ -101,7 +101,8 @@ class MakeDensity {
                                            const int eventId,
                                            const int outputMode=0) const;
     void output_netElectricCharges_eta_distribution(std::string filename,
-                                                    const int eventId) const;
+                                                    const int eventId,
+                                                    const int outputMode=0) const;
     void output_energyDensity_eta_distribution(std::string filename,
                                                const int eventId,
                                                const int outputMode=0) const;
