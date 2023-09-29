@@ -40,6 +40,7 @@ class Nucleus {
 
     int system_status_;
     int number_of_valence_quark_samples_;
+    int N_sea_partons_;
 
  public:
     Nucleus() = default;
@@ -47,7 +48,7 @@ class Nucleus {
             std::shared_ptr<RandomUtil::Random> ran_gen,
             bool sample_valence_quarks=false, real BG=4.,
             real d_min=0.9, bool deformed=true,
-            bool confFromFile=false);
+            bool confFromFile=false, int N_sea_partons=1);
     ~Nucleus();
 
     std::string get_name() const {return(name);}
