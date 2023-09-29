@@ -22,6 +22,8 @@ shadowing_factor 0.6                 # a shadowning factor for producing strings
 baryon_junctions 1                   # 0: baryon number assumed to be at string end
                                      # 1: baryon number transported assuming baryon junctions
                                      #    (at smaller x) see arXiv:nucl-th/9602027
+N_sea_partons 5                      # Number of allowed soft partons. Default is 1. 
+
 resetProjWS 0                        # flag to reset Woods-saxon parameter for the projectile nucleus
 resetTargWS 0                        # flag to reset Woods-saxon parameter for the target nucleus
                                      # if collision is symmetric, use ProjWS params for the target nucleus

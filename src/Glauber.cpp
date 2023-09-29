@@ -41,12 +41,14 @@ Glauber::Glauber(const MCGlb::Parameters &param_in,
 
     real d_min = parameter_list.get_d_min();
 
+    int N_sea_partons = parameter_list.get_N_sea_partons();
+
     bool deformed = true;
     bool nucleonConfFromFile = parameter_list.nucleon_configuration_from_file();
     projectile = std::unique_ptr<Nucleus>(
             new Nucleus(parameter_list.get_projectle_nucleus_name(), ran_gen,
                         sample_valence_quark, parameter_list.get_BG(),
-                        d_min, deformed, nucleonConfFromFile));
+                        d_min, deformed, nucleonConfFromFile, N_sea_partons));
     int resetProjWS = static_cast<int>(
                             parameter_list.getParam("resetProjWS", 0.0));
     if (resetProjWS != 0) {
@@ -71,7 +73,7 @@ Glauber::Glauber(const MCGlb::Parameters &param_in,
     target = std::unique_ptr<Nucleus>(
             new Nucleus(parameter_list.get_target_nucleus_name(), ran_gen,
                         sample_valence_quark, parameter_list.get_BG(),
-                        d_min, deformed, nucleonConfFromFile));
+                        d_min, deformed, nucleonConfFromFile, N_sea_partons));
     int resetTargWS = static_cast<int>(
                             parameter_list.getParam("resetTargWS", 0.0));
     if (resetTargWS != 0) {

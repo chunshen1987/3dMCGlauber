@@ -23,13 +23,14 @@ namespace MCGlb {
 Nucleus::Nucleus(std::string nucleus_name,
                  std::shared_ptr<RandomUtil::Random> ran_gen,
                  bool sample_valence_quarks_in, real BG,
-                 real d_min, bool deformed, bool confFromFile) {
+                 real d_min, bool deformed, bool confFromFile, int N_sea_partons) {
     d_min_    = d_min;
     deformed_ = deformed;
     confFromFile_ = confFromFile;
     BG_ = BG;
     ran_gen_ptr = ran_gen;
     set_nucleus_parameters(nucleus_name);
+    N_sea_partons_ = N_sea_partons;
 
     sample_valence_quarks = sample_valence_quarks_in;
     if (sample_valence_quarks) {
@@ -300,10 +301,20 @@ void Nucleus::add_soft_parton_ball(real ecm, int direction) {
                 // larger than mq
                 real rapidity = direction*acosh(soft_pvec[0]/mass);
                 soft_pvec[3] = mass*sinh(rapidity);
-                auto xvec = sample_valence_quark_position();
-                std::shared_ptr<Quark> quark_ptr(new Quark(xvec, soft_pvec));
-                quark_ptr->set_rapidity(rapidity);
-                nucleon_i->push_back_quark(quark_ptr);
+
+                // Scale soft partons momentum to Pmu/N_sea_partons
+                // Add as many soft partons as N_sea_partons
+                // with momentum soft_pvec/N_sea_partons for energy-momentum conservation.
+                for (int j = 0; j < 4; j++) {
+                    soft_pvec[j] /= (double) N_sea_partons_;
+                }
+                for(int i = 0; i < N_sea_partons_; i++){
+                    auto xvec = sample_valence_quark_position();
+                    std::shared_ptr<Quark> quark_ptr(new Quark(xvec, soft_pvec));
+                    quark_ptr->set_rapidity(rapidity);
+                    nucleon_i->push_back_quark(quark_ptr);
+                }
+
             }
         }
     }
