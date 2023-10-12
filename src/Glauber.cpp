@@ -431,7 +431,7 @@ void Glauber::Pick_and_subtract_hard_parton_momentum() {
                  std::shared_ptr<Quark> targ_q;
                  MomentumVec p_q;
                  int do_resample_proj = 1;
-                 SpatialVec pos_q_Proj;
+                 SpatialVec pos_q_Proj, pos_q_Targ;
                  while (do_resample_proj == 1) {
                      proj_q = proj_collided->get_a_valence_quark_sub_mom(HardPartonMomProj_[0], ran_gen_ptr_->get_seed());
                      p_q = proj_q->get_p();
@@ -447,7 +447,9 @@ void Glauber::Pick_and_subtract_hard_parton_momentum() {
                          //std::cout << " re-sample the valence quark in proj." <<std::endl;
                      } else {
                          proj_q->set_subtracted(true);
-                         pos_q_Proj = proj_q->get_x();
+                         auto proj_q_pos = proj_q->get_x();
+                         auto proj_n_pos = proj_collided->get_x();
+                         pos_q_Proj = {0.0, proj_q_pos[1]+proj_n_pos[1], proj_q_pos[2]+proj_n_pos[2], proj_q_pos[3]+proj_n_pos[3]};
                          set_Proj_hot_spot_x(proj_q->get_x());
                          do_resample_proj = 0;
                      }
@@ -457,10 +459,7 @@ void Glauber::Pick_and_subtract_hard_parton_momentum() {
                  while (do_resample_targ == 1) {
                      targ_q = targ_collided->get_a_valence_quark_sub_mom(HardPartonMomTarg_[0], ran_gen_ptr_->get_seed());
                      p_q = targ_q->get_p();
-                     auto pos_q_Tarj = targ_q->get_x();
-                     auto dis_square_q_xy = ( pos_q_Tarj[1] - pos_q_Proj[1] )  * ( pos_q_Tarj[1] - pos_q_Proj[1] ) + 
-                                            ( pos_q_Tarj[2] - pos_q_Proj[2] )  * ( pos_q_Tarj[2] - pos_q_Proj[2] );
-                     if(p_q[0]<=HardPartonMomTarg_[0] || dis_square_q_xy >= 0.25) { // 0.346**2~ 0.12
+                     if(p_q[0]<=HardPartonMomTarg_[0]) { // 0.346**2~ 0.12
                          // resample the valence quark
                          std::vector<double> xvec_q = targ_collided->output_quark_pos();
                          targ_collided->resample_valence_quarks(ecm_, -1, 
@@ -472,7 +471,20 @@ void Glauber::Pick_and_subtract_hard_parton_momentum() {
                          //std::cout << " re-sample the valence quark in targ." <<std::endl;
                      } else {
                          targ_q->set_subtracted(true);
-                         set_Proj_hot_spot_x(targ_q->get_x());
+                         SpatialVec tarj_q_pos = targ_q->get_x();
+                         auto tarj_n = targ_collided->get_x();
+                         pos_q_Targ = {0.0, tarj_q_pos[1]+tarj_n[1], tarj_q_pos[2]+tarj_n[2], tarj_q_pos[3]+tarj_n[3]};
+                         auto dis_square_q_xy = ( pos_q_Targ[1] - pos_q_Proj[1] )  * ( pos_q_Targ[1] - pos_q_Proj[1] ) + 
+                                                ( pos_q_Targ[2] - pos_q_Proj[2] )  * ( pos_q_Targ[2] - pos_q_Proj[2] );
+                         SpatialVec newplace = pos_q_Targ;
+                         while (dis_square_q_xy > 0.25) {
+                             tarj_q_pos = targ_collided->resample_valence_quark_position(parameter_list.get_BG(), ran_gen_ptr_);
+                             newplace = {0, tarj_q_pos[1]+tarj_n[1], tarj_q_pos[2]+tarj_n[2], tarj_q_pos[3]+tarj_n[3]};
+                             auto dis_square_q_xy = ( newplace[1] - pos_q_Proj[1] )  * ( newplace[1] - pos_q_Proj[1] ) + 
+                                                    ( newplace[2] - pos_q_Proj[2] )  * ( newplace[2] - pos_q_Proj[2] );
+                         }
+                         targ_q->set_x(tarj_q_pos);
+                         set_Targ_hot_spot_x(tarj_q_pos);
                          do_resample_targ = 0;
                      }
                 }
