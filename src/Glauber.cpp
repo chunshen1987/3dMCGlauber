@@ -460,7 +460,7 @@ void Glauber::Pick_and_subtract_hard_parton_momentum() {
                      auto pos_q_Tarj = targ_q->get_x();
                      auto dis_square_q_xy = ( pos_q_Tarj[1] - pos_q_Proj[1] )  * ( pos_q_Tarj[1] - pos_q_Proj[1] ) + 
                                             ( pos_q_Tarj[2] - pos_q_Proj[2] )  * ( pos_q_Tarj[2] - pos_q_Proj[2] );
-                     if(p_q[0]<=HardPartonMomTarg_[0] || dis_square_q_xy < 0.12) { // 0.346**2~ 0.12
+                     if(p_q[0]<=HardPartonMomTarg_[0] || dis_square_q_xy < 0.25) { // 0.346**2~ 0.12
                          // resample the valence quark
                          std::vector<double> xvec_q = targ_collided->output_quark_pos();
                          targ_collided->resample_valence_quarks(ecm_, -1, 
