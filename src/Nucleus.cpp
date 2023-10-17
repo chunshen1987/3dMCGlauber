@@ -599,11 +599,11 @@ void Nucleus::readin_nucleon_positions() {
         }
         if (lightNucleusOption_ == 4) {                 // use nucleus by PGCM
             filename << "tables/O16_PGCM.dat";           
-            n_configuration = 20000;
+            n_configuration = 30000;
         }
     } else if (A_ == 20) {  // Neon
-        filename << "tables/Ne20_plaintext.dat";        // use nucleus by PGCM
-        n_configuration = 20000;
+        filename << "tables/Ne20_PGCM.dat";        // use nucleus by PGCM
+        n_configuration = 30000;
     } else if (A_ == 40) {  // Ar40
         filename << "tables/Ar40_plaintext.dat";        // From Giuliano
         n_configuration = 20000;
