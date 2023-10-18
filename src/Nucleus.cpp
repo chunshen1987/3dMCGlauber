@@ -23,7 +23,8 @@ namespace MCGlb {
 Nucleus::Nucleus(std::string nucleus_name,
                  std::shared_ptr<RandomUtil::Random> ran_gen,
                  bool sample_valence_quarks_in, real BG,
-                 real d_min, bool deformed, bool confFromFile, int N_sea_partons) {
+                 real d_min, bool deformed, bool confFromFile,
+                 int N_sea_partons) {
     d_min_    = d_min;
     deformed_ = deformed;
     confFromFile_ = confFromFile;
@@ -37,6 +38,7 @@ Nucleus::Nucleus(std::string nucleus_name,
         number_of_valence_quark_samples_ = readin_valence_quark_samples();
     }
     nucleon_configuration_loaded_ = false;
+    lightNucleusOption_ = 0;
 }
 
 
@@ -450,15 +452,42 @@ void Nucleus::readin_nucleon_positions() {
     std::cout << "read in nucleon positions for Nucleus: " << name << "  "
               << std::flush;
     std::ostringstream filename;
-    int n_configuration = 0;
-    if (A_ == 3) {  // he3
-        filename << "tables/He3.bin.in";
+    if (A_ == 3) {  // he3 or t
+        if (lightNucleusOption_ == 0) {
+            filename << "tables/He3.bin.in";
+        } else if (lightNucleusOption_ == 1) {
+            filename << "tables/triton.bin.in";
+        } else {
+            std::cout << "A = 3 nucleus does not support lightNucleusOption = "
+                      << lightNucleusOption_ << std::endl;
+            exit(1);
+        }
     } else if (A_ == 4) {  // he4
         filename << "tables/He4.bin.in";
     } else if (A_ == 12) {  // carbon
-        filename << "tables/C12_VMC.bin.in";
+        if (lightNucleusOption_ == 0) {
+            filename << "tables/C12_VMC.bin.in";
+        } else if (lightNucleusOption_ == 1) {
+            filename << "tables/C12_alphaCluster.bin.in";
+        } else {
+            std::cout << "C12 nucleus does not support lightNucleusOption = "
+                      << lightNucleusOption_ << std::endl;
+            exit(1);
+        }
     } else if (A_ == 16) {  // oxygen
-        filename << "tables/O16_VMC.bin.in";
+        if (lightNucleusOption_ == 0) {
+            filename << "tables/O16_VMC.bin.in";
+        } else if (lightNucleusOption_ == 1) {
+            filename << "tables/O16_alphaCluster.bin.in";
+        } else if (lightNucleusOption_ == 2) {
+            filename << "tables/O16_PGCM.bin.in";
+        } else if (lightNucleusOption_ == 3) {
+            filename << "tables/O16_NLEFT.bin.in";
+        } else {
+            std::cout << "O16 nucleus does not support lightNucleusOption = "
+                      << lightNucleusOption_ << std::endl;
+            exit(1);
+        }
     } else if (A_ == 197) {  // Au
         filename << "tables/Au197.bin.in";
     } else if (A_ == 208) {  // Pb

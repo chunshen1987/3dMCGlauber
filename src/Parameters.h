@@ -72,6 +72,7 @@ class Parameters : public ParametersMap {
 
     real get_d_min() const;
     bool nucleon_configuration_from_file() const;
+    int getLightNucleusOption() const;
 };
 
 }

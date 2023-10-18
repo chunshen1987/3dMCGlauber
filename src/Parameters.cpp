@@ -274,6 +274,11 @@ bool Parameters::nucleon_configuration_from_file() const {
 }
 
 
+int Parameters::getLightNucleusOption() const {
+    return(get_param_int("light_nucleus_option", 0));
+}
+
+
 real Parameters::get_BG() const {
     real BG = static_cast<real>(get_param_double("BG", 5.));
     assert(BG > 0.);

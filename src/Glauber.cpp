@@ -114,6 +114,12 @@ Glauber::Glauber(const MCGlb::Parameters &param_in,
         target->setWoodsSaxonParameters(
             WS_rho, WS_w, WS_R, WS_a, WS_beta2, WS_beta3, WS_beta4, WS_gamma);
     }
+    if (nucleonConfFromFile) {
+        projectile->setLightNucleusOption(
+                        parameter_list.getLightNucleusOption());
+        target->setLightNucleusOption(
+                        parameter_list.getLightNucleusOption());
+    }
 
     if (sample_valence_quark) {
         projectile->set_valence_quark_Q2(parameter_list.get_quarks_Q2());
