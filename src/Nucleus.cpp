@@ -601,6 +601,10 @@ void Nucleus::readin_nucleon_positions() {
             filename << "tables/O16_PGCM.dat";           
             n_configuration = 30000;
         }
+        if (lightNucleusOption_ == 5) {                 // use nucleus by NLEFT
+            filename << "tables/O16_NLEFT.dat";           
+            n_configuration = 15360;
+        }
     } else if (A_ == 20) {  // Neon
         filename << "tables/Ne20_PGCM.dat";        // use nucleus by PGCM
         n_configuration = 30000;
