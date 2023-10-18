@@ -31,9 +31,8 @@ class Nucleus {
     std::vector<std::shared_ptr<Nucleon>> participant_list_;
     std::shared_ptr<RandomUtil::Random> ran_gen_ptr;
 
-    std::vector< std::array<double, 9> > triton_pos_;
     bool nucleon_configuration_loaded_;
-    std::vector< std::vector< std::array<double, 3> > > heavyIon_pos_;
+    std::vector< std::vector< std::vector<float> > > heavyIon_pos_;
 
     std::vector< std::array<float, 3> > proton_valence_quark_x_;
     std::vector< std::array<float, 3> > neutron_valence_quark_x_;
@@ -91,11 +90,9 @@ class Nucleus {
     real hulthen_function_CDF(real r) const;
 
     //! Read in spatial configuration for triton
-    void readin_triton_position();
     void readin_nucleon_positions();
 
     //! This function samples the spatial configuration for triton
-    void generate_triton_configuration();
     int sample_nucleon_configuration();
 
     //! This function samples a nucleon spatial configuration according to

@@ -446,74 +446,23 @@ int Nucleus::readin_valence_quark_samples() {
 }
 
 
-void Nucleus::readin_triton_position() {
-    // This function reads in spatial configuration for triton
-    std::ifstream triton_position("tables/triton_positions.dat");
-    if (!triton_position.good()) {
-        std::cout << "Triton configurations are not found!" << std::endl;
-        std::cout << "Please check file tables/triton_positions.dat."
-                  << std::endl;
-        exit(1);
-    }
-    double x1, y1, z1, x2, y2, z2, x3, y3, z3;
-    triton_position >> x1 >> y1 >> z1 >> x2 >> y2 >> z2 >> x3 >> y3 >> z3;
-    while (!triton_position.eof()) {
-        std::array<double, 9> temp;
-        temp = {x1, y1, z1, x2, y2, z2, x3, y3, z3};
-        triton_pos_.push_back(temp);
-        triton_position >> x1 >> y1 >> z1 >> x2 >> y2 >> z2 >> x3 >> y3 >> z3;
-    }
-    triton_position.close();
-}
-
-
-void Nucleus::generate_triton_configuration() {
-    // This function samples the spatial configuration for triton
-    if (triton_pos_.size() == 0)
-        readin_triton_position();
-    const int num_configuration = triton_pos_.size();
-    const int rand_num = static_cast<int>(
-                            ran_gen_ptr->rand_uniform()*num_configuration);
-    auto pos_i = triton_pos_[rand_num];
-    SpatialVec  x_1 = {0.0, pos_i[0], pos_i[1], pos_i[2]};
-    SpatialVec  x_2 = {0.0, pos_i[3], pos_i[4], pos_i[5]};
-    SpatialVec  x_3 = {0.0, pos_i[6], pos_i[7], pos_i[8]};
-    MomentumVec p_1 = {0.0};
-    MomentumVec p_2 = p_1;
-    MomentumVec p_3 = p_1;
-
-    std::shared_ptr<Nucleon> nucleon1_ptr(new Nucleon(x_1, p_1));
-    nucleon_list_.push_back(std::move(nucleon1_ptr));
-    std::shared_ptr<Nucleon> nucleon2_ptr(new Nucleon(x_2, p_2));
-    nucleon_list_.push_back(std::move(nucleon2_ptr));
-    std::shared_ptr<Nucleon> nucleon3_ptr(new Nucleon(x_3, p_3));
-    nucleon_list_.push_back(std::move(nucleon3_ptr));
-}
-
 void Nucleus::readin_nucleon_positions() {
     std::cout << "read in nucleon positions for Nucleus: " << name << "  "
               << std::flush;
     std::ostringstream filename;
     int n_configuration = 0;
     if (A_ == 3) {  // he3
-        filename << "tables/he3_plaintext.dat";
-        n_configuration = 13699;
+        filename << "tables/He3.bin.in";
     } else if (A_ == 4) {  // he4
-        filename << "tables/he4_plaintext.dat";
-        n_configuration = 6000;
+        filename << "tables/He4.bin.in";
     } else if (A_ == 12) {  // carbon
-        filename << "tables/carbon_plaintext.dat";
-        n_configuration = 6000;
+        filename << "tables/C12_VMC.bin.in";
     } else if (A_ == 16) {  // oxygen
-        filename << "tables/oxygen_plaintext.dat";
-        n_configuration = 6000;
+        filename << "tables/O16_VMC.bin.in";
     } else if (A_ == 197) {  // Au
-        filename << "tables/au197-sw-full_3Bchains-conf1820.dat";
-        n_configuration = 1820;
+        filename << "tables/Au197.bin.in";
     } else if (A_ == 208) {  // Pb
-        int temp = 1;
-        filename << "tables/pb208-" << temp << ".dat";
-        n_configuration = 10000;
+        filename << "tables/Pb208.bin.in";
     } else {
         std::cout << "[Warning]: No configuration file for Nucleus: "
                   << name << std::endl;
@@ -521,8 +470,8 @@ void Nucleus::readin_nucleon_positions() {
                   << std::endl;
         return;
     }
-
-    std::ifstream input(filename.str().c_str());
+    std::cout << " fileName: " << filename.str() << " " << std::flush;
+    std::ifstream input(filename.str().c_str(), std::ios::binary);
     if (!input.good()) {
         std::cout << "Configuration file not found!" << std::endl;
         std::cout << "Please check file: " << filename.str()
@@ -530,33 +479,27 @@ void Nucleus::readin_nucleon_positions() {
         exit(1);
     }
 
-    double dummy;
-    for (int iconf = 0; iconf < n_configuration; iconf++) {
-        std::vector< std::array<double, 3> > conf_i;
+    int Nentry = 3;
+    if (A_ == 197 || A_ == 208)
+        Nentry = 4;
 
-        if (A_ == 12) {
-            input >> dummy >> dummy;
-        }
-        for (int ia = 0; ia < A_; ia++) {
-            double x_local, y_local, z_local;
-            int isospin;
-            if (A_ == 208) {
-                input >> x_local >> y_local >> z_local >> isospin;
-            } else if (A_ == 197) {
-                input >> x_local >> y_local >> z_local >> isospin >> dummy;
-            } else {
-                input >> x_local >> y_local >> z_local;
+    while (true) {
+        std::vector< std::vector<float> > conf_i;
+        for (int i = 0; i < A_; i++) {
+            std::vector<float> nucleon_i;
+            for (int j = 0; j < Nentry; j++) {
+                float temp;
+                input.read(reinterpret_cast<char*>(&temp), sizeof(float));
+                nucleon_i.push_back(temp);
             }
-            std::array<double, 3> nucleon_pos = {x_local, y_local, z_local};
-            conf_i.push_back(nucleon_pos);
+            conf_i.push_back(nucleon_i);
         }
-        if (A_ == 3) {
-            input >> dummy >> dummy >> dummy >> dummy;
-        }
+        if (input.eof())
+            break;
         heavyIon_pos_.push_back(conf_i);
     }
     input.close();
-    cout << heavyIon_pos_.size() << " configrations." << endl;
+    std::cout << heavyIon_pos_.size() << " configrations." << std::endl;
 }
 
 

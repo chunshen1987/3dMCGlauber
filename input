@@ -3,7 +3,7 @@
 ################################################################
 Projectile Au                        # projectile nucleus name
 Target Au                            # target nucleus name
-nucleon_configuration_from_file 0    # use nucleon configuration from file
+nucleon_configuration_from_file 1    # use nucleon configuration from file
 roots 200.                           # collision energy (GeV)
 useQuarks 1                          # switch to use valence quarks
 Q2 1.                                # the scale when evaluating the pdf
@@ -22,7 +22,7 @@ shadowing_factor 0.6                 # a shadowning factor for producing strings
 baryon_junctions 1                   # 0: baryon number assumed to be at string end
                                      # 1: baryon number transported assuming baryon junctions
                                      #    (at smaller x) see arXiv:nucl-th/9602027
-N_sea_partons 5                      # Number of allowed soft partons. Default is 1. 
+N_sea_partons 1                      # Number of allowed soft partons. Default is 1. 
 
 resetProjWS 0                        # flag to reset Woods-saxon parameter for the projectile nucleus
 resetTargWS 0                        # flag to reset Woods-saxon parameter for the target nucleus
