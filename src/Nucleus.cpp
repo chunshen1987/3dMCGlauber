@@ -189,7 +189,9 @@ void Nucleus::generate_nucleus_3d_configuration() {
 
     real phi   = 2.*M_PI*ran_gen_ptr->rand_uniform();
     real theta = acos(1. - 2.*ran_gen_ptr->rand_uniform());
-    rotate_nucleus(phi, theta);
+    real gamma = 2*M_PI*ran_gen_ptr->rand_uniform();
+    //rotate_nucleus(phi, theta);
+    rotate_nucleus_3D(phi, theta, gamma);
 }
 
 
@@ -232,6 +234,27 @@ void Nucleus::rotate_nucleus(real phi, real theta) {
         auto x_new = cth*cphi*x_vec[1] - sphi*x_vec[2] + sth*cphi*x_vec[3];
         auto y_new = cth*sphi*x_vec[1] + cphi*x_vec[2] + sth*sphi*x_vec[3];
         auto z_new = -sth    *x_vec[1] + 0.  *x_vec[2] + cth     *x_vec[3];
+        x_vec[1] = x_new; x_vec[2] = y_new; x_vec[3] = z_new;
+        nucleon_i->set_x(x_vec);
+    }
+}
+
+
+void Nucleus::rotate_nucleus_3D(real phi, real theta, real gamma) {
+    // rotate the nucleus with the full three solid angles
+    // required for tri-axial deformed nuclei
+    // https://en.wikipedia.org/wiki/Euler_angles
+    auto c1 = cos(alpha);
+    auto s1 = sin(alpha);
+    auto c2 = cos(beta);
+    auto s2 = sin(beta);
+    auto c3 = cos(gamma);
+    auto s3 = sin(gamma);
+    for (auto &nucleon_i : nucleon_list_) {
+        auto x_vec = nucleon_i->get_x();
+        auto x_new =    c2*x_vec[1] -              c3*s2*x_vec[2] +               s2*s3*x_vec[3];
+        auto y_new = c1*s2*x_vec[1] + (c1*c2*c3 - s1*s3)*x_vec[2] + (-c3*s1 - c1*c2*s3)*x_vec[3];
+        auto z_new = s1*s2*x_vec[1] + (c1*s3 + c2*c3*s1)*x_vec[2] + ( c1*c3 - c2*s1*s3)*x_vec[3];
         x_vec[1] = x_new; x_vec[2] = y_new; x_vec[3] = z_new;
         nucleon_i->set_x(x_vec);
     }
