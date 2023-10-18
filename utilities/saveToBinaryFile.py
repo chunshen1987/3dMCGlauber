@@ -7,9 +7,11 @@
 import array
 import numpy as np
 
-data = np.loadtxt("../tables/oxygen_plaintext.dat")
+data = np.loadtxt("Ar40_plaintext.dat")
 
-outputFile = open("O16_VMC.bin.in", "wb")
+print(data.shape)
+
+outputFile = open("Ar40_VMC.bin.in", "wb")
 for config_i in data:
     float_array = array.array('f', config_i)
     float_array.tofile(outputFile)

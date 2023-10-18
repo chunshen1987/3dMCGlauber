@@ -108,9 +108,16 @@ void Nucleus::set_nucleus_parameters(std::string nucleus_name) {
     } else if (nucleus_name.compare("O") == 0) {
         set_woods_saxon_parameters(
                 16, 8, 0.17, -0.051, 2.608, 0.513, 0.0, 0.0, 0.0, 0.0, 3);
+    } else if (nucleus_name.compare("Ne20") == 0) {
+        // Atomic Data and Nuclear Data Tables, 36, 3, May 1987, 495-536
+        set_woods_saxon_parameters(
+                20, 10, 0.17, 0.0, 2.8, 0.57, 0.0, 0.0, 0.0, 0.0, 1);
     } else if (nucleus_name.compare("Al") == 0) {
         set_woods_saxon_parameters(
                 27, 13, 0.17, 0.0, 3.07, 0.519, 0.0, 0.0, 0.0, 0.0, 3);
+    } else if (nucleus_name.compare("Ar") == 0) {
+        set_woods_saxon_parameters(
+                40, 18, 0.17, 0, 3.61, 0.516, 0.1668, 0, 0.00695, 0.474393, 3);
     } else if (nucleus_name.compare("Cu") == 0) {
         set_woods_saxon_parameters(
                 63, 29, 0.17, 0.0, 4.163, 0.606, 0.162, 0.0, 0.006, 0.0, 3);
@@ -244,10 +251,10 @@ void Nucleus::rotate_nucleus_3D(real phi, real theta, real gamma) {
     // rotate the nucleus with the full three solid angles
     // required for tri-axial deformed nuclei
     // https://en.wikipedia.org/wiki/Euler_angles
-    auto c1 = cos(alpha);
-    auto s1 = sin(alpha);
-    auto c2 = cos(beta);
-    auto s2 = sin(beta);
+    auto c1 = cos(phi);
+    auto s1 = sin(phi);
+    auto c2 = cos(theta);
+    auto s2 = sin(theta);
     auto c3 = cos(gamma);
     auto s3 = sin(gamma);
     for (auto &nucleon_i : nucleon_list_) {
@@ -511,6 +518,10 @@ void Nucleus::readin_nucleon_positions() {
                       << lightNucleusOption_ << std::endl;
             exit(1);
         }
+    } else if (A_ == 20) {   // Neon
+        filename << "tables/Ne20_PGCM.bin.in";
+    } else if (A_ == 40) {   // Ar
+        filename << "tables/Ar40_VMC.bin.in";
     } else if (A_ == 197) {  // Au
         filename << "tables/Au197.bin.in";
     } else if (A_ == 208) {  // Pb
