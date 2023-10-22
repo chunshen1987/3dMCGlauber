@@ -42,7 +42,7 @@ class Nucleus {
 
     std::vector< std::array<double, 9> > triton_pos_;
     bool nucleon_configuration_loaded_;
-    std::vector< std::vector< std::array<double, 3> > > heavyIon_pos_;
+    std::vector< std::vector< std::vector<float> > > heavyIon_pos_;
 
     std::vector< std::array<float, 3> > proton_valence_quark_x_;
     std::vector< std::array<float, 3> > neutron_valence_quark_x_;

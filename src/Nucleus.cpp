@@ -562,7 +562,7 @@ void Nucleus::generate_triton_configuration() {
     nucleon_list_.push_back(std::move(nucleon3_ptr));
 }
 
-
+/*
 void Nucleus::readin_nucleon_positions() {
     std::cout << "read in nucleon positions for Nucleus: " << name << "  "
               << std::flush;
@@ -667,6 +667,95 @@ void Nucleus::readin_nucleon_positions() {
     input.close();
     cout << heavyIon_pos_.size() << " configrations." << endl;
 }
+*/
+
+void Nucleus::readin_nucleon_positions() {
+    std::cout << "read in nucleon positions for Nucleus: " << name << "  "
+              << std::flush;
+    std::ostringstream filename;
+    if (A_ == 3) {  // he3 or t
+        if (lightNucleusOption_ == 0) {
+            filename << "tables/He3.bin.in";
+        } else if (lightNucleusOption_ == 1) {
+            filename << "tables/triton.bin.in";
+        } else {
+            std::cout << "A = 3 nucleus does not support lightNucleusOption = "
+                      << lightNucleusOption_ << std::endl;
+            exit(1);
+        }
+    } else if (A_ == 4) {  // he4
+        filename << "tables/He4.bin.in";
+    } else if (A_ == 12) {  // carbon
+        if (lightNucleusOption_ == 0) {
+            filename << "tables/C12_VMC.bin.in";
+        } else if (lightNucleusOption_ == 1) {
+            filename << "tables/C12_alphaCluster.bin.in";
+        } else {
+            std::cout << "C12 nucleus does not support lightNucleusOption = "
+                      << lightNucleusOption_ << std::endl;
+            exit(1);
+        }
+    } else if (A_ == 16) {  // oxygen
+        if (lightNucleusOption_ == 0) {
+            filename << "tables/O16_VMC.bin.in";
+        } else if (lightNucleusOption_ == 1) {
+            filename << "tables/O16_alphaCluster.bin.in";
+        } else if (lightNucleusOption_ == 2) {
+            filename << "tables/O16_PGCM.bin.in";
+        } else if (lightNucleusOption_ == 3) {
+            filename << "tables/O16_NLEFT.bin.in";
+        } else {
+            std::cout << "O16 nucleus does not support lightNucleusOption = "
+                      << lightNucleusOption_ << std::endl;
+            exit(1);
+        }
+    } else if (A_ == 20) {   // Neon
+        filename << "tables/Ne20_PGCM.bin.in";
+    } else if (A_ == 40) {   // Ar
+        filename << "tables/Ar40_VMC.bin.in";
+    } else if (A_ == 197) {  // Au
+        filename << "tables/Au197.bin.in";
+    } else if (A_ == 208) {  // Pb
+        filename << "tables/Pb208.bin.in";
+    } else {
+        std::cout << "[Warning]: No configuration file for Nucleus: "
+                  << name << std::endl;
+        std::cout << "Generate configuration with Wood-Saxon distribution"
+                  << std::endl;
+        return;
+    }
+    std::cout << " fileName: " << filename.str() << " " << std::flush;
+    std::ifstream input(filename.str().c_str(), std::ios::binary);
+    if (!input.good()) {
+        std::cout << "Configuration file not found!" << std::endl;
+        std::cout << "Please check file: " << filename.str()
+                  << std::endl;
+        exit(1);
+    }
+
+    int Nentry = 3;
+    if (A_ == 197 || A_ == 208)
+        Nentry = 4;
+
+    while (true) {
+        std::vector< std::vector<float> > conf_i;
+        for (int i = 0; i < A_; i++) {
+            std::vector<float> nucleon_i;
+            for (int j = 0; j < Nentry; j++) {
+                float temp;
+                input.read(reinterpret_cast<char*>(&temp), sizeof(float));
+                nucleon_i.push_back(temp);
+            }
+            conf_i.push_back(nucleon_i);
+        }
+        if (input.eof())
+            break;
+        heavyIon_pos_.push_back(conf_i);
+    }
+    input.close();
+    std::cout << heavyIon_pos_.size() << " configrations." << std::endl;
+}
+
 
 
 int Nucleus::sample_nucleon_configuration() {
