@@ -4,6 +4,7 @@ set (SOURCES
     EventGenerator.cpp
     Glauber.cpp
     RandomUlty.cpp
+    MakeDensity.cpp
     Nucleus.cpp
     Nucleon.cpp
     CollisionEvent.cpp
@@ -14,13 +15,13 @@ set (SOURCES
     )
 
 add_library(${libname} SHARED ${SOURCES})
-target_link_libraries (${libname} LHAPDF)
+target_link_libraries (${libname})
 if (link_with_lib)
     add_executable(${exename} main.cpp)
-    target_link_libraries (${exename} ${libname} LHAPDF)
+    target_link_libraries (${exename} ${libname})
 else (link_with_lib)
     add_executable(${exename} main.cpp ${SOURCES})
-    target_link_libraries (${exename} LHAPDF)
+    target_link_libraries (${exename})
 endif (link_with_lib)
 add_executable(Metropolis.e SampleValenceQuarkMetropolis.cpp)
 target_link_libraries (Metropolis.e ${libname} LHAPDF)
@@ -41,7 +42,7 @@ set_target_properties(Metropolis.e
 #set_target_properties(Metropolis_for_dipole.e
 #    PROPERTIES
 #    INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib;${CMAKE_HOME_DIRECTORY}/LHAPDF_Lib/lib/")
-    
+
 install(TARGETS ${exename} Metropolis.e ${libname}
         RUNTIME DESTINATION ${CMAKE_HOME_DIRECTORY}
         LIBRARY DESTINATION lib
@@ -51,7 +52,7 @@ install(TARGETS ${exename} Metropolis.e ${libname}
 #        RUNTIME DESTINATION ${CMAKE_HOME_DIRECTORY}
 #        LIBRARY DESTINATION lib
 #        ARCHIVE DESTINATION lib/static)
-        
+
 if (unittest)
     add_executable (unittest_CollisionEvent.e CollisionEvent_UnitTest.cpp)
     target_link_libraries (unittest_CollisionEvent.e ${libname} ${LIBS})

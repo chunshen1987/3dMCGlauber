@@ -28,6 +28,7 @@ class Glauber {
     std::vector<QCDString> QCD_string_list;
     std::vector<QCDString> remnant_string_list_;
     std::vector<CollisionEvent> collision_schedule_list_;
+    std::vector<std::vector<real>> QCD_string_output_arr_;
     std::shared_ptr<RandomUtil::Random> ran_gen_ptr_;
     std::vector<double> Proj_nucleonz_;
     std::vector<double> Targ_nucleonz_;
@@ -39,6 +40,8 @@ class Glauber {
     bool sample_valence_quark;
     bool fluct_Nstrings_per_NN_collision_;
     real remnant_energy_loss_fraction_;
+
+    std::vector<std::vector<real>> participantList_;
 
     real impact_b;
     real yloss_param_slope;
@@ -108,6 +111,7 @@ class Glauber {
 
     real sample_junction_rapidity_right(real y_left, real y_right) const;
     real sample_junction_rapidity_left(real y_left, real y_right) const;
+    real sample_junction_rapidity_uniformed(real y_left, real y_right) const;
 
     //! This function gets the target/projectile nucleon density at Lab frame
     //! at t, x, y, z The unit is 1/fm^3
@@ -151,14 +155,30 @@ class Glauber {
     //! This function updates the collision schedule
     void update_collision_schedule(shared_ptr<CollisionEvent> event_happened);
 
+    void prepare_output_QCD_strings();
+    void computeCenterOfMass(real &x_o, real &y_o);
     void output_QCD_strings(std::string filename, const real Npart,
                             const real Ncoll, const real Nstrings,
-                            const real b);
+                            const real b, const unsigned int seed);
+
     //void Pick_and_subtract_hard_parton_momentum_in_nucleon();
     void Pick_and_subtract_hard_parton_momentum();
     void Set_hard_parton_momentum(std::vector<double> &HardMomandPosProj,
                                   std::vector<double> &HardMomandPosTarg);
     void Set_hard_collisions_Pos(std::vector<double> &HardPosProj);
+
+    void output_spectators(std::string filename);
+    void prepareParticipantList();
+    std::vector<std::vector<real>> getParticipantList() {
+        prepareParticipantList();
+        return(participantList_);
+    }
+    void outputParticipants(std::string filename);
+    std::vector<std::vector<real>> get_QCD_strings_output_list() {
+        prepare_output_QCD_strings();
+        return(QCD_string_output_arr_);
+    }
+
     real get_sig_eff(const real siginNN);
     static int get_random_gen(int i) {return random_value_%i;}
     static void set_random_gen(int i) {random_value_ = i;}

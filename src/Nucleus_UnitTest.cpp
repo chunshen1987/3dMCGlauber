@@ -6,6 +6,7 @@
 #include <vector>
 #include <iostream>
 #include "LHAPDF/LHAPDF.h"
+#include "Parameters.h"
 
 using MCGlb::Nucleus;
 using MCGlb::real;
@@ -21,6 +22,7 @@ TEST_CASE("Test random seed") {
     CHECK(test_nucleus.get_random_seed() == seed);
 }
 
+
 TEST_CASE("Test set nucleus parameters") {
     std::shared_ptr<RandomUtil::Random> ran_gen_ptr(
                                     new RandomUtil::Random(-1, 0., 1.));
@@ -29,7 +31,7 @@ TEST_CASE("Test set nucleus parameters") {
     CHECK(test_nucleus.get_nucleus_A() == 1);
     CHECK(test_nucleus.get_nucleus_Z() == 1);
     auto WS_params = test_nucleus.get_woods_saxon_parameters();
-    WoodsSaxonParam WS_params_p = {0.17, 0.0, 1.0, 1.0, 0.0, 0.0};
+    WoodsSaxonParam WS_params_p = {0.17, 0.0, 1.0, 1.0, 0.0, 0.0, 0.0};
     CHECK(WS_params == WS_params_p);
 
     test_nucleus.set_nucleus_parameters("Au");
@@ -37,9 +39,10 @@ TEST_CASE("Test set nucleus parameters") {
     CHECK(test_nucleus.get_nucleus_Z() == 79);
     WS_params = test_nucleus.get_woods_saxon_parameters();
     WoodsSaxonParam WS_params_Au = {
-                                0.17, 0.0, 6.38, 0.505, -0.13, -0.03};
+                                0.17, 0.0, 6.38, 0.505, -0.13, 0.0, -0.03};
     CHECK(WS_params == WS_params_Au);
 }
+
 
 TEST_CASE("Test generate nucleus configuratin") {
     std::shared_ptr<RandomUtil::Random> ran_gen_ptr(
@@ -73,6 +76,7 @@ TEST_CASE("Test generate nucleus configuratin") {
     CHECK(test_nucleus.get_nucleon_minimum_distance() == 1.5);
 }
 
+
 TEST_CASE("Test shift the nucleus") {
     std::shared_ptr<RandomUtil::Random> ran_gen_ptr(
                                     new RandomUtil::Random(-1, 0., 1.));
@@ -82,6 +86,7 @@ TEST_CASE("Test shift the nucleus") {
     test_nucleus.shift_nucleus(x_shift);
     CHECK(test_nucleus.get_nucleon(0)->get_x() == x_shift);
 }
+
 
 TEST_CASE("Test recenter the nucleus") {
     std::shared_ptr<RandomUtil::Random> ran_gen_ptr(
@@ -100,6 +105,7 @@ TEST_CASE("Test recenter the nucleus") {
     CHECK(meany == 0.0);
     CHECK(meanz == 0.0);
 }
+
 
 TEST_CASE("Test Woods-Saxon sampling") {
     std::shared_ptr<RandomUtil::Random> ran_gen_ptr(
@@ -121,7 +127,7 @@ TEST_CASE("Test Woods-Saxon sampling") {
         norm_WS += r_local*r_local/(exp((r_local - R_WS)/a_WS) + 1.)*dr;
     }
 
-    int n_samples = 1000000;
+    int n_samples = 10000000;
     auto weight   = 1./(n_samples*dr);
     for (int i = 0; i < n_samples; i++) {
         auto r_sample = test_nucleus.sample_r_from_woods_saxon();
@@ -131,6 +137,8 @@ TEST_CASE("Test Woods-Saxon sampling") {
             rho_r[idx] += weight;
         }
     }
+    real sum_th = 0;
+    real sum_sampled = 0;
     std::ofstream of("check_Woods_Saxon_sampling.dat");
     of << "# r  WS  Sampled" << std::endl;
     for (int i = 0; i < n_r; i++) {
@@ -140,23 +148,110 @@ TEST_CASE("Test Woods-Saxon sampling") {
         }
         real WS_local = r_mean*r_mean/(exp((r_mean - R_WS)/a_WS) + 1.)/norm_WS;
         of << r_mean << "   " << WS_local << "  " << rho_r[i] << std::endl;
+        sum_th += WS_local;
+        sum_sampled += rho_r[i];
     }
     std::cout << "please check the output file check_Woods_Saxon_sampling.dat"
               << std::endl;
+    CHECK(std::abs(sum_th - sum_sampled)/sum_th < 0.001);
+}
+
+
+TEST_CASE("Test deformed Woods-Saxon sampling") {
+    std::shared_ptr<RandomUtil::Random> ran_gen_ptr(
+                                    new RandomUtil::Random(-1, 0., 1.));
+    std::cout << "Testing the Woods-Saxon deformed sampling routine..."
+              << std::endl;
+    Nucleus test_nucleus("Zr", ran_gen_ptr);
+    test_nucleus.set_woods_saxon_parameters(
+            96, 40, 0.17, 0.0, 5.021, 0.524, 0.5, 0.16, 0.0, 1.0, 3);
+    auto WS_params = test_nucleus.get_woods_saxon_parameters();
+    auto a_WS = WS_params[3];
+    auto R_WS = WS_params[2];
+    auto beta2 = WS_params[4];
+    auto beta3 = WS_params[5];
+    auto gamma = WS_params[7];
+
+    const real r_min = 0.0, r_max = 20.0, dr = 0.1;
+    const real dct = 0.01,  diphi = 0.01;
+    const int n_r = static_cast<int>((r_max - r_min)/dr) + 1;
+    std::vector<real> r(n_r, 0.);
+    std::vector<real> rho_r(n_r, 0.);
+    std::vector<real> WS(n_r, 0.);
+    real norm_WS = 0.;
+    real two_pi = 2. * M_PI;
+    for (int i = 0; i < n_r; i++) {
+        real r_local  = r_min + i*dr;
+        for (real iphi=0.; iphi<two_pi; ) {
+            for (real ct=-1.; ct<1.; ) {
+                real y20  = 0.31539156525252005*(3.0*ct*ct-1.0);
+                real y30  = (5.0*ct*ct*ct - 3.0*ct) *0.3731763325901154;
+                real y2_2 = 0.5462742152960397*cos(2.*iphi)*(1.0-ct*ct);
+                real R_WS_deformed = R_WS*(
+                    1. + beta2*(cos(gamma)*y20 + sin(gamma)*y2_2) + beta3*y30);
+                norm_WS += r_local*r_local/(
+                        exp((r_local - R_WS_deformed)/a_WS) + 1.)*dr*dct*diphi;
+                ct = ct + dct;
+            }
+            iphi = iphi + diphi;
+        }
+    }
+    int n_samples = 1000000;
+    auto weight   = 1./(n_samples*dr);
+    for (int i = 0; i < n_samples; i++) {
+        auto r_sample = test_nucleus.sample_r_from_deformed_woods_saxon();
+        int idx       = static_cast<int>((r_sample - r_min)/dr);
+        if (idx >= 0 && idx < n_r) {
+            r[idx]     += weight*r_sample;
+            rho_r[idx] += weight;
+        }
+    }
+    real sum_th = 0;
+    real sum_sampled = 0;
+    std::ofstream of("check_deformed_Woods_Saxon_sampling.dat");
+    of << "# r  WS  Sampled" << std::endl;
+    for (int i = 0; i < n_r; i++) {
+        real r_mean = r_min + i*dr;
+        if (rho_r[i] > 0) {
+            r_mean = r[i]/rho_r[i];
+        }
+        real WS_local_temp = 0.0;
+        for (real iphi=0.; iphi<two_pi; ) {
+            for (real ct=-1.; ct<1.; ) {
+                real y20  = 0.31539156525252005*(3.0*ct*ct-1.0);
+                real y30  = (5.0*ct*ct*ct - 3.0*ct) *0.3731763325901154;
+                real y2_2 = 0.5462742152960397*cos(2.*iphi)*(1.0-ct*ct);
+                real R_WS_deformed = R_WS*(
+                    1. + beta2*(cos(gamma)*y20 + sin(gamma)*y2_2) + beta3*y30);
+                WS_local_temp += r_mean*r_mean/(
+                        exp((r_mean - R_WS_deformed)/a_WS) + 1.)*dct*diphi;
+                ct = ct + dct;
+            }
+            iphi = iphi + diphi;
+        }
+
+        real WS_local = WS_local_temp/norm_WS;
+        of << r_mean << "   " << WS_local << "  " << rho_r[i] << std::endl;
+        sum_th += WS_local;
+        sum_sampled += rho_r[i];
+    }
+    std::cout << "please check the output file "
+              << "check_deformed_Woods_Saxon_sampling.dat" << std::endl;
+    CHECK(std::abs(sum_th - sum_sampled)/sum_th < 0.001);
 }
 
 
 TEST_CASE("Test deformed nucleus") {
     std::shared_ptr<RandomUtil::Random> ran_gen_ptr(
                                         new RandomUtil::Random(-1, 0., 1.));
-    Nucleus test_nucleus("U", ran_gen_ptr, false, 0.9, true);
+    Nucleus test_nucleus("U", ran_gen_ptr, false, 4, 0.9, true, false);
     test_nucleus.generate_nucleus_3d_configuration();
     CHECK(test_nucleus.get_number_of_nucleons() == 238);
     CHECK(test_nucleus.is_deformed() == true);
 
     Nucleus test_nucleus1("Au", ran_gen_ptr);
     CHECK(test_nucleus1.is_deformed() == true);
-    Nucleus test_nucleus2("Au", ran_gen_ptr, false, 0.9, false);
+    Nucleus test_nucleus2("Au", ran_gen_ptr, false, 4, 0.9, false, false);
     CHECK(test_nucleus2.is_deformed() == false);
 }
 
@@ -164,7 +259,7 @@ TEST_CASE("Test deformed nucleus") {
 TEST_CASE("Test sample a deformed U nucleus") {
     std::shared_ptr<RandomUtil::Random> ran_gen_ptr(
                                         new RandomUtil::Random(-1, 0., 1.));
-    Nucleus test_nucleus("U", ran_gen_ptr, false, 0.9, true);
+    Nucleus test_nucleus("U", ran_gen_ptr, false, 4, 0.9, true, false);
     test_nucleus.generate_nucleus_3d_configuration();
     CHECK(test_nucleus.get_number_of_nucleons() == 238);
     CHECK(test_nucleus.is_deformed() == true);
@@ -177,7 +272,7 @@ TEST_CASE("Test sampled nuclear density distribution") {
                                         new RandomUtil::Random(-1, 0., 1.));
     std::cout << "Testing the sampling routine..." << std::endl;
     //Nucleus test_nucleus("Pb", ran_gen_ptr);
-    Nucleus test_nucleus("Au", ran_gen_ptr, false, 0.9, false);
+    Nucleus test_nucleus("Au", ran_gen_ptr, false, 4, 0.9, false, false);
     auto WS_params = test_nucleus.get_woods_saxon_parameters();
     auto a_WS = WS_params[3];
     auto R_WS = WS_params[2];
@@ -213,6 +308,8 @@ TEST_CASE("Test sampled nuclear density distribution") {
     of << "# Nucleus: " << test_nucleus.get_name() << std::endl;
     of << "# r  WS  Sampled" << std::endl;
 
+    real sum_th = 0;
+    real sum_sampled = 0;
     for (int i = 0; i < n_r; i++) {
         real r_mean = r_min + i*dr;
         if (rho_r[i] > 0) {
@@ -220,11 +317,13 @@ TEST_CASE("Test sampled nuclear density distribution") {
         }
         real WS_local = r_mean*r_mean/(exp((r_mean - R_WS)/a_WS) + 1.)/norm_WS;
         of << r_mean << "   " << WS_local << "  " << rho_r[i] << std::endl;
+        sum_th += WS_local;
+        sum_sampled += rho_r[i];
     }
 
     std::cout << "please check the output file "
               << "check_sampled_nucleon_distribution.dat" << std::endl;
-    CHECK(0.0 == 0.0);
+    CHECK(std::abs(sum_th - sum_sampled)/sum_th < 0.001);
 }
 
 
@@ -325,152 +424,21 @@ TEST_CASE("Test sampled valence quark spatial distribution") {
     std::ofstream of("check_sampled_valence_quark_spatial_distribution.dat");
     of << "# r  ExponentialDistribution  Sampled" << std::endl;
 
+    real sum_th = 0;
+    real sum_sampled = 0;
     for (int i = 0; i < n_r; i++) {
-        real r_mean = r[i]/rho_r[i];
-        of << r_mean << "   "
-           << test_nucleus.ExponentialDistribution(a, r_mean)/norm_WS << "  "
-           << rho_r[i] << std::endl;
+        real r_mean = r_min + i*dr;
+        if (rho_r[i] > 0) {
+            r_mean = r[i]/rho_r[i];
+        }
+        real prob_th = test_nucleus.ExponentialDistribution(a, r_mean)/norm_WS;
+        sum_th += prob_th;
+        sum_sampled += rho_r[i];
     }
 
     std::cout << "please check the output file "
               << "check_sampled_valence_quark_spatial_distribution.dat"
               << std::endl;
-    CHECK(0.0 == 0.0);
+    CHECK(std::abs(sum_th - sum_sampled)/sum_th < 0.01);
 }
 
-
-TEST_CASE("Test sample quark momentum fraction1") {
-    std::shared_ptr<RandomUtil::Random> ran_gen_ptr(
-                                        new RandomUtil::Random(-1, 0., 1.));
-
-    LHAPDF::PDF *pdf = LHAPDF::mkPDF("CT10nnlo", 0);
-    std::cout << "Testing the sampling routine for valence quarks..."
-              << std::endl;
-    Nucleus test_nucleus1("p", ran_gen_ptr, true);
-    const real Q2 = 1.0;
-    test_nucleus1.set_valence_quark_Q2(Q2);
-
-    const real x_min = 0.0, x_max = 1.0, dx = 0.02;
-    const int n_x = static_cast<int>((x_max - x_min)/dx);
-    std::vector<real> x_d(n_x, 0.);
-    std::vector<real> Px_d(n_x, 0.);
-    std::vector<real> x_u(n_x, 0.);
-    std::vector<real> Px_u(n_x, 0.);
-    int n_samples = 1000000;
-    for (int i = 0; i < n_samples; i++) {
-        if (i%static_cast<int>(n_samples/10) == 0)
-            std::cout << "nev = " << i << std::endl;
-
-        real u_x = test_nucleus1.sample_a_u_quark_momentum_fraction(false);
-        int x_idx = static_cast<int>((u_x - x_min)/dx);
-        if (x_idx >= 0 && x_idx < n_x) {
-            x_u[x_idx] += u_x;
-            Px_u[x_idx]++;
-        }
-
-        real d_x = test_nucleus1.sample_a_d_quark_momentum_fraction(false);
-        x_idx = static_cast<int>((d_x - x_min)/dx);
-        if (x_idx >= 0 && x_idx < n_x) {
-            x_d[x_idx] += d_x;
-            Px_d[x_idx]++;
-        }
-    }
-
-    real pdf_u_norm = 0.0;
-    real pdf_d_norm = 0.0;
-    for (int i = 0; i < n_x; i++) {
-        real x_local = x_min + (i + 0.5)*dx;
-        pdf_u_norm += pdf->xfxQ2(2, x_local, Q2) - pdf->xfxQ2(-2, x_local, Q2);
-        pdf_d_norm += pdf->xfxQ2(1, x_local, Q2) - pdf->xfxQ2(-1, x_local, Q2);
-    }
-    pdf_u_norm *= dx;
-    pdf_d_norm *= dx;
-
-    std::ofstream of_u("check_sampled_single_u_quark_distribution.dat");
-    of_u << "# x  pdf(x)  P(x)  P(x)_err" << std::endl;
-    for (int i = 0; i < n_x; i++) {
-        real x_mean = x_min + (i+0.5)*dx;
-        if (Px_u[i] > 0.)
-            x_mean = x_u[i]/Px_u[i];
-        of_u << x_mean << "   "
-             << (pdf->xfxQ2(2, x_mean, Q2)
-                     - pdf->xfxQ2(-2, x_mean, Q2))/pdf_u_norm << "  "
-             << Px_u[i]/n_samples/dx << "  "
-             << sqrt(Px_u[i])/n_samples/dx
-             << std::endl;
-    }
-    of_u.close();
-
-    std::ofstream of_d("check_sampled_single_d_quark_distribution.dat");
-    of_d << "# x  pdf(x)  P(x)  P(x)_err" << std::endl;
-    for (int i = 0; i < n_x; i++) {
-        real x_mean = x_min + (i+0.5)*dx;
-        if (Px_d[i] > 0.)
-            x_mean = x_d[i]/Px_d[i];
-        of_d << x_mean << "   "
-             << (pdf->xfxQ2(1, x_mean, Q2)
-                     - pdf->xfxQ2(-1, x_mean, Q2))/pdf_d_norm << "  "
-             << Px_d[i]/n_samples/dx << "  "
-             << sqrt(Px_d[i])/n_samples/dx
-             << std::endl;
-    }
-    of_d.close();
-
-    std::cout << "please check the output file "
-              << "check_sampled_valence_quarks_distribution.dat" << std::endl;
-    delete pdf;
-    CHECK(0.0 == 0.0);
-}
-
-
-TEST_CASE("Test sample quark momentum fraction3") {
-    std::shared_ptr<RandomUtil::Random> ran_gen_ptr(
-                                        new RandomUtil::Random(-1, 0., 1.));
-    std::cout << "Testing the sampling routine for valence quarks..."
-              << std::endl;
-    //Nucleus test_nucleus1("Au", ran_gen_ptr, true);
-    Nucleus test_nucleus1("p", ran_gen_ptr, true);
-    test_nucleus1.set_valence_quark_Q2(1.0);
-
-    const real x_min = 0.0, x_max = 1.0, dx = 0.02;
-    const int n_x = static_cast<int>((x_max - x_min)/dx);
-    std::vector<real> x(n_x, 0.);
-    std::vector<real> Px_0(n_x, 0.);
-    std::vector<real> Px_1(n_x, 0.);
-    std::vector<real> Px_2(n_x, 0.);
-    for (int i = 0; i < n_x; i++) {
-        x[i]  = x_min + i*dx;
-    }
-
-    int n_samples = 100000;
-    for (int i = 0; i < n_samples; i++) {
-        if (i%static_cast<int>(n_samples/10) == 0)
-            std::cout << "nev = " << i << std::endl;
-        std::vector<real> xQuark;
-        test_nucleus1.sample_quark_momentum_fraction(xQuark, 3, 1);
-        int x_idx = static_cast<int>((xQuark[0] - x_min)/dx);
-        if (x_idx >= 0 && x_idx < n_x)
-            Px_0[x_idx]++;
-        x_idx = static_cast<int>((xQuark[1] - x_min)/dx);
-        if (x_idx >= 0 && x_idx < n_x)
-            Px_1[x_idx]++;
-        x_idx = static_cast<int>((xQuark[2] - x_min)/dx);
-        if (x_idx >= 0 && x_idx < n_x)
-            Px_2[x_idx]++;
-    }
-    std::ofstream of("check_sampled_valence_quarks_distribution.dat");
-    of << "# x  P_0(x)  P_1(x)  P_2(x)" << std::endl;
-
-    for (int i = 0; i < n_x; i++) {
-        of << x[i] << "   "
-           << Px_0[i]/n_samples/dx << "  "
-           << Px_1[i]/n_samples/dx << "  "
-           << Px_2[i]/n_samples/dx << "  "
-           << std::endl;
-    }
-    of.close();
-
-    std::cout << "please check the output file "
-              << "check_sampled_valence_quarks_distribution.dat" << std::endl;
-    CHECK(0.0 == 0.0);
-}

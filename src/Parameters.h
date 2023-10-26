@@ -34,6 +34,8 @@ class Parameters : public ParametersMap {
     real get_roots() const;
 
     real get_lambdaB() const;
+    real get_lambdaBs() const;
+    real get_baryon_in_string_prob() const;
     real get_shadowing_factor() const;
 
     int get_QCD_string_production_mode() const;
@@ -44,6 +46,7 @@ class Parameters : public ParametersMap {
     real get_Omega_GG() const;
 
     bool subtract_hard_momentum() const;
+    int get_N_sea_partons() const;
 
     // if False do assume baryon number at string ends
     // if True transport baryon number according to cosh(y*/2)
@@ -51,6 +54,10 @@ class Parameters : public ParametersMap {
 
     bool get_only_event_statistics() const;
     bool get_cached_tabels() const;
+    bool get_batch_density_output() const;
+    bool get_batch_2Ddensity_output() const;
+    bool get_batch_eccentricity_output() const;
+    bool get_initialEst_output() const;
 
     bool get_fluct_Nstrings_per_NN_collision() const;
     real get_remnant_energy_loss_fraction() const;
@@ -67,7 +74,9 @@ class Parameters : public ParametersMap {
     real get_BG() const;
     real getParam(std::string paramName, real defaultValue) const;
 
+    real get_d_min() const;
     bool nucleon_configuration_from_file() const;
+    int getLightNucleusOption() const;
 };
 
 }

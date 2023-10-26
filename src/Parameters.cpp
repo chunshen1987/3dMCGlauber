@@ -10,6 +10,7 @@ real Parameters::getParam(std::string paramName, real defaultValue) const {
     return(static_cast<real>(get_param_double(paramName, defaultValue)));
 }
 
+
 void Parameters::set_b_max(real b_in) {
     assert(b_in >= 0.);
     set_parameter("b_max", b_in);
@@ -36,6 +37,13 @@ real Parameters::get_b_min() const {
 }
 
 
+real Parameters::get_d_min() const {
+    real b = static_cast<real>(get_param_double("d_min", 0.));
+    assert(b >= 0.);
+    return(b);
+}
+
+
 int Parameters::get_use_quarks() const {
     int flag = get_param_int("useQuarks", 1);
     assert(flag >= 0 && flag < 3);
@@ -56,10 +64,25 @@ real Parameters::get_roots() const {
     return(roots);
 }
 
+
 real Parameters::get_lambdaB() const {
     real lambdaB = static_cast<real>(get_param_double("lambdaB", 0.));
     assert(lambdaB >= 0.);
     return(lambdaB);
+}
+
+
+real Parameters::get_lambdaBs() const {
+    real lambdaBs = static_cast<real>(get_param_double("lambdaBs", 1.));
+    assert(lambdaBs >= 0.);
+    return(lambdaBs);
+}
+
+
+real Parameters::get_baryon_in_string_prob() const {
+    real prob = static_cast<real>(get_param_double("baryonInStringProb", 1.));
+    assert(prob >= 0. && prob <= 1.);
+    return(prob);
 }
 
 
@@ -136,8 +159,55 @@ int Parameters::get_rapidity_loss_method() const {
 }
 
 
+int Parameters::get_N_sea_partons() const {
+    int flag = get_param_int("N_sea_partons", 1);
+    assert(flag > 0);
+    return(flag);
+}
+
+
 bool Parameters::get_only_event_statistics() const {
     int flag = get_param_int("only_event_statistics", 0);
+    if (flag == 0) {
+        return(false);
+    } else {
+        return(true);
+    }
+}
+
+
+bool Parameters::get_batch_density_output() const {
+    int flag = get_param_int("batch_density_output", 0);
+    if (flag == 0) {
+        return(false);
+    } else {
+        return(true);
+    }
+}
+
+
+bool Parameters::get_initialEst_output() const {
+    int flag = get_param_int("outputInitialEst", 0);
+    if (flag == 0) {
+        return(false);
+    } else {
+        return(true);
+    }
+}
+
+
+bool Parameters::get_batch_2Ddensity_output() const {
+    int flag = get_param_int("batch_2Ddensity_output", 0);
+    if (flag == 0) {
+        return(false);
+    } else {
+        return(true);
+    }
+}
+
+
+bool Parameters::get_batch_eccentricity_output() const {
+    int flag = get_param_int("batch_eccentricity_output", 0);
     if (flag == 0) {
         return(false);
     } else {
@@ -157,7 +227,8 @@ bool Parameters::get_baryon_junctions() const {
 
 
 real Parameters::get_shadowing_factor() const {
-    real shadowing = static_cast<real>(get_param_double("shadowing_factor", 1.0));
+    real shadowing = static_cast<real>(
+                    get_param_double("shadowing_factor", 1.0));
     assert(shadowing >= 0.);
     assert(shadowing <= 1.);
     return(shadowing);
@@ -165,7 +236,8 @@ real Parameters::get_shadowing_factor() const {
 
 
 real Parameters::get_yloss_param_slope() const {
-    real slope = static_cast<real>(get_param_double("yloss_param_slope", 1.32));
+    real slope = static_cast<real>(
+                    get_param_double("yloss_param_slope", 1.32));
     assert(slope >= 0.);
     //assert(slope <= 1.);
     return(slope);
@@ -173,14 +245,16 @@ real Parameters::get_yloss_param_slope() const {
 
 
 real Parameters::get_yloss_param_alpha1() const {
-    real a = static_cast<real>(get_param_double("yloss_param_alpha1", 1.8));
+    real a = static_cast<real>(
+                    get_param_double("yloss_param_alpha1", 1.8));
     assert(a >= 1.);
     return(a);
 }
 
 
 real Parameters::get_yloss_param_alpha2() const {
-    real a = static_cast<real>(get_param_double("yloss_param_alpha2", 0.35));
+    real a = static_cast<real>(
+                    get_param_double("yloss_param_alpha2", 0.35));
     assert(a >= 0.);
     assert(a <= 1.);
     return(a);
@@ -188,21 +262,24 @@ real Parameters::get_yloss_param_alpha2() const {
 
 
 real Parameters::get_yloss_param_fluct_var_LHC() const {
-    real a = static_cast<real>(get_param_double("yloss_param_fluct_var_LHC", 0.6));
+    real a = static_cast<real>(
+                    get_param_double("yloss_param_fluct_var_LHC", 0.6));
     assert(a >= 0.);
     return(a);
 }
 
 
 real Parameters::get_yloss_param_fluct_var_RHIC() const {
-    real a = static_cast<real>(get_param_double("yloss_param_fluct_var_RHIC", 0.6));
+    real a = static_cast<real>(
+                    get_param_double("yloss_param_fluct_var_RHIC", 0.6));
     assert(a >= 0.);
     return(a);
 }
 
 
 real Parameters::get_tau_form_mean() const {
-    real tau_form_mean = static_cast<real>(get_param_double("tau_form_mean", 0.5));
+    real tau_form_mean = static_cast<real>(
+                    get_param_double("tau_form_mean", 0.5));
     assert(tau_form_mean > 0.);
     return(tau_form_mean);
 }
@@ -222,6 +299,11 @@ bool Parameters::nucleon_configuration_from_file() const {
     } else {
         return(true);
     }
+}
+
+
+int Parameters::getLightNucleusOption() const {
+    return(get_param_int("light_nucleus_option", 0));
 }
 
 

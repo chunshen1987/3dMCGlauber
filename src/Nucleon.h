@@ -34,6 +34,8 @@ class Nucleon : public Particle {
     int number_of_valence_quark_resamples_;
     int nucleon_system_status_;
     static int random_value_;
+    MomentumVec fermi_momentum_ = {0.0, 0.0, 0.0, 0.0};
+
  public:
     Nucleon() = default;
     Nucleon(SpatialVec x_in, MomentumVec p_in);
@@ -50,7 +52,9 @@ class Nucleon : public Particle {
 
     int get_number_of_quarks() const {return(quark_list.size());}
     void push_back_quark(std::shared_ptr<Quark> q) {quark_list.push_back(q);}
-    void erase_quarks() {quark_list.erase(quark_list.begin(), quark_list.end());}
+    void erase_quarks() {
+        quark_list.erase(quark_list.begin(), quark_list.end());
+    }
     void erase_one_quark();
     std::vector<std::shared_ptr<Quark>> get_quark_list() {return(quark_list);}
 
@@ -92,7 +96,8 @@ class Nucleon : public Particle {
     void lorentz_contraction(real gamma);
 
     std::shared_ptr<Quark> get_a_valence_quark(int ran_seed);
-    std::shared_ptr<Quark> get_a_valence_quark_sub_mom(real sub_E, int ran_seed);
+    std::shared_ptr<Quark> get_a_valence_quark_sub_mom(real sub_E,
+                                                       int ran_seed);
 
     std::vector<double> output_quark_pos();
 
@@ -103,7 +108,9 @@ class Nucleon : public Particle {
     void set_hard_collided(bool collided_index) {collided_ = collided_index;}
 
     bool nucleon_is_subtracted() const {return(subtracted_);}
-    void set_hard_subtracted(bool subtracted_index) {subtracted_ = subtracted_index;}
+    void set_hard_subtracted(bool subtracted_index) {
+        subtracted_ = subtracted_index;
+    }
 
     bool is_remnant_carry_baryon_number() const {
         return(remnant_carry_baryon_number_);
@@ -119,19 +126,27 @@ class Nucleon : public Particle {
             remnant_p_[i] -= p_q[i];
     }
 
-    void resample_quark_momentum_fraction(std::vector<real> &xQuark,
-                          const int electric_charge, const real ecm, 
-                          std::shared_ptr<RandomUtil::Random> nucleon_ran_gen_ptr) const;
-    void resample_valence_quarks(real ecm, int direction, real charge, 
-                                 std::vector<double> xvec_q,
-                                 std::shared_ptr<RandomUtil::Random> nucleon_ran_gen_ptr);
+    void resample_quark_momentum_fraction(
+            std::vector<real> &xQuark, const int electric_charge,
+            const real ecm,
+            std::shared_ptr<RandomUtil::Random> nucleon_ran_gen_ptr) const;
+    void resample_valence_quarks(
+            real ecm, int direction, real charge, std::vector<double> xvec_q,
+            std::shared_ptr<RandomUtil::Random> nucleon_ran_gen_ptr);
     void readd_soft_parton_ball(real ecm, int direction, std::vector<double> xvec_q,
-                                real BG_, MomentumVec soft_pvec, 
+                                real BG_, MomentumVec soft_pvec,
                                 std::vector<std::shared_ptr<Quark>> valence_quark_list,
                                 std::shared_ptr<RandomUtil::Random> nucleon_ran_gen_ptr);
 
     SpatialVec resample_valence_quark_position(real BG_, 
                std::shared_ptr<RandomUtil::Random> nucleon_ran_gen_ptr) const;
+
+    void set_fermi_momentum(real px, real py, real pz) {
+        fermi_momentum_[1] = px;
+        fermi_momentum_[2] = py;
+        fermi_momentum_[3] = pz;
+    }
+    MomentumVec get_fermi_momentum() const {return(fermi_momentum_);}
 
     void set_remnant_x_frez(SpatialVec x_in) {remnant_x_frez_ = x_in;}
     SpatialVec get_remnant_x_frez() const {return(remnant_x_frez_);}

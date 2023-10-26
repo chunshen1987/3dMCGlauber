@@ -8,12 +8,12 @@
 #include <fstream>
 #include <algorithm>
 #include <array>
+#include <tuple>
 #include <cmath>
 #include <cstdlib>
 #include <utility>
 
 #include "eps09.h"
-#include "LHAPDF/LHAPDF.h"
 
 using std::cout;
 using std::endl;
@@ -24,20 +24,24 @@ namespace MCGlb {
 Nucleus::Nucleus(std::string nucleus_name,
                  std::shared_ptr<RandomUtil::Random> ran_gen,
                  bool sample_valence_quarks_in, real BG,
-                 real d_min, bool deformed, bool confFromFile) {
-    d_min_      = d_min;
-    deformed_   = deformed;
+                 real d_min, bool deformed, bool confFromFile,
+                 int N_sea_partons) {
+    d_min_    = d_min;
+    deformed_ = deformed;
     confFromFile_ = confFromFile;
     BG_ = BG;
     ran_gen_ptr = ran_gen;
     set_nucleus_parameters(nucleus_name);
+    N_sea_partons_ = N_sea_partons;
 
     sample_valence_quarks = sample_valence_quarks_in;
     if (sample_valence_quarks) {
         number_of_valence_quark_samples_ = readin_valence_quark_samples();
     }
     nucleon_configuration_loaded_ = false;
+    lightNucleusOption_ = 0;
 }
+
 
 Nucleus::~Nucleus() {
     participant_list_.clear();
@@ -51,63 +55,94 @@ Nucleus::~Nucleus() {
 
 void Nucleus::set_woods_saxon_parameters(int A_in, int Z_in,
                                          real rho, real w, real R, real a,
-                                         real beta2, real beta4,
+                                         real beta2, real beta3, real beta4,
+                                         real gamma,
                                          int density_function_type_in) {
-    A_                    = A_in;
-    Z_                    = Z_in;
-    WS_param_vec[0]       = rho;
-    WS_param_vec[1]       = w;
-    WS_param_vec[2]       = R;
-    WS_param_vec[3]       = a;
-    WS_param_vec[4]       = beta2;
-    WS_param_vec[5]       = beta4;
+    A_ = A_in;
+    Z_ = Z_in;
     density_function_type = density_function_type_in;
+    setWoodsSaxonParameters(rho, w, R, a, beta2, beta3, beta4, gamma);
+}
+
+
+void Nucleus::setWoodsSaxonParameters(real rho, real w, real R, real a,
+                                      real beta2, real beta3, real beta4,
+                                      real gamma) {
+    WS_param_vec[0] = rho;
+    WS_param_vec[1] = w;
+    WS_param_vec[2] = R;
+    WS_param_vec[3] = a;
+    WS_param_vec[4] = beta2;
+    WS_param_vec[5] = beta3;
+    WS_param_vec[6] = beta4;
+    WS_param_vec[7] = gamma;
+
+    if (gamma > 0. && d_min_ > 0.) {
+        cout << "[Nucleus]: With a non-zero WS_gamma, we do not support "
+             << "a non-zero d_min between nucleon pairs! "
+             << "resetting d_min to 0." << endl;
+        d_min_ = 0.;
+    }
 }
 
 
 void Nucleus::set_nucleus_parameters(std::string nucleus_name) {
     name = nucleus_name;
     if (nucleus_name.compare("p") == 0) {
-        set_woods_saxon_parameters(1, 1, 0.17, 0.0, 1.0, 1.0, 0.0, 0.0, 3);
-    } else if (nucleus_name.compare("d") == 0) {
-        set_woods_saxon_parameters(2, 1, 0.17, 1.18, 1.0, 0.228, 0.0, 0.0, 8);
+        set_woods_saxon_parameters(
+                1, 1, 0.17, 0.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 3);
+    }else if (nucleus_name.compare("dipole") == 0) {
+        set_woods_saxon_parameters(
+                0, 0, 0.17, 0.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 8);
+    }else if (nucleus_name.compare("d") == 0) {
+        set_woods_saxon_parameters(
+                2, 1, 0.17, 1.18, 1.0, 0.228, 0.0, 0.0, 0.0, 0.0, 8);
     } else if (nucleus_name.compare("He3") == 0) {
-        set_woods_saxon_parameters(3, 2, 0.17, 0.0, 0.0, 0.0, 0.0, 0.0, 1);
+        set_woods_saxon_parameters(
+                3, 2, 0.17, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1);
     } else if (nucleus_name.compare("He4") == 0) {
-        set_woods_saxon_parameters(4, 2, 0.17, 0.0, 0.0, 0.0, 0.0, 0.0, 1);
+        set_woods_saxon_parameters(
+                4, 2, 0.17, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1);
     } else if (nucleus_name.compare("C") == 0) {
         set_woods_saxon_parameters(
-                            12, 6, 0.17, 1.403, 2.44, 1.635, 0.0, 0.0, 1);
+                12, 6, 0.17, 1.403, 2.44, 1.635, 0.0, 0.0, 0.0, 0.0, 1);
     } else if (nucleus_name.compare("O") == 0) {
         set_woods_saxon_parameters(
-                            16, 8, 0.17, -0.051, 2.608, 0.513, 0.0, 0.0, 3);
+                16, 8, 0.17, -0.051, 2.608, 0.513, 0.0, 0.0, 0.0, 0.0, 3);
+    } else if (nucleus_name.compare("Ne20") == 0) {
+        // Atomic Data and Nuclear Data Tables, 36, 3, May 1987, 495-536
+        set_woods_saxon_parameters(
+                20, 10, 0.17, 0.0, 2.8, 0.57, 0.0, 0.0, 0.0, 0.0, 1);
     } else if (nucleus_name.compare("Al") == 0) {
         set_woods_saxon_parameters(
-                            27, 13, 0.17, 0.0, 3.07, 0.519, 0.0, 0.0, 3);
+                27, 13, 0.17, 0.0, 3.07, 0.519, 0.0, 0.0, 0.0, 0.0, 3);
+    } else if (nucleus_name.compare("Ar") == 0) {
+        set_woods_saxon_parameters(
+                40, 18, 0.17, 0, 3.61, 0.516, 0.1668, 0, 0.00695, 0.474393, 3);
     } else if (nucleus_name.compare("Cu") == 0) {
         set_woods_saxon_parameters(
-                            63, 29, 0.17, 0.0, 4.163, 0.606, 0.162, 0.006, 3);
+                63, 29, 0.17, 0.0, 4.163, 0.606, 0.162, 0.0, 0.006, 0.0, 3);
     } else if (nucleus_name.compare("Zr") == 0) {
         set_woods_saxon_parameters(
-                            96, 40, 0.17, 0.0, 5.02, 0.46, 0.0, 0.0, 3);
+                96, 40, 0.17, 0.0, 5.020, 0.520, 0.06, 0.16, 0.0, 0.0, 3);
     } else if (nucleus_name.compare("Ru") == 0) {
         set_woods_saxon_parameters(
-                            96, 44, 0.17, 0.0, 5.085, 0.46, 0.158, 0.0, 3);
+                96, 44, 0.17, 0.0, 5.090, 0.460, 0.16, 0.00, 0.0, 0.0, 3);
     } else if (nucleus_name.compare("In") == 0) {
         set_woods_saxon_parameters(
-                            115, 49, 0.17, 0.0, 5.35, 0.55, 0.0, 0.0, 3);
+                115, 49, 0.17, 0.0, 5.35, 0.55, 0.0, 0.0, 0.0, 0.0, 3);
     } else if (nucleus_name.compare("Xe") == 0) {
         set_woods_saxon_parameters(
-                            129, 54, 0.17, 0.0, 5.36, 0.590, 0.162, -0.003, 3);
+                129, 54, 0.17, 0.0, 5.36, 0.590, 0.162, 0.0, -0.003, 0.0, 3);
     } else if (nucleus_name.compare("Au") == 0) {
         set_woods_saxon_parameters(
-                            197, 79, 0.17, 0.0, 6.38, 0.505, -0.13, -0.03, 3);
+                197, 79, 0.17, 0.0, 6.38, 0.505, -0.13, 0.0, -0.03, 0.0, 3);
     } else if (nucleus_name.compare("Pb") == 0) {
         set_woods_saxon_parameters(
-                            208, 82, 0.17, 0.0, 6.62, 0.546, 0.0, 0.0, 3);
+                208, 82, 0.17, 0.0, 6.62, 0.546, 0.0, 0.0, 0.0, 0.0, 3);
     } else if (nucleus_name.compare("U") == 0) {
         set_woods_saxon_parameters(
-                            238, 92, 0.17, 0.0, 6.874, 0.556, 0.28, 0.093, 3);
+                238, 92, 0.17, 0.0, 6.874, 0.556, 0.28, 0.0, 0.093, 0.0, 3);
     } else {
         cout << "[Error] Unknown_nucleus: " << nucleus_name << endl;
         cout << "Exiting... " << endl;
@@ -159,9 +194,13 @@ void Nucleus::generate_nucleus_3d_configuration(int ran_seed) {
 
     recenter_nucleus();
 
+    sample_fermi_momentum();
+
     real phi   = 2.*M_PI*ran_gen_ptr->rand_uniform();
     real theta = acos(1. - 2.*ran_gen_ptr->rand_uniform());
-    rotate_nucleus(phi, theta);
+    real gamma = 2*M_PI*ran_gen_ptr->rand_uniform();
+    //rotate_nucleus(phi, theta);
+    rotate_nucleus_3D(phi, theta, gamma);
 }
 
 
@@ -210,6 +249,48 @@ void Nucleus::rotate_nucleus(real phi, real theta) {
 }
 
 
+void Nucleus::rotate_nucleus_3D(real phi, real theta, real gamma) {
+    // rotate the nucleus with the full three solid angles
+    // required for tri-axial deformed nuclei
+    // https://en.wikipedia.org/wiki/Euler_angles
+    auto c1 = cos(phi);
+    auto s1 = sin(phi);
+    auto c2 = cos(theta);
+    auto s2 = sin(theta);
+    auto c3 = cos(gamma);
+    auto s3 = sin(gamma);
+    for (auto &nucleon_i : nucleon_list_) {
+        auto x_vec = nucleon_i->get_x();
+        auto x_new =    c2*x_vec[1] -              c3*s2*x_vec[2] +               s2*s3*x_vec[3];
+        auto y_new = c1*s2*x_vec[1] + (c1*c2*c3 - s1*s3)*x_vec[2] + (-c3*s1 - c1*c2*s3)*x_vec[3];
+        auto z_new = s1*s2*x_vec[1] + (c1*s3 + c2*c3*s1)*x_vec[2] + ( c1*c3 - c2*s1*s3)*x_vec[3];
+        x_vec[1] = x_new; x_vec[2] = y_new; x_vec[3] = z_new;
+        nucleon_i->set_x(x_vec);
+    }
+}
+
+
+void Nucleus::sample_fermi_momentum() {
+    const real pi2_3 = 3.*M_PI*M_PI;
+    for (auto &nucleon_i : nucleon_list_) {
+        auto x_vec = nucleon_i->get_x();
+        real r = sqrt(x_vec[1]*x_vec[1] + x_vec[2]*x_vec[2]
+                      + x_vec[3]*x_vec[3]);
+        real avgDensity = getAvgWoodsSaxonDensity(r);
+        real denFrac = static_cast<real>(Z_)/static_cast<real>(A_);
+        if (nucleon_i->get_electric_charge() == 0)
+            denFrac = 1. - denFrac;
+        real p_F = PhysConsts::HBARC*pow(pi2_3*avgDensity*denFrac
+                                         *ran_gen_ptr->rand_uniform(), 1./3.);
+        real phi = 2.*M_PI*ran_gen_ptr->rand_uniform();
+        real theta = acos(1. - 2.*ran_gen_ptr->rand_uniform());
+        nucleon_i->set_fermi_momentum(p_F*sin(theta)*cos(phi),
+                                      p_F*sin(theta)*sin(phi),
+                                      p_F*cos(theta));
+    }
+}
+
+
 void Nucleus::sample_valence_quarks_inside_nucleons(real ecm, int direction) {
     const int number_of_quarks = PhysConsts::NumValenceQuark;
     for (auto &nucleon_i: nucleon_list_) {
@@ -232,6 +313,9 @@ void Nucleus::sample_valence_quarks_inside_nucleons(real ecm, int direction) {
 
 
 void Nucleus::add_soft_parton_ball(real ecm, int direction) {
+    real E_rem_min = 0.1;  // GeV
+    real beam_rapidity = direction*acosh(ecm/(2.*PhysConsts::MProton));
+    real Pz_rem_min = E_rem_min*tanh(beam_rapidity);
     for (auto &nucleon_i: nucleon_list_) {
         if (nucleon_i->is_wounded()
             && nucleon_i->get_number_of_quarks() != 0) {
@@ -243,6 +327,8 @@ void Nucleus::add_soft_parton_ball(real ecm, int direction) {
                     soft_pvec[i] -= quark_pvec[i];
                 }
             }
+            soft_pvec[0] -= E_rem_min;
+            soft_pvec[3] -= Pz_rem_min;
             real mass = PhysConsts::MQuarkValence;
             if (soft_pvec[0] > mass) {
                 // assuming the soft parton ball has valence quark mass
@@ -250,10 +336,20 @@ void Nucleus::add_soft_parton_ball(real ecm, int direction) {
                 // larger than mq
                 real rapidity = direction*acosh(soft_pvec[0]/mass);
                 soft_pvec[3] = mass*sinh(rapidity);
-                auto xvec = sample_valence_quark_position();
-                std::shared_ptr<Quark> quark_ptr(new Quark(xvec, soft_pvec));
-                quark_ptr->set_rapidity(rapidity);
-                nucleon_i->push_back_quark(quark_ptr);
+
+                // Scale soft partons momentum to Pmu/N_sea_partons
+                // Add as many soft partons as N_sea_partons
+                // with momentum soft_pvec/N_sea_partons for energy-momentum conservation.
+                for (int j = 0; j < 4; j++) {
+                    soft_pvec[j] /= (double) N_sea_partons_;
+                }
+                for(int i = 0; i < N_sea_partons_; i++){
+                    auto xvec = sample_valence_quark_position();
+                    std::shared_ptr<Quark> quark_ptr(new Quark(xvec, soft_pvec));
+                    quark_ptr->set_rapidity(rapidity);
+                    nucleon_i->push_back_quark(quark_ptr);
+                }
+
             }
         }
     }
@@ -385,74 +481,54 @@ int Nucleus::readin_valence_quark_samples() {
 }
 
 
-void Nucleus::readin_triton_position() {
-    // This function reads in spatial configuration for triton
-    std::ifstream triton_position("tables/triton_positions.dat");
-    if (!triton_position.good()) {
-        std::cout << "Triton configurations are not found!" << std::endl;
-        std::cout << "Please check file tables/triton_positions.dat."
-                  << std::endl;
-        exit(1);
-    }
-    double x1, y1, z1, x2, y2, z2, x3, y3, z3;
-    triton_position >> x1 >> y1 >> z1 >> x2 >> y2 >> z2 >> x3 >> y3 >> z3;
-    while (!triton_position.eof()) {
-        std::array<double, 9> temp;
-        temp = {x1, y1, z1, x2, y2, z2, x3, y3, z3};
-        triton_pos_.push_back(temp);
-        triton_position >> x1 >> y1 >> z1 >> x2 >> y2 >> z2 >> x3 >> y3 >> z3;
-    }
-    triton_position.close();
-}
-
-
-void Nucleus::generate_triton_configuration() {
-    // This function samples the spatial configuration for triton
-    if (triton_pos_.size() == 0)
-        readin_triton_position();
-    const int num_configuration = triton_pos_.size();
-    const int rand_num = static_cast<int>(
-                            ran_gen_ptr->rand_uniform()*num_configuration);
-    auto pos_i = triton_pos_[rand_num];
-    SpatialVec  x_1 = {0.0, pos_i[0], pos_i[1], pos_i[2]};
-    SpatialVec  x_2 = {0.0, pos_i[3], pos_i[4], pos_i[5]};
-    SpatialVec  x_3 = {0.0, pos_i[6], pos_i[7], pos_i[8]};
-    MomentumVec p_1 = {0.0};
-    MomentumVec p_2 = p_1;
-    MomentumVec p_3 = p_1;
-
-    std::shared_ptr<Nucleon> nucleon1_ptr(new Nucleon(x_1, p_1));
-    nucleon_list_.push_back(std::move(nucleon1_ptr));
-    std::shared_ptr<Nucleon> nucleon2_ptr(new Nucleon(x_2, p_2));
-    nucleon_list_.push_back(std::move(nucleon2_ptr));
-    std::shared_ptr<Nucleon> nucleon3_ptr(new Nucleon(x_3, p_3));
-    nucleon_list_.push_back(std::move(nucleon3_ptr));
-}
-
 void Nucleus::readin_nucleon_positions() {
     std::cout << "read in nucleon positions for Nucleus: " << name << "  "
               << std::flush;
     std::ostringstream filename;
-    int n_configuration = 0;
-    if (A_ == 3) {  // he3
-        filename << "tables/he3_plaintext.dat";
-        n_configuration = 13699;
+    if (A_ == 3) {  // he3 or t
+        if (lightNucleusOption_ == 0) {
+            filename << "tables/He3.bin.in";
+        } else if (lightNucleusOption_ == 1) {
+            filename << "tables/triton.bin.in";
+        } else {
+            std::cout << "A = 3 nucleus does not support lightNucleusOption = "
+                      << lightNucleusOption_ << std::endl;
+            exit(1);
+        }
     } else if (A_ == 4) {  // he4
-        filename << "tables/he4_plaintext.dat";
-        n_configuration = 6000;
+        filename << "tables/He4.bin.in";
     } else if (A_ == 12) {  // carbon
-        filename << "tables/carbon_plaintext.dat";
-        n_configuration = 6000;
+        if (lightNucleusOption_ == 0) {
+            filename << "tables/C12_VMC.bin.in";
+        } else if (lightNucleusOption_ == 1) {
+            filename << "tables/C12_alphaCluster.bin.in";
+        } else {
+            std::cout << "C12 nucleus does not support lightNucleusOption = "
+                      << lightNucleusOption_ << std::endl;
+            exit(1);
+        }
     } else if (A_ == 16) {  // oxygen
-        filename << "tables/oxygen_plaintext.dat";
-        n_configuration = 6000;
+        if (lightNucleusOption_ == 0) {
+            filename << "tables/O16_VMC.bin.in";
+        } else if (lightNucleusOption_ == 1) {
+            filename << "tables/O16_alphaCluster.bin.in";
+        } else if (lightNucleusOption_ == 2) {
+            filename << "tables/O16_PGCM.bin.in";
+        } else if (lightNucleusOption_ == 3) {
+            filename << "tables/O16_NLEFT.bin.in";
+        } else {
+            std::cout << "O16 nucleus does not support lightNucleusOption = "
+                      << lightNucleusOption_ << std::endl;
+            exit(1);
+        }
+    } else if (A_ == 20) {   // Neon
+        filename << "tables/Ne20_PGCM.bin.in";
+    } else if (A_ == 40) {   // Ar
+        filename << "tables/Ar40_VMC.bin.in";
     } else if (A_ == 197) {  // Au
-        filename << "tables/au197-sw-full_3Bchains-conf1820.dat";
-        n_configuration = 1820;
+        filename << "tables/Au197.bin.in";
     } else if (A_ == 208) {  // Pb
-        int temp = 1;
-        filename << "tables/pb208-" << temp << ".dat";
-        n_configuration = 10000;
+        filename << "tables/Pb208.bin.in";
     } else {
         std::cout << "[Warning]: No configuration file for Nucleus: "
                   << name << std::endl;
@@ -460,8 +536,8 @@ void Nucleus::readin_nucleon_positions() {
                   << std::endl;
         return;
     }
-
-    std::ifstream input(filename.str().c_str());
+    std::cout << " fileName: " << filename.str() << " " << std::flush;
+    std::ifstream input(filename.str().c_str(), std::ios::binary);
     if (!input.good()) {
         std::cout << "Configuration file not found!" << std::endl;
         std::cout << "Please check file: " << filename.str()
@@ -469,33 +545,27 @@ void Nucleus::readin_nucleon_positions() {
         exit(1);
     }
 
-    double dummy;
-    for (int iconf = 0; iconf < n_configuration; iconf++) {
-        std::vector< std::array<double, 3> > conf_i;
+    int Nentry = 3;
+    if (A_ == 197 || A_ == 208)
+        Nentry = 4;
 
-        if (A_ == 12) {
-            input >> dummy >> dummy;
-        }
-        for (int ia = 0; ia < A_; ia++) {
-            double x_local, y_local, z_local;
-            int isospin;
-            if (A_ == 208) {
-                input >> x_local >> y_local >> z_local >> isospin;
-            } else if (A_ == 197) {
-                input >> x_local >> y_local >> z_local >> isospin >> dummy;
-            } else {
-                input >> x_local >> y_local >> z_local;
+    while (true) {
+        std::vector< std::vector<float> > conf_i;
+        for (int i = 0; i < A_; i++) {
+            std::vector<float> nucleon_i;
+            for (int j = 0; j < Nentry; j++) {
+                float temp;
+                input.read(reinterpret_cast<char*>(&temp), sizeof(float));
+                nucleon_i.push_back(temp);
             }
-            std::array<double, 3> nucleon_pos = {x_local, y_local, z_local};
-            conf_i.push_back(nucleon_pos);
+            conf_i.push_back(nucleon_i);
         }
-        if (A_ == 3) {
-            input >> dummy >> dummy >> dummy >> dummy;
-        }
+        if (input.eof())
+            break;
         heavyIon_pos_.push_back(conf_i);
     }
     input.close();
-    cout << heavyIon_pos_.size() << " configrations." << endl;
+    std::cout << heavyIon_pos_.size() << " configrations." << std::endl;
 }
 
 
@@ -534,21 +604,53 @@ real Nucleus::sample_r_from_woods_saxon() const {
     return(r);
 }
 
-
-void Nucleus::sample_r_and_costheta_from_deformed_woods_saxon(
-                                        real &r, real &costheta) const {
+real Nucleus::sample_r_from_deformed_woods_saxon() const {
     real a_WS = WS_param_vec[3];
     real R_WS = WS_param_vec[2];
     real beta2 = WS_param_vec[4];
-    real beta4 = WS_param_vec[5];
+    real beta3 = WS_param_vec[5];
+    real beta4 = WS_param_vec[6];
+    real gamma = WS_param_vec[7];
+    real rmaxCut = R_WS + 10.*a_WS;
+    real R_WS_theta = R_WS;
+    real r = 0.;
+    do {
+        r = rmaxCut*pow(ran_gen_ptr->rand_uniform(), 1.0/3.0);
+        real costheta = 1.0 - 2.0*ran_gen_ptr->rand_uniform();
+        real phi  = 2.*M_PI*ran_gen_ptr->rand_uniform();
+        real y20  = spherical_harmonics(2, costheta);
+        real y30  = spherical_harmonics(3, costheta);
+        real y40  = spherical_harmonics(4, costheta);
+        real y2_2 = spherical_harmonics_Y22(22, costheta, phi);
+        R_WS_theta = R_WS*(1.0
+                           + beta2*(cos(gamma)*y20+sin(gamma)*y2_2)
+                           + beta3*y30 + beta4*y40);
+    } while (ran_gen_ptr->rand_uniform()
+             > fermi_distribution(r, R_WS_theta, a_WS));
+    return(r);
+}
+
+void Nucleus::sample_r_and_costheta_from_deformed_woods_saxon(
+                                    real &phi, real &r, real &costheta) const {
+    real a_WS = WS_param_vec[3];
+    real R_WS = WS_param_vec[2];
+    real beta2 = WS_param_vec[4];
+    real beta3 = WS_param_vec[5];
+    real beta4 = WS_param_vec[6];
+    real gamma = WS_param_vec[7];
     real rmaxCut = R_WS + 10.*a_WS;
     real R_WS_theta = R_WS;
     do {
         r = rmaxCut*pow(ran_gen_ptr->rand_uniform(), 1.0/3.0);
-        costheta = 1.0 - 2.0*ran_gen_ptr->rand_uniform();
-        real y20 = spherical_harmonics(2, costheta);
-        real y40 = spherical_harmonics(4, costheta);
-        R_WS_theta = R_WS*(1.0 + beta2*y20 + beta4*y40);
+        costheta  = 1.0 - 2.0*ran_gen_ptr->rand_uniform();
+        phi       = 2.*M_PI*ran_gen_ptr->rand_uniform();
+        real y20  = spherical_harmonics(2, costheta);
+        real y30  = spherical_harmonics(3, costheta);
+        real y40  = spherical_harmonics(4, costheta);
+        real y2_2 = spherical_harmonics_Y22(22, costheta, phi);
+        R_WS_theta = R_WS*(1.0
+                           + beta2*(cos(gamma)*y20+sin(gamma)*y2_2)
+                           + beta3*y30 + beta4*y40);
     } while (ran_gen_ptr->rand_uniform()
              > fermi_distribution(r, R_WS_theta, a_WS));
 }
@@ -607,31 +709,33 @@ void Nucleus::generate_nucleus_configuration_with_woods_saxon() {
 void Nucleus::generate_nucleus_configuration_with_deformed_woods_saxon() {
     std::vector<real> r_array(A_, 0.);
     std::vector<real> costheta_array(A_, 0.);
-    std::vector<std::pair<real, real>> pair_array;
+    std::vector<real> phi_array(A_, 0.);
+    std::vector<std::tuple<real, real, real>> nucleonPos_array;
     for (int i = 0; i < A_; i++) {
-        sample_r_and_costheta_from_deformed_woods_saxon(r_array[i],
-                                                        costheta_array[i]);
-        pair_array.push_back(std::make_pair(r_array[i], costheta_array[i]));
+        sample_r_and_costheta_from_deformed_woods_saxon(
+                phi_array[i], r_array[i], costheta_array[i]);
+        nucleonPos_array.push_back(
+                std::make_tuple(r_array[i], costheta_array[i], phi_array[i]));
     }
-    std::sort(pair_array.begin(), pair_array.end());
+    std::sort(nucleonPos_array.begin(), nucleonPos_array.end());
 
     std::vector<real> x_array(A_, 0.), y_array(A_, 0.), z_array(A_, 0.);
     const real d_min_sq = d_min_*d_min_;
     for (int i = 0; i < A_; i++) {
-        const real r_i     = pair_array[i].first;
-        const real theta_i = acos(pair_array[i].second);
+        const real r_i     = std::get<0>(nucleonPos_array[i]);
+        const real theta_i = acos(std::get<1>(nucleonPos_array[i]));
+        real phi_i = std::get<2>(nucleonPos_array[i]);
         int reject_flag = 0;
         int iter = 0;
         real x_i, y_i, z_i;
         do {
             iter++;
             reject_flag = 0;
-            real phi    = 2.*M_PI*ran_gen_ptr->rand_uniform();
-            x_i = r_i*sin(theta_i)*cos(phi);
-            y_i = r_i*sin(theta_i)*sin(phi);
+            x_i = r_i*sin(theta_i)*cos(phi_i);
+            y_i = r_i*sin(theta_i)*sin(phi_i);
             z_i = r_i*cos(theta_i);
             for (int j = i - 1; j >= 0; j--) {
-                const real r_j = pair_array[j].first;
+                const real r_j = std::get<0>(nucleonPos_array[j]);
                 if ((r_i - r_j)*(r_i - r_j) > d_min_sq) break;
                 real dsq = (  (x_i - x_array[j])*(x_i - x_array[j])
                             + (y_i - y_array[j])*(y_i - y_array[j])
@@ -641,6 +745,7 @@ void Nucleus::generate_nucleus_configuration_with_deformed_woods_saxon() {
                     break;
                 }
             }
+            phi_i = 2.*M_PI*ran_gen_ptr->rand_uniform();
         } while (reject_flag == 1 && iter < 100);
         //if (iter == 100) {
         //    cout << "[Warning] can not find configuration : "
@@ -661,26 +766,50 @@ void Nucleus::generate_nucleus_configuration_with_deformed_woods_saxon() {
 
 
 real Nucleus::fermi_distribution(real r, real R_WS, real a_WS) const {
-    real f = 1./(1. + exp((r - R_WS)/a_WS + 1.0e-16));
+    real f = 1./(1. + exp((r - R_WS)/(a_WS + 1e-16)));
     return (f);
+}
+
+
+real Nucleus::getAvgWoodsSaxonDensity(real r) const {
+    const real rho_0 = WS_param_vec[0];  // 1/fm^3
+    real density = rho_0*fermi_distribution(r, WS_param_vec[2],
+                                            WS_param_vec[3]);
+    return(density);  // 1/fm^3
 }
 
 
 real Nucleus::spherical_harmonics(int l, real ct) const {
     // Currently assuming m=0 and available for Y_{20} and Y_{40}
     // "ct" is cos(theta)
-    assert(l == 2 || l == 4);
+    assert(l == 2 || l == 3 || l == 4);
 
     real ylm = 0.0;
     if (l == 2) {
         ylm = 3.0*ct*ct-1.0;
         ylm *= 0.31539156525252005;  // pow(5.0/16.0/M_PI,0.5);
+    } else if (l == 3) {
+        ylm  = 5.0*ct*ct*ct;
+        ylm -= 3.0*ct;
+        ylm *= 0.3731763325901154;  // pow(7.0/16.0/M_PI,0.5);
     } else if (l == 4) {
         ylm  = 35.0*ct*ct*ct*ct;
         ylm -= 30.0*ct*ct;
         ylm += 3.0;
         ylm *= 0.10578554691520431;  // 3.0/16.0/pow(M_PI,0.5);
     }
+    return(ylm);
+}
+
+real Nucleus::spherical_harmonics_Y22(int l, real ct, real phi) const {
+    // Y2,2
+    // "ct" is cos(theta)
+    assert(l == 22);
+
+    real ylm = 0.0;
+    ylm  = 1.0-ct*ct;
+    ylm *= cos(2.*phi);
+    ylm *= 0.5462742152960397;  // sqrt(2*15)/4/pow(2*M_PI,0.5);
     return(ylm);
 }
 
@@ -758,52 +887,6 @@ void Nucleus::output_nucleon_positions(std::string filename) const {
            << std::endl;
     }
     of.close();
-}
-
-
-real Nucleus::sample_a_d_quark_momentum_fraction(const bool flag_NPDF) const {
-    real x;
-    real xfd, xfdbar, tmp, correction;
-    real ruv = 1.;
-    real rdv = 1.;
-    do {
-        x = ran_gen_ptr->rand_uniform();
-        if (flag_NPDF) {
-            real ru, rd, rs, rc, rb, rg;
-            eps09(2, 1, A_, x, sqrt(Q2), ruv, rdv, ru, rd, rs,
-                  rc, rb, rg);
-        }
-        // ruv seems to be always equal to rdv,
-        // so I am fine not distinguishing proton and neutron here
-
-        xfdbar     = pdf->xfxQ2(-1, x, Q2);
-        xfd        = pdf->xfxQ2( 1, x, Q2);
-        tmp        = ran_gen_ptr->rand_uniform();
-        correction = 1.0;
-    } while (tmp > ((xfd - xfdbar)*rdv*correction));
-    return(x);
-}
-
-
-real Nucleus::sample_a_u_quark_momentum_fraction(const bool flag_NPDF) const {
-    real x;
-    real xfu, xfubar, tmp, correction;
-    real ruv = 1.;
-    real rdv = 1.;
-    do {
-        x = ran_gen_ptr->rand_uniform();
-        if (flag_NPDF) {
-            real ru, rd, rs, rc, rb, rg;
-            eps09(2, 1, A_, x, sqrt(Q2), ruv, rdv, ru, rd, rs,
-                  rc, rb, rg);
-        }
-
-        xfubar     = pdf->xfxQ2(-2, x, Q2);
-        xfu        = pdf->xfxQ2( 2, x, Q2);
-        tmp        = ran_gen_ptr->rand_uniform();
-        correction = 1.0;
-    } while (tmp > ((xfu - xfubar)*ruv*correction));
-    return(x);
 }
 
 

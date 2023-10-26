@@ -38,17 +38,88 @@ Glauber::Glauber(const MCGlb::Parameters &param_in,
         }
     }
 
-    real d_min = 0.9;
+    real d_min = parameter_list.get_d_min();
+
+    int N_sea_partons = parameter_list.get_N_sea_partons();
+
     bool deformed = true;
     bool nucleonConfFromFile = parameter_list.nucleon_configuration_from_file();
     projectile = std::unique_ptr<Nucleus>(
             new Nucleus(parameter_list.get_projectle_nucleus_name(), ran_gen,
                         sample_valence_quark, parameter_list.get_BG(),
-                        d_min, deformed, nucleonConfFromFile));
+                        d_min, deformed, nucleonConfFromFile, N_sea_partons));
+    int resetProjWS = static_cast<int>(
+                            parameter_list.getParam("resetProjWS", 0.0));
+    if (resetProjWS != 0) {
+        auto defaultWSParam = projectile->get_woods_saxon_parameters();
+        real WS_rho = parameter_list.getParam(
+                                    "ProjWS_rho0", defaultWSParam[0]);
+        real WS_w = parameter_list.getParam("ProjWS_w", defaultWSParam[1]);
+        real WS_R = parameter_list.getParam("ProjWS_R", defaultWSParam[2]);
+        real WS_a = parameter_list.getParam("ProjWS_a", defaultWSParam[3]);
+        real WS_beta2 = parameter_list.getParam(
+                                    "ProjWS_beta2", defaultWSParam[4]);
+        real WS_beta3 = parameter_list.getParam(
+                                    "ProjWS_beta3", defaultWSParam[5]);
+        real WS_beta4 = parameter_list.getParam(
+                                    "ProjWS_beta4", defaultWSParam[6]);
+        real WS_gamma = parameter_list.getParam(
+                                    "ProjWS_gamma", defaultWSParam[7]);
+        projectile->setWoodsSaxonParameters(
+            WS_rho, WS_w, WS_R, WS_a, WS_beta2, WS_beta3, WS_beta4, WS_gamma);
+    }
+
     target = std::unique_ptr<Nucleus>(
             new Nucleus(parameter_list.get_target_nucleus_name(), ran_gen,
                         sample_valence_quark, parameter_list.get_BG(),
-                        d_min, deformed, nucleonConfFromFile));
+                        d_min, deformed, nucleonConfFromFile, N_sea_partons));
+    int resetTargWS = static_cast<int>(
+                            parameter_list.getParam("resetTargWS", 0.0));
+    if (resetTargWS != 0) {
+        auto defaultWSParam = target->get_woods_saxon_parameters();
+        real WS_rho, WS_w, WS_R, WS_a, WS_beta2, WS_beta3, WS_beta4, WS_gamma;
+        if (parameter_list.get_target_nucleus_name()
+                == parameter_list.get_projectle_nucleus_name()) {
+            // if it is a symmetric collision, then use the projectile WS param
+            WS_rho = parameter_list.getParam(
+                                   "ProjWS_rho0", defaultWSParam[0]);
+            WS_w = parameter_list.getParam("ProjWS_w", defaultWSParam[1]);
+            WS_R = parameter_list.getParam("ProjWS_R", defaultWSParam[2]);
+            WS_a = parameter_list.getParam("ProjWS_a", defaultWSParam[3]);
+            WS_beta2 = parameter_list.getParam(
+                                   "ProjWS_beta2", defaultWSParam[4]);
+            WS_beta3 = parameter_list.getParam(
+                                   "ProjWS_beta3", defaultWSParam[5]);
+            WS_beta4 = parameter_list.getParam(
+                                   "ProjWS_beta4", defaultWSParam[6]);
+            WS_gamma = parameter_list.getParam(
+                                   "ProjWS_gamma", defaultWSParam[7]);
+        } else {
+            // for asymmetric collisions, set with target WS params
+            WS_rho = parameter_list.getParam(
+                                   "TargWS_rho0", defaultWSParam[0]);
+            WS_w = parameter_list.getParam("TargWS_w", defaultWSParam[1]);
+            WS_R = parameter_list.getParam("TargWS_R", defaultWSParam[2]);
+            WS_a = parameter_list.getParam("TargWS_a", defaultWSParam[3]);
+            WS_beta2 = parameter_list.getParam(
+                                   "TargWS_beta2", defaultWSParam[4]);
+            WS_beta3 = parameter_list.getParam(
+                                   "TargWS_beta3", defaultWSParam[5]);
+            WS_beta4 = parameter_list.getParam(
+                                   "TargWS_beta4", defaultWSParam[6]);
+            WS_gamma = parameter_list.getParam(
+                                   "TargWS_gamma", defaultWSParam[7]);
+        }
+        target->setWoodsSaxonParameters(
+            WS_rho, WS_w, WS_R, WS_a, WS_beta2, WS_beta3, WS_beta4, WS_gamma);
+    }
+    if (nucleonConfFromFile) {
+        projectile->setLightNucleusOption(
+                        parameter_list.getLightNucleusOption());
+        target->setLightNucleusOption(
+                        parameter_list.getLightNucleusOption());
+    }
+
     if (sample_valence_quark) {
         projectile->set_valence_quark_Q2(parameter_list.get_quarks_Q2());
         target->set_valence_quark_Q2(parameter_list.get_quarks_Q2());
@@ -231,6 +302,7 @@ int Glauber::get_Npart() const {
     return(Npart);
 }
 
+
 bool Glauber::hit(real d2) const {
     //real G = 0.92;  // from Glassando
     //return(ran_gen_ptr_->rand_uniform() < G*exp(-G*d2/d2_in));
@@ -239,6 +311,7 @@ bool Glauber::hit(real d2) const {
     const real hit_treshold = 1. - exp(-sigma_eff_*T_nn);
     return (ran_gen_ptr_->rand_uniform() < hit_treshold);
 }
+
 
 void Glauber::create_a_collision_event(shared_ptr<Nucleon> proj,
                                        shared_ptr<Nucleon> targ) {
@@ -264,6 +337,7 @@ void Glauber::create_a_collision_event(shared_ptr<Nucleon> proj,
     }
 }
 
+
 bool Glauber::get_collision_point(real t, real z1, real v1, real z2, real v2,
                                   real &t_coll, real &z_coll) const {
     bool collided = false;
@@ -278,6 +352,7 @@ bool Glauber::get_collision_point(real t, real z1, real v1, real z2, real v2,
     }
     return(collided);
 }
+
 
 real Glauber::compute_NN_inelastic_cross_section(real ecm) const {
     real s = ecm*ecm;
@@ -735,6 +810,8 @@ int Glauber::perform_string_production() {
     // sqrt(parameter_list.get_roots()); // ~s^{-1/4} 
     real lambdaB = parameter_list.get_lambdaB();
     lambdaB = std::min(1., lambdaB);
+    real lambdaBs = parameter_list.get_lambdaBs();
+    lambdaBs = std::min(1., lambdaBs);
 
     real t_current = 0.0;
     int number_of_collided_events = 0;
@@ -851,6 +928,7 @@ int Glauber::perform_string_production() {
     // randomize the QCD_string_list and assign the baryon charge to
     // the strings
     std::vector<unsigned int> random_idx;
+    const real baryonInStringProb = parameter_list.get_baryon_in_string_prob();
     unsigned int Nstrings = QCD_string_list.size();
     unsigned int Npart_proj = projectile->get_number_of_wounded_nucleons();
     unsigned int Npart_targ = target->get_number_of_wounded_nucleons();
@@ -864,19 +942,22 @@ int Glauber::perform_string_production() {
             // put baryon of the projectile in the selected string
             auto proj = QCD_string_list[idx].get_proj();
             if (!proj->baryon_was_used()) {
-                proj->set_baryon_used(true);
-                QCD_string_list[idx].set_has_baryon_right(true);
+                if (ran_gen_ptr_->rand_uniform() < baryonInStringProb) {
+                    proj->set_baryon_used(true);
+                    QCD_string_list[idx].set_has_baryon_right(true);
+                }
             }
         } else if (idx < Nstrings + Npart_proj) {
             // put baryon of the projectile in the projectile remnant
             auto proj = projectile->get_participant(idx - Nstrings);
-            //auto p_i = proj->get_remnant_p();
+            auto p_i = proj->get_remnant_p();
+            if (p_i[0] <= 0) continue;
             //auto mass = 0.;
             //if (std::abs(p_i[3]) < p_i[0]) {
             //    // a time-like beam remnant
             //    mass = sqrt(p_i[0]*p_i[0] - p_i[3]*p_i[3]);
             //}
-            //if (!proj->baryon_was_used() && mass > 0.1) {
+            //if (!proj->baryon_was_used() && mass > 0.1) {}
             if (!proj->baryon_was_used()) {
                 proj->set_baryon_used(true);
                 proj->set_remnant_carry_baryon_number(true);
@@ -890,25 +971,29 @@ int Glauber::perform_string_production() {
             // put baryon of the target in the selected string
             auto targ = QCD_string_list[idx].get_targ();
             if (!targ->baryon_was_used()) {
-                targ->set_baryon_used(true);
-                QCD_string_list[idx].set_has_baryon_left(true);
+                if (ran_gen_ptr_->rand_uniform() < baryonInStringProb) {
+                    targ->set_baryon_used(true);
+                    QCD_string_list[idx].set_has_baryon_left(true);
+                }
             }
         } else if (idx > Nstrings + Npart_proj - 1) {
             // put baryon of the target in the target remnant
             auto targ = target->get_participant(idx - Nstrings - Npart_proj);
-            //auto p_i = targ->get_remnant_p();
+            auto p_i = targ->get_remnant_p();
+            if (p_i[0] <= 0) continue;
             //auto mass = 0.;
             //if (std::abs(p_i[3]) < p_i[0]) {
             //    // a time-like beam remnant
             //    mass = sqrt(p_i[0]*p_i[0] - p_i[3]*p_i[3]);
             //}
-            //if (!targ->baryon_was_used() && mass > 0.1) {
+            //if (!targ->baryon_was_used() && mass > 0.1) {}
             if (!targ->baryon_was_used()) {
                 targ->set_baryon_used(true);
                 targ->set_remnant_carry_baryon_number(true);
             }
         }
     }
+
     // set baryons' rapidities
     for (auto &it: QCD_string_list) {
         it.evolve_QCD_string();
@@ -922,10 +1007,15 @@ int Glauber::perform_string_production() {
             real y_baryon_right = 0.;
             if (it.get_has_baryon_right()) {
                 if (ran_gen_ptr_->rand_uniform() < lambdaB) {
-                    // y_baryon_right = sample_junction_rapidity_right(
-                    //              it->get_y_i_left(), it->get_y_i_right());
-                    y_baryon_right = sample_junction_rapidity_right(
+                    if (ran_gen_ptr_->rand_uniform() < lambdaBs) {
+                        // y_baryon_right = sample_junction_rapidity_right(
+                        //          it->get_y_i_left(), it->get_y_i_right());
+                        y_baryon_right = sample_junction_rapidity_right(
                                     it.get_y_f_left(), it.get_y_f_right());
+                    } else {
+                        y_baryon_right = sample_junction_rapidity_uniformed(
+                                    it.get_y_f_left(), it.get_y_f_right());
+                    }
                 } else {
                     // One should use the very initial rapidities of the
                     // colliding nucleons to determine the junction rapidity
@@ -944,10 +1034,15 @@ int Glauber::perform_string_production() {
             real y_baryon_left = 0.;
             if (it.get_has_baryon_left()) {
                 if (ran_gen_ptr_->rand_uniform() < lambdaB) {
-                    //y_baryon_left = sample_junction_rapidity_left(
-                    //              it->get_y_i_left(), it->get_y_i_right());
-                    y_baryon_left = sample_junction_rapidity_left(
+                    if (ran_gen_ptr_->rand_uniform() < lambdaBs) {
+                        //y_baryon_left = sample_junction_rapidity_left(
+                        //          it->get_y_i_left(), it->get_y_i_right());
+                        y_baryon_left = sample_junction_rapidity_left(
                                     it.get_y_f_left(), it.get_y_f_right());
+                    } else {
+                        y_baryon_left = sample_junction_rapidity_uniformed(
+                                    it.get_y_f_left(), it.get_y_f_right());
+                    }
                 } else {
                     y_baryon_left = it.get_y_f_left();
                 }
@@ -1138,12 +1233,11 @@ void Glauber::update_collision_schedule(
         create_a_collision_event(it.lock(), targ);
 }
 
-void Glauber::output_QCD_strings(std::string filename, const real Npart,
-                                 const real Ncoll, const real Nstrings,
-                                 const real b) {
+
+void Glauber::computeCenterOfMass(real &x_o, real &y_o) {
     // compute the center of mass
-    real x_o = 0.;
-    real y_o = 0.;
+    x_o = 0.;
+    y_o = 0.;
     int n_strings = QCD_string_list.size();
     for (auto &it: QCD_string_list) {
         auto x_prod = it.get_x_production();
@@ -1160,26 +1254,17 @@ void Glauber::output_QCD_strings(std::string filename, const real Npart,
     }
     x_o /= n_strings;
     y_o /= n_strings;
+}
 
-    std::ofstream output(filename.c_str());
-    real total_energy = Npart*parameter_list.get_roots()/2.;
-    real net_Pz = ((projectile->get_number_of_wounded_nucleons()
-                    - target->get_number_of_wounded_nucleons())
-                   *parameter_list.get_roots()/2.);
-    output << "# b = " << b << " fm " << "Npart = " << Npart
-           << " Ncoll = " << Ncoll << " Nstrings = " << Nstrings
-           << " total_energy = " << total_energy << " GeV, "
-           << "net_Pz = " << net_Pz << " GeV" << endl;
 
-    output << "# mass[GeV]  m_over_sigma[fm]  tau_form[fm]  tau_0[fm]  eta_s_0  "
-           << "x_perp[fm]  y_perp[fm]  x_l[fm]  y_l[fm]  x_r[fm]  y_r[fm]  "
-           << "eta_s_left  eta_s_right  y_l  y_r  remnant_l  remnant_r "
-           << "y_l_i  y_r_i "
-           << "eta_s_baryon_left  eta_s_baryon_right  y_l_baryon  y_r_baryon  "
-           << "baryon_fraction_l  baryon_fraction_r px py"
-           << endl;
+void Glauber::prepare_output_QCD_strings() {
+    QCD_string_output_arr_.clear();
+    // compute the center of mass
+    real x_o = 0.;
+    real y_o = 0.;
+    computeCenterOfMass(x_o, y_o);
 
-    // output strings
+    // prepare output strings
     for (auto &it: QCD_string_list) {
         auto x_prod = it.get_x_production();
         auto x_left = it.get_targ()->get_x();
@@ -1231,12 +1316,7 @@ void Glauber::output_QCD_strings(std::string filename, const real Npart,
             baryon_fraction_left, baryon_fraction_right,
             it.get_string_px(), it.get_string_py(),
         };
-
-        output << std::scientific << std::setprecision(8);
-        for (auto &ival : output_array) {
-            output << std::setw(15) << ival << "  ";
-        }
-        output << endl;
+        QCD_string_output_arr_.push_back(output_array);
     }
 
     // output the beam remnant strings
@@ -1299,12 +1379,179 @@ void Glauber::output_QCD_strings(std::string filename, const real Npart,
                 baryon_fraction_left, baryon_fraction_right,
                 it.get_string_px(), it.get_string_py(),
             };
+            QCD_string_output_arr_.push_back(output_array);
+        }
+    }
+}
 
-            output << std::scientific << std::setprecision(8);
-            for (auto &ival : output_array) {
-                output << std::setw(15) << ival << "  ";
-            }
-            output << endl;
+
+void Glauber::output_QCD_strings(std::string filename, const real Npart,
+                                 const real Ncoll, const real Nstrings,
+                                 const real b, const unsigned int seed) {
+    if (QCD_string_output_arr_.size() == 0)
+        prepare_output_QCD_strings();
+
+    std::ofstream output(filename.c_str());
+    real total_energy = Npart*parameter_list.get_roots()/2.;
+    real net_Pz = ((projectile->get_number_of_wounded_nucleons()
+                    - target->get_number_of_wounded_nucleons())
+                   *parameter_list.get_roots()/2.);
+    output << "# b = " << b << " fm " << "Npart = " << Npart
+           << " Ncoll = " << Ncoll << " Nstrings = " << Nstrings
+           << " total_energy = " << total_energy << " GeV, "
+           << "net_Pz = " << net_Pz << " GeV, "
+           << "seed = " << seed << endl;
+
+    output << "# mass[GeV]  m_over_sigma[fm]  tau_form[fm]  tau_0[fm]  eta_s_0  "
+           << "x_perp[fm]  y_perp[fm]  x_l[fm]  y_l[fm]  x_r[fm]  y_r[fm]  "
+           << "eta_s_left  eta_s_right  y_l  y_r  remnant_l  remnant_r "
+           << "y_l_i  y_r_i "
+           << "eta_s_baryon_left  eta_s_baryon_right  y_l_baryon  y_r_baryon  "
+           << "baryon_fraction_l  baryon_fraction_r"
+           << endl;
+
+    for (auto &string_i : QCD_string_output_arr_) {
+        output << std::scientific << std::setprecision(8);
+        for (auto &ival : string_i) {
+            output << std::setw(15) << ival << "  ";
+        }
+        output << endl;
+    }
+    output.close();
+}
+
+
+void Glauber::prepareParticipantList() {
+    participantList_.clear();
+    // compute the center of mass
+    real x_o = 0.;
+    real y_o = 0.;
+    computeCenterOfMass(x_o, y_o);
+    auto proj_nucleon_list = projectile->get_nucleon_list();
+    int dir = 1;
+    for (auto &iproj: (*proj_nucleon_list)) {
+        if (iproj->is_wounded()) {
+            auto proj_x = iproj->get_x();
+            proj_x[1] -= x_o;
+            proj_x[2] -= y_o;
+            std::vector<real> part_i;
+            part_i.push_back(proj_x[0]);
+            part_i.push_back(proj_x[1]);
+            part_i.push_back(proj_x[2]);
+            part_i.push_back(proj_x[3]);
+            part_i.push_back(dir);
+            part_i.push_back(iproj->get_electric_charge());
+            participantList_.push_back(part_i);
+        }
+    }
+    dir = -1;
+    auto targ_nucleon_list = target->get_nucleon_list();
+    for (auto &itarg: (*targ_nucleon_list)) {
+        if (itarg->is_wounded()) {
+            auto targ_x = itarg->get_x();
+            targ_x[1] -= x_o;
+            targ_x[2] -= y_o;
+            std::vector<real> part_i;
+            part_i.push_back(targ_x[0]);
+            part_i.push_back(targ_x[1]);
+            part_i.push_back(targ_x[2]);
+            part_i.push_back(targ_x[3]);
+            part_i.push_back(dir);
+            part_i.push_back(itarg->get_electric_charge());
+            participantList_.push_back(part_i);
+        }
+    }
+}
+
+
+void Glauber::outputParticipants(std::string filename) {
+    prepareParticipantList();
+
+    std::ofstream output(filename.c_str());
+    output << "# t[fm]  x[fm]  y[fm]  z[fm]  dir  e"
+           << endl;
+    for (auto &ipart: participantList_) {
+        output << std::scientific << std::setprecision(6);
+        for (auto &x_i: ipart) {
+            output << std::setw(10) << x_i << "  ";
+        }
+        output << endl;
+    }
+    output.close();
+}
+
+
+void Glauber::output_spectators(std::string filename) {
+    // compute the center of mass
+    real x_o = 0.;
+    real y_o = 0.;
+    computeCenterOfMass(x_o, y_o);
+
+    std::ofstream output(filename.c_str());
+    output << "# t[fm]  x[fm]  y[fm]  z[fm]  m[GeV]  px[GeV]  py[GeV]  y  e"
+           << endl;
+    auto proj_nucleon_list = projectile->get_nucleon_list();
+    for (auto &iproj: (*proj_nucleon_list)) {
+        if (!iproj->is_wounded()) {
+            output << std::scientific << std::setprecision(6);
+            auto proj_x = iproj->get_x();
+            auto proj_p = iproj->get_p();
+            auto mass = iproj->get_mass();
+
+            // compute the when and where the spectator nucleon enters the
+            // light cone
+            real vz = proj_p[3]/proj_p[0];
+            proj_x[3] = vz/(1. + vz)*(proj_x[3]/vz - proj_x[0]);
+            proj_x[0] = -proj_x[3];
+            proj_x[1] -= x_o;
+            proj_x[2] -= y_o;
+
+            // output spectator's position and momentum
+            for (const auto &x_i : proj_x)
+                output << std::setw(10) << x_i << "  ";
+
+            auto fermiMomentum = iproj->get_fermi_momentum();
+            for (int i = 1; i < 4; i++)
+                proj_p[i] += fermiMomentum[i];
+            auto rap = asinh(proj_p[3]/(sqrt(mass*mass + proj_p[1]*proj_p[1]
+                                             + proj_p[2]*proj_p[2])));
+            output << std::setw(10) << mass << "  "
+                   << std::setw(10) << proj_p[1] << "  "
+                   << std::setw(10) << proj_p[2] << "  "
+                   << std::setw(10) << rap << "  "
+                   << iproj->get_electric_charge() << endl;
+        }
+    }
+    auto targ_nucleon_list = target->get_nucleon_list();
+    for (auto &itarg: (*targ_nucleon_list)) {
+        if (!itarg->is_wounded()) {
+            output << std::scientific << std::setprecision(6);
+            auto targ_x = itarg->get_x();
+            auto targ_p = itarg->get_p();
+            auto mass = itarg->get_mass();
+
+            // compute the when and where the spectator nucleon enters the
+            // light cone
+            real vz = targ_p[3]/targ_p[0];
+            targ_x[3] = vz/(1. - vz)*(targ_x[3]/vz - targ_x[0]);
+            targ_x[0] = targ_x[3];
+            targ_x[1] -= x_o;
+            targ_x[2] -= y_o;
+
+            // output spectator's position and momentum
+            for (const auto &x_i : targ_x)
+                output << std::setw(10) << x_i << "  ";
+
+            auto fermiMomentum = itarg->get_fermi_momentum();
+            for (int i = 1; i < 4; i++)
+                targ_p[i] += fermiMomentum[i];
+            auto rap = asinh(targ_p[3]/(sqrt(mass*mass + targ_p[1]*targ_p[1]
+                                             + targ_p[2]*targ_p[2])));
+            output << std::setw(10) << mass << "  "
+                   << std::setw(10) << targ_p[1] << "  "
+                   << std::setw(10) << targ_p[2] << "  "
+                   << std::setw(10) << rap << "  "
+                   << itarg->get_electric_charge() << endl;
         }
     }
     output.close();
@@ -1363,6 +1610,27 @@ real Glauber::sample_rapidity_loss_from_piecewise_parametrization(
     }
     return(y_loss);
 }
+
+real Glauber::sample_rapidity_loss_from_piecewise_parametrization(
+                                                const real y_init) const {
+    auto y_loss1 = parameter_list.getParam("ylossParam4At2", 1.60);
+    auto y_loss2 = parameter_list.getParam("ylossParam4At4", 2.15);
+    auto y_loss3 = parameter_list.getParam("ylossParam4At6", 2.45);
+    auto y_loss4 = parameter_list.getParam("ylossParam4At10", 2.95);
+
+    real y_loss = 0.;
+    if (y_init < 2) {
+        y_loss = y_loss1/2.*y_init;
+    } else if (y_init < 4) {
+        y_loss = (y_loss2 - y_loss1)/2.*y_init + (2.*y_loss1 - y_loss2);
+    } else if (y_init < 6) {
+        y_loss = (y_loss3 - y_loss2)/2.*y_init + (3.*y_loss2 - 2.*y_loss3);
+    } else {
+        y_loss = (y_loss4 - y_loss3)/4.*y_init + (2.5*y_loss3 - 1.5*y_loss4);
+    }
+    return(y_loss);
+}
+
 
 real Glauber::sample_rapidity_loss_from_parametrization_with_fluct(
                                                 const real y_init) const {
@@ -1428,9 +1696,16 @@ real Glauber::sample_junction_rapidity_left(real y_left, real y_right) const {
 }
 
 
-//  This function computes the sigeff(s) from the formula
-//  sigmaNN_in(s) = int d^2b [1 - exp(-sigeff(s)*Tpp(b))]
-//  Reads sigmaNN, returns guassian width
+// sample y from a uniformed 1/(yp - yt) distribution
+real Glauber::sample_junction_rapidity_uniformed(real y_left, real y_right) const {
+    real y = y_left + ran_gen_ptr_->rand_uniform()*(y_right - y_left);
+    return(y);
+}
+
+
+// This function computes the sigeff(s) from the formula
+// sigmaNN_in(s) = int d^2b [1 - exp(-sigeff(s)*Tpp(b))]
+// Reads sigmaNN, returns guassian width
 real Glauber::get_sig_eff(const real siginNN) {
     // rms-radius of a gaussian = rms-radius of a disc with radius R,
     // where 2*PI*(2R)^2=sigmaNN

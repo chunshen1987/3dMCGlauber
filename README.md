@@ -30,7 +30,7 @@ The code package also includes unit test modules for individual class components
 	
 	mkdir build
 	cd build
-	cmake ..-Dunittest=ON
+	cmake .. -Dunittest=ON
 	make
 	make install
 

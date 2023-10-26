@@ -5,7 +5,9 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 #include "Glauber.h"
+#include "MakeDensity.h"
 #include "Parameters.h"
 #include "RandomUlty.h"
 #include "pretty_ostream.h"
@@ -17,8 +19,14 @@ class EventGenerator {
     Parameters parameter_list_;
     std::shared_ptr<RandomUtil::Random> ran_gen_ptr_;
     std::unique_ptr<Glauber> mc_glauber_ptr_;
+    std::unique_ptr<MakeDensity> density_maker_ptr_;
     bool statistics_only_;
+    bool batchDensityOutput_;
+    bool batchDensity2DOutput_;
+    bool batchEccOutput_;
+    bool initialEstOutput_;
     pretty_ostream messager;
+
     int Ncoll_;
     int Npart_;
     std::vector<double> HardPartonPosAndMomProj;
@@ -27,12 +35,21 @@ class EventGenerator {
     double proj_E, proj_px, proj_py, proj_pz;
     double targ_t, targ_x, targ_y, targ_z;
     double targ_E, targ_px, targ_py, targ_pz;
+
     real ecm_;
+    std::vector<float> cenEstMinBiasList_;
+    float cenEstMin_;
+    float cenEstMax_;
+
  public:
     EventGenerator() = default;
-    EventGenerator(std::string input_filename, int seed=0);
+    EventGenerator(std::string input_filename, int argc, char* argv[],
+                   int seed=0);
     ~EventGenerator() {};
 
+    float computeCenEstimator(const int Npart, const int Ncoll,
+                              const int Nstrings) const;
+    void generateMinBiasEventList();
     void generate_events(int nev, int event_id_offset=0);
 
     //! get the collisions information for the JETSCAPE framework
@@ -46,8 +63,6 @@ class EventGenerator {
     //! after substracted the parton's momentum, 
     //! generate the 3D Glauber initial conditions for MUSIC
     void generate_strings();
-
-    bool event_of_interest_trigger(int Npart, int Ncoll, int Nstrings);
 
     //! calculate the total nucleon density at Lab frame, unit is 1/fm^3
     double MCGlb_nucleon_density(double t, double x,
@@ -79,6 +94,8 @@ class EventGenerator {
     std::vector<double> GetRemMom_Targ();
 
     std::vector<CollisionEvent> get_CollisionEventvector();
+    bool event_of_interest_trigger(const int Npart, const int Ncoll,
+                                   const int Nstrings) const;
 };
 
 };
