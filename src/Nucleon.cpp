@@ -19,9 +19,18 @@ int MCGlb::Nucleon::random_value_ = 0;
 
 namespace MCGlb {
 
-Nucleon::Nucleon(SpatialVec x_in, MomentumVec p_in) {
+Nucleon::Nucleon(SpatialVec x_in, MomentumVec p_in,
+                 std::shared_ptr<RandomUtil::Random> ran_gen_ptr) {
+    ran_gen_ptr_ = ran_gen_ptr;
     set_particle_variables(x_in, p_in);
     number_of_valence_quark_resamples_ = re_readin_valence_quark_samples();
+}
+
+
+Nucleon::Nucleon(SpatialVec x_in, MomentumVec p_in, real mass_in,
+                 std::shared_ptr<RandomUtil::Random> ran_gen_ptr) {
+    ran_gen_ptr_ = ran_gen_ptr;
+    set_particle_variables(x_in, p_in, mass_in);
 }
 
 Nucleon::~Nucleon() {
@@ -229,8 +238,8 @@ std::shared_ptr<Quark> Nucleon::get_a_valence_quark(int ran_seed) {
         if (minimum_connections > iq->get_number_of_connections())
             minimum_connections = iq->get_number_of_connections();
     }
-    set_random_gen(abs(ran_seed));
-    std::random_shuffle(quark_list.begin(), quark_list.end(), get_random_gen);
+    std::shuffle(quark_list.begin(), quark_list.end(),
+                 *ran_gen_ptr_->getRanGenerator());
     for (auto &iq: quark_list) {
         if (minimum_connections == iq->get_number_of_connections()) {
             iq->add_a_connection();

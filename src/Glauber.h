@@ -59,7 +59,7 @@ class Glauber {
     SpatialVec Proj_hot_spot_x_;
     SpatialVec Targ_hot_spot_x_;
  public:
-    Glauber() = default;
+    //Glauber() = default;
     Glauber(const MCGlb::Parameters &param_in,
             shared_ptr<RandomUtil::Random> ran_gen);
     ~Glauber() {};

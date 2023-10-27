@@ -15,7 +15,7 @@ Random::Random(int seed, double min, double max) :
         std::random_device ran_dev;
         seed_ = ran_dev();
     }
-    ran_generator_ = std::unique_ptr<std::mt19937>(new std::mt19937(seed_));
+    ran_generator_ = std::shared_ptr<std::mt19937>(new std::mt19937(seed_));
 }
 
 
