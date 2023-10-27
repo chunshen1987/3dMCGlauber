@@ -17,8 +17,10 @@ TEST_CASE("Test constructor") {
     SpatialVec x2 = {0.0, 1.5, 2.0, 3.0};
     MomentumVec p1 = {0.0};
     MomentumVec p2 = {0.0};
-    shared_ptr<Nucleon> proj(new Nucleon(x1, p1));
-    shared_ptr<Nucleon> targ(new Nucleon(x2, p2));
+    std::shared_ptr<RandomUtil::Random> ran_gen_ptr(
+                                    new RandomUtil::Random(0, 0., 1.0));
+    shared_ptr<Nucleon> proj(new Nucleon(x1, p1, ran_gen_ptr));
+    shared_ptr<Nucleon> targ(new Nucleon(x2, p2, ran_gen_ptr));
     CollisionEvent test_event(x_coll, proj, targ);
     CHECK(test_event.get_proj_collided_times() == 0);
     CHECK(test_event.get_targ_collided_times() == 0);
@@ -31,8 +33,10 @@ TEST_CASE("Test the copy") {
     SpatialVec x2 = {0.0, 1.5, 2.0, 3.0};
     MomentumVec p1 = {0.0};
     MomentumVec p2 = {0.0};
-    shared_ptr<Nucleon> proj(new Nucleon(x1, p1));
-    shared_ptr<Nucleon> targ(new Nucleon(x2, p2));
+    std::shared_ptr<RandomUtil::Random> ran_gen_ptr(
+                                    new RandomUtil::Random(0, 0., 1.0));
+    shared_ptr<Nucleon> proj(new Nucleon(x1, p1, ran_gen_ptr));
+    shared_ptr<Nucleon> targ(new Nucleon(x2, p2, ran_gen_ptr));
     CollisionEvent test_event(x_coll, proj, targ);
     auto test_event2 = test_event;
     CHECK(test_event2.get_collision_time() == 4.0);
@@ -44,8 +48,10 @@ TEST_CASE("Test the collision validation function") {
     SpatialVec x2 = {0.0, 1.5, 2.0, 3.0};
     MomentumVec p1 = {0.0};
     MomentumVec p2 = {0.0};
-    shared_ptr<Nucleon> proj(new Nucleon(x1, p1));
-    shared_ptr<Nucleon> targ(new Nucleon(x2, p2));
+    std::shared_ptr<RandomUtil::Random> ran_gen_ptr(
+                                    new RandomUtil::Random(0, 0., 1.0));
+    shared_ptr<Nucleon> proj(new Nucleon(x1, p1, ran_gen_ptr));
+    shared_ptr<Nucleon> targ(new Nucleon(x2, p2, ran_gen_ptr));
     {
         CollisionEvent test_event(x_coll, proj, targ);
         CHECK(test_event.is_valid() == true);
@@ -65,8 +71,10 @@ TEST_CASE("Test pushing collision events to a set with defined comparison functi
     SpatialVec x2 = {0.0, 1.5, 2.0, 3.0};
     MomentumVec p1 = {0.0};
     MomentumVec p2 = {0.0};
-    shared_ptr<Nucleon> proj(new Nucleon(x1, p1));
-    shared_ptr<Nucleon> targ(new Nucleon(x2, p2));
+    std::shared_ptr<RandomUtil::Random> ran_gen_ptr(
+                                    new RandomUtil::Random(0, 0., 1.0));
+    shared_ptr<Nucleon> proj(new Nucleon(x1, p1, ran_gen_ptr));
+    shared_ptr<Nucleon> targ(new Nucleon(x2, p2, ran_gen_ptr));
     CollisionEvent test_event1(x_coll1, proj, targ);
     CollisionEvent test_event2(x_coll2, proj, targ);
     std::set<CollisionEvent> collision_schedule;
@@ -83,8 +91,10 @@ TEST_CASE("Test pushing collision events to a vector and sort") {
     SpatialVec x2 = {0.0, 1.5, 2.0, 3.0};
     MomentumVec p1 = {0.0};
     MomentumVec p2 = {0.0};
-    shared_ptr<Nucleon> proj(new Nucleon(x1, p1));
-    shared_ptr<Nucleon> targ(new Nucleon(x2, p2));
+    std::shared_ptr<RandomUtil::Random> ran_gen_ptr(
+                                    new RandomUtil::Random(0, 0., 1.0));
+    shared_ptr<Nucleon> proj(new Nucleon(x1, p1, ran_gen_ptr));
+    shared_ptr<Nucleon> targ(new Nucleon(x2, p2, ran_gen_ptr));
     CollisionEvent test_event1(x_coll1, proj, targ);
     CollisionEvent test_event2(x_coll2, proj, targ);
     std::vector<CollisionEvent> collision_schedule;
@@ -101,8 +111,10 @@ TEST_CASE("Test get collision nucleon pointer") {
     SpatialVec x2 = {0.0, 1.5, 2.0, 3.0};
     MomentumVec p1 = {0.0};
     MomentumVec p2 = {0.0};
-    shared_ptr<Nucleon> proj(new Nucleon(x1, p1));
-    shared_ptr<Nucleon> targ(new Nucleon(x2, p2));
+    std::shared_ptr<RandomUtil::Random> ran_gen_ptr(
+                                    new RandomUtil::Random(0, 0., 1.0));
+    shared_ptr<Nucleon> proj(new Nucleon(x1, p1, ran_gen_ptr));
+    shared_ptr<Nucleon> targ(new Nucleon(x2, p2, ran_gen_ptr));
     CollisionEvent test_event1(x_coll1, proj, targ);
     auto proj_ptr = test_event1.get_proj_nucleon_ptr().lock();
     CHECK(proj_ptr->get_x() == x1);
