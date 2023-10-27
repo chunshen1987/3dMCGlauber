@@ -47,11 +47,15 @@ class Quark : public Particle {
     void set_remnant(bool remnant) {remnant_set_ = remnant;}
 
     bool quark_is_subtracted() const {return(subtracted_quark_);}
-    void set_subtracted(bool subtracted_quark) {subtracted_quark_ = subtracted_quark;}
+    void set_subtracted(bool subtracted_quark) {
+        subtracted_quark_ = subtracted_quark;
+    }
 
     bool quark_is_connected() const {return(connected_quark_);}
-    void set_connected(bool connected_quark) {connected_quark_ = connected_quark;}
-    
+    void set_connected(bool connected_quark) {
+        connected_quark_ = connected_quark;
+    }
+
     void add_a_connection() {number_of_connections++;}
     int get_number_of_connections() const {return(number_of_connections);}
 };
