@@ -1088,7 +1088,7 @@ void Glauber::produce_remnant_strings() {
             auto x_i = iproj->get_remnant_x_frez();
             auto p_i = iproj->get_remnant_p();
             if (iproj->is_hard_collided() && iproj->nucleon_is_subtracted()) {
-                for (int ip=0; ip<p_i.size(); ip++) {
+                for (unsigned int ip = 0; ip < p_i.size(); ip++) {
                     Mom_remnant_proj_.push_back(p_i[ip]);
                     if (parameter_list.subtract_hard_momentum()) {
                         p_i[ip] = 0.0;
@@ -1142,7 +1142,7 @@ void Glauber::produce_remnant_strings() {
             auto x_i = itarg->get_remnant_x_frez();
             auto p_i = itarg->get_remnant_p();
             if (itarg->is_hard_collided() && itarg->nucleon_is_subtracted()) {
-                for (int ip=0; ip<p_i.size(); ip++) {
+                for (unsigned int ip = 0; ip < p_i.size(); ip++) {
                     Mom_remnant_targ_.push_back(p_i[ip]);
                     if (parameter_list.subtract_hard_momentum()) {
                         p_i[ip] = 0.0;
