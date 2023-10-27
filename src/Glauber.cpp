@@ -15,7 +15,6 @@
 using std::cout;
 using std::endl;
 using std::shared_ptr;
-int MCGlb::Glauber::random_value_ = 0; 
 
 namespace MCGlb {
 

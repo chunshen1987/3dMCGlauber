@@ -17,7 +17,6 @@
 
 using std::cout;
 using std::endl;
-int MCGlb::Nucleus::random_value_ = 0; 
 
 namespace MCGlb {
 

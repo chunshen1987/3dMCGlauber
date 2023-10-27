@@ -54,7 +54,6 @@ class Glauber {
 
     real sigma_eff_;
     real nucleon_width_;
-    static int random_value_;
 
     SpatialVec Proj_hot_spot_x_;
     SpatialVec Targ_hot_spot_x_;
@@ -71,7 +70,7 @@ class Glauber {
     void make_nuclei();
     real get_impact_parameter() const {return(impact_b);}
 
-    int make_collision_schedule();// get the number of binary collisions 
+    int make_collision_schedule();
     int make_collision_schedule_second_stage();
     bool hit(real d2) const;
 
@@ -115,8 +114,10 @@ class Glauber {
 
     //! This function gets the target/projectile nucleon density at Lab frame
     //! at t, x, y, z The unit is 1/fm^3
-    double get_nucleus_density(double t, double x, double y, double z, int direction,
+    double get_nucleus_density(double t, double x, double y, double z,
+                               int direction,
                                std::unique_ptr<Nucleus> &nucleus_ptr);
+
     double get_targ_nucleon_density(double t, double x, double y, double z);
     double get_proj_nucleon_density(double t, double x, double y, double z);
 
@@ -180,8 +181,6 @@ class Glauber {
     }
 
     real get_sig_eff(const real siginNN);
-    static int get_random_gen(int i) {return random_value_%i;}
-    static void set_random_gen(int i) {random_value_ = i;}
 };
 
 }

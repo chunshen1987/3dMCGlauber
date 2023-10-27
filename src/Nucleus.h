@@ -40,7 +40,6 @@ class Nucleus {
 
     int system_status_;
     int number_of_valence_quark_samples_;
-    static int random_value_;
     int N_sea_partons_;
 
  public:
@@ -153,8 +152,6 @@ class Nucleus {
                                         const real ecm) const;
     SpatialVec sample_valence_quark_position() const;
     real ExponentialDistribution(const real a, const real r) const;
-    static int get_random_gen(int i) {return random_value_%i;};
-    static void set_random_gen(int i) {random_value_ = i;};
 };
 
 }

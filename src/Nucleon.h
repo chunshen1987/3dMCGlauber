@@ -131,9 +131,10 @@ class Nucleon : public Particle {
             const real ecm) const;
     void resample_valence_quarks(
             real ecm, int direction, real charge, std::vector<double> xvec_q);
-    void readd_soft_parton_ball(real ecm, int direction, std::vector<double> xvec_q,
-                                real BG, MomentumVec soft_pvec,
-                                std::vector<std::shared_ptr<Quark>> valence_quark_list);
+    void readd_soft_parton_ball(
+            real ecm, int direction, std::vector<double> xvec_q,
+            real BG, MomentumVec soft_pvec,
+            std::vector<std::shared_ptr<Quark>> valence_quark_list);
 
     SpatialVec resample_valence_quark_position(real BG) const;
 
