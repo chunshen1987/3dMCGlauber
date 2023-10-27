@@ -4,6 +4,7 @@
 #define SRC_NUCLEON_H_
 
 #include "Particle.h"
+#include "Random.h"
 #include "Quark.h"
 #include <vector>
 #include <memory>
@@ -23,6 +24,7 @@ class Nucleon : public Particle {
     bool remnant_carry_baryon_number_ = false;
     std::vector<std::weak_ptr<Nucleon>> collide_with;
     std::vector<std::weak_ptr<Nucleon>> connected_with;
+    std::shared_ptr<RandomUtil::Random> ran_gen_ptr_;
     std::vector<int> connected_times_;
     MomentumVec remnant_p_ = {0.0, 0.0, 0.0, 0.0};
     SpatialVec remnant_x_frez_ = {0.0, 0.0, 0.0, 0.0};
@@ -30,11 +32,11 @@ class Nucleon : public Particle {
 
  public:
     Nucleon() = default;
-    Nucleon(SpatialVec x_in, MomentumVec p_in);
+    Nucleon(SpatialVec x_in, MomentumVec p_in,
+            std::shared_ptr<RandomUtil::Random> ran_gen_ptr);
 
-    Nucleon(SpatialVec x_in, MomentumVec p_in, real mass_in) {
-        set_particle_variables(x_in, p_in, mass_in);
-    }
+    Nucleon(SpatialVec x_in, MomentumVec p_in, real mass_in,
+            std::shared_ptr<RandomUtil::Random> ran_gen_ptr);
 
     ~Nucleon();
 

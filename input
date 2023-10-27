@@ -8,8 +8,8 @@ light_nucleus_option 0               # light nucleus configurations from differe
 roots 200.                           # collision energy (GeV)
 useQuarks 1                          # switch to use valence quarks
 Q2 1.                                # the scale when evaluating the pdf
-b_min 7.                             # minimum impact parameter (fm)
-b_max 9.                             # maximum impact parameter (fm)
+b_min 0.                             # minimum impact parameter (fm)
+b_max 0.                             # maximum impact parameter (fm)
 seed -1                              # random seed (-1: system)
 only_event_statistics 0              # flag to only output the event_summary file
 batch_density_output 0               # output density profile in batch
