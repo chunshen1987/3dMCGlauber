@@ -55,12 +55,9 @@ class EventGenerator {
     //! get the collisions information for the JETSCAPE framework
     void generate_pre_events();
 
-    void New_Para_pointer(int seed);
     void set_parameter(string par, double val);
-    void set_parameter(string par, float val);
-    void set_parameter(string par, int val);
 
-    //! after substracted the parton's momentum, 
+    //! after substracted the parton's momentum,
     //! generate the 3D Glauber initial conditions for MUSIC
     void generate_strings();
 
