@@ -4,7 +4,6 @@
 #define SRC_NUCLEON_H_
 
 #include "Particle.h"
-#include "Random.h"
 #include "Quark.h"
 #include "RandomUlty.h"
 #include <vector>

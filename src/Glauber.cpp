@@ -549,14 +549,14 @@ void Glauber::Pick_and_subtract_hard_parton_momentum() {
                          SpatialVec tarj_q_pos = targ_q->get_x();
                          auto tarj_n = targ_collided->get_x();
                          pos_q_Targ = {0.0, tarj_q_pos[1]+tarj_n[1], tarj_q_pos[2]+tarj_n[2], tarj_q_pos[3]+tarj_n[3]};
-                         auto dis_square_q_xy = ( pos_q_Targ[1] - pos_q_Proj[1] )  * ( pos_q_Targ[1] - pos_q_Proj[1] ) + 
+                         auto dis_square_q_xy = ( pos_q_Targ[1] - pos_q_Proj[1] )  * ( pos_q_Targ[1] - pos_q_Proj[1] ) +
                                                 ( pos_q_Targ[2] - pos_q_Proj[2] )  * ( pos_q_Targ[2] - pos_q_Proj[2] );
                          SpatialVec newplace = pos_q_Targ;
                          while (dis_square_q_xy > 0.25) {
                              tarj_q_pos = targ_collided->resample_valence_quark_position(parameter_list.get_BG(), ran_gen_ptr_);
                              newplace = {0, tarj_q_pos[1]+tarj_n[1], tarj_q_pos[2]+tarj_n[2], tarj_q_pos[3]+tarj_n[3]};
-                             auto dis_square_q_xy = ( newplace[1] - pos_q_Proj[1] )  * ( newplace[1] - pos_q_Proj[1] ) + 
-                                                    ( newplace[2] - pos_q_Proj[2] )  * ( newplace[2] - pos_q_Proj[2] );
+                             dis_square_q_xy = ( newplace[1] - pos_q_Proj[1] )  * ( newplace[1] - pos_q_Proj[1] ) +
+                                               ( newplace[2] - pos_q_Proj[2] )  * ( newplace[2] - pos_q_Proj[2] );
                          }
                          targ_q->set_x(tarj_q_pos);
                          set_Targ_hot_spot_x(tarj_q_pos);
@@ -676,8 +676,8 @@ int Glauber::decide_QCD_strings_production_second_stage() {
                             parameter_list.get_QCD_string_production_mode();
     if (QCD_string_production_mode == 1) {
         // randomly ordered strings
-        set_random_gen(std::abs(ran_gen_ptr_->get_seed()));
-        std::random_shuffle(collision_list.begin(), collision_list.end(),get_random_gen);
+        std::shuffle(collision_list.begin(), collision_list.end(),
+                     *ran_gen_ptr_->getRanGenerator());
     } else if (QCD_string_production_mode == 2) {
         // anti-time ordered strings
         std::reverse(collision_list.begin(), collision_list.end());
@@ -791,7 +791,6 @@ void Glauber::get_tau_form_and_moversigma(const int string_evolution_mode,
         m_over_sigma = tau_form/std::max(eps, sqrt(2.*(cosh(y_loss) - 1.)));
     } else if (string_evolution_mode == -4) {
         // only m_over_sigma fluctuates for Beam Remnants
-        real frac = ran_gen_ptr_->rand_uniform();
         y_loss = (sample_rapidity_loss_shell(y_in_lrf)
                   *remnant_energy_loss_fraction_);
         m_over_sigma = tau_form/std::max(eps, sqrt(2.*(cosh(y_loss) - 1.)));
@@ -1591,25 +1590,6 @@ real Glauber::sample_rapidity_loss_from_parametrization(
     return(y_loss);
 }
 
-real Glauber::sample_rapidity_loss_from_piecewise_parametrization(
-                                                const real y_init) const {
-    auto y_loss1 = parameter_list.getParam("ylossParam4At2", 1.60);
-    auto y_loss2 = parameter_list.getParam("ylossParam4At4", 2.15);
-    auto y_loss3 = parameter_list.getParam("ylossParam4At6", 2.45);
-    auto y_loss4 = parameter_list.getParam("ylossParam4At10", 2.95);
-
-    real y_loss = 0.;
-    if (y_init < 2) {
-        y_loss = y_loss1/2.*y_init;
-    } else if (y_init < 4) {
-        y_loss = (y_loss2 - y_loss1)/2.*y_init + (2.*y_loss1 - y_loss2);
-    } else if (y_init < 6) {
-        y_loss = (y_loss3 - y_loss2)/2.*y_init + (3.*y_loss2 - 2.*y_loss3);
-    } else {
-        y_loss = (y_loss4 - y_loss3)/4.*y_init + (2.5*y_loss3 - 1.5*y_loss4);
-    }
-    return(y_loss);
-}
 
 real Glauber::sample_rapidity_loss_from_piecewise_parametrization(
                                                 const real y_init) const {

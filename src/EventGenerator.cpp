@@ -217,7 +217,7 @@ void EventGenerator::generate_strings() {
     record_file << "# event_id  Npart  Ncoll  Nstrings  b(fm)" << std::endl;
 
     int iev = 0;
-    real mean_Npart = 0;
+    //real mean_Npart = 0;
     HardPartonPosAndMomProj.clear();
     HardPartonPosAndMomProj.push_back(proj_t);
     HardPartonPosAndMomProj.push_back(proj_x);
@@ -239,7 +239,7 @@ void EventGenerator::generate_strings() {
     HardPartonPosAndMomTarg.push_back(targ_pz);
 
     int event_id = iev; 
-    mean_Npart += Npart_;
+    //mean_Npart += Npart_;
     mc_glauber_ptr_->Set_hard_parton_momentum(
                      HardPartonPosAndMomProj, HardPartonPosAndMomTarg);
     mc_glauber_ptr_->Pick_and_subtract_hard_parton_momentum();
@@ -259,13 +259,13 @@ void EventGenerator::generate_strings() {
     record_file << event_id << "  " << Npart_ << "  " << Ncoll_ << "  "
                 << Nstrings << "  " << b << std::endl;
     record_file.close();
-    mean_Npart = static_cast<real>(mean_Npart);
+    //mean_Npart = static_cast<real>(mean_Npart);
     //messager << "Completed. <Npart> = " << mean_Npart;
     //messager.flush("info");
-    auto b_max = parameter_list_.get_b_max();
-    auto b_min = parameter_list_.get_b_min();
-    auto total_cross_section = (
-        M_PI*(b_max*b_max - b_min*b_min)/100.);
+    //auto b_max = parameter_list_.get_b_max();
+    //auto b_min = parameter_list_.get_b_min();
+    //auto total_cross_section = (
+    //    M_PI*(b_max*b_max - b_min*b_min)/100.);
     //messager << "Total cross section sig_tot = " << total_cross_section
     //         << " b";
     //messager.flush("info");
