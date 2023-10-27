@@ -16,16 +16,16 @@ using MCGlb::WoodsSaxonParam;
 
 TEST_CASE("Test random seed") {
     int seed = 23;
-    std::shared_ptr<RandomUtil::Random> ran_gen_ptr(
-                                    new RandomUtil::Random(seed, 0., 1.0));
+    std::shared_ptr<MCGlb::RandomUtil::Random> ran_gen_ptr(
+                                new MCGlb::RandomUtil::Random(seed, 0., 1.0));
     Nucleus test_nucleus("Au", ran_gen_ptr);
     CHECK(test_nucleus.get_random_seed() == seed);
 }
 
 
 TEST_CASE("Test set nucleus parameters") {
-    std::shared_ptr<RandomUtil::Random> ran_gen_ptr(
-                                    new RandomUtil::Random(-1, 0., 1.));
+    std::shared_ptr<MCGlb::RandomUtil::Random> ran_gen_ptr(
+                                new MCGlb::RandomUtil::Random(0, 0., 1.0));
     Nucleus test_nucleus;
     test_nucleus.set_nucleus_parameters("p");
     CHECK(test_nucleus.get_nucleus_A() == 1);
@@ -45,8 +45,8 @@ TEST_CASE("Test set nucleus parameters") {
 
 
 TEST_CASE("Test generate nucleus configuratin") {
-    std::shared_ptr<RandomUtil::Random> ran_gen_ptr(
-                                    new RandomUtil::Random(-1, 0., 1.));
+    std::shared_ptr<MCGlb::RandomUtil::Random> ran_gen_ptr(
+                                new MCGlb::RandomUtil::Random(-1, 0., 1.0));
     Nucleus test_nucleus("p", ran_gen_ptr);
     test_nucleus.generate_nucleus_3d_configuration();
     CHECK(test_nucleus.get_number_of_nucleons() == 1);
@@ -78,8 +78,8 @@ TEST_CASE("Test generate nucleus configuratin") {
 
 
 TEST_CASE("Test shift the nucleus") {
-    std::shared_ptr<RandomUtil::Random> ran_gen_ptr(
-                                    new RandomUtil::Random(-1, 0., 1.));
+    std::shared_ptr<MCGlb::RandomUtil::Random> ran_gen_ptr(
+                                new MCGlb::RandomUtil::Random(-1, 0., 1.0));
     Nucleus test_nucleus("p", ran_gen_ptr);
     test_nucleus.generate_nucleus_3d_configuration();
     SpatialVec x_shift = {0.0, 1.0, 0.0, -1.0};
@@ -89,8 +89,8 @@ TEST_CASE("Test shift the nucleus") {
 
 
 TEST_CASE("Test recenter the nucleus") {
-    std::shared_ptr<RandomUtil::Random> ran_gen_ptr(
-                                    new RandomUtil::Random(-1, 0., 1.));
+    std::shared_ptr<MCGlb::RandomUtil::Random> ran_gen_ptr(
+                                new MCGlb::RandomUtil::Random(-1, 0., 1.0));
     Nucleus test_nucleus("Au", ran_gen_ptr);
     test_nucleus.recenter_nucleus();
     auto nucleon_list = test_nucleus.get_nucleon_list();
@@ -108,8 +108,8 @@ TEST_CASE("Test recenter the nucleus") {
 
 
 TEST_CASE("Test Woods-Saxon sampling") {
-    std::shared_ptr<RandomUtil::Random> ran_gen_ptr(
-                                    new RandomUtil::Random(-1, 0., 1.));
+    std::shared_ptr<MCGlb::RandomUtil::Random> ran_gen_ptr(
+                                new MCGlb::RandomUtil::Random(-1, 0., 1.0));
     std::cout << "Testing the Woods-Saxon sampling routine..." << std::endl;
     Nucleus test_nucleus("Au", ran_gen_ptr);
     auto WS_params = test_nucleus.get_woods_saxon_parameters();
@@ -158,8 +158,8 @@ TEST_CASE("Test Woods-Saxon sampling") {
 
 
 TEST_CASE("Test deformed Woods-Saxon sampling") {
-    std::shared_ptr<RandomUtil::Random> ran_gen_ptr(
-                                    new RandomUtil::Random(-1, 0., 1.));
+    std::shared_ptr<MCGlb::RandomUtil::Random> ran_gen_ptr(
+                                new MCGlb::RandomUtil::Random(-1, 0., 1.0));
     std::cout << "Testing the Woods-Saxon deformed sampling routine..."
               << std::endl;
     Nucleus test_nucleus("Zr", ran_gen_ptr);
@@ -242,8 +242,8 @@ TEST_CASE("Test deformed Woods-Saxon sampling") {
 
 
 TEST_CASE("Test deformed nucleus") {
-    std::shared_ptr<RandomUtil::Random> ran_gen_ptr(
-                                        new RandomUtil::Random(-1, 0., 1.));
+    std::shared_ptr<MCGlb::RandomUtil::Random> ran_gen_ptr(
+                                new MCGlb::RandomUtil::Random(-1, 0., 1.0));
     Nucleus test_nucleus("U", ran_gen_ptr, false, 4, 0.9, true, false);
     test_nucleus.generate_nucleus_3d_configuration();
     CHECK(test_nucleus.get_number_of_nucleons() == 238);
@@ -257,8 +257,8 @@ TEST_CASE("Test deformed nucleus") {
 
 
 TEST_CASE("Test sample a deformed U nucleus") {
-    std::shared_ptr<RandomUtil::Random> ran_gen_ptr(
-                                        new RandomUtil::Random(-1, 0., 1.));
+    std::shared_ptr<MCGlb::RandomUtil::Random> ran_gen_ptr(
+                                new MCGlb::RandomUtil::Random(-1, 0., 1.0));
     Nucleus test_nucleus("U", ran_gen_ptr, false, 4, 0.9, true, false);
     test_nucleus.generate_nucleus_3d_configuration();
     CHECK(test_nucleus.get_number_of_nucleons() == 238);
@@ -268,8 +268,8 @@ TEST_CASE("Test sample a deformed U nucleus") {
 
 
 TEST_CASE("Test sampled nuclear density distribution") {
-    std::shared_ptr<RandomUtil::Random> ran_gen_ptr(
-                                        new RandomUtil::Random(-1, 0., 1.));
+    std::shared_ptr<MCGlb::RandomUtil::Random> ran_gen_ptr(
+                                new MCGlb::RandomUtil::Random(-1, 0., 1.0));
     std::cout << "Testing the sampling routine..." << std::endl;
     //Nucleus test_nucleus("Pb", ran_gen_ptr);
     Nucleus test_nucleus("Au", ran_gen_ptr, false, 4, 0.9, false, false);
@@ -328,8 +328,8 @@ TEST_CASE("Test sampled nuclear density distribution") {
 
 
 TEST_CASE("Test get_z_max and get_z_min") {
-    std::shared_ptr<RandomUtil::Random> ran_gen_ptr(
-                                        new RandomUtil::Random(-1, 0., 1.));
+    std::shared_ptr<MCGlb::RandomUtil::Random> ran_gen_ptr(
+                                new MCGlb::RandomUtil::Random(-1, 0., 1.0));
     Nucleus test_nucleus("Au", ran_gen_ptr);
     test_nucleus.generate_nucleus_3d_configuration();
     test_nucleus.accelerate_nucleus(20., 1);
@@ -349,9 +349,10 @@ TEST_CASE("Test get_z_max and get_z_min") {
     }
 }
 
+
 TEST_CASE("Test accelerate_nucleus()") {
-    std::shared_ptr<RandomUtil::Random> ran_gen_ptr(
-                                        new RandomUtil::Random(-1, 0., 1.));
+    std::shared_ptr<MCGlb::RandomUtil::Random> ran_gen_ptr(
+                                new MCGlb::RandomUtil::Random(-1, 0., 1.0));
     Nucleus test_nucleus1("Au", ran_gen_ptr);
     Nucleus test_nucleus2("Pb", ran_gen_ptr);
     test_nucleus1.generate_nucleus_3d_configuration();
@@ -368,9 +369,10 @@ TEST_CASE("Test accelerate_nucleus()") {
     }
 }
 
+
 TEST_CASE("Test get_number_of_wounded_nucleons()") {
-    std::shared_ptr<RandomUtil::Random> ran_gen_ptr(
-                                        new RandomUtil::Random(-1, 0., 1.));
+    std::shared_ptr<MCGlb::RandomUtil::Random> ran_gen_ptr(
+                                new MCGlb::RandomUtil::Random(-1, 0., 1.0));
     Nucleus test_nucleus1("Au", ran_gen_ptr);
     test_nucleus1.generate_nucleus_3d_configuration();
     auto list = test_nucleus1.get_nucleon_list();
@@ -393,8 +395,8 @@ TEST_CASE("Test rotate_nucleus") {
 
 
 TEST_CASE("Test sampled valence quark spatial distribution") {
-    std::shared_ptr<RandomUtil::Random> ran_gen_ptr(
-                                        new RandomUtil::Random(-1, 0., 1.));
+    std::shared_ptr<MCGlb::RandomUtil::Random> ran_gen_ptr(
+                                new MCGlb::RandomUtil::Random(-1, 0., 1.0));
     std::cout << "Testing the valence quark sampling routine..." << std::endl;
     Nucleus test_nucleus("Au", ran_gen_ptr);
     const real r_min = 0.0, r_max = 4.0, dr = 0.05;

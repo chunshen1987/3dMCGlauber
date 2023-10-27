@@ -85,7 +85,7 @@ class Nucleus {
 
     //! This function generates the spatial and momentum configurations
     //! for the nucleus
-    void generate_nucleus_3d_configuration(int ran_seed);
+    void generate_nucleus_3d_configuration();
     //! This function samples the nucleon spatial configuration for deuteron
     void generate_deuteron_configuration();
     //! The inverse CDF of the Hulthen function for deutron wavefunction
