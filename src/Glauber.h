@@ -47,7 +47,7 @@ class Glauber {
     real nucleon_width_;
 
  public:
-    Glauber() = default;
+    //Glauber() = default;
     Glauber(const MCGlb::Parameters &param_in,
             shared_ptr<RandomUtil::Random> ran_gen);
     ~Glauber() {};

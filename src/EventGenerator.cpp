@@ -68,13 +68,11 @@ void EventGenerator::generateMinBiasEventList() {
     auto b_max_local = 0.;
 
     int iev = 0;
-    int icollisions = 0;
     int nev_progress = std::max(1, nev/10);
     while (iev < nev) {
         mc_glauber_ptr_->make_nuclei();
         auto Ncoll = mc_glauber_ptr_->make_collision_schedule();
         auto Npart = mc_glauber_ptr_->get_Npart();
-        icollisions++;
 
         if (Npart < 2) continue;
 
