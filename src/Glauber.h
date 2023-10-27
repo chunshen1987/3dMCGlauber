@@ -83,7 +83,6 @@ class Glauber {
                              real &t_coll, real &z_coll) const;
 
     real compute_NN_inelastic_cross_section(real ecm) const;
-    real compute_NN_inelastic_cross_section_GG(real ecm, real Omega) const;
     real GG_probality(real x, real Lambda, real Omega, real Sigma0) const;
 
     //! this function decides which of those binary collisions will produce

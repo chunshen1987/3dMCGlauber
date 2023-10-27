@@ -103,15 +103,6 @@ bool Parameters::get_fluct_Nstrings_per_NN_collision() const {
         return(false);
 }
 
-bool Parameters::use_GG_distribution() const {
-    int flag = get_param_int("use_GG_distribution", 0);
-    if (flag == 0) {
-        return(false);
-    } else {
-        return(true);
-    }
-}
-
 bool Parameters::subtract_hard_momentum() const {
     int flag = get_param_int("Subtract_hard_momentum", 0);
     if (flag == 0) {
