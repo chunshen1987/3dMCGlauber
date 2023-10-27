@@ -96,9 +96,8 @@ class Nucleon : public Particle {
     void accelerate_quarks(real ecm, int direction);
     void lorentz_contraction(real gamma);
 
-    std::shared_ptr<Quark> get_a_valence_quark(int ran_seed);
-    std::shared_ptr<Quark> get_a_valence_quark_sub_mom(real sub_E,
-                                                       int ran_seed);
+    std::shared_ptr<Quark> get_a_valence_quark();
+    std::shared_ptr<Quark> get_a_valence_quark_sub_mom(real sub_E);
 
     std::vector<double> output_quark_pos();
 
@@ -129,18 +128,14 @@ class Nucleon : public Particle {
 
     void resample_quark_momentum_fraction(
             std::vector<real> &xQuark, const int electric_charge,
-            const real ecm,
-            std::shared_ptr<RandomUtil::Random> nucleon_ran_gen_ptr) const;
+            const real ecm) const;
     void resample_valence_quarks(
-            real ecm, int direction, real charge, std::vector<double> xvec_q,
-            std::shared_ptr<RandomUtil::Random> nucleon_ran_gen_ptr);
+            real ecm, int direction, real charge, std::vector<double> xvec_q);
     void readd_soft_parton_ball(real ecm, int direction, std::vector<double> xvec_q,
-                                real BG_, MomentumVec soft_pvec,
-                                std::vector<std::shared_ptr<Quark>> valence_quark_list,
-                                std::shared_ptr<RandomUtil::Random> nucleon_ran_gen_ptr);
+                                real BG, MomentumVec soft_pvec,
+                                std::vector<std::shared_ptr<Quark>> valence_quark_list);
 
-    SpatialVec resample_valence_quark_position(real BG_, 
-               std::shared_ptr<RandomUtil::Random> nucleon_ran_gen_ptr) const;
+    SpatialVec resample_valence_quark_position(real BG) const;
 
     void set_fermi_momentum(real px, real py, real pz) {
         fermi_momentum_[1] = px;

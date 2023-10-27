@@ -127,8 +127,8 @@ int Nucleon::re_readin_valence_quark_samples() {
 }
 
 void Nucleon::resample_quark_momentum_fraction(std::vector<real> &xQuark,
-                               const int electric_charge, const real ecm, 
-                               std::shared_ptr<RandomUtil::Random> nucleon_ran_gen_ptr) const {
+                                               const int electric_charge,
+                                               const real ecm) const {
     const real mq = PhysConsts::MQuarkValence;
     const real mp = PhysConsts::MProton;
     const int number_of_quarks = PhysConsts::NumValenceQuark;
@@ -137,7 +137,7 @@ void Nucleon::resample_quark_momentum_fraction(std::vector<real> &xQuark,
     real E_proton = mp*cosh(ybeam);
     do {
         auto sample_idx = static_cast<int>(
-            nucleon_ran_gen_ptr->rand_uniform()*number_of_valence_quark_resamples_);
+            ran_gen_ptr_->rand_uniform()*number_of_valence_quark_resamples_);
         xQuark.clear();
         if (electric_charge == 1) {
             for (int i = 0; i < number_of_quarks; i++)
@@ -155,28 +155,26 @@ void Nucleon::resample_quark_momentum_fraction(std::vector<real> &xQuark,
     } while (total_energy > E_proton);
 }
 
-SpatialVec Nucleon::resample_valence_quark_position(real BG_,
-           std::shared_ptr<RandomUtil::Random> nucleon_ran_gen_ptr) const {
+
+SpatialVec Nucleon::resample_valence_quark_position(real BG) const {
     // sample Gaussian distribution for the valence quark position
     // determine x,y,z coordinates of the quark (relative to the nucleon)
 
-    real BG = sqrt(BG_)*PhysConsts::HBARC;
-    real x = nucleon_ran_gen_ptr->rand_normal(0., BG);
-    real y = nucleon_ran_gen_ptr->rand_normal(0., BG);
-    real z = nucleon_ran_gen_ptr->rand_normal(0., BG);
+    BG = sqrt(BG)*PhysConsts::HBARC;
+    real x = ran_gen_ptr_->rand_normal(0., BG);
+    real y = ran_gen_ptr_->rand_normal(0., BG);
+    real z = ran_gen_ptr_->rand_normal(0., BG);
 
     SpatialVec xq = {0.0, x, y, z};
     return(xq);
 }
 
 void Nucleon::resample_valence_quarks(real ecm, int direction, real charge, 
-                   std::vector<double> xvec_q,
-                   std::shared_ptr<RandomUtil::Random> nucleon_ran_gen_ptr) {
+                   std::vector<double> xvec_q) {
     const int number_of_quarks = PhysConsts::NumValenceQuark;
     erase_quarks();
     std::vector<real> xQuark;
-    resample_quark_momentum_fraction(xQuark, charge, ecm,
-                                     nucleon_ran_gen_ptr);
+    resample_quark_momentum_fraction(xQuark, charge, ecm);
     for (int i = 0; i < number_of_quarks; i++) {
         SpatialVec xvec = {0.0, xvec_q[i*3], xvec_q[i*3+1], xvec_q[i*3+2]}; 
         std::shared_ptr<Quark> quark_ptr(new Quark(xvec, xQuark[i]));
@@ -185,10 +183,11 @@ void Nucleon::resample_valence_quarks(real ecm, int direction, real charge,
     accelerate_quarks(ecm, direction);
 }
 
-void Nucleon::readd_soft_parton_ball(real ecm, int direction, std::vector<double> xvec_q,
-                                     real BG_, MomentumVec soft_pvec, 
-                                     std::vector<std::shared_ptr<Quark>> valence_quark_list,
-                                     std::shared_ptr<RandomUtil::Random> nucleon_ran_gen_ptr) {
+
+void Nucleon::readd_soft_parton_ball(real ecm, int direction,
+                                     std::vector<double> xvec_q,
+                                     real BG, MomentumVec soft_pvec,
+                                     std::vector<std::shared_ptr<Quark>> valence_quark_list) {
     for (const auto & q_i: valence_quark_list) {
         auto quark_pvec = q_i->get_p();
         for (int i = 0; i < 4; i++) {
@@ -201,7 +200,7 @@ void Nucleon::readd_soft_parton_ball(real ecm, int direction, std::vector<double
         soft_pvec[3] = mass*sinh(rapidity);
         SpatialVec xvec;
         if (xvec_q.size()<10) {
-            xvec = resample_valence_quark_position(BG_, nucleon_ran_gen_ptr);
+            xvec = resample_valence_quark_position(BG);
         } else {
             xvec = {0.0, xvec_q[9], xvec_q[10], xvec_q[11]};
         }
@@ -211,6 +210,7 @@ void Nucleon::readd_soft_parton_ball(real ecm, int direction, std::vector<double
     }
 }
 
+
 void Nucleon::lorentz_contraction(real gamma) {
     for (auto &it: quark_list) {
         auto xvec = it->get_x();
@@ -218,6 +218,7 @@ void Nucleon::lorentz_contraction(real gamma) {
         it->set_x(xvec);
     }
 }
+
 
 std::vector<double> Nucleon::output_quark_pos() {
     std::vector<double> quark_xvec;
@@ -231,7 +232,7 @@ std::vector<double> Nucleon::output_quark_pos() {
 }
 
 
-std::shared_ptr<Quark> Nucleon::get_a_valence_quark(int ran_seed) {
+std::shared_ptr<Quark> Nucleon::get_a_valence_quark() {
     // return the quark with the minimum number of connections
     int minimum_connections = 1000;
     for (auto &iq: quark_list) {
@@ -249,16 +250,18 @@ std::shared_ptr<Quark> Nucleon::get_a_valence_quark(int ran_seed) {
     return(quark_list[0]);
 }
 
-std::shared_ptr<Quark> Nucleon::get_a_valence_quark_sub_mom(real sub_E, int ran_seed) {
+
+std::shared_ptr<Quark> Nucleon::get_a_valence_quark_sub_mom(real sub_E) {
     // return the quark to subtract the momentum of hard collision
-    set_random_gen(abs(ran_seed));
-    std::random_shuffle(quark_list.begin(), quark_list.end(), get_random_gen);
+    std::shuffle(quark_list.begin(), quark_list.end(),
+                 *ran_gen_ptr_->getRanGenerator());
     for (auto &iq: quark_list) {
         auto p_q = iq->get_p();
         if (p_q[0] > sub_E) return(iq);
     }
     return(quark_list[0]);
 }
+
 
 void Nucleon::erase_one_quark() {
     for (unsigned int idx = 0; idx < quark_list.size(); idx++) {
