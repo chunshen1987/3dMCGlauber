@@ -250,8 +250,9 @@ void EventGenerator::generate_strings() {
     if (!statistics_only_) {
         std::ostringstream filename;
         filename << "strings_event_" << event_id << ".dat";
-        mc_glauber_ptr_->output_QCD_strings(filename.str(), Npart_,
-                                            Ncoll_, Nstrings, b);
+        mc_glauber_ptr_->output_QCD_strings(
+                        filename.str(), Npart_, Ncoll_, Nstrings, b,
+                        ran_gen_ptr_->get_seed());
     }
 
     // write event information to the record file

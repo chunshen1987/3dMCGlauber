@@ -259,6 +259,6 @@ void Nucleon::erase_one_quark() {
             break;
         }
     }
-} 
+}
 
 }
