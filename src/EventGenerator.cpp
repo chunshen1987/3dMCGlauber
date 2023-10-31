@@ -112,8 +112,9 @@ std::vector<double> EventGenerator::MCGlb_target_nucleon_z() {
     return(mc_glauber_ptr_->get_all_targ_nucleon_z());
 }
 
-void EventGenerator::GetMomandPos_Proj(double &t, double &x, double &y, double &z,
-                                       double &E, double &px, double &py, double &pz) {
+void EventGenerator::GetMomandPos_Proj(
+        double &t, double &x, double &y, double &z,
+        double &E, double &px, double &py, double &pz) {
     proj_t = t;
     proj_x = x;
     proj_y = y;
@@ -124,8 +125,9 @@ void EventGenerator::GetMomandPos_Proj(double &t, double &x, double &y, double &
     proj_pz = pz;
 }
 
-void EventGenerator::GetMomandPos_Targ(double &t, double &x, double &y, double &z,
-                                       double &E, double &px, double &py, double &pz) {
+void EventGenerator::GetMomandPos_Targ(
+        double &t, double &x, double &y, double &z,
+        double &E, double &px, double &py, double &pz) {
     targ_t = t;
     targ_x = x;
     targ_y = y;
@@ -136,14 +138,16 @@ void EventGenerator::GetMomandPos_Targ(double &t, double &x, double &y, double &
     targ_pz = pz;
 }
 
-void EventGenerator::GetMom_Proj(double &E, double &px, double &py, double &pz) {
+void EventGenerator::GetMom_Proj(double &E, double &px,
+                                 double &py, double &pz) {
     proj_E  = E;
     proj_px = px;
     proj_py = py;
     proj_pz = pz;
 }
 
-void EventGenerator::GetMom_Targ(double &E, double &px, double &py, double &pz) {
+void EventGenerator::GetMom_Targ(double &E, double &px,
+                                 double &py, double &pz) {
     targ_E  = E;
     targ_px = px;
     targ_py = py;
@@ -191,7 +195,8 @@ std::vector<double> EventGenerator::GetRemMom_Targ() {
     return(RemMomTarg);
 }
 
-void EventGenerator::generate_strings() {
+
+std::vector< std::vector<real> > EventGenerator::generate_strings() {
     //messager << "Random seed = " << ran_gen_ptr_->get_seed();
     //messager.flush("info");
     //messager << "Generating 1 events after subtracted four momentum of hard partons ... ";
@@ -228,9 +233,11 @@ void EventGenerator::generate_strings() {
                      HardPartonPosAndMomProj, HardPartonPosAndMomTarg);
     mc_glauber_ptr_->Pick_and_subtract_hard_parton_momentum();
     Npart_ = mc_glauber_ptr_->get_Npart();
-    auto Nstrings = mc_glauber_ptr_->decide_QCD_strings_production_second_stage();
+    auto Nstrings = (
+            mc_glauber_ptr_->decide_QCD_strings_production_second_stage());
     Ncoll_ = mc_glauber_ptr_->perform_string_production();
     auto b = mc_glauber_ptr_->get_impact_parameter();
+    auto QCDstringList = mc_glauber_ptr_->get_QCD_strings_output_list();
     if (!statistics_only_) {
         std::ostringstream filename;
         filename << "strings_event_" << event_id << ".dat";
@@ -243,16 +250,8 @@ void EventGenerator::generate_strings() {
     record_file << event_id << "  " << Npart_ << "  " << Ncoll_ << "  "
                 << Nstrings << "  " << b << std::endl;
     record_file.close();
-    //mean_Npart = static_cast<real>(mean_Npart);
-    //messager << "Completed. <Npart> = " << mean_Npart;
-    //messager.flush("info");
-    //auto b_max = parameter_list_.get_b_max();
-    //auto b_min = parameter_list_.get_b_min();
-    //auto total_cross_section = (
-    //    M_PI*(b_max*b_max - b_min*b_min)/100.);
-    //messager << "Total cross section sig_tot = " << total_cross_section
-    //         << " b";
-    //messager.flush("info");
+
+    return(QCDstringList);
 }
 
 
