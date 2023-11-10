@@ -553,6 +553,12 @@ void Nucleus::readin_nucleon_positions() {
                 input.read(reinterpret_cast<char*>(&temp), sizeof(float));
                 nucleon_i.push_back(temp);
             }
+            if (Nentry == 3) {
+                if (i < Z_)
+                    nucleon_i.push_back(1.);
+                else
+                    nucleon_i.push_back(0.);
+            }
             conf_i.push_back(nucleon_i);
         }
         if (input.eof())
@@ -582,6 +588,7 @@ int Nucleus::sample_nucleon_configuration() {
 
         std::shared_ptr<Nucleon> nucleon_i_ptr(new Nucleon(x_i, p_i,
                                                            ran_gen_ptr));
+        nucleon_i_ptr->set_electric_charge(conf_i[iA][3]);
         nucleon_list_.push_back(std::move(nucleon_i_ptr));
     }
     return(0);
