@@ -155,6 +155,7 @@ void Nucleus::generate_nucleus_3d_configuration() {
         SpatialVec  x = {0.0};
         MomentumVec p = {0.0};
         std::shared_ptr<Nucleon> nucleon_ptr(new Nucleon(x, p));
+        nucleon_ptr->set_electric_charge(1.);
         nucleon_list_.push_back(std::move(nucleon_ptr));
         status = 0;
     } else if (A_ == 2) {   // deuteron
@@ -320,8 +321,10 @@ void Nucleus::generate_deuteron_configuration() {
     MomentumVec p_2 = p_1;
 
     std::shared_ptr<Nucleon> nucleon1_ptr(new Nucleon(x_1, p_1));
+    nucleon1_ptr->set_electric_charge(1.);
     nucleon_list_.push_back(std::move(nucleon1_ptr));
     std::shared_ptr<Nucleon> nucleon2_ptr(new Nucleon(x_2, p_2));
+    nucleon2_ptr->set_electric_charge(0.);
     nucleon_list_.push_back(std::move(nucleon2_ptr));
 }
 
