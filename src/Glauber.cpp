@@ -158,6 +158,7 @@ Glauber::Glauber(const MCGlb::Parameters &param_in,
          << "siginNN = " << siginNN << " mb" << endl;
 }
 
+
 void Glauber::make_nuclei() {
     projectile->generate_nucleus_3d_configuration();
     target->generate_nucleus_3d_configuration();
@@ -454,6 +455,7 @@ void Glauber::get_tau_form_and_moversigma(const int string_evolution_mode,
     }
 }
 
+
 // add flag if baryon used to proj and target
 // - check it - only put in baryon if not used yet, then set it to used
 int Glauber::perform_string_production() {
@@ -696,7 +698,8 @@ int Glauber::perform_string_production() {
     }
 
     // now assign electric charges randomly to strings and remnants
-    std::random_shuffle(random_idx.begin(), random_idx.end());
+    std::shuffle(random_idx.begin(), random_idx.end(),
+                 *ran_gen_ptr_->getRanGenerator());
     for (auto &idx: random_idx) {
         if (idx < Nstrings) {
             // put baryon of the projectile in the selected string
@@ -719,20 +722,25 @@ int Glauber::perform_string_production() {
                             y_electric_right = sample_junction_rapidity_right(
                                         y_Qe_left, y_Qe_right);
                         } else {
-                            y_electric_right = sample_junction_rapidity_uniformed(
-                                        y_Qe_left, y_Qe_right);
+                            y_electric_right = (
+                                sample_junction_rapidity_uniformed(
+                                                    y_Qe_left, y_Qe_right));
                         }
                     } else {
                         y_electric_right = y_Qe_right;
                     }
-                    real slope = (eta_s_right - eta_s_left)/(y_Qe_right - y_Qe_left);
-                    real eta_s_electric_right = eta_s_left + slope*(y_electric_right - y_Qe_left);
-                    QCD_string_list[idx].set_eta_s_Qe_right(eta_s_electric_right);
+                    real slope = ((eta_s_right - eta_s_left)
+                                  /(y_Qe_right - y_Qe_left));
+                    real eta_s_electric_right = (
+                        eta_s_left + slope*(y_electric_right - y_Qe_left));
+                    QCD_string_list[idx].set_eta_s_Qe_right(
+                                                        eta_s_electric_right);
                 }
             }
         }
     }
-    std::random_shuffle(random_idx.begin(), random_idx.end());
+    std::shuffle(random_idx.begin(), random_idx.end(),
+                 *ran_gen_ptr_->getRanGenerator());
     for (auto &idx: random_idx) {
         if (idx < Nstrings) {
             // put baryon of the target in the selected string
@@ -755,14 +763,17 @@ int Glauber::perform_string_production() {
                             y_electric_left = sample_junction_rapidity_left(
                                         y_Qe_left, y_Qe_right);
                         } else {
-                            y_electric_left = sample_junction_rapidity_uniformed(
-                                        y_Qe_left, y_Qe_right);
+                            y_electric_left = (
+                                sample_junction_rapidity_uniformed(
+                                                    y_Qe_left, y_Qe_right));
                         }
                     } else {
                         y_electric_left = y_Qe_left;
                     }
-                    real slope = (eta_s_right - eta_s_left)/(y_Qe_right - y_Qe_left);
-                    real eta_s_electric_left = eta_s_left + slope*(y_electric_left - y_Qe_left);
+                    real slope = ((eta_s_right - eta_s_left)
+                                  /(y_Qe_right - y_Qe_left));
+                    real eta_s_electric_left = (
+                            eta_s_left + slope*(y_electric_left - y_Qe_left));
                     QCD_string_list[idx].set_eta_s_Qe_left(eta_s_electric_left);
                 }
             }
