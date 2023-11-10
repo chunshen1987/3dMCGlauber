@@ -21,6 +21,7 @@ class Nucleus {
     int Z_;
     bool deformed_;
     bool confFromFile_;
+    int lightNucleusOption_;
     WoodsSaxonParam WS_param_vec;       // rho, w, R, a, beta2, beta3, beta4, gamma
     real d_min_;                        // minimum distance between nucleons
     bool sample_valence_quarks;
@@ -31,15 +32,15 @@ class Nucleus {
     std::vector<std::shared_ptr<Nucleon>> participant_list_;
     std::shared_ptr<RandomUtil::Random> ran_gen_ptr;
 
-    std::vector< std::array<double, 9> > triton_pos_;
     bool nucleon_configuration_loaded_;
-    std::vector< std::vector< std::array<double, 3> > > heavyIon_pos_;
+    std::vector< std::vector< std::vector<float> > > heavyIon_pos_;
 
     std::vector< std::array<float, 3> > proton_valence_quark_x_;
     std::vector< std::array<float, 3> > neutron_valence_quark_x_;
 
     int system_status_;
     int number_of_valence_quark_samples_;
+    int N_sea_partons_;
 
  public:
     Nucleus() = default;
@@ -47,13 +48,15 @@ class Nucleus {
             std::shared_ptr<RandomUtil::Random> ran_gen,
             bool sample_valence_quarks=false, real BG=4.,
             real d_min=0.9, bool deformed=true,
-            bool confFromFile=false);
+            bool confFromFile=false, int N_sea_partons=1);
     ~Nucleus();
 
     std::string get_name() const {return(name);}
     int get_random_seed() const {return(ran_gen_ptr->get_seed());}
 
     int readin_valence_quark_samples();
+
+    void setLightNucleusOption(int option) { lightNucleusOption_ = option;}
 
     void set_valence_quark_Q2(real Q2_q) {Q2 = Q2_q;}
     //! This function set Woods-Saxon parameters based on the nucleus name
@@ -91,11 +94,9 @@ class Nucleus {
     real hulthen_function_CDF(real r) const;
 
     //! Read in spatial configuration for triton
-    void readin_triton_position();
     void readin_nucleon_positions();
 
     //! This function samples the spatial configuration for triton
-    void generate_triton_configuration();
     int sample_nucleon_configuration();
 
     //! This function samples a nucleon spatial configuration according to
@@ -130,6 +131,7 @@ class Nucleus {
     void shift_nucleus(SpatialVec x_shift);
     void recenter_nucleus();
     void rotate_nucleus(real phi, real theta);
+    void rotate_nucleus_3D(real phi, real theta, real gamma);
 
     void accelerate_nucleus(real ecm, int direction);
     void lorentz_contraction(real gamma);

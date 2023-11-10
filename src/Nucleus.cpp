@@ -23,19 +23,22 @@ namespace MCGlb {
 Nucleus::Nucleus(std::string nucleus_name,
                  std::shared_ptr<RandomUtil::Random> ran_gen,
                  bool sample_valence_quarks_in, real BG,
-                 real d_min, bool deformed, bool confFromFile) {
+                 real d_min, bool deformed, bool confFromFile,
+                 int N_sea_partons) {
     d_min_    = d_min;
     deformed_ = deformed;
     confFromFile_ = confFromFile;
     BG_ = BG;
     ran_gen_ptr = ran_gen;
     set_nucleus_parameters(nucleus_name);
+    N_sea_partons_ = N_sea_partons;
 
     sample_valence_quarks = sample_valence_quarks_in;
     if (sample_valence_quarks) {
         number_of_valence_quark_samples_ = readin_valence_quark_samples();
     }
     nucleon_configuration_loaded_ = false;
+    lightNucleusOption_ = 0;
 }
 
 
@@ -107,9 +110,17 @@ void Nucleus::set_nucleus_parameters(std::string nucleus_name) {
     } else if (nucleus_name.compare("O") == 0) {
         set_woods_saxon_parameters(
                 16, 8, 0.17, -0.051, 2.608, 0.513, 0, 0, 0, 0, 0, 0, 3);
+    } else if (nucleus_name.compare("Ne20") == 0) {
+        // Atomic Data and Nuclear Data Tables, 36, 3, May 1987, 495-536
+        set_woods_saxon_parameters(
+                20, 10, 0.17, 0.0, 2.8, 0.57, 0, 0, 0, 0, 0, 0, 1);
     } else if (nucleus_name.compare("Al") == 0) {
         set_woods_saxon_parameters(
-                27, 13, 0.17, 0.0, 3.07, 0.519, 0.0, 0.0, 0.0, 0.0, 0, 0, 3);
+                27, 13, 0.17, 0.0, 3.07, 0.519, 0, 0, 0, 0, 0, 0, 3);
+    } else if (nucleus_name.compare("Ar") == 0) {
+        set_woods_saxon_parameters(
+                40, 18, 0.17, 0, 3.61, 0.516, 0.1668, 0, 0.00695, 0.474393,
+                0, 0, 3);
     } else if (nucleus_name.compare("Cu") == 0) {
         set_woods_saxon_parameters(
                 63, 29, 0.17, 0.0, 4.163, 0.606, 0.162, 0, 0.006, 0, 0, 0, 3);
@@ -154,7 +165,7 @@ void Nucleus::generate_nucleus_3d_configuration() {
     if (A_ == 1) {  // p
         SpatialVec  x = {0.0};
         MomentumVec p = {0.0};
-        std::shared_ptr<Nucleon> nucleon_ptr(new Nucleon(x, p));
+        std::shared_ptr<Nucleon> nucleon_ptr(new Nucleon(x, p, ran_gen_ptr));
         nucleon_ptr->set_electric_charge(1.);
         nucleon_list_.push_back(std::move(nucleon_ptr));
         status = 0;
@@ -179,7 +190,9 @@ void Nucleus::generate_nucleus_3d_configuration() {
 
     real phi   = 2.*M_PI*ran_gen_ptr->rand_uniform();
     real theta = acos(1. - 2.*ran_gen_ptr->rand_uniform());
-    rotate_nucleus(phi, theta);
+    real gamma = 2*M_PI*ran_gen_ptr->rand_uniform();
+    //rotate_nucleus(phi, theta);
+    rotate_nucleus_3D(phi, theta, gamma);
 }
 
 
@@ -222,6 +235,27 @@ void Nucleus::rotate_nucleus(real phi, real theta) {
         auto x_new = cth*cphi*x_vec[1] - sphi*x_vec[2] + sth*cphi*x_vec[3];
         auto y_new = cth*sphi*x_vec[1] + cphi*x_vec[2] + sth*sphi*x_vec[3];
         auto z_new = -sth    *x_vec[1] + 0.  *x_vec[2] + cth     *x_vec[3];
+        x_vec[1] = x_new; x_vec[2] = y_new; x_vec[3] = z_new;
+        nucleon_i->set_x(x_vec);
+    }
+}
+
+
+void Nucleus::rotate_nucleus_3D(real phi, real theta, real gamma) {
+    // rotate the nucleus with the full three solid angles
+    // required for tri-axial deformed nuclei
+    // https://en.wikipedia.org/wiki/Euler_angles
+    auto c1 = cos(phi);
+    auto s1 = sin(phi);
+    auto c2 = cos(theta);
+    auto s2 = sin(theta);
+    auto c3 = cos(gamma);
+    auto s3 = sin(gamma);
+    for (auto &nucleon_i : nucleon_list_) {
+        auto x_vec = nucleon_i->get_x();
+        auto x_new =    c2*x_vec[1] -              c3*s2*x_vec[2] +               s2*s3*x_vec[3];
+        auto y_new = c1*s2*x_vec[1] + (c1*c2*c3 - s1*s3)*x_vec[2] + (-c3*s1 - c1*c2*s3)*x_vec[3];
+        auto z_new = s1*s2*x_vec[1] + (c1*s3 + c2*c3*s1)*x_vec[2] + ( c1*c3 - c2*s1*s3)*x_vec[3];
         x_vec[1] = x_new; x_vec[2] = y_new; x_vec[3] = z_new;
         nucleon_i->set_x(x_vec);
     }
@@ -295,10 +329,20 @@ void Nucleus::add_soft_parton_ball(real ecm, int direction) {
                 // larger than mq
                 real rapidity = direction*acosh(soft_pvec[0]/mass);
                 soft_pvec[3] = mass*sinh(rapidity);
-                auto xvec = sample_valence_quark_position();
-                std::shared_ptr<Quark> quark_ptr(new Quark(xvec, soft_pvec));
-                quark_ptr->set_rapidity(rapidity);
-                nucleon_i->push_back_quark(quark_ptr);
+
+                // Scale soft partons momentum to Pmu/N_sea_partons
+                // Add as many soft partons as N_sea_partons
+                // with momentum soft_pvec/N_sea_partons for energy-momentum conservation.
+                for (int j = 0; j < 4; j++) {
+                    soft_pvec[j] /= (double) N_sea_partons_;
+                }
+                for(int i = 0; i < N_sea_partons_; i++){
+                    auto xvec = sample_valence_quark_position();
+                    std::shared_ptr<Quark> quark_ptr(new Quark(xvec, soft_pvec));
+                    quark_ptr->set_rapidity(rapidity);
+                    nucleon_i->push_back_quark(quark_ptr);
+                }
+
             }
         }
     }
@@ -320,10 +364,10 @@ void Nucleus::generate_deuteron_configuration() {
     MomentumVec p_1 = {0.0};
     MomentumVec p_2 = p_1;
 
-    std::shared_ptr<Nucleon> nucleon1_ptr(new Nucleon(x_1, p_1));
-    nucleon1_ptr->set_electric_charge(1.);
+    std::shared_ptr<Nucleon> nucleon1_ptr(new Nucleon(x_1, p_1, ran_gen_ptr));
     nucleon_list_.push_back(std::move(nucleon1_ptr));
-    std::shared_ptr<Nucleon> nucleon2_ptr(new Nucleon(x_2, p_2));
+    nucleon1_ptr->set_electric_charge(1.);
+    std::shared_ptr<Nucleon> nucleon2_ptr(new Nucleon(x_2, p_2, ran_gen_ptr));
     nucleon2_ptr->set_electric_charge(0.);
     nucleon_list_.push_back(std::move(nucleon2_ptr));
 }
@@ -432,74 +476,54 @@ int Nucleus::readin_valence_quark_samples() {
 }
 
 
-void Nucleus::readin_triton_position() {
-    // This function reads in spatial configuration for triton
-    std::ifstream triton_position("tables/triton_positions.dat");
-    if (!triton_position.good()) {
-        std::cout << "Triton configurations are not found!" << std::endl;
-        std::cout << "Please check file tables/triton_positions.dat."
-                  << std::endl;
-        exit(1);
-    }
-    double x1, y1, z1, x2, y2, z2, x3, y3, z3;
-    triton_position >> x1 >> y1 >> z1 >> x2 >> y2 >> z2 >> x3 >> y3 >> z3;
-    while (!triton_position.eof()) {
-        std::array<double, 9> temp;
-        temp = {x1, y1, z1, x2, y2, z2, x3, y3, z3};
-        triton_pos_.push_back(temp);
-        triton_position >> x1 >> y1 >> z1 >> x2 >> y2 >> z2 >> x3 >> y3 >> z3;
-    }
-    triton_position.close();
-}
-
-
-void Nucleus::generate_triton_configuration() {
-    // This function samples the spatial configuration for triton
-    if (triton_pos_.size() == 0)
-        readin_triton_position();
-    const int num_configuration = triton_pos_.size();
-    const int rand_num = static_cast<int>(
-                            ran_gen_ptr->rand_uniform()*num_configuration);
-    auto pos_i = triton_pos_[rand_num];
-    SpatialVec  x_1 = {0.0, pos_i[0], pos_i[1], pos_i[2]};
-    SpatialVec  x_2 = {0.0, pos_i[3], pos_i[4], pos_i[5]};
-    SpatialVec  x_3 = {0.0, pos_i[6], pos_i[7], pos_i[8]};
-    MomentumVec p_1 = {0.0};
-    MomentumVec p_2 = p_1;
-    MomentumVec p_3 = p_1;
-
-    std::shared_ptr<Nucleon> nucleon1_ptr(new Nucleon(x_1, p_1));
-    nucleon_list_.push_back(std::move(nucleon1_ptr));
-    std::shared_ptr<Nucleon> nucleon2_ptr(new Nucleon(x_2, p_2));
-    nucleon_list_.push_back(std::move(nucleon2_ptr));
-    std::shared_ptr<Nucleon> nucleon3_ptr(new Nucleon(x_3, p_3));
-    nucleon_list_.push_back(std::move(nucleon3_ptr));
-}
-
 void Nucleus::readin_nucleon_positions() {
     std::cout << "read in nucleon positions for Nucleus: " << name << "  "
               << std::flush;
     std::ostringstream filename;
-    int n_configuration = 0;
-    if (A_ == 3) {  // he3
-        filename << "tables/he3_plaintext.dat";
-        n_configuration = 13699;
+    if (A_ == 3) {  // he3 or t
+        if (lightNucleusOption_ == 0) {
+            filename << "tables/He3.bin.in";
+        } else if (lightNucleusOption_ == 1) {
+            filename << "tables/triton.bin.in";
+        } else {
+            std::cout << "A = 3 nucleus does not support lightNucleusOption = "
+                      << lightNucleusOption_ << std::endl;
+            exit(1);
+        }
     } else if (A_ == 4) {  // he4
-        filename << "tables/he4_plaintext.dat";
-        n_configuration = 6000;
+        filename << "tables/He4.bin.in";
     } else if (A_ == 12) {  // carbon
-        filename << "tables/carbon_plaintext.dat";
-        n_configuration = 6000;
+        if (lightNucleusOption_ == 0) {
+            filename << "tables/C12_VMC.bin.in";
+        } else if (lightNucleusOption_ == 1) {
+            filename << "tables/C12_alphaCluster.bin.in";
+        } else {
+            std::cout << "C12 nucleus does not support lightNucleusOption = "
+                      << lightNucleusOption_ << std::endl;
+            exit(1);
+        }
     } else if (A_ == 16) {  // oxygen
-        filename << "tables/oxygen_plaintext.dat";
-        n_configuration = 6000;
+        if (lightNucleusOption_ == 0) {
+            filename << "tables/O16_VMC.bin.in";
+        } else if (lightNucleusOption_ == 1) {
+            filename << "tables/O16_alphaCluster.bin.in";
+        } else if (lightNucleusOption_ == 2) {
+            filename << "tables/O16_PGCM.bin.in";
+        } else if (lightNucleusOption_ == 3) {
+            filename << "tables/O16_NLEFT.bin.in";
+        } else {
+            std::cout << "O16 nucleus does not support lightNucleusOption = "
+                      << lightNucleusOption_ << std::endl;
+            exit(1);
+        }
+    } else if (A_ == 20) {   // Neon
+        filename << "tables/Ne20_PGCM.bin.in";
+    } else if (A_ == 40) {   // Ar
+        filename << "tables/Ar40_VMC.bin.in";
     } else if (A_ == 197) {  // Au
-        filename << "tables/au197-sw-full_3Bchains-conf1820.dat";
-        n_configuration = 1820;
+        filename << "tables/Au197.bin.in";
     } else if (A_ == 208) {  // Pb
-        int temp = 1;
-        filename << "tables/pb208-" << temp << ".dat";
-        n_configuration = 10000;
+        filename << "tables/Pb208.bin.in";
     } else {
         std::cout << "[Warning]: No configuration file for Nucleus: "
                   << name << std::endl;
@@ -507,8 +531,8 @@ void Nucleus::readin_nucleon_positions() {
                   << std::endl;
         return;
     }
-
-    std::ifstream input(filename.str().c_str());
+    std::cout << " fileName: " << filename.str() << " " << std::flush;
+    std::ifstream input(filename.str().c_str(), std::ios::binary);
     if (!input.good()) {
         std::cout << "Configuration file not found!" << std::endl;
         std::cout << "Please check file: " << filename.str()
@@ -516,33 +540,27 @@ void Nucleus::readin_nucleon_positions() {
         exit(1);
     }
 
-    double dummy;
-    for (int iconf = 0; iconf < n_configuration; iconf++) {
-        std::vector< std::array<double, 3> > conf_i;
+    int Nentry = 3;
+    if (A_ == 197 || A_ == 208)
+        Nentry = 4;
 
-        if (A_ == 12) {
-            input >> dummy >> dummy;
-        }
-        for (int ia = 0; ia < A_; ia++) {
-            double x_local, y_local, z_local;
-            int isospin;
-            if (A_ == 208) {
-                input >> x_local >> y_local >> z_local >> isospin;
-            } else if (A_ == 197) {
-                input >> x_local >> y_local >> z_local >> isospin >> dummy;
-            } else {
-                input >> x_local >> y_local >> z_local;
+    while (true) {
+        std::vector< std::vector<float> > conf_i;
+        for (int i = 0; i < A_; i++) {
+            std::vector<float> nucleon_i;
+            for (int j = 0; j < Nentry; j++) {
+                float temp;
+                input.read(reinterpret_cast<char*>(&temp), sizeof(float));
+                nucleon_i.push_back(temp);
             }
-            std::array<double, 3> nucleon_pos = {x_local, y_local, z_local};
-            conf_i.push_back(nucleon_pos);
+            conf_i.push_back(nucleon_i);
         }
-        if (A_ == 3) {
-            input >> dummy >> dummy >> dummy >> dummy;
-        }
+        if (input.eof())
+            break;
         heavyIon_pos_.push_back(conf_i);
     }
     input.close();
-    cout << heavyIon_pos_.size() << " configrations." << endl;
+    std::cout << heavyIon_pos_.size() << " configrations." << std::endl;
 }
 
 
@@ -562,7 +580,8 @@ int Nucleus::sample_nucleon_configuration() {
         SpatialVec x_i = {0.0, conf_i[iA][0], conf_i[iA][1], conf_i[iA][2]};
         MomentumVec p_i = {0.0};
 
-        std::shared_ptr<Nucleon> nucleon_i_ptr(new Nucleon(x_i, p_i));
+        std::shared_ptr<Nucleon> nucleon_i_ptr(new Nucleon(x_i, p_i,
+                                                           ran_gen_ptr));
         nucleon_list_.push_back(std::move(nucleon_i_ptr));
     }
     return(0);
@@ -719,7 +738,8 @@ void Nucleus::generate_nucleus_configuration_with_woods_saxon() {
     for (unsigned int i = 0; i < r_array.size(); i++) {
         SpatialVec  x_in = {0.0, x_array[i], y_array[i], z_array[i]};
         MomentumVec p_in = {0.0};
-        std::shared_ptr<Nucleon> nucleon_ptr(new Nucleon(x_in, p_in));
+        std::shared_ptr<Nucleon> nucleon_ptr(new Nucleon(x_in, p_in,
+                                                         ran_gen_ptr));
         nucleon_ptr->set_electric_charge(std::get<1>(r_array[i]));
         nucleon_list_.push_back(std::move(nucleon_ptr));
     }
@@ -771,7 +791,8 @@ void Nucleus::generate_nucleus_configuration_with_deformed_woods_saxon() {
     for (int i = 0; i < A_; i++) {
         SpatialVec  x_in = {0.0, x_array[i], y_array[i], z_array[i]};
         MomentumVec p_in = {0.0};
-        std::shared_ptr<Nucleon> nucleon_ptr(new Nucleon(x_in, p_in));
+        std::shared_ptr<Nucleon> nucleon_ptr(new Nucleon(x_in, p_in,
+                                                         ran_gen_ptr));
         nucleon_ptr->set_electric_charge(nucleonPos_array[i][3]);
         nucleon_list_.push_back(std::move(nucleon_ptr));
     }

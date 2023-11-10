@@ -143,6 +143,11 @@ int Parameters::get_rapidity_loss_method() const {
     assert(flag > 0 && flag < 5);
     return(flag);
 }
+int Parameters::get_N_sea_partons() const {
+    int flag = get_param_int("N_sea_partons", 1);
+    assert(flag > 0);
+    return(flag);
+}
 
 
 bool Parameters::get_only_event_statistics() const {
@@ -284,6 +289,11 @@ bool Parameters::nucleon_configuration_from_file() const {
     } else {
         return(true);
     }
+}
+
+
+int Parameters::getLightNucleusOption() const {
+    return(get_param_int("light_nucleus_option", 0));
 }
 
 

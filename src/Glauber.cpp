@@ -41,12 +41,14 @@ Glauber::Glauber(const MCGlb::Parameters &param_in,
 
     real d_min = parameter_list.get_d_min();
 
+    int N_sea_partons = parameter_list.get_N_sea_partons();
+
     bool deformed = true;
     bool nucleonConfFromFile = parameter_list.nucleon_configuration_from_file();
     projectile = std::unique_ptr<Nucleus>(
             new Nucleus(parameter_list.get_projectle_nucleus_name(), ran_gen,
                         sample_valence_quark, parameter_list.get_BG(),
-                        d_min, deformed, nucleonConfFromFile));
+                        d_min, deformed, nucleonConfFromFile, N_sea_partons));
     int resetProjWS = static_cast<int>(
                             parameter_list.getParam("resetProjWS", 0.0));
     if (resetProjWS != 0) {
@@ -76,7 +78,7 @@ Glauber::Glauber(const MCGlb::Parameters &param_in,
     target = std::unique_ptr<Nucleus>(
             new Nucleus(parameter_list.get_target_nucleus_name(), ran_gen,
                         sample_valence_quark, parameter_list.get_BG(),
-                        d_min, deformed, nucleonConfFromFile));
+                        d_min, deformed, nucleonConfFromFile, N_sea_partons));
     int resetTargWS = static_cast<int>(
                             parameter_list.getParam("resetTargWS", 0.0));
     if (resetTargWS != 0) {
@@ -126,6 +128,12 @@ Glauber::Glauber(const MCGlb::Parameters &param_in,
         target->setWoodsSaxonParameters(
             WS_rho, WS_w, WS_R, WS_a, WS_beta2, WS_beta3, WS_beta4, WS_gamma,
             WS_da, WS_dR);
+    }
+    if (nucleonConfFromFile) {
+        projectile->setLightNucleusOption(
+                        parameter_list.getLightNucleusOption());
+        target->setLightNucleusOption(
+                        parameter_list.getLightNucleusOption());
     }
 
     if (sample_valence_quark) {
@@ -324,7 +332,8 @@ int Glauber::decide_QCD_strings_production() {
                             parameter_list.get_QCD_string_production_mode();
     if (QCD_string_production_mode == 1) {
         // randomly ordered strings
-        std::random_shuffle(collision_list.begin(), collision_list.end());
+        std::shuffle(collision_list.begin(), collision_list.end(),
+                     *ran_gen_ptr_->getRanGenerator());
     } else if (QCD_string_production_mode == 2) {
         // anti-time ordered strings
         std::reverse(collision_list.begin(), collision_list.end());
@@ -570,7 +579,8 @@ int Glauber::perform_string_production() {
     unsigned int total_length = Nstrings + Npart_proj + Npart_targ;
     for (unsigned int idx = 0; idx < total_length; idx++)
         random_idx.push_back(idx);
-    std::random_shuffle(random_idx.begin(), random_idx.end());
+    std::shuffle(random_idx.begin(), random_idx.end(),
+                 *ran_gen_ptr_->getRanGenerator());
     for (auto &idx: random_idx) {
         if (idx < Nstrings) {
             // put baryon of the projectile in the selected string
@@ -598,7 +608,8 @@ int Glauber::perform_string_production() {
             }
         }
     }
-    std::random_shuffle(random_idx.begin(), random_idx.end());
+    std::shuffle(random_idx.begin(), random_idx.end(),
+                 *ran_gen_ptr_->getRanGenerator());
     for (auto &idx: random_idx) {
         if (idx < Nstrings) {
             // put baryon of the target in the selected string

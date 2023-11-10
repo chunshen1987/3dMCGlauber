@@ -155,7 +155,7 @@ void eps09(int order, int pset, int AAA,
         cerr << "LO : order = 1" << endl;
         cerr << "NLO: order = 2" << endl;
         exit(1);
-    }     
+    }
 
     if (pset  < 1 || pset > 31) {
         cerr << "Wrong set!" << endl;
@@ -163,7 +163,7 @@ void eps09(int order, int pset, int AAA,
         cerr << "Error sets : pset = 2...31" << endl;
         exit(1);
     }
-    
+
     //
     // Make sure not to change any
     // specifications given by the user
@@ -197,12 +197,12 @@ void eps09(int order, int pset, int AAA,
         // Read the table
         //
         if (order == 1) 
-            sprintf(filenimi,"./eps09/EPS09LOR_%d", A);
+            snprintf(filenimi, 50, "./eps09/EPS09LOR_%d", A);
         else
-            sprintf(filenimi,"./eps09/EPS09NLOR_%d", A);
-        
+            snprintf(filenimi, 50, "./eps09/EPS09NLOR_%d", A);
+
         ifstream ifs(filenimi);
-        
+
         if (!ifs) {
             cerr << "Missing file: " << filenimi << endl;
             exit(1);
@@ -227,7 +227,7 @@ void eps09(int order, int pset, int AAA,
     //
     // Find out the position in the loglog Q^2-grid
     //
-    
+
     realQ  = Qsteps * (log(log(Q2)/log(Q2min)))/
                       (log(log(Q2max)/log(Q2min)));
     Qpoint = static_cast<int>(realQ);
