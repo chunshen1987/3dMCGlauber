@@ -98,11 +98,14 @@ class MakeDensity {
     }
 
     void output_netBaryon_eta_distribution(std::string filename,
-                                           const int eventId) const;
+                                           const int eventId,
+                                           const int outputMode=0) const;
     void output_netElectricCharges_eta_distribution(std::string filename,
-                                                    const int eventId) const;
+                                                    const int eventId,
+                                                    const int outputMode=0) const;
     void output_energyDensity_eta_distribution(std::string filename,
-                                               const int eventId) const;
+                                               const int eventId,
+                                               const int outputMode=0) const;
     void output_energyDensity_xeta_distribution(std::string filename,
                                                 const int eventId) const;
     void output_energyDensity_3d(std::string filenameHeader,
@@ -115,7 +118,8 @@ class MakeDensity {
         std::vector<float> &TA_arr, std::vector<float> &TB_arr) const;
 
     void output_eccentricity(std::string filenameHeader,
-                             const int eventId) const;
+                             const int eventId,
+                             const int outputMode=0) const;
     void outputTATBEccentricity(std::string filenameHeader,
                                 const int eventId) const;
 };

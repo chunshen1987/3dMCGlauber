@@ -24,6 +24,7 @@ class EventGenerator {
     bool batchDensityOutput_;
     bool batchDensity2DOutput_;
     bool batchEccOutput_;
+    bool initialEstOutput_;
     pretty_ostream messager;
     std::vector<float> cenEstMinBiasList_;
     float cenEstMin_;

@@ -2,6 +2,7 @@
 
 #include <fstream>
 #include <iostream>
+#include <iomanip>
 #include <sstream>
 #include "MakeDensity.h"
 
@@ -265,7 +266,8 @@ void MakeDensity::outputTATBEccentricity(std::string filenameHeader,
 
 
 void MakeDensity::output_eccentricity(std::string filenameHeader,
-                                      const int eventId) const {
+                                      const int eventId,
+                                      const int outputMode) const {
     std::vector<float> x_arr, y_arr, eta_arr, ed_arr;
     compute_energyDensity_3D_distribution(x_arr, y_arr, eta_arr, ed_arr);
     std::vector<float> eccnReal(gridNeta_*orderMax_, 0.);
@@ -280,7 +282,7 @@ void MakeDensity::output_eccentricity(std::string filenameHeader,
     for (int k = 0; k < gridNeta_; k++) {
         double x_o = 0.;
         double y_o = 0.;
-        double norm = 0.;
+        double norm = 1e-16;
         for (int i = 0; i < gridNx_; i++) {
             for (int j = 0; j < gridNy_; j++) {
                 int idxEd = getIdx3D(i, j, k);
@@ -324,24 +326,43 @@ void MakeDensity::output_eccentricity(std::string filenameHeader,
         modes = std::ios::app | std::ios::binary;
     }
 
-    for (int iorder = 1; iorder <= orderMax_; iorder++) {
+    if (outputMode == 0) {
+        for (int iorder = 1; iorder <= orderMax_; iorder++) {
+            std::ofstream outFile;
+            std::stringstream fileNameDressed;
+            fileNameDressed << filenameHeader << "_" << iorder
+                            << "_Neta_" << gridNeta_ << ".dat";
+            outFile.open(fileNameDressed.str().c_str(), modes);
+            if (eventId == 0) {
+                for (int i = 0; i < gridNeta_; i++) {
+                    outFile.write((char*) &(eta_arr[i]), sizeof(float));
+                }
+            }
+            for (int i = 0; i < gridNeta_; i++) {
+                int idx = (iorder - 1)*gridNeta_ + i;
+                outFile.write((char*) &(eccnReal[idx]), sizeof(float));
+            }
+            for (int i = 0; i < gridNeta_; i++) {
+                int idx = (iorder - 1)*gridNeta_ + i;
+                outFile.write((char*) &(eccnImag[idx]), sizeof(float));
+            }
+            outFile.close();
+        }
+    } else {
         std::ofstream outFile;
         std::stringstream fileNameDressed;
-        fileNameDressed << filenameHeader << "_" << iorder
+        fileNameDressed << filenameHeader
                         << "_Neta_" << gridNeta_ << ".dat";
-        outFile.open(fileNameDressed.str().c_str(), modes);
-        if (eventId == 0) {
-            for (int i = 0; i < gridNeta_; i++) {
-                outFile.write((char*) &(eta_arr[i]), sizeof(float));
+        outFile.open(fileNameDressed.str().c_str(), std::ios::out);
+        for (int i = 0; i < gridNeta_; i++) {
+            outFile << std::scientific << std::setprecision(5)
+                    << eta_arr[i] << "   ";
+            for (int iorder = 1; iorder <= orderMax_; iorder++) {
+                int idx = (iorder - 1)*gridNeta_ + i;
+                outFile << std::scientific << std::setprecision(5)
+                        << eccnReal[idx] << "   " << eccnImag[idx] << "   ";
             }
-        }
-        for (int i = 0; i < gridNeta_; i++) {
-            int idx = (iorder - 1)*gridNeta_ + i;
-            outFile.write((char*) &(eccnReal[idx]), sizeof(float));
-        }
-        for (int i = 0; i < gridNeta_; i++) {
-            int idx = (iorder - 1)*gridNeta_ + i;
-            outFile.write((char*) &(eccnImag[idx]), sizeof(float));
+            outFile << std::endl;
         }
         outFile.close();
     }
@@ -524,7 +545,7 @@ void MakeDensity::output_energyDensity_xeta_distribution(
 
 
 void MakeDensity::output_energyDensity_eta_distribution(
-        std::string filename, const int eventId) const {
+        std::string filename, const int eventId, const int outputMode) const {
     // compute the local energy density profile
     std::vector<float> eta_arr(gridNeta_, 0.);
     std::vector<float> ed_arr(gridNeta_, 0.);
@@ -592,30 +613,41 @@ void MakeDensity::output_energyDensity_eta_distribution(
 
     // output results
     std::ios_base::openmode modes;
-    if (eventId == 0) {
-        modes = std::ios::out | std::ios::binary;
+    if (outputMode == 0) {
+        if (eventId == 0) {
+            modes = std::ios::out | std::ios::binary;
+        } else {
+            modes = std::ios::app | std::ios::binary;
+        }
     } else {
-        modes = std::ios::app | std::ios::binary;
+        modes = std::ios::out;
     }
 
     std::ofstream outFile;
     std::stringstream fileNameDressed;
     fileNameDressed << filename << "_N_" << gridNeta_ << ".dat";
     outFile.open(fileNameDressed.str().c_str(), modes);
-    if (eventId == 0) {
-        for (int i = 0; i < gridNeta_; i++) {
-            outFile.write((char*) &(eta_arr[i]), sizeof(float));
+    if (outputMode == 0) {
+        if (eventId == 0) {
+            for (int i = 0; i < gridNeta_; i++) {
+                outFile.write((char*) &(eta_arr[i]), sizeof(float));
+            }
         }
-    }
-    for (int i = 0; i < gridNeta_; i++) {
-        outFile.write((char*) &(ed_arr[i]), sizeof(float));
+        for (int i = 0; i < gridNeta_; i++) {
+            outFile.write((char*) &(ed_arr[i]), sizeof(float));
+        }
+    } else {
+        for (int i = 0; i < gridNeta_; i++) {
+            outFile << std::scientific << std::setprecision(4)
+                    << eta_arr[i] << "   " << ed_arr[i] << std::endl;
+        }
     }
     outFile.close();
 }
 
 
-void MakeDensity::output_netBaryon_eta_distribution(std::string filename,
-                                                    const int eventId) const {
+void MakeDensity::output_netBaryon_eta_distribution(
+        std::string filename, const int eventId, const int outputMode) const {
     // compute the net baryon density profile
     std::vector<float> eta_arr(gridNeta_, 0.);
     std::vector<float> nB_arr(gridNeta_, 0.);
@@ -648,23 +680,103 @@ void MakeDensity::output_netBaryon_eta_distribution(std::string filename,
 
     // output results
     std::ios_base::openmode modes;
-    if (eventId == 0) {
-        modes = std::ios::out | std::ios::binary;
+    if (outputMode == 0) {
+        if (eventId == 0) {
+            modes = std::ios::out | std::ios::binary;
+        } else {
+            modes = std::ios::app | std::ios::binary;
+        }
     } else {
-        modes = std::ios::app | std::ios::binary;
+        modes = std::ios::out;
     }
 
     std::ofstream outFile;
     std::stringstream fileNameDressed;
     fileNameDressed << filename << "_N_" << gridNeta_ << ".dat";
     outFile.open(fileNameDressed.str().c_str(), modes);
-    if (eventId == 0) {
+    if (outputMode == 0) {
+        if (eventId == 0) {
+            for (int i = 0; i < gridNeta_; i++) {
+                outFile.write((char*) &(eta_arr[i]), sizeof(float));
+            }
+        }
         for (int i = 0; i < gridNeta_; i++) {
-            outFile.write((char*) &(eta_arr[i]), sizeof(float));
+            outFile.write((char*) &(nB_arr[i]), sizeof(float));
+        }
+    } else {
+        for (int i = 0; i < gridNeta_; i++) {
+            outFile << std::scientific << std::setprecision(5)
+                    << eta_arr[i] << "   " << nB_arr[i] << std::endl;
+        }
+    }
+    outFile.close();
+}
+
+
+void MakeDensity::output_netElectricCharges_eta_distribution(
+                            std::string filename, const int eventId, const int outputMode) const {
+    // compute the net electric charge density profile
+    std::vector<float> eta_arr(gridNeta_, 0.);
+    std::vector<float> nQ_arr(gridNeta_, 0.);
+    for (int i = 0; i < gridNeta_; i++) {
+        eta_arr[i] = - gridEtaSize_/2. + i*gridDeta_;
+    }
+
+    double two_sigma_eta_sq = 2.*sigma_eta_*sigma_eta_;
+    double sigmaDis = 5.*sigma_eta_;
+    double norm_eta = 1./(sqrt(2.*M_PI)*sigma_eta_);
+    for (auto &string_i : QCD_string_output_arr_) {
+        double nQ_eta_l = string_i[27];
+        double nQ_eta_r = string_i[28];
+        double nQ_frac_l = string_i[25];
+        double nQ_frac_r = string_i[26];
+        for (int i = 0; i < gridNeta_; i++) {
+            double dis = std::abs(eta_arr[i] - nQ_eta_l);
+            if (dis < sigmaDis) {
+                nQ_arr[i] += nQ_frac_l*exp(-dis*dis/two_sigma_eta_sq);
+            }
+            dis = std::abs(eta_arr[i] - nQ_eta_r);
+            if (dis < sigmaDis) {
+                nQ_arr[i] += nQ_frac_r*exp(-dis*dis/two_sigma_eta_sq);
+            }
         }
     }
     for (int i = 0; i < gridNeta_; i++) {
-        outFile.write((char*) &(nB_arr[i]), sizeof(float));
+        nQ_arr[i] *= norm_eta;
+    }
+
+    // output results
+    std::ios_base::openmode modes;
+
+    if (outputMode == 0) {
+        if (eventId == 0) {
+            modes = std::ios::out | std::ios::binary;
+        } else {
+            modes = std::ios::app | std::ios::binary;
+        }
+    } else {
+        modes = std::ios::out;
+    }
+
+    std::ofstream outFile;
+    std::stringstream fileNameDressed;
+    fileNameDressed << filename << "_N_" << gridNeta_ << ".dat";
+    outFile.open(fileNameDressed.str().c_str(), modes);
+
+    if (outputMode == 0) {
+        if (eventId == 0) {
+            for (int i = 0; i < gridNeta_; i++) {
+                outFile.write((char*) &(eta_arr[i]), sizeof(float));
+            }
+        }
+        for (int i = 0; i < gridNeta_; i++) {
+            outFile.write((char*) &(nQ_arr[i]), sizeof(float));
+        }
+    } else {
+        for (int i = 0; i < gridNeta_; i++) {
+            outFile << std::scientific << std::setprecision(5)
+                    << eta_arr[i] << "   " << nQ_arr[i] << std::endl;
+        }
     }
     outFile.close();
 }
