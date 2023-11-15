@@ -1,9 +1,9 @@
 ################################################################
 # collision information
 ################################################################
-Projectile Au                         # projectile nucleus name
-Target Au                             # target nucleus name
-nucleon_configuration_from_file 1    # use nucleon configuration from file
+Projectile p                         # projectile nucleus name
+Target p                             # target nucleus name
+nucleon_configuration_from_file 0    # use nucleon configuration from file
 light_nucleus_option 0               # light nucleus configurations from different nuclear structure theory
 roots 200.                           # collision energy (GeV)
 useQuarks 1                          # switch to use valence quarks
@@ -27,6 +27,7 @@ baryon_junctions 1                   # 0: baryon number assumed to be at string 
 electric_junctions 1                 # 0: electric charge number assumed to be at string end
                                      # 1: electric charge number transported assuming baryon junctions
                                      #    (at smaller x) see arXiv:nucl-th/9602027
+integer_electric_charge 1            # flag to treat electric charge as interger or fractions
 
 resetProjWS 1                        # flag to reset Woods-saxon parameter for the projectile nucleus
 resetTargWS 1                        # flag to reset Woods-saxon parameter for the target nucleus
@@ -47,6 +48,8 @@ lambdaBs 0.0                         # the fraction of single-to-double junction
 lambdaQ 0.05                         # parameter the controls the strength of the baryon junction stopping
 lambdaQs 0.0                         # the fraction of single-to-double junction stopping
 baryonInStringProb 1.0               # the relative probility to put a baryon charge in the string
+                                     # rather than at the wounded nucleon remnant
+electricChargeInStringProb 1.0       # the relative probility to put a electric charge in the string
                                      # rather than at the wounded nucleon remnant
 BG 16.                               # Gaussian width square for sampling the valence quark positions (GeV^2)
 cenMin 0.
