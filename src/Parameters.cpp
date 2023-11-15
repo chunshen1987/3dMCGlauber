@@ -205,6 +205,7 @@ bool Parameters::get_batch_eccentricity_output() const {
     }
 }
 
+
 bool Parameters::get_baryon_junctions() const {
     int flag = get_param_int("baryon_junctions", 0);
     if (flag == 0) {
@@ -214,6 +215,7 @@ bool Parameters::get_baryon_junctions() const {
     }
 }
 
+
 bool Parameters::get_electric_junctions() const {
     int flag = get_param_int("electric_junctions", 0);
     if (flag == 0) {
@@ -222,6 +224,8 @@ bool Parameters::get_electric_junctions() const {
         return(true);
     }
 }
+
+
 bool Parameters::get_integer_electric_charge() const {
     int flag = get_param_int("integer_electric_charge", 0);
     if (flag == 0) {
@@ -230,6 +234,8 @@ bool Parameters::get_integer_electric_charge() const {
         return(true);
     }
 }
+
+
 real Parameters::get_shadowing_factor() const {
     real shadowing = static_cast<real>(
                     get_param_double("shadowing_factor", 1.0));
