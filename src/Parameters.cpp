@@ -97,6 +97,12 @@ real Parameters::get_baryon_in_string_prob() const {
     return(prob);
 }
 
+real Parameters::get_electric_charge_in_string_prob() const {
+    real prob = static_cast<real>(get_param_double("electricChargeInStringProb", 1.));
+    assert(prob >= 0. && prob <= 1.);
+    return(prob);
+}
+
 
 bool Parameters::get_cached_tabels() const {
     int flag = get_param_int("cache_tables", 1);
@@ -210,6 +216,14 @@ bool Parameters::get_baryon_junctions() const {
 
 bool Parameters::get_electric_junctions() const {
     int flag = get_param_int("electric_junctions", 0);
+    if (flag == 0) {
+        return(false);
+    } else {
+        return(true);
+    }
+}
+bool Parameters::get_integer_electric_charge() const {
+    int flag = get_param_int("integer_electric_charge", 0);
     if (flag == 0) {
         return(false);
     } else {

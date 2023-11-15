@@ -726,10 +726,11 @@ void MakeDensity::output_netElectricCharges_eta_distribution(
     double sigmaDis = 5.*sigma_eta_;
     double norm_eta = 1./(sqrt(2.*M_PI)*sigma_eta_);
     for (auto &string_i : QCD_string_output_arr_) {
-        double nQ_eta_l = string_i[27];
-        double nQ_eta_r = string_i[28];
-        double nQ_frac_l = string_i[25];
-        double nQ_frac_r = string_i[26];
+        double nQ_eta_l, nQ_eta_r, nQ_frac_l, nQ_frac_r;
+        nQ_eta_l = string_i[27];
+        nQ_eta_r = string_i[28];
+        nQ_frac_l = string_i[25];
+        nQ_frac_r = string_i[26];
         for (int i = 0; i < gridNeta_; i++) {
             double dis = std::abs(eta_arr[i] - nQ_eta_l);
             if (dis < sigmaDis) {

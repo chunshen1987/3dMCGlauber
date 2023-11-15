@@ -20,8 +20,10 @@ class Nucleon : public Particle {
     real electric_charge_ = 0;
     bool wounded_ = false;
     bool baryon_used = false;
+    bool electric_charge_used = false;
     bool remnant_set_ = false;
     bool remnant_carry_baryon_number_ = false;
+    bool remnant_carry_electric_charge_number_ = false;
     std::vector<std::weak_ptr<Nucleon>> collide_with;
     std::vector<std::weak_ptr<Nucleon>> connected_with;
     std::shared_ptr<RandomUtil::Random> ran_gen_ptr_;
@@ -49,8 +51,10 @@ class Nucleon : public Particle {
 
     bool is_wounded() const {return(wounded_);}
     bool baryon_was_used() const {return(baryon_used);}
+    bool electric_charge_was_used() const {return(electric_charge_used);}
     void set_wounded(bool hit) {wounded_ = hit;}
     void set_baryon_used(bool hit) {baryon_used = hit;}
+    void set_electric_charge_used(bool hit) {electric_charge_used = hit;}
 
     void increment_collided_times() {collided_times++;}
     int get_collided_times() const {return(collided_times);}
@@ -94,6 +98,12 @@ class Nucleon : public Particle {
     }
     void set_remnant_carry_baryon_number(bool remnant) {
         remnant_carry_baryon_number_ = remnant;
+    }
+    bool is_remnant_carry_electric_charge_number() const {
+        return(remnant_carry_electric_charge_number_);
+    }
+    void set_remnant_carry_electric_charge_number(bool remnant) {
+        remnant_carry_electric_charge_number_ = remnant;
     }
 
     void set_remnant_p(MomentumVec p_in) {remnant_p_ = p_in;}
