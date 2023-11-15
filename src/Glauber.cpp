@@ -989,7 +989,7 @@ void Glauber::produce_remnant_strings() {
                 if (has_electric_charge_right){
                     qcd_string.set_Qe_right(iproj->get_electric_charge());
                     qcd_string.set_final_electric_charge_rapidities(
-                                                        y_rem + y_loss, 0.);
+                                                        0, y_rem - y_loss);
                 }
             } else {
                 qcd_string.set_Qe_right(iproj->get_electric_charge());
@@ -1147,8 +1147,6 @@ void Glauber::prepare_output_QCD_strings() {
             etaQr = it.get_eta_s_electric_charge_right();
             Ql = electric_charge_fraction_left;
             Qr = electric_charge_fraction_right;
-            //it.get_y_f_electric_charge_left(), 
-            //it.get_y_f_electric_charge_right(),
         } else {
             etaQl= it.get_eta_s_Qe_left();
             etaQr= it.get_eta_s_Qe_right();
