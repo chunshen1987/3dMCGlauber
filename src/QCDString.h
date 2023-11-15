@@ -72,7 +72,8 @@ class QCDString {
               MomentumVec proj_p_in, MomentumVec targ_p_in,
               real m_over_sigma_in,
               bool has_baryon_right_in, bool has_baryon_left_in,
-              bool has_electric_charge_right_in, bool has_electric_charge_left_in);
+              bool has_electric_charge_right_in,
+              bool has_electric_charge_left_in);
 
     real get_string_mass() const {return(mass_);}
 

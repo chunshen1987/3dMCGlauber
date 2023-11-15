@@ -27,16 +27,21 @@ QCDString::QCDString(SpatialVec x_in, real tau_form_in,
     eta_s_baryon_right = 0.;
     has_remnant_left_  = false;
     has_remnant_right_ = false;
+    has_electric_charge_left_ = false;
+    has_electric_charge_right_ = false;
     Qe_left_ = 0.;
     Qe_right_ = 0.;
     eta_s_Qe_left_  = 0.;
     eta_s_Qe_right_ = 0.;
 }
+
+
 QCDString::QCDString(SpatialVec x_in, real tau_form_in,
                      shared_ptr<Nucleon> proj_in, shared_ptr<Nucleon> targ_in,
                      real m_over_sigma_in,
-                     bool has_baryon_right_in, bool has_baryon_left_in, 
-                     bool has_electric_charge_right_in, bool has_electric_charge_left_in) {
+                     bool has_baryon_right_in, bool has_baryon_left_in,
+                     bool has_electric_charge_right_in,
+                     bool has_electric_charge_left_in) {
     x_production       = x_in;
     tau_form           = tau_form_in;
     proj               = proj_in;
@@ -89,17 +94,22 @@ QCDString::QCDString(SpatialVec x_in, real tau_form_in,
     eta_s_baryon_right = 0.;
     has_remnant_left_  = false;
     has_remnant_right_ = false;
+    has_electric_charge_left_ = false;
+    has_electric_charge_right_ = false;
     Qe_left_ = 0.;
     Qe_right_ = 0.;
     eta_s_Qe_left_  = 0.;
     eta_s_Qe_right_ = 0.;
 }
+
+
 QCDString::QCDString(SpatialVec x_in, real tau_form_in,
                      shared_ptr<Nucleon> proj_in, shared_ptr<Nucleon> targ_in,
                      shared_ptr<Quark> proj_q_in, shared_ptr<Quark> targ_q_in,
                      real m_over_sigma_in,
                      bool has_baryon_right_in, bool has_baryon_left_in,
-                     bool has_electric_charge_right_in, bool has_electric_charge_left_in) {
+                     bool has_electric_charge_right_in,
+                     bool has_electric_charge_left_in) {
     x_production       = x_in;
     tau_form           = tau_form_in;
     proj               = proj_in;
@@ -113,8 +123,8 @@ QCDString::QCDString(SpatialVec x_in, real tau_form_in,
     has_baryon_right_  = has_baryon_right_in;
     has_baryon_left_   = has_baryon_left_in;
 
-    has_baryon_right_  = has_electric_charge_right_in;
-    has_baryon_left_   = has_electric_charge_left_in;
+    has_electric_charge_right_ = has_electric_charge_right_in;
+    has_electric_charge_left_  = has_electric_charge_left_in;
 
     eta_s_baryon_left  = 0.;
     eta_s_baryon_right = 0.;
@@ -129,7 +139,6 @@ QCDString::QCDString(SpatialVec x_in, real tau_form_in,
     eta_s_Qe_left_  = 0.;
     eta_s_Qe_right_ = 0.;
 }
-
 
 
 QCDString::QCDString(SpatialVec x_in, real tau_form_in,
@@ -154,17 +163,22 @@ QCDString::QCDString(SpatialVec x_in, real tau_form_in,
     eta_s_baryon_right = 0.;
     has_remnant_left_  = false;
     has_remnant_right_ = false;
+    has_electric_charge_left_ = false;
+    has_electric_charge_right_ = false;
     Qe_left_ = 0.;
     Qe_right_ = 0.;
     eta_s_Qe_left_  = 0.;
     eta_s_Qe_right_ = 0.;
 }
+
+
 QCDString::QCDString(SpatialVec x_in, real tau_form_in,
                      shared_ptr<Nucleon> proj_in, shared_ptr<Nucleon> targ_in,
                      MomentumVec proj_p_in, MomentumVec targ_p_in,
                      real m_over_sigma_in,
                      bool has_baryon_right_in, bool has_baryon_left_in, 
-                     bool has_electric_charge_right_in, bool has_electric_charge_left_in) {
+                     bool has_electric_charge_right_in,
+                     bool has_electric_charge_left_in) {
     x_production       = x_in;
     tau_form           = tau_form_in;
     proj               = proj_in;
@@ -176,11 +190,11 @@ QCDString::QCDString(SpatialVec x_in, real tau_form_in,
                               - proj_p_in[1]*proj_p_in[1]
                               - proj_p_in[2]*proj_p_in[2]
                               - proj_p_in[3]*proj_p_in[3]);
-    has_baryon_right_  = has_baryon_right_in;
-    has_baryon_left_   = has_baryon_left_in;
+    has_baryon_right_ = has_baryon_right_in;
+    has_baryon_left_  = has_baryon_left_in;
 
-    has_electric_charge_right_  = has_electric_charge_right_in;
-    has_electric_charge_left_   = has_electric_charge_left_in;
+    has_electric_charge_right_ = has_electric_charge_right_in;
+    has_electric_charge_left_  = has_electric_charge_left_in;
 
     eta_s_baryon_left  = 0.;
     eta_s_baryon_right = 0.;
@@ -205,6 +219,7 @@ void QCDString::evolve_QCD_string() {
     }
 }
 
+
 void QCDString::evolve_QCD_string_with_free_streaming() {
     // freestream the string by its formation time tau_form
     y_f_left    = y_i_left;
@@ -214,6 +229,7 @@ void QCDString::evolve_QCD_string_with_free_streaming() {
     eta_s_right = get_freestreaming_eta_f(tau_form, y_i_right, x_production[0],
                                           x_production[3]);
 }
+
 
 void QCDString::evolve_QCD_string_with_constant_deceleration() {
     real y_i_lrf = std::abs(y_i_right - y_i_left)/2.;
@@ -234,6 +250,7 @@ void QCDString::evolve_QCD_string_with_constant_deceleration() {
                                                 x_production[3]);
 }
 
+
 real QCDString::get_freestreaming_eta_f(real delta_tau, real y_i,
                                         real t_0, real z_0) const {
     const real cosh_y_i = cosh(y_i);
@@ -249,6 +266,7 @@ real QCDString::get_freestreaming_eta_f(real delta_tau, real y_i,
     const real eta_s_f = 0.5*log((t_f + z_f)/(t_f - z_f));
     return(eta_s_f);
 }
+
 
 //! this function return the final eta_s_f for constant deceleration evolution
 //! for the strings
@@ -270,10 +288,14 @@ void QCDString::set_final_baryon_space_time_rapidities() {
     eta_s_baryon_left  = eta_s_left + slope*(y_f_baryon_left  - y_f_left);
     eta_s_baryon_right = eta_s_left + slope*(y_f_baryon_right - y_f_left);
 }
+
+
 void QCDString::set_final_electric_charge_space_time_rapidities() {
     const double slope = (eta_s_right - eta_s_left)/(y_f_right - y_f_left);
-    eta_s_electric_charge_left  = eta_s_left + slope*(y_f_electric_charge_left  - y_f_left);
-    eta_s_electric_charge_right = eta_s_left + slope*(y_f_electric_charge_right - y_f_left);
+    eta_s_electric_charge_left  = (
+            eta_s_left + slope*(y_f_electric_charge_left  - y_f_left));
+    eta_s_electric_charge_right = (
+            eta_s_left + slope*(y_f_electric_charge_right - y_f_left));
 }
 
 

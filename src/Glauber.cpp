@@ -731,7 +731,7 @@ int Glauber::perform_string_production() {
                 // remnant
                 auto proj = projectile->get_participant(idx - Nstrings);
                 auto p_i = proj->get_remnant_p();
-                if (p_i[0] <= 0) continue; 
+                if (p_i[0] <= 0) continue;
                 if (!proj->electric_charge_was_used()) {
                     proj->set_electric_charge_used(true);
                     proj->set_remnant_carry_electric_charge_number(true);
