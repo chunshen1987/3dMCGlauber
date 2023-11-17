@@ -90,9 +90,12 @@ class Glauber {
     real sample_rapidity_loss_from_parametrization_with_fluct(
                                                 const real y_init) const;
 
-    real sample_junction_rapidity_right(real y_left, real y_right) const;
-    real sample_junction_rapidity_left(real y_left, real y_right) const;
-    real sample_junction_rapidity_uniformed(real y_left, real y_right) const;
+    real sample_junction_rapidity_right(const real y_left,
+                                        const real y_right) const;
+    real sample_junction_rapidity_left(const real y_left,
+                                       const real y_right) const;
+    real sample_junction_rapidity_uniformed(const real y_left,
+                                            const real y_right) const;
 
     //! This function performs string production between each nucleon pair
     int perform_string_production();

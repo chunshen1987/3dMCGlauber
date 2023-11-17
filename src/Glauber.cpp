@@ -1227,7 +1227,8 @@ real Glauber::sample_rapidity_loss_from_parametrization_with_fluct(
 // sample y from exp[(y - (0.5*(yt + yp)))/2]/(4.*Sinh[0.25*yp - 0.25*yt]),
 // the new rapidity of the baryon number from the right moving particle
 // after the collision in the lab frame
-real Glauber::sample_junction_rapidity_right(real y_left, real y_right) const {
+real Glauber::sample_junction_rapidity_right(const real y_left,
+                                             const real y_right) const {
     real y = -2.*(-0.25*y_right - 0.25*y_left
                   - 1.*log(2.*(ran_gen_ptr_->rand_uniform()
                                + 0.5*exp(-0.25*y_right + 0.25*y_left)
@@ -1239,7 +1240,8 @@ real Glauber::sample_junction_rapidity_right(real y_left, real y_right) const {
 // sample y from exp[-(y - (0.5*(yt + yp)))/2]/(4.*Sinh[0.25*yp - 0.25*yt]),
 // the new rapidity of the baryon number from the left moving particle
 // after the collision in the lab frame
-real Glauber::sample_junction_rapidity_left(real y_left, real y_right) const {
+real Glauber::sample_junction_rapidity_left(const real y_left,
+                                            const real y_right) const {
     real y = 2.*(0.25*y_right + 0.25*y_left
                  - log(2.*(ran_gen_ptr_->rand_uniform()
                            + 0.5*exp(-0.25*y_right + 0.25*y_left)
@@ -1250,7 +1252,8 @@ real Glauber::sample_junction_rapidity_left(real y_left, real y_right) const {
 
 
 // sample y from a uniformed 1/(yp - yt) distribution
-real Glauber::sample_junction_rapidity_uniformed(real y_left, real y_right) const {
+real Glauber::sample_junction_rapidity_uniformed(const real y_left,
+                                                 const real y_right) const {
     real y = y_left + ran_gen_ptr_->rand_uniform()*(y_right - y_left);
     return(y);
 }
