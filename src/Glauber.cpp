@@ -513,8 +513,10 @@ int Glauber::perform_string_production() {
                     // from the nucleon remnant energy-momentum vector
                     auto p_q = proj_q->get_p();
                     proj->subtract_momentum_from_remnant(p_q);
-                    proj->subtract_electric_charge_from_remnant(
+                    if (!integer_electric_charge) {
+                        proj->subtract_electric_charge_from_remnant(
                                                             proj_q->get_Qe());
+                    }
                 }
                 targ_q = targ->get_a_valence_quark();
                 if (targ_q->get_number_of_connections() == 1) {
@@ -523,8 +525,10 @@ int Glauber::perform_string_production() {
                     // from the nucleon remnant energy-momentum vector
                     auto p_q = targ_q->get_p();
                     targ->subtract_momentum_from_remnant(p_q);
-                    targ->subtract_electric_charge_from_remnant(
+                    if (!integer_electric_charge) {
+                        targ->subtract_electric_charge_from_remnant(
                                                             targ_q->get_Qe());
+                    }
                 }
                 y_in_lrf = std::abs(  proj_q->get_rapidity()
                                     - targ_q->get_rapidity())/2.;
@@ -730,9 +734,11 @@ int Glauber::perform_string_production() {
                 // put electric charge of the projectile in the projectile
                 // remnant
                 auto proj = projectile->get_participant(idx - Nstrings);
+                auto proj_electric_charge = proj->get_electric_charge();
                 auto p_i = proj->get_remnant_p();
                 if (p_i[0] <= 0) continue;
-                if (!proj->electric_charge_was_used()) {
+                if (std::abs(proj_electric_charge) > 1e-15
+                        && !proj->electric_charge_was_used()) {
                     proj->set_electric_charge_used(true);
                     proj->set_remnant_carry_electric_charge_number(true);
                 }
@@ -746,7 +752,7 @@ int Glauber::perform_string_production() {
                 // put electric charge of the projectile in the selected string
                 auto targ = QCD_string_list[idx].get_targ();
                 auto targ_electric_charge = targ->get_electric_charge();
-                if (targ_electric_charge > 0
+                if (std::abs(targ_electric_charge) > 1e-15
                     && !targ->electric_charge_was_used()) {
                     if (ran_gen_ptr_->rand_uniform()
                             < electricChargeInStringProb) {
@@ -756,9 +762,11 @@ int Glauber::perform_string_production() {
                 }
             } else if (idx > Nstrings + Npart_proj - 1) {
                 auto targ = target->get_participant(idx - Nstrings - Npart_proj);
+                auto targ_electric_charge = targ->get_electric_charge();
                 auto p_i = targ->get_remnant_p();
                 if (p_i[0] <= 0) continue;
-                if (!targ->electric_charge_was_used()) {
+                if (std::abs(targ_electric_charge) > 1e-15
+                        && !targ->electric_charge_was_used()) {
                     targ->set_electric_charge_used(true);
                     targ->set_remnant_carry_electric_charge_number(true);
                 }
