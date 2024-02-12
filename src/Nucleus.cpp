@@ -701,16 +701,32 @@ void Nucleus::readin_nucleon_positions() {
         } else if (lightNucleusOption_ == 1) {
             filename << "tables/O16_alphaCluster.bin.in";
         } else if (lightNucleusOption_ == 2) {
-            filename << "tables/O16_PGCM.bin.in";
+            filename << "tables/PGCM_clustered_dmin0_O.bin";
         } else if (lightNucleusOption_ == 3) {
-            filename << "tables/O16_NLEFT.bin.in";
+            filename << "tables/PGCM_uniform_dmin0_O.bin";
+        } else if (lightNucleusOption_ == 4) {
+            filename << "tables/NLEFT_dmin_0.5fm_positiveweights_O.bin";
+        } else if (lightNucleusOption_ == 5) {
+            filename << "tables/NLEFT_dmin_0.5fm_negativeweights_O.bin";
         } else {
             std::cout << "O16 nucleus does not support lightNucleusOption = "
                       << lightNucleusOption_ << std::endl;
             exit(1);
         }
     } else if (A_ == 20) {   // Neon
-        filename << "tables/Ne20_PGCM.bin.in";
+        if (lightNucleusOption_ == 0) {
+            filename << "tables/PGCM_clustered_dmin0_Ne.bin";
+        } else if (lightNucleusOption_ == 1) {
+            filename << "tables/PGCM_uniform_dmin0_Ne.bin";
+        } else if (lightNucleusOption_ == 2) {
+            filename << "tables/NLEFT_dmin_0.5fm_positiveweights_Ne.bin";
+        } else if (lightNucleusOption_ == 3) {
+            filename << "tables/NLEFT_dmin_0.5fm_negativeweights_Ne.bin";
+        } else {
+            std::cout << "Ne20 nucleus does not support lightNucleusOption = "
+                      << lightNucleusOption_ << std::endl;
+            exit(1);
+        }
     } else if (A_ == 40) {   // Ar
         filename << "tables/Ar40_VMC.bin.in";
     } else if (A_ == 197) {  // Au
