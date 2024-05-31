@@ -504,22 +504,39 @@ void Nucleus::readin_nucleon_positions() {
                       << lightNucleusOption_ << std::endl;
             exit(1);
         }
-    } else if (A_ == 16) {  // oxygen
+    } else if (A_ == 16) {  // oxygen 16
         if (lightNucleusOption_ == 0) {
             filename << "tables/O16_VMC.bin.in";
         } else if (lightNucleusOption_ == 1) {
             filename << "tables/O16_alphaCluster.bin.in";
         } else if (lightNucleusOption_ == 2) {
-            filename << "tables/O16_PGCM.bin.in";
+            filename << "tables/O16_PGCM_clustered_dmin0.bin.in";
         } else if (lightNucleusOption_ == 3) {
-            filename << "tables/O16_NLEFT.bin.in";
+            filename << "tables/O16_PGCM_uniform_dmin0.bin.in";
+        } else if (lightNucleusOption_ == 4) {
+            filename << "tables/O16_NLEFT_dmin0.5fm_positiveweights.bin.in";
+        } else if (lightNucleusOption_ == 5) {
+            filename << "tables/O16_NLEFT_dmin0.5fm_negativeweights.bin.in";
         } else {
             std::cout << "O16 nucleus does not support lightNucleusOption = "
                       << lightNucleusOption_ << std::endl;
             exit(1);
         }
-    } else if (A_ == 20) {   // Neon
-        filename << "tables/Ne20_PGCM.bin.in";
+    } else if (A_ == 20) {   // Neon 20
+        // to be consistent with the O16 options
+        if (lightNucleusOption_ == 2) {
+            filename << "tables/Ne20_PGCM_clustered_dmin0.bin.in";
+        } else if (lightNucleusOption_ == 3) {
+            filename << "tables/Ne20_PGCM_uniform_dmin0.bin.in";
+        } else if (lightNucleusOption_ == 4) {
+            filename << "tables/Ne20_NLEFT_dmin0.5fm_positiveweights.bin.in";
+        } else if (lightNucleusOption_ == 5) {
+            filename << "tables/Ne20_NLEFT_dmin0.5fm_negativeweights.bin.in";
+        } else {
+            std::cout << "Ne20 nucleus does not support lightNucleusOption = "
+                      << lightNucleusOption_ << std::endl;
+            exit(1);
+        }
     } else if (A_ == 40) {   // Ar
         filename << "tables/Ar40_VMC.bin.in";
     } else if (A_ == 197) {  // Au
