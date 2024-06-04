@@ -47,6 +47,7 @@ class Nucleus {
     std::vector< std::array<float, 3> > proton_valence_quark_x_;
     std::vector< std::array<float, 3> > neutron_valence_quark_x_;
     std::vector< std::array<float, 2> > dipole_valence_quark_x_;
+    int Pol_;
 
     int system_status_;
     int number_of_valence_quark_samples_;
@@ -57,7 +58,7 @@ class Nucleus {
             std::shared_ptr<RandomUtil::Random> ran_gen,
             bool sample_valence_quarks=false, real BG=4.,
             real d_min=0.9, real beta2 = 0.0, real beta3=0.0, 
-            real beta4=0.0, real gamma=0.0, bool setWSDeformParams=false,
+            real beta4=0.0, real gamma=0.0, int Pol = 0, bool setWSDeformParams=false,
             bool deformed=true, bool confFromFile=false,
             int lightNucleusOption = 1);
     ~Nucleus();
@@ -165,6 +166,7 @@ class Nucleus {
             const real ecm) const;
 
     SpatialVec sample_valence_quark_position() const;
+    SpatialVec sample_valence_polarized_quark_position(const real bxq, const int id ) const;
     real ExponentialDistribution(const real a, const real r) const;
 };
 

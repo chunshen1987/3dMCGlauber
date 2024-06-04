@@ -37,6 +37,8 @@ class Parameters : public ParametersMap {
 
     bool use_roots_distribution() const;
     bool use_roots_cut() const;
+    int get_Pol_targ() const;
+    int get_Pol_proj() const;
 
     bool use_E_dependent_LB() const;
     real get_lambdaB() const;

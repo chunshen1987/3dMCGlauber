@@ -23,7 +23,7 @@ namespace MCGlb {
 Nucleus::Nucleus(std::string nucleus_name,
                  std::shared_ptr<RandomUtil::Random> ran_gen,
                  bool sample_valence_quarks_in, real BG,
-                 real d_min, real beta2, real beta3, real beta4, real gamma, 
+                 real d_min, real beta2, real beta3, real beta4, real gamma, int Pol,
                  bool setWSDeformParams, bool deformed, bool confFromFile, 
                  int lightNucleusOption) {
     d_min_      = d_min;
@@ -35,6 +35,7 @@ Nucleus::Nucleus(std::string nucleus_name,
     deformed_   = deformed;
     confFromFile_ = confFromFile;
     BG_ = BG;
+    Pol_ = Pol;
     ran_gen_ptr = ran_gen;
     set_nucleus_parameters(nucleus_name);
 
@@ -296,9 +297,20 @@ void Nucleus::sample_valence_quarks_inside_nucleons(real ecm, int direction) {
             sample_quark_momentum_fraction(xQuark, number_of_quarks,
                                            nucleon_i->get_electric_charge(),
                                            ecm);
-            for (int i = 0; i < number_of_quarks; i++) {
-                auto xvec = sample_valence_quark_position();
-                std::shared_ptr<Quark> quark_ptr(new Quark(xvec, xQuark[i]));
+            if (Pol_ == 0) {
+                for (int i = 0; i < number_of_quarks; i++) {
+                    auto xvec = sample_valence_quark_position();
+                    std::shared_ptr<Quark> quark_ptr(new Quark(xvec, xQuark[i]));
+                    nucleon_i->push_back_quark(quark_ptr);
+                }
+            } else {
+                for (int i = 0; i < 2; i++) {
+                    auto xvec = sample_valence_polarized_quark_position(xQuark[i], 2 );
+                    std::shared_ptr<Quark> quark_ptr(new Quark(xvec, xQuark[i]));
+                    nucleon_i->push_back_quark(quark_ptr);
+                }
+                auto xvec = sample_valence_polarized_quark_position(xQuark[2], 1 );
+                std::shared_ptr<Quark> quark_ptr(new Quark(xvec, xQuark[2]));
                 nucleon_i->push_back_quark(quark_ptr);
             }
             nucleon_i->accelerate_quarks(ecm, direction);
@@ -345,7 +357,9 @@ void Nucleus::add_soft_parton_ball(real ecm, int direction) {
                 // larger than mq
                 real rapidity = direction*acosh(soft_pvec[0]/mass);
                 soft_pvec[3] = mass*sinh(rapidity);
-                auto xvec = sample_valence_quark_position();
+                SpatialVec xvec;
+                if (Pol_ == 0) xvec = sample_valence_quark_position();
+                if (Pol_ != 0) xvec = sample_valence_polarized_quark_position(soft_pvec[0]/ecm, 21);
                 std::shared_ptr<Quark> quark_ptr(new Quark(xvec, soft_pvec));
                 quark_ptr->set_rapidity(rapidity);
                 nucleon_i->push_back_quark(quark_ptr);
@@ -1205,6 +1219,44 @@ SpatialVec Nucleus::sample_valence_quark_position() const {
     return(xq);
 }
 
+
+SpatialVec Nucleus::sample_valence_polarized_quark_position(const real bxq, const int id ) const {
+    real Sx = 1.;
+    real kq = 0.;
+    if (id == 2) kq = 1.673; // u
+    if (id == 1) kq = -2.033; // d
+    real BG = sqrt(BG_)*PhysConsts::HBARC;
+    real a = BG*BG;
+    real width = sqrt(2.*a*(1.-bxq) * log(1./bxq));
+    real bstep =  width*10./10000.; //fm
+    real bb, sum_temp, fac, sample_by;
+    real M = 0.938 / PhysConsts::HBARC;// fm^-1
+    // sample y
+    if (Pol_ == 1) { // Transvers Polarized
+        sum_temp = 0.0;
+        for (auto i=0; i<10000; i++) {
+            bb = i * bstep * 1.0;
+            sum_temp = sum_temp + (1. + kq*Sx*bb/(8.*M*a * (1.-bxq) *log(1./bxq))) * exp(-bb*bb/(2.*width*width));
+        }
+        fac = ran_gen_ptr->rand_uniform()  * sum_temp;
+        for (auto i=0; i<10001; i++) {
+            bb = i * bstep * 1.0;
+            fac = fac - (1. + kq*Sx*bb/(8.*M*a * (1.-bxq) *log(1./bxq))) * exp(-bb*bb/(2.*width*width));
+            if (fac < 0.0) {
+                sample_by = bb;
+                break;
+            }
+        }
+    } 
+    if (Pol_ == 2) { // Longitudinally Polarized
+        sample_by = ran_gen_ptr->rand_normal(0., width);
+    }
+    real x = ran_gen_ptr->rand_normal(0., width);
+    real z = ran_gen_ptr->rand_normal(0., width);
+
+    SpatialVec xq = {0.0, x, sample_by, z};
+    return(xq);
+}
 
 real Nucleus::ExponentialDistribution(const real a, const real r) const {
     // a = \sqrt{12}/R_p = 3.87, with R_p = 0.895

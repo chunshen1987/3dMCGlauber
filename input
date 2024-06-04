@@ -1,10 +1,12 @@
 ################################################################
 # collision information
 ################################################################
-Projectile Ne20                      # projectile nucleus name
-Target Pb                             # target nucleus name
+Projectile p                      # projectile nucleus name
+Target Au                             # target nucleus name
 nucleon_configuration_from_file 1    # use nucleon configuration from file
 roots 68.5                          # collision energy (GeV)
+Pol_proj 1                      #1: Transvers Polarized; 2: Longitudinally Polarized
+Pol_targ 0 
 lightNucleusOption 2
 use_roots_distribution 0             # The collision energy is sampled from a distribution
                                      # Only for the gamma* + A collisions currenty

@@ -317,6 +317,16 @@ real Parameters::get_gamma_proj() const {
     return(BG);
 }
 
+int Parameters::get_Pol_proj() const {
+    int BG = static_cast<real>(get_param_double("Pol_proj"));
+    return(BG);
+}
+
+int Parameters::get_Pol_targ() const {
+    int BG = static_cast<real>(get_param_double("Pol_targ"));
+    return(BG);
+}
+
 real Parameters::get_gamma_targ() const {
     real BG = static_cast<real>(get_param_double("gamma_targ"));
     return(BG);
