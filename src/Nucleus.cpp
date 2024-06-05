@@ -215,7 +215,7 @@ void Nucleus::generate_nucleus_3d_configuration() {
         real alpha_3D = 2*M_PI*ran_gen_ptr->rand_uniform();
         real beta_3D = acos(1. - 2. * ran_gen_ptr->rand_uniform());
         real gamma_3D = 2*M_PI*ran_gen_ptr->rand_uniform();
-        rotate_nucleus_3D(alpha_3D, beta_3D, gamma_3D);
+        if (Pol_ == 0) rotate_nucleus_3D(alpha_3D, beta_3D, gamma_3D);
     } else {
         // assign the dipole
         nucleon_list_[0]->set_electric_charge(0);
