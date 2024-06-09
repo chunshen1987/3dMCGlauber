@@ -1248,7 +1248,7 @@ SpatialVec Nucleus::sample_valence_polarized_quark_position(const real bxq, cons
             }
         }
     } 
-    if (Pol_ == 2) { // Longitudinally Polarized
+    if (Pol_ != 1) { // Longitudinally Polarized
         sample_by = ran_gen_ptr->rand_normal(0., width);
     }
     real x = ran_gen_ptr->rand_normal(0., width);
