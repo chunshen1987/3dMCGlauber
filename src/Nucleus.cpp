@@ -541,10 +541,10 @@ void Nucleus::readin_triton_position() {
                   << std::endl;
         exit(1);
     }
-    double x1, y1, z1, x2, y2, z2, x3, y3, z3;
+    real x1, y1, z1, x2, y2, z2, x3, y3, z3;
     triton_position >> x1 >> y1 >> z1 >> x2 >> y2 >> z2 >> x3 >> y3 >> z3;
     while (!triton_position.eof()) {
-        std::array<double, 9> temp;
+        std::array<real, 9> temp;
         temp = {x1, y1, z1, x2, y2, z2, x3, y3, z3};
         triton_pos_.push_back(temp);
         triton_position >> x1 >> y1 >> z1 >> x2 >> y2 >> z2 >> x3 >> y3 >> z3;
@@ -648,9 +648,9 @@ void Nucleus::readin_nucleon_positions() {
         exit(1);
     }
 
-    double dummy;
+    real dummy;
     for (int iconf = 0; iconf < n_configuration; iconf++) {
-        std::vector< std::array<double, 3> > conf_i;
+        std::vector< std::array<real, 3> > conf_i;
 
         if (A_ == 12) {
             input >> dummy >> dummy;
@@ -659,7 +659,7 @@ void Nucleus::readin_nucleon_positions() {
             input >> dummy >> dummy;
         }
         for (int ia = 0; ia < A_; ia++) {
-            double x_local, y_local, z_local;
+            real x_local, y_local, z_local;
             int isospin;
             if (A_ == 208) {
                 input >> x_local >> y_local >> z_local >> isospin;
@@ -670,7 +670,7 @@ void Nucleus::readin_nucleon_positions() {
             } else {
                 input >> x_local >> y_local >> z_local;
             }
-            std::array<double, 3> nucleon_pos = {x_local, y_local, z_local};
+            std::array<real, 3> nucleon_pos = {x_local, y_local, z_local};
             conf_i.push_back(nucleon_pos);
         }
         if (A_ == 3) {
@@ -1219,40 +1219,47 @@ SpatialVec Nucleus::sample_valence_quark_position() const {
     return(xq);
 }
 
-
 SpatialVec Nucleus::sample_valence_polarized_quark_position(const real bxq, const int id ) const {
     real Sx = 1.;
     real kq = 0.;
+    int Pol_ = 1;
     if (id == 2) kq = 1.673; // u
     if (id == 1) kq = -2.033; // d
-    real BG = sqrt(BG_)*PhysConsts::HBARC;
+    real BG = sqrt(BG_) * PhysConsts::HBARC;
     real a = BG*BG;
     real width = sqrt(2.*a*(1.-bxq) * log(1./bxq));
-    real bstep =  width*10./10000.; //fm
+    real bstep =  width*10./5000.; //fm
     real bb, sum_temp, fac, sample_by;
     real M = 0.938 / PhysConsts::HBARC;// fm^-1
     // sample y
-    if (Pol_ == 1) { // Transvers Polarized
+    if (std::abs(Pol_) == 1) { // Transvers Polarized
         sum_temp = 0.0;
         for (auto i=0; i<10000; i++) {
-            bb = i * bstep * 1.0;
-            sum_temp = sum_temp + (1. + kq*Sx*bb/(8.*M*a * (1.-bxq) *log(1./bxq))) * exp(-bb*bb/(2.*width*width));
+            bb = i * bstep * 1.0 - width*10.;
+            real Pol_pdf = (1. + kq*Sx*bb/(8.*M*a * (1.-bxq) *log(1./bxq))) * exp(-bb*bb/(2.*width*width));
+            if (Pol_pdf < 0.0) Pol_pdf = 0.0; //regular
+            sum_temp = sum_temp + Pol_pdf;
         }
-        fac = ran_gen_ptr->rand_uniform()  * sum_temp;
+        fac = ran_gen_ptr->rand_uniform() * sum_temp;
         for (auto i=0; i<10001; i++) {
-            bb = i * bstep * 1.0;
-            fac = fac - (1. + kq*Sx*bb/(8.*M*a * (1.-bxq) *log(1./bxq))) * exp(-bb*bb/(2.*width*width));
+            bb = i * bstep * 1.0 - width*10.;
+            real Pol_pdf = (1. + kq*Sx*bb/(8.*M*a * (1.-bxq) *log(1./bxq))) * exp(-bb*bb/(2.*width*width));
+            if (Pol_pdf < 0.0) Pol_pdf = 0.0; //regular
+            fac = fac - Pol_pdf; 
             if (fac < 0.0) {
-                sample_by = bb;
+                sample_by = bb + bstep * (1.+ fac/Pol_pdf);
                 break;
             }
         }
-    } 
-    if (Pol_ != 1) { // Longitudinally Polarized
+        sample_by = sample_by * std::abs(Pol_) / Pol_;
+    }
+     
+    if (std::abs(Pol_) != 1) { // Longitudinally Polarized
         sample_by = ran_gen_ptr->rand_normal(0., width);
     }
     real x = ran_gen_ptr->rand_normal(0., width);
     real z = ran_gen_ptr->rand_normal(0., width);
+    
 
     SpatialVec xq = {0.0, x, sample_by, z};
     return(xq);
