@@ -507,6 +507,7 @@ int Glauber::perform_string_production() {
             std::shared_ptr<Quark> targ_q;
             if (sample_valence_quark) {
                 proj_q = proj->get_a_valence_quark();
+                auto proj_q_xvec = proj_q->get_x();
                 if (proj_q->get_number_of_connections() == 1) {
                     // first time pick-up the valence quark
                     // we need to substract the valence quark energy-momentum
@@ -514,7 +515,8 @@ int Glauber::perform_string_production() {
                     auto p_q = proj_q->get_p();
                     proj->substract_momentum_from_remnant(p_q);
                 }
-                targ_q = targ->get_a_valence_quark();
+                //targ_q = targ->get_a_valence_quark();
+                targ_q = targ->get_a_close_valence_quark(proj_q_xvec[1], proj_q_xvec[2]);
                 if (targ_q->get_number_of_connections() == 1) {
                     // first time pick-up the valence quark
                     // we need to substract the valence quark energy-momentum
@@ -538,6 +540,7 @@ int Glauber::perform_string_production() {
                                      has_baryon_right, has_baryon_left);
                 QCD_string_list.push_back(qcd_string);
             } else {
+                // Connect the closest quark pairs into string
                 auto proj_q_xvec = proj_q->get_x();
                 auto targ_q_xvec = targ_q->get_x();
                 SpatialVec x_coll_q = {
@@ -691,6 +694,7 @@ int Glauber::perform_string_production() {
             // record the freeze-out space-time position for the remnant of
             // the collding nucleons at their last produced strings
             auto proj_n = it->get_proj();
+            SpatialVec remnant_proj = {0., 0., 0., 0.};
             if (!proj_n->is_remnant_set()) {
                 proj_n->set_remnant(true);
                 auto x_frez = proj_n->get_x();
@@ -698,6 +702,7 @@ int Glauber::perform_string_production() {
                     proj_n->set_remnant_x_frez(x_frez);
                 } else {
                     std::shared_ptr<Quark> remnant_q = proj_n->get_a_valence_quark();
+                    remnant_proj =  remnant_q->get_x();
                     auto remnant_q_xvec = remnant_q->get_x();
                     SpatialVec xvec_rem_q = {x_frez[0], remnant_q_xvec[1], remnant_q_xvec[2], x_frez[3]};
                     proj_n->set_remnant_x_frez(xvec_rem_q);
@@ -710,7 +715,8 @@ int Glauber::perform_string_production() {
                 if (parameter_list.set_remnant_x_ori()) {
                     targ_n->set_remnant_x_frez(x_frez);
                 } else {
-                    std::shared_ptr<Quark> remnant_q = targ_n->get_a_valence_quark();
+                    //std::shared_ptr<Quark> remnant_q = targ_n->get_a_valence_quark();
+                    std::shared_ptr<Quark> remnant_q = targ_n->get_a_close_valence_quark(remnant_proj[1], remnant_proj[2]);
                     auto remnant_q_xvec = remnant_q->get_x();
                     SpatialVec xvec_rem_q = {x_frez[0], remnant_q_xvec[1], remnant_q_xvec[2], x_frez[3]};
                     targ_n->set_remnant_x_frez(xvec_rem_q);

@@ -88,6 +88,7 @@ class Nucleon : public Particle {
     void lorentz_contraction(real gamma);
 
     std::shared_ptr<Quark> get_a_valence_quark();
+    std::shared_ptr<Quark> get_a_close_valence_quark(real xq, real yq);
 
     bool is_remnant_set() const {return(remnant_set_);}
     void set_remnant(bool remnant) {remnant_set_ = remnant;}
