@@ -506,6 +506,8 @@ int Glauber::perform_string_production() {
             std::shared_ptr<Quark> proj_q;
             std::shared_ptr<Quark> targ_q;
             if (sample_valence_quark) {
+                auto proj_xvec = proj->get_x();
+                auto targ_xvec = targ->get_x();
                 proj_q = proj->get_a_valence_quark();
                 auto proj_q_xvec = proj_q->get_x();
                 if (proj_q->get_number_of_connections() == 1) {
@@ -516,7 +518,8 @@ int Glauber::perform_string_production() {
                     proj->substract_momentum_from_remnant(p_q);
                 }
                 //targ_q = targ->get_a_valence_quark();
-                targ_q = targ->get_a_close_valence_quark(proj_q_xvec[1], proj_q_xvec[2]);
+                targ_q = targ->get_a_close_valence_quark(proj_q_xvec[1] + proj_xvec[1] - targ_xvec[1], 
+                                                         proj_q_xvec[2] + proj_xvec[2] - targ_xvec[2]);
                 if (targ_q->get_number_of_connections() == 1) {
                     // first time pick-up the valence quark
                     // we need to substract the valence quark energy-momentum
@@ -695,9 +698,12 @@ int Glauber::perform_string_production() {
             // the collding nucleons at their last produced strings
             auto proj_n = it->get_proj();
             SpatialVec remnant_proj = {0., 0., 0., 0.};
+            SpatialVec x_frez_proj = {0., 0., 0., 0.};
+            SpatialVec x_frez_targ = {0., 0., 0., 0.};
             if (!proj_n->is_remnant_set()) {
                 proj_n->set_remnant(true);
                 auto x_frez = proj_n->get_x();
+                x_frez_proj = x_frez;
                 if (parameter_list.set_remnant_x_ori()) {
                     proj_n->set_remnant_x_frez(x_frez);
                 } else {
@@ -712,11 +718,13 @@ int Glauber::perform_string_production() {
             if (!targ_n->is_remnant_set()) {
                 targ_n->set_remnant(true);
                 auto x_frez = targ_n->get_x();
+                x_frez_targ = x_frez;
                 if (parameter_list.set_remnant_x_ori()) {
                     targ_n->set_remnant_x_frez(x_frez);
                 } else {
                     //std::shared_ptr<Quark> remnant_q = targ_n->get_a_valence_quark();
-                    std::shared_ptr<Quark> remnant_q = targ_n->get_a_close_valence_quark(remnant_proj[1], remnant_proj[2]);
+                    std::shared_ptr<Quark> remnant_q = targ_n->get_a_close_valence_quark(remnant_proj[1]+x_frez_proj[1]-x_frez_targ[1], 
+                                                                                         remnant_proj[2]+x_frez_proj[2]-x_frez_targ[2]);
                     auto remnant_q_xvec = remnant_q->get_x();
                     SpatialVec xvec_rem_q = {x_frez[0], remnant_q_xvec[1], remnant_q_xvec[2], x_frez[3]};
                     targ_n->set_remnant_x_frez(xvec_rem_q);
