@@ -1,3 +1,0 @@
-/home/wenbin/Downloads/Wenbin_working/Work/WSU_BNL_work/UPC/code/my_branch/iEBE-MUSIC/codes/wenbin_main/3dMCGlauber/3dMCGlb.e
-/home/wenbin/Downloads/Wenbin_working/Work/WSU_BNL_work/UPC/code/my_branch/iEBE-MUSIC/codes/wenbin_main/3dMCGlauber/Metropolis.e
-/home/wenbin/Downloads/Wenbin_working/Work/WSU_BNL_work/UPC/code/my_branch/iEBE-MUSIC/codes/wenbin_main/3dMCGlauber/lib/lib3dMCGlb.so

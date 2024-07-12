@@ -43,6 +43,17 @@ real Parameters::get_d_min() const {
     return(b);
 }
 
+real Parameters::get_BG_proj() const {
+    real BG = static_cast<real>(get_param_double("BG_proj", 5.));
+    assert(BG > 0.);
+    return(BG);
+}
+
+real Parameters::get_BG_targ() const {
+    real BG = static_cast<real>(get_param_double("BG_targ", 5.));
+    assert(BG > 0.);
+    return(BG);
+}
 
 int Parameters::get_use_quarks() const {
     int flag = get_param_int("useQuarks", 1);
@@ -65,19 +76,19 @@ real Parameters::get_roots() const {
 }
 
 real Parameters::get_UPC_root_low_cut() const {
-    real roots = static_cast<real>(get_param_double("roots_low_cut"));
+    real roots = static_cast<real>(get_param_double("roots_low_cut", 1.));
     assert(roots > 0.);
     return(roots);
 }
 
 real Parameters::get_UPC_root_up_cut() const {
-    real roots = static_cast<real>(get_param_double("roots_up_cut"));
+    real roots = static_cast<real>(get_param_double("roots_up_cut", 20.));
     assert(roots > 0.);
     return(roots);
 }
 
 bool Parameters::use_roots_cut() const {
-    int flag = get_param_int("use_roots_cut");
+    int flag = get_param_int("use_roots_cut", 0);
     if (flag == 1)
         return(true);
     else
@@ -85,7 +96,7 @@ bool Parameters::use_roots_cut() const {
 }
 
 bool Parameters::use_roots_distribution() const {
-    int flag = get_param_int("use_roots_distribution");
+    int flag = get_param_int("use_roots_distribution", 0);
     if (flag == 1)
         return(true);
     else
@@ -93,7 +104,7 @@ bool Parameters::use_roots_distribution() const {
 }
 
 bool Parameters::use_E_dependent_LB() const {
-    int flag = get_param_int("use_E_dependent_LB");
+    int flag = get_param_int("use_E_dependent_LB", 0);
     if (flag == 1)
         return(true);
     else
@@ -101,7 +112,7 @@ bool Parameters::use_E_dependent_LB() const {
 }
 
 real Parameters::get_CB() const {
-    real CB = static_cast<real>(get_param_double("CB"));
+    real CB = static_cast<real>(get_param_double("CB", 1.));
     assert(CB >= 0.);
     return(CB);
 }

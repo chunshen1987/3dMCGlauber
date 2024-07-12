@@ -36,7 +36,9 @@ class Parameters : public ParametersMap {
     real get_UPC_root_up_cut() const;
     bool use_E_dependent_LB() const;
     real get_CB() const;
-
+    real get_BG_proj() const;
+    real get_BG_targ() const;
+    
     bool use_roots_distribution() const;
     bool use_roots_cut() const;
 
