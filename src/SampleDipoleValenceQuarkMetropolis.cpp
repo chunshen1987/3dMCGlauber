@@ -2,11 +2,12 @@
 // with single valence quark distribution p(x)=x^alpha(1-x)^beta
 // Copyright @ Wenbin Zhao, Chun Shen 2021
 
-#include <memory>
 #include <array>
+#include <vector>
 #include <iostream>
+#include <iomanip>
 #include <sstream>
-#include <fstream> 
+#include <fstream>
 #include "Random.h"
 using RandomUtil::Random;
 using std::shared_ptr;
@@ -14,8 +15,8 @@ using std::array;
 
 const int two_quarks = 2;
 const int number_of_samples = 200000;
-const double acc_violation_fraction = 2e-3;
-const double allow_violation_fraction = 0.0;
+const double acc_violation_fraction = 5e-3;
+const double allow_violation_fraction = 5e-3;
 const long int ntol = 10000000;
 const double EPS = 1e-15;
 
@@ -24,20 +25,23 @@ typedef struct{
     double score;
 } Double_let;
 
-int binary_search(const double inputarray[], int start, int end, double key) {
-    int ret = -1;     
-    int mid;
-    while (start <= end) {
-        mid = start + (end - start) / 2; 
-        if (inputarray[mid] <= key && inputarray[mid + 1] >= key){
-            ret = mid;  
-            break;
+
+double binary_search(std::vector<double> &yarr, std::vector<double> &xarr,
+                     double key) {
+    int start = 0;
+    int end = yarr.size();
+    int mid = 0;
+    while (end - start > 1) {
+        mid = static_cast<int>((start + end)/2);
+        if (yarr[mid] > key) {
+            end = mid;
         } else {
-            if (inputarray[mid] < key) start = mid + 1;
-            else end = mid - 1;
+            start = mid;
         }
     }
-    return ret;    
+    double ret = (xarr[start] + (xarr[start] - xarr[end])
+                                /(yarr[start] - yarr[end])*(key - yarr[start]));
+    return ret;
 }
 
 
@@ -53,7 +57,8 @@ void compute_score(Double_let &doublet_i) {
 }
 
 
-void swap_two_quarks(Double_let &doublet_1, Double_let &doublet_2, const int q_id) {
+void swap_two_quarks(Double_let &doublet_1, Double_let &doublet_2,
+                     const int q_id) {
     double swap = doublet_1.Xarr2[q_id];
     doublet_1.Xarr2[q_id] = doublet_2.Xarr2[q_id];
     doublet_2.Xarr2[q_id] = swap;
@@ -66,8 +71,8 @@ void swap_two_quarks(Double_let &doublet_1, Double_let &doublet_2, const int q_i
 
 void one_metropolis_step(
     shared_ptr<Random> ran_int_gen_1, shared_ptr<Random> ran_int_gen_2,
-    array<Double_let, number_of_samples> &quark_samples, int flag_force_violation,
-    double &delta_score, int &delta_violations) {
+    array<Double_let, number_of_samples> &quark_samples,
+    int flag_force_violation, double &delta_score, int &delta_violations) {
 
     int sample1 = ran_int_gen_1->rand_int_uniform();
     if (flag_force_violation == 1) {
@@ -82,6 +87,7 @@ void one_metropolis_step(
     int sample2 = 0;
     double score_curr, score_prev;
     double sample1_prev_score, sample2_prev_score;
+    int itol = 0;
     do {
         do {
             sample2 = ran_int_gen_1->rand_int_uniform();
@@ -103,7 +109,9 @@ void one_metropolis_step(
             score_curr = (  quark_samples[sample1].score
                           + quark_samples[sample2].score);
         }
-    } while (flag_force_violation == 1 && score_curr < score_prev);
+        itol++;
+    } while (flag_force_violation == 1 && score_curr < score_prev &&
+             itol < 10);
 
     delta_score = (score_curr - score_prev)/number_of_samples;
 
@@ -144,40 +152,26 @@ int number_of_violations(
 
 int main(int argc, char* argv[]) {
     // the quark's PDF in the dipole, p(x)=x^alpha(1-x)^beta
-    long double dx = 0.001;
-    int lengh = 1 / dx;
+    double dx = 0.01;
+    int length = static_cast<int>(1./dx) + 1;
+
     double Alpha = 2.0;
     double Beta = 2.0;
-    double loopx = 0.0;
-    int index = 0;
-    double CDF[lengh];
-    double InverseCDF[lengh];
+    std::vector<double> xarr(length, 0.);
+    std::vector<double> CDF(length, 0.);
 
-
-    while(loopx < 1.0){
+    for (unsigned int i = 1; i < CDF.size(); i++) {
+        double loopx = (i - 0.5)*dx;
         double fbeta = pow(loopx, Alpha) * pow(1.0 - loopx, Beta);
-        if (index == 0){
-            CDF[index] = 0.0;
-        } else {
-            CDF[index] = fbeta + CDF[index - 1];
-        }
-        loopx = loopx + dx;
-        index ++;
+        CDF[i] = (fbeta * dx + CDF[i - 1]);
+        xarr[i] = i*dx;
     }
-    
-    for (int i = 0; i < index; i++){
-        CDF[i] = CDF[i] / CDF[index - 1];
+
+    double norm = std::beta(Alpha + 1.0, Beta + 1.0);
+    for (unsigned int i = 1; i < CDF.size(); i++) {
+        CDF[i] /= norm;
     }
-    
-    // get the inverse CDF array
-    InverseCDF[0] = 0.0;
-    for (int j = 1; j < index - 1; j++){
-        double sampleprab = j * 1.0 * dx;
-        int cdfindex = binary_search(CDF, 0, index - 1, sampleprab);
-        InverseCDF[j] = cdfindex * dx;
-    }
-    InverseCDF[index - 1] = 1.0;
-    
+
     // create quark sample lists for protons and neutrons
     array<Double_let, number_of_samples> dipole_quark_samples;
 
@@ -190,20 +184,18 @@ int main(int argc, char* argv[]) {
                     new Random(ran_seed, 0, number_of_samples - 1));
     ran_int_gen_2 = shared_ptr<Random>(
                     new Random(ran_seed, 0, two_quarks - 1));
-                    
+
     for (int i = 0; i < number_of_samples; i++) {
         array<double, two_quarks> quark_x;
         for (int iq = 0; iq < two_quarks; iq++) {
             double tmp = ran_gen_ptr->rand_uniform();
-            int xindex = tmp / dx;
-            quark_x[iq] = InverseCDF[xindex] + (tmp / dx - xindex * 1.0) *
-                          (InverseCDF[xindex + 1] - InverseCDF[xindex]);
+            quark_x[iq] = binary_search(CDF, xarr, tmp);
         }
         dipole_quark_samples[i].Xarr2[0] = quark_x[0];
         dipole_quark_samples[i].Xarr2[1] = quark_x[1];
         compute_score(dipole_quark_samples[i]);
     }
-    
+
     // begin Metropolis
     double dipole_total_score = compute_total_score(dipole_quark_samples);
     int dipole_nviolations = number_of_violations(dipole_quark_samples);
@@ -237,6 +229,7 @@ int main(int argc, char* argv[]) {
 
         iter++;
     }
+
     std::cout << "dipole iter = " << iter << ": nviolations = "
               << dipole_nviolations
               << ", <sum_x> = " << dipole_total_score << std::endl;

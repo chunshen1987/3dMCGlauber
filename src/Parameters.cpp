@@ -64,6 +64,48 @@ real Parameters::get_roots() const {
     return(roots);
 }
 
+real Parameters::get_UPC_root_low_cut() const {
+    real roots = static_cast<real>(get_param_double("roots_low_cut"));
+    assert(roots > 0.);
+    return(roots);
+}
+
+real Parameters::get_UPC_root_up_cut() const {
+    real roots = static_cast<real>(get_param_double("roots_up_cut"));
+    assert(roots > 0.);
+    return(roots);
+}
+
+bool Parameters::use_roots_cut() const {
+    int flag = get_param_int("use_roots_cut");
+    if (flag == 1)
+        return(true);
+    else
+        return(false);
+}
+
+bool Parameters::use_roots_distribution() const {
+    int flag = get_param_int("use_roots_distribution");
+    if (flag == 1)
+        return(true);
+    else
+        return(false);
+}
+
+bool Parameters::use_E_dependent_LB() const {
+    int flag = get_param_int("use_E_dependent_LB");
+    if (flag == 1)
+        return(true);
+    else
+        return(false);
+}
+
+real Parameters::get_CB() const {
+    real CB = static_cast<real>(get_param_double("CB"));
+    assert(CB >= 0.);
+    return(CB);
+}
+
 
 real Parameters::get_lambdaB() const {
     real lambdaB = static_cast<real>(get_param_double("lambdaB", 0.));
@@ -77,10 +119,29 @@ real Parameters::get_lambdaBs() const {
     assert(lambdaBs >= 0.);
     return(lambdaBs);
 }
+real Parameters::get_lambdaQ() const {
+    real lambdaQ = static_cast<real>(get_param_double("lambdaQ", 0.));
+    assert(lambdaQ >= 0.);
+    return(lambdaQ);
+}
+
+
+real Parameters::get_lambdaQs() const {
+    real lambdaQs = static_cast<real>(get_param_double("lambdaQs", 1.));
+    assert(lambdaQs >= 0.);
+    return(lambdaQs);
+}
 
 
 real Parameters::get_baryon_in_string_prob() const {
     real prob = static_cast<real>(get_param_double("baryonInStringProb", 1.));
+    assert(prob >= 0. && prob <= 1.);
+    return(prob);
+}
+
+real Parameters::get_electric_charge_in_string_prob() const {
+    real prob = static_cast<real>(
+                        get_param_double("electricChargeInStringProb", 1.));
     assert(prob >= 0. && prob <= 1.);
     return(prob);
 }
@@ -190,6 +251,26 @@ bool Parameters::get_batch_eccentricity_output() const {
 
 bool Parameters::get_baryon_junctions() const {
     int flag = get_param_int("baryon_junctions", 0);
+    if (flag == 0) {
+        return(false);
+    } else {
+        return(true);
+    }
+}
+
+
+bool Parameters::get_electric_junctions() const {
+    int flag = get_param_int("electric_junctions", 0);
+    if (flag == 0) {
+        return(false);
+    } else {
+        return(true);
+    }
+}
+
+
+bool Parameters::get_integer_electric_charge() const {
+    int flag = get_param_int("integer_electric_charge", 0);
     if (flag == 0) {
         return(false);
     } else {

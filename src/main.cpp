@@ -33,7 +33,7 @@ int main(int argc, char* argv[]) {
     }
 
     MCGlb::EventGenerator mc_gen(input_filename, argc, argv, seed);
-    mc_gen.generateMinBiasEventList();
+    //mc_gen.generateMinBiasEventList();
     mc_gen.generate_events(nev);
     return(0);
 }

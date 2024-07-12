@@ -1,0 +1,33 @@
+SetDesc: "CT10 NNLO Global Analysis of QCD. PDF fits using the standard CTEQ PDF evolution but using the HOPPET alpha_s running solution. mem=0 => central value; mem=1-50 => eigenvector sets"
+SetIndex: 11200
+Authors: Jun Gao, Marco Guzzi, Joey Huston, Hung-Liang Lai, Zhao Li, Pavel Nadolsky, Jon Pumplin, Daniel Stump and C.-P.Yuan
+Reference: arXiv:1302.6246
+Format: lhagrid1
+DataVersion: 1
+NumMembers: 51
+Particle: 2212
+Flavors: [-5, -4, -3, -2, -1, 1, 2, 3, 4, 5, 21]
+OrderQCD: 2
+ForcePositive: 1
+FlavorScheme: variable
+NumFlavors: 5
+ErrorType: hessian
+ErrorConfLevel: 90
+XMin: 1e-08
+XMax: 1
+QMin: 1.3
+QMax: 100000
+MZ: 91.1876
+MUp: 0
+MDown: 0
+MStrange: 0
+MCharm: 1.3
+MBottom: 4.75
+MTop: 172
+AlphaS_MZ: 0.118
+AlphaS_OrderQCD: 2
+AlphaS_Type: ipol
+AlphaS_Qs: [1.300000e+00, 1.464610e+00, 1.659240e+00, 1.890670e+00, 2.167490e+00, 2.500670e+00, 2.904300e+00, 3.396640e+00, 4.001450e+00, 4.750000e+00, 5.767150e+00, 7.070720e+00, 8.758190e+00, 1.096570e+01, 1.388560e+01, 1.779290e+01, 2.308550e+01, 3.034710e+01, 4.044480e+01, 5.468640e+01, 7.507240e+01, 9.118760e+01, 1.047120e+02, 1.485170e+02, 2.143800e+02, 3.152120e+02, 4.725370e+02, 7.229460e+02, 1.129950e+03, 1.806160e+03, 2.955930e+03, 4.958860e+03, 8.538140e+03, 1.510790e+04, 2.751070e+04, 5.162750e+04, 1.000000e+05]
+AlphaS_Vals: [3.777075e-01, 3.534368e-01, 3.301970e-01, 3.091879e-01, 2.900997e-01, 2.726663e-01, 2.566744e-01, 2.419545e-01, 2.283568e-01, 2.157619e-01, 2.046383e-01, 1.939241e-01, 1.838558e-01, 1.743885e-01, 1.654742e-01, 1.570711e-01, 1.491447e-01, 1.416597e-01, 1.345883e-01, 1.279028e-01, 1.215750e-01, 1.180003e-01, 1.155865e-01, 1.099127e-01, 1.045372e-01, 9.944037e-02, 9.460486e-02, 9.001743e-02, 8.566195e-02, 8.152723e-02, 7.759991e-02, 7.386786e-02, 7.032183e-02, 6.695042e-02, 6.374568e-02, 6.069811e-02, 5.779895e-02]
+AlphaS_Lambda4: 0.326
+AlphaS_Lambda5: 0.226

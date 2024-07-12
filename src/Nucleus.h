@@ -37,6 +37,7 @@ class Nucleus {
 
     std::vector< std::array<float, 3> > proton_valence_quark_x_;
     std::vector< std::array<float, 3> > neutron_valence_quark_x_;
+    std::vector< std::array<float, 2> > dipole_valence_quark_x_;
 
     int system_status_;
     int number_of_valence_quark_samples_;
@@ -64,10 +65,11 @@ class Nucleus {
     void set_woods_saxon_parameters(int A_in, int Z_in,
                                     real rho, real w, real R, real a,
                                     real beta2, real beta3, real beta4,
-                                    real gamma, int density_function_type_in);
+                                    real gamma, real da, real dR,
+                                    int density_function_type_in);
     void setWoodsSaxonParameters(real rho, real w, real R, real a,
                                  real beta2, real beta3, real beta4,
-                                 real gamma);
+                                 real gamma, real da, real dR);
     void set_dmin (real d_min) {d_min_ = d_min;}
     real get_nucleon_minimum_distance() const {return(d_min_);}
     int get_nucleus_A() const {return(A_);}
@@ -102,10 +104,11 @@ class Nucleus {
     //! the Fermi Distribution
     void generate_nucleus_configuration_with_woods_saxon();
     void generate_nucleus_configuration_with_deformed_woods_saxon();
-    real sample_r_from_woods_saxon() const;
+    void sample_r_from_woods_saxon(
+        std::vector<std::pair<real, real>> &r_array) const;
     real sample_r_from_deformed_woods_saxon() const;
     void sample_r_and_costheta_from_deformed_woods_saxon(
-                                    real &phi, real &r, real &costheta) const;
+        std::vector<std::array<real, 4>> &nucleonPos_array) const;
     //! Fermi Distribution 
     real fermi_distribution(real r, real R_WS, real a_WS) const;
     real getAvgWoodsSaxonDensity(real r) const;
@@ -132,21 +135,29 @@ class Nucleus {
     void rotate_nucleus_3D(real phi, real theta, real gamma);
 
     void accelerate_nucleus(real ecm, int direction);
+    void accelerate_dipole(real ecm, int direction);
     void lorentz_contraction(real gamma);
     void set_nucleons_momentum_with_collision_energy(real beam_rapidity);
+    void set_dipole_momentum_with_collision_energy(real beam_rapidity);
     real get_z_min() const;
     real get_z_max() const;
 
     void output_nucleon_positions(std::string filename) const;
 
     void sample_valence_quarks_inside_nucleons(real ecm, int direction);
+    void sample_valence_quarks_inside_dipole(real ecm, int direction);
     void add_soft_parton_ball(real ecm, int direction);
 
     void sample_fermi_momentum();
 
     void sample_quark_momentum_fraction(std::vector<real> &xQuark,
+                                        std::vector<real> &eQuark,
                                         const int number_of_quarks,
-                                        const int electric_charge,
+                                        const real electric_charge,
+                                        const real ecm) const;
+    void sample_quark_momentum_fraction_in_dipole(
+                                        std::vector<real> &xQuark, 
+                                        const int number_of_quarks,
                                         const real ecm) const;
     SpatialVec sample_valence_quark_position() const;
     real ExponentialDistribution(const real a, const real r) const;

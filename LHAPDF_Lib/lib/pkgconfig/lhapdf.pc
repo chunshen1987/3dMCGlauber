@@ -1,0 +1,13 @@
+prefix=/home/wenbin/Downloads/Wenbin_working/Work/WSU_BNL_work/UPC/code/my_branch/iEBE-MUSIC/codes/wenbin_main/3dMCGlauber/LHAPDF_Lib
+exec_prefix=${prefix}
+libdir=${exec_prefix}/lib
+includedir=${prefix}/include
+datarootdir=${prefix}/share
+
+Name: lhapdf
+Description: LHAPDF parton density library
+URL: https://lhapdf.hepforge.org
+Version: 6.2.1
+Libs: -L${exec_prefix}/lib -lLHAPDF
+Cflags: -I${prefix}/include
+#-I@BOOST_CPPFLAGS@

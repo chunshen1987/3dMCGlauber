@@ -13,7 +13,9 @@ class Quark : public Particle {
     real pdf_x;
     real rapidity_q;
     bool remnant_set_ = false;
+    bool Qe_set_ = false;
     int number_of_connections = 0;
+    real Qe_ = 0.;
 
  public:
     Quark() = default;
@@ -21,15 +23,26 @@ class Quark : public Particle {
         set_particle_variables(x_in, p_in);
     }
 
+
     Quark(SpatialVec x_in, MomentumVec p_in, real mass_in) {
         set_particle_variables(x_in, p_in, mass_in);
     }
+
 
     Quark(SpatialVec x_in, real pdf_x_in) {
         set_pdf_x(pdf_x_in);
         MomentumVec p_in = {0.0};
         set_particle_variables(x_in, p_in);
     }
+
+
+    Quark(SpatialVec x_in, real pdf_x_in, real Qe) {
+        set_pdf_x(pdf_x_in);
+        MomentumVec p_in = {0.0};
+        set_particle_variables(x_in, p_in);
+        Qe_ = Qe;
+    }
+
 
     void set_pdf_x(real x_in) {
         assert(x_in >= 0.);
@@ -38,11 +51,16 @@ class Quark : public Particle {
     }
     real get_pdf_x() const {return(pdf_x);}
 
+    real get_Qe() const {return(Qe_);}
+
     void set_rapidity(real rapidity_in) {rapidity_q = rapidity_in;}
     real get_rapidity() const {return(rapidity_q);}
 
     bool is_remnant_set() const {return(remnant_set_);}
     void set_remnant(bool remnant) {remnant_set_ = remnant;}
+
+    bool Qe_was_used() const {return(Qe_set_);}
+    void set_Qe_used(bool setQe) {Qe_set_ = setQe;}
 
     void add_a_connection() {number_of_connections++;}
     int get_number_of_connections() const {return(number_of_connections);}

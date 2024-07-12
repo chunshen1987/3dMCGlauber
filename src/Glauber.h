@@ -26,6 +26,7 @@ class Glauber {
     std::set<shared_ptr<CollisionEvent>, compare_collision_time> collision_schedule;
     std::vector<QCDString> QCD_string_list;
     std::vector<QCDString> remnant_string_list_;
+    std::vector<CollisionEvent> collision_schedule_list_;
     std::vector<std::vector<real>> QCD_string_output_arr_;
     std::shared_ptr<RandomUtil::Random> ran_gen_ptr_;
     bool sample_valence_quark;
@@ -40,7 +41,8 @@ class Glauber {
     real yloss_param_b;
 
     real ybeam;
-
+    real collision_energy;
+    
     int system_status_;
 
     real sigma_eff_;
@@ -51,6 +53,10 @@ class Glauber {
     Glauber(const MCGlb::Parameters &param_in,
             shared_ptr<RandomUtil::Random> ran_gen);
     ~Glauber() {};
+
+    std::vector<CollisionEvent> get_collision_information() {
+        return (collision_schedule_list_);
+    }
 
     void make_nuclei();
     real get_impact_parameter() const {return(impact_b);}
@@ -67,7 +73,9 @@ class Glauber {
                              real &t_coll, real &z_coll) const;
 
     real compute_NN_inelastic_cross_section(real ecm) const;
-
+    
+    real get_roots_from_distribution(real roots, real rootgammaN_low_cut, 
+                                     real rootgammaN_up_cut, std::string nucleus_name);
     //! this function decides which of those binary collisions will produce
     //! QCD strings
     int decide_QCD_strings_production();
@@ -90,12 +98,9 @@ class Glauber {
     real sample_rapidity_loss_from_parametrization_with_fluct(
                                                 const real y_init) const;
 
-    real sample_junction_rapidity_right(const real y_left,
-                                        const real y_right) const;
-    real sample_junction_rapidity_left(const real y_left,
-                                       const real y_right) const;
-    real sample_junction_rapidity_uniformed(const real y_left,
-                                            const real y_right) const;
+    real sample_junction_rapidity_right(real y_left, real y_right) const;
+    real sample_junction_rapidity_left(real y_left, real y_right) const;
+    real sample_junction_rapidity_uniformed(real y_left, real y_right) const;
 
     //! This function performs string production between each nucleon pair
     int perform_string_production();
