@@ -15,10 +15,12 @@ import os
 import random
 
 def printHelp() -> None:
-    print("Usage: {} nev path_to_parameters path_to_emulator_folder [output_file_name] [output_folder_name]".format(sys.argv[0]))
+    print("Usage: {} nev path_to_parameters path_to_emulator_folder [object_file_name] [output_file_name] [output_folder_name]".format(sys.argv[0]))
     print("nev: the number of initial stage events from 3DMCGlauber")
     print("path_to_parameters: The parameter dictionnary for 3DMCGlauber")
     print("path_to_emulator_folder: the path to the emulator folder containing the emulator object and the object definition.")
+    print("emulator object file name: the filename for the emulator object.")
+    print("Default: EM.dat")
     print("output_file_name: [optional] output name for the output pickle dictionnary containing the predictions.")
     print("Default output_file_name: OUTPUT_{Proj}{Targ}_{roots}_{Nev}.dat")
     print("output_folder: [optional] Folder in which the initial stage data and predictions are sent to.")
@@ -58,9 +60,10 @@ def save_data(X, Arr, fname="out") -> None:
     pickle.dump(OUT, fi)
     fi.close()
 
-def Predict(ARR, path_to_emulator_object, out_fname="Predictions", out_Fname="PRED", Nmax=-1) -> None:
+def Predict(ARR, path_to_emulator_object, emulator_name="EM.dat", out_fname="Predictions", out_Fname="PRED", Nmax=-1) -> None:
     """ 1) Load emulator pickle object. 
         The emulator object needs:
+        - a load function to load the emulator
         - a predict method taking data as input and output predictions 
         2) Perform the prediction of the desired 2D data ARR
     """
@@ -68,7 +71,7 @@ def Predict(ARR, path_to_emulator_object, out_fname="Predictions", out_Fname="PR
     h = os.getcwd()
     os.chdir(path_to_emulator_object)
     try:
-        with open("EM.dat", "rb") as pf:
+        with open(emulator_name, "rb") as pf:
             EM = pickle.load(pf)
     except FileNotFoundError:
         print("Can't find emulator object at path: "+path)
@@ -130,12 +133,17 @@ except IndexError:
     printHelp()
     exit(0)
 try:
-    fname_out = str(sys.argv[4])
+    Emname = str(sys.argv[4])
+    need_Emname = False 
+except IndexError:
+    need_fname = True 
+try:
+    fname_out = str(sys.argv[5])
     need_fname = False 
 except IndexError:
     need_fname = True 
 try:
-    Fname_out = str(sys.argv[5])
+    Fname_out = str(sys.argv[6])
     need_Fname = False 
 except IndexError:
     need_Fname = True 
@@ -148,10 +156,12 @@ parameters = dynamic_import("para_dict", path_to_parameters)
 para_dict = parameters.para_dict
 
 # Define output folder and output file name
+if need_Emname:
+    Emname = "EM.dat" 
 if need_fname:
-    fname_out = "OUTPUT_"+para_dict["Projectile"]+ para_dict["Target"]+"_"+str(para_dict["roots"])+"_"+str(nev)+".dat"
+    fname_out = "OUTPUT_"+Emname.split(".")[0]+"_"+para_dict["Projectile"]+ para_dict["Target"]+"_"+str(para_dict["roots"])+"_"+str(nev)+".dat"
 if need_Fname:
-    Fname_out = para_dict["Projectile"]+ para_dict["Target"]+"_"+str(para_dict["roots"])+"_"+str(nev)
+    Fname_out = Emname.split(".")[0]+"_"+para_dict["Projectile"]+ para_dict["Target"]+"_"+str(para_dict["roots"])+"_"+str(nev)
 
 # Generate 3DMCGlauber initial conditions in Folder_path
 # and generate predictions using Emulator Folder_path/EM.py 
@@ -159,5 +169,5 @@ if need_Fname:
 # predict function should take 2D array (Nev, initial Neta = 72) and output 2D array (Nev, final Neta)
 Folder_path, Fname_out = PrepareFolder(path_to_emulator, Fname_out)
 e, B, Q = Generate_3DMCGlauber_input(nev, para_dict, Folder_path)
-Predict(B, path_to_emulator, out_Fname=Fname_out, out_fname=fname_out, Nmax=-1)
+Predict(B, path_to_emulator, emulator_name=Emname, out_Fname=Fname_out, out_fname=fname_out, Nmax=-1)
 CleanTemporary(Folder_path)
