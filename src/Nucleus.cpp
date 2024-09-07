@@ -1222,7 +1222,7 @@ SpatialVec Nucleus::sample_valence_quark_position() const {
 SpatialVec Nucleus::sample_valence_polarized_quark_position(const real bxq, const int id ) const {
     real Sx = 1.;
     real kq = 0.;
-    int Pol_ = 1;
+    //int Pol_ = 1;
     if (id == 2) kq = 1.673; // u
     if (id == 1) kq = -2.033; // d
     real BG = sqrt(BG_) * PhysConsts::HBARC;
