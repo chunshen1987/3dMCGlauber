@@ -162,7 +162,6 @@ void Nucleus::generate_nucleus_3d_configuration() {
         MomentumVec p = {PhysConsts::MDipole, 0.0, 0.0, 0.0};
         std::shared_ptr<Nucleon> nucleon_ptr(new Nucleon(x, p, ran_gen_ptr));
         nucleon_list_.push_back(std::move(nucleon_ptr));
-        cout << "mass = " << nucleon_list_[0]->get_mass() << endl;
         status = 0;
         /*
         for (auto const &nucleon_i : nucleon_list_) {
