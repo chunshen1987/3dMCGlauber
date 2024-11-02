@@ -144,7 +144,7 @@ Glauber::Glauber(
             parameter_list.get_roots(), rootgammaN_low, rootgammaN_up);
     }
     ybeam = acosh(collision_energy_ / (2. * PhysConsts::MProton));
-    std::ofstream output_rapidity_shift("rapidity_shift");
+    std::ofstream output_rapidity_shift("rapidity_shift.dat");
     output_rapidity_shift << parameter_list.use_roots_distribution() << "  "
                           << collision_energy_ << "  " << ybeam - ybeam_AA
                           << std::endl;
