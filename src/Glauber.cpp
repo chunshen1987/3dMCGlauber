@@ -47,7 +47,6 @@ Glauber::Glauber(const MCGlb::Parameters &param_in,
 
     bool deformed = true;
     bool nucleonConfFromFile = parameter_list.nucleon_configuration_from_file();
-    int lightNucleusOption = parameter_list.lightNucleusOption();
     projectile = std::unique_ptr<Nucleus>(
             new Nucleus(parameter_list.get_projectle_nucleus_name(), ran_gen,
                         sample_valence_quark, parameter_list.get_BG(),
@@ -540,14 +539,7 @@ int Glauber::perform_string_production() {
                     parameter_list.get_QCD_string_evolution_mode());
     const auto baryon_junctions = parameter_list.get_baryon_junctions();
 
-    // sqrt(parameter_list.get_roots()); // ~s^{-1/4}
-    real lambdaB;
-    if ( parameter_list.use_E_dependent_LB() ) {
-        // lambdaB = CB / s^{1/4}
-        lambdaB = parameter_list.get_CB() / sqrt(collision_energy);
-    } else {
-        lambdaB = parameter_list.get_lambdaB();
-    }
+    real lambdaB = parameter_list.get_lambdaB();
     lambdaB = std::min(1., lambdaB);
     real lambdaBs = parameter_list.get_lambdaBs();
     lambdaBs = std::min(1., lambdaBs);
@@ -792,38 +784,20 @@ int Glauber::perform_string_production() {
             // record the freeze-out space-time position for the remnant of
             // the collding nucleons at their last produced strings
             auto proj_n = it->get_proj();
-            SpatialVec remnant_proj = {0., 0., 0., 0.};
             SpatialVec x_frez_proj = {0., 0., 0., 0.};
             SpatialVec x_frez_targ = {0., 0., 0., 0.};
             if (!proj_n->is_remnant_set()) {
                 proj_n->set_remnant(true);
                 auto x_frez = proj_n->get_x();
                 x_frez_proj = x_frez;
-                if (parameter_list.set_remnant_x_ori()) {
-                    proj_n->set_remnant_x_frez(x_frez);
-                } else {
-                    std::shared_ptr<Quark> remnant_q = proj_n->get_a_valence_quark();
-                    remnant_proj =  remnant_q->get_x();
-                    auto remnant_q_xvec = remnant_q->get_x();
-                    SpatialVec xvec_rem_q = {x_frez[0], remnant_q_xvec[1], remnant_q_xvec[2], x_frez[3]};
-                    proj_n->set_remnant_x_frez(xvec_rem_q);
-                }
+                proj_n->set_remnant_x_frez(x_frez);
             }
             auto targ_n = it->get_targ();
             if (!targ_n->is_remnant_set()) {
                 targ_n->set_remnant(true);
                 auto x_frez = targ_n->get_x();
                 x_frez_targ = x_frez;
-                if (parameter_list.set_remnant_x_ori()) {
-                    targ_n->set_remnant_x_frez(x_frez);
-                } else {
-                    //std::shared_ptr<Quark> remnant_q = targ_n->get_a_valence_quark();
-                    std::shared_ptr<Quark> remnant_q = targ_n->get_a_close_valence_quark(remnant_proj[1]+x_frez_proj[1]-x_frez_targ[1], 
-                                                                                         remnant_proj[2]+x_frez_proj[2]-x_frez_targ[2]);
-                    auto remnant_q_xvec = remnant_q->get_x();
-                    SpatialVec xvec_rem_q = {x_frez[0], remnant_q_xvec[1], remnant_q_xvec[2], x_frez[3]};
-                    targ_n->set_remnant_x_frez(xvec_rem_q);
-                }
+                targ_n->set_remnant_x_frez(x_frez);
             }
 
             // set flags for quark remnants at their last connected strings

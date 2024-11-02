@@ -112,16 +112,6 @@ void EventGenerator::generateMinBiasEventList() {
     parameter_list_.set_b_max(b_max_tmp);
 }
 
-/* get the collisions information for the JETSCAPE framework*/
-void EventGenerator::generate_pre_events() {
-    messager << "Random seed = " << ran_gen_ptr_->get_seed();
-    messager.flush("info");
-    messager << "Generating 1 events ... ";
-    messager.flush("info");
-
-    mc_glauber_ptr_->make_nuclei();
-}
-
 void EventGenerator::generate_events(int nev, int event_id_offset) {
     messager << "Random seed = " << ran_gen_ptr_->get_seed();
     messager.flush("info");

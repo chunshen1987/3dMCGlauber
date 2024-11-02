@@ -29,7 +29,6 @@ Nucleus::Nucleus(std::string nucleus_name,
     deformed_ = deformed;
     confFromFile_ = confFromFile;
     BG_ = BG;
-    Pol_ = Pol;
     ran_gen_ptr = ran_gen;
     set_nucleus_parameters(nucleus_name);
     N_sea_partons_ = N_sea_partons;
@@ -86,26 +85,6 @@ void Nucleus::setWoodsSaxonParameters(real rho, real w, real R, real a,
     }
 }
 
-
-void Nucleus::setWoodsSaxonParameters(real rho, real w, real R, real a,
-                                      real beta2, real beta3, real beta4,
-                                      real gamma) {
-    WS_param_vec[0] = rho;
-    WS_param_vec[1] = w;
-    WS_param_vec[2] = R;
-    WS_param_vec[3] = a;
-    WS_param_vec[4] = beta2;
-    WS_param_vec[5] = beta3;
-    WS_param_vec[6] = beta4;
-    WS_param_vec[7] = gamma;
-
-    if (gamma > 0. && d_min_ > 0.) {
-        cout << "[Nucleus]: With a non-zero WS_gamma, we do not support "
-             << "a non-zero d_min between nucleon pairs! "
-             << "resetting d_min to 0." << endl;
-        d_min_ = 0.;
-    }
-}
 
 void Nucleus::set_nucleus_parameters(std::string nucleus_name) {
     name = nucleus_name;
@@ -190,8 +169,8 @@ void Nucleus::generate_nucleus_3d_configuration() {
     } else if (A_ == 0) {   // dipole
         SpatialVec  x = {0.0};
         MomentumVec p = {0.0};
-        std::shared_ptr<Nucleon> nucleon_ptr2(new Nucleon(x, p));
-        nucleon_list_.push_back(std::move(nucleon_ptr2));
+        std::shared_ptr<Nucleon> nucleon_ptr(new Nucleon(x, p, ran_gen_ptr));
+        nucleon_list_.push_back(std::move(nucleon_ptr));
         status = 0;
         /*
         for (auto const &nucleon_i : nucleon_list_) {
@@ -218,23 +197,13 @@ void Nucleus::generate_nucleus_3d_configuration() {
         std::vector<int> electric_charges_arr(A_, 0);
         for (int i = 0; i < Z_; i++)
             electric_charges_arr[i] = 1;
-        std::random_shuffle(electric_charges_arr.begin(),
-                            electric_charges_arr.end());
+        std::shuffle(electric_charges_arr.begin(),
+                     electric_charges_arr.end(),
+                     *ran_gen_ptr->getRanGenerator());
         for (int i = 0; i < A_; i++) {
             nucleon_list_[i]->set_electric_charge(electric_charges_arr[i]);
             nucleon_list_[i]->set_baryon_number(1);
         }
-
-        recenter_nucleus();
-
-        //real phi   = 2.*M_PI*ran_gen_ptr->rand_uniform();
-        //real theta = acos(1. - 2.*ran_gen_ptr->rand_uniform());
-        //rotate_nucleus(phi, theta);
-
-        real alpha_3D = 2*M_PI*ran_gen_ptr->rand_uniform();
-        real beta_3D = acos(1. - 2. * ran_gen_ptr->rand_uniform());
-        real gamma_3D = 2*M_PI*ran_gen_ptr->rand_uniform();
-        if (Pol_ == 0) rotate_nucleus_3D(alpha_3D, beta_3D, gamma_3D);
     } else {
         // assign the dipole
         nucleon_list_[0]->set_electric_charge(0);
@@ -250,26 +219,6 @@ void Nucleus::generate_nucleus_3d_configuration() {
     real gamma = 2*M_PI*ran_gen_ptr->rand_uniform();
     //rotate_nucleus(phi, theta);
     rotate_nucleus_3D(phi, theta, gamma);
-}
-
-void Nucleus::rotate_nucleus_3D(real alpha, real beta, real gamma) {
-  // rotate the nucleus with the full three solid angles
-  // required for tri-axial deformed nuclei
-  // https://en.wikipedia.org/wiki/Euler_angles
-  auto c1 = cos(alpha);
-  auto s1 = sin(alpha);
-  auto c2 = cos(beta);
-  auto s2 = sin(beta);
-  auto c3 = cos(gamma);
-  auto s3 = sin(gamma);
-  for (auto &nucleon_i: nucleon_list_) {
-    auto x_vec = nucleon_i->get_x();
-    auto x_new = c2*x_vec[1] - c3*s2*x_vec[2] + s2*s3*x_vec[3];
-    auto y_new = c1*s2*x_vec[1] + (c1*c2*c3 - s1*s3)*x_vec[2] + (-c3*s1 - c1*c2*s3)*x_vec[3];
-    auto z_new = s1*s2*x_vec[1] + (c1*s3 + c2*c3*s1)*x_vec[2] + (c1*c3 - c2*s1*s3)*x_vec[3];
-    x_vec[1] = x_new; x_vec[2] = y_new; x_vec[3] = z_new;
-    nucleon_i->set_x(x_vec);
-  }
 }
 
 void Nucleus::recenter_nucleus() {
@@ -368,20 +317,9 @@ void Nucleus::sample_valence_quarks_inside_nucleons(real ecm, int direction) {
             sample_quark_momentum_fraction(xQuark, number_of_quarks,
                                            nucleon_i->get_electric_charge(),
                                            ecm);
-            if (Pol_ == 0) {
-                for (int i = 0; i < number_of_quarks; i++) {
-                    auto xvec = sample_valence_quark_position();
-                    std::shared_ptr<Quark> quark_ptr(new Quark(xvec, xQuark[i]));
-                    nucleon_i->push_back_quark(quark_ptr);
-                }
-            } else {
-                for (int i = 0; i < 2; i++) {
-                    auto xvec = sample_valence_polarized_quark_position(xQuark[i], 2 );
-                    std::shared_ptr<Quark> quark_ptr(new Quark(xvec, xQuark[i]));
-                    nucleon_i->push_back_quark(quark_ptr);
-                }
-                auto xvec = sample_valence_polarized_quark_position(xQuark[2], 1 );
-                std::shared_ptr<Quark> quark_ptr(new Quark(xvec, xQuark[2]));
+            for (int i = 0; i < number_of_quarks; i++) {
+                auto xvec = sample_valence_quark_position();
+                std::shared_ptr<Quark> quark_ptr(new Quark(xvec, xQuark[i]));
                 nucleon_i->push_back_quark(quark_ptr);
             }
             nucleon_i->accelerate_quarks(ecm, direction);
@@ -718,110 +656,6 @@ void Nucleus::readin_nucleon_positions() {
     input.close();
     std::cout << heavyIon_pos_.size() << " configrations." << std::endl;
 }
-
-void Nucleus::readin_nucleon_positions() {
-    std::cout << "read in nucleon positions for Nucleus: " << name << "  "
-              << std::flush;
-    std::ostringstream filename;
-    if (A_ == 3) {  // he3 or t
-        if (lightNucleusOption_ == 0) {
-            filename << "tables/He3.bin.in";
-        } else if (lightNucleusOption_ == 1) {
-            filename << "tables/triton.bin.in";
-        } else {
-            std::cout << "A = 3 nucleus does not support lightNucleusOption = "
-                      << lightNucleusOption_ << std::endl;
-            exit(1);
-        }
-    } else if (A_ == 4) {  // he4
-        filename << "tables/He4.bin.in";
-    } else if (A_ == 12) {  // carbon
-        if (lightNucleusOption_ == 0) {
-            filename << "tables/C12_VMC.bin.in";
-        } else if (lightNucleusOption_ == 1) {
-            filename << "tables/C12_alphaCluster.bin.in";
-        } else {
-            std::cout << "C12 nucleus does not support lightNucleusOption = "
-                      << lightNucleusOption_ << std::endl;
-            exit(1);
-        }
-    } else if (A_ == 16) {  // oxygen
-        if (lightNucleusOption_ == 0) {
-            filename << "tables/O16_VMC.bin.in";
-        } else if (lightNucleusOption_ == 1) {
-            filename << "tables/O16_alphaCluster.bin.in";
-        } else if (lightNucleusOption_ == 2) {
-            filename << "tables/PGCM_clustered_dmin0_O.bin";
-        } else if (lightNucleusOption_ == 3) {
-            filename << "tables/PGCM_uniform_dmin0_O.bin";
-        } else if (lightNucleusOption_ == 4) {
-            filename << "tables/NLEFT_dmin_0.5fm_positiveweights_O.bin";
-        } else if (lightNucleusOption_ == 5) {
-            filename << "tables/NLEFT_dmin_0.5fm_negativeweights_O.bin";
-        } else {
-            std::cout << "O16 nucleus does not support lightNucleusOption = "
-                      << lightNucleusOption_ << std::endl;
-            exit(1);
-        }
-    } else if (A_ == 20) {   // Neon
-        if (lightNucleusOption_ == 0) {
-            filename << "tables/PGCM_clustered_dmin0_Ne.bin";
-        } else if (lightNucleusOption_ == 1) {
-            filename << "tables/PGCM_uniform_dmin0_Ne.bin";
-        } else if (lightNucleusOption_ == 2) {
-            filename << "tables/NLEFT_dmin_0.5fm_positiveweights_Ne.bin";
-        } else if (lightNucleusOption_ == 3) {
-            filename << "tables/NLEFT_dmin_0.5fm_negativeweights_Ne.bin";
-        } else {
-            std::cout << "Ne20 nucleus does not support lightNucleusOption = "
-                      << lightNucleusOption_ << std::endl;
-            exit(1);
-        }
-    } else if (A_ == 40) {   // Ar
-        filename << "tables/Ar40_VMC.bin.in";
-    } else if (A_ == 197) {  // Au
-        filename << "tables/Au197.bin.in";
-    } else if (A_ == 208) {  // Pb
-        filename << "tables/Pb208.bin.in";
-    } else {
-        std::cout << "[Warning]: No configuration file for Nucleus: "
-                  << name << std::endl;
-        std::cout << "Generate configuration with Wood-Saxon distribution"
-                  << std::endl;
-        return;
-    }
-    std::cout << " fileName: " << filename.str() << " " << std::flush;
-    std::ifstream input(filename.str().c_str(), std::ios::binary);
-    if (!input.good()) {
-        std::cout << "Configuration file not found!" << std::endl;
-        std::cout << "Please check file: " << filename.str()
-                  << std::endl;
-        exit(1);
-    }
-
-    int Nentry = 3;
-    if (A_ == 197 || A_ == 208)
-        Nentry = 4;
-
-    while (true) {
-        std::vector< std::vector<float> > conf_i;
-        for (int i = 0; i < A_; i++) {
-            std::vector<float> nucleon_i;
-            for (int j = 0; j < Nentry; j++) {
-                float temp;
-                input.read(reinterpret_cast<char*>(&temp), sizeof(float));
-                nucleon_i.push_back(temp);
-            }
-            conf_i.push_back(nucleon_i);
-        }
-        if (input.eof())
-            break;
-        heavyIon_pos_.push_back(conf_i);
-    }
-    input.close();
-    std::cout << heavyIon_pos_.size() << " configrations." << std::endl;
-}
-
 
 
 int Nucleus::sample_nucleon_configuration() {
@@ -1245,51 +1079,6 @@ SpatialVec Nucleus::sample_valence_quark_position() const {
     return(xq);
 }
 
-SpatialVec Nucleus::sample_valence_polarized_quark_position(const real bxq, const int id ) const {
-    real Sx = 1.;
-    real kq = 0.;
-    //int Pol_ = 1;
-    if (id == 2) kq = 1.673; // u
-    if (id == 1) kq = -2.033; // d
-    real BG = sqrt(BG_) * PhysConsts::HBARC;
-    real a = BG*BG;
-    real width = sqrt(2.*a*(1.-bxq) * log(1./bxq));
-    real bstep =  width*10./5000.; //fm
-    real bb, sum_temp, fac, sample_by;
-    real M = 0.938 / PhysConsts::HBARC;// fm^-1
-    // sample y
-    if (std::abs(Pol_) == 1) { // Transvers Polarized
-        sum_temp = 0.0;
-        for (auto i=0; i<10000; i++) {
-            bb = i * bstep * 1.0 - width*10.;
-            real Pol_pdf = (1. + kq*Sx*bb/(8.*M*a * (1.-bxq) *log(1./bxq))) * exp(-bb*bb/(2.*width*width));
-            if (Pol_pdf < 0.0) Pol_pdf = 0.0; //regular
-            sum_temp = sum_temp + Pol_pdf;
-        }
-        fac = ran_gen_ptr->rand_uniform() * sum_temp;
-        for (auto i=0; i<10001; i++) {
-            bb = i * bstep * 1.0 - width*10.;
-            real Pol_pdf = (1. + kq*Sx*bb/(8.*M*a * (1.-bxq) *log(1./bxq))) * exp(-bb*bb/(2.*width*width));
-            if (Pol_pdf < 0.0) Pol_pdf = 0.0; //regular
-            fac = fac - Pol_pdf; 
-            if (fac < 0.0) {
-                sample_by = bb + bstep * (1.+ fac/Pol_pdf);
-                break;
-            }
-        }
-        sample_by = sample_by * std::abs(Pol_) / Pol_;
-    }
-     
-    if (std::abs(Pol_) != 1) { // Longitudinally Polarized
-        sample_by = ran_gen_ptr->rand_normal(0., width);
-    }
-    real x = ran_gen_ptr->rand_normal(0., width);
-    real z = ran_gen_ptr->rand_normal(0., width);
-    
-
-    SpatialVec xq = {0.0, x, sample_by, z};
-    return(xq);
-}
 
 real Nucleus::ExponentialDistribution(const real a, const real r) const {
     // a = \sqrt{12}/R_p = 3.87, with R_p = 0.895
