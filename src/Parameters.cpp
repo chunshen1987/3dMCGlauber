@@ -64,6 +64,33 @@ real Parameters::get_roots() const {
     return(roots);
 }
 
+real Parameters::get_UPC_root_low_cut() const {
+    real roots = static_cast<real>(get_param_double("roots_low_cut"));
+    assert(roots > 0.);
+    return(roots);
+}
+
+real Parameters::get_UPC_root_up_cut() const {
+    real roots = static_cast<real>(get_param_double("roots_up_cut"));
+    assert(roots > 0.);
+    return(roots);
+}
+
+bool Parameters::use_roots_distribution() const {
+    int flag = get_param_int("use_roots_distribution");
+    if (flag == 1)
+        return(true);
+    else
+        return(false);
+}
+
+bool Parameters::use_roots_cut() const {
+    int flag = get_param_int("use_roots_cut");
+    if (flag == 1)
+        return(true);
+    else
+        return(false);
+}
 
 real Parameters::get_lambdaB() const {
     real lambdaB = static_cast<real>(get_param_double("lambdaB", 0.));
@@ -71,6 +98,11 @@ real Parameters::get_lambdaB() const {
     return(lambdaB);
 }
 
+real Parameters::get_CB() const {
+    real CB = static_cast<real>(get_param_double("CB"));
+    assert(CB >= 0.);
+    return(CB);
+}
 
 real Parameters::get_lambdaBs() const {
     real lambdaBs = static_cast<real>(get_param_double("lambdaBs", 1.));
@@ -273,6 +305,27 @@ bool Parameters::nucleon_configuration_from_file() const {
     }
 }
 
+bool Parameters::setWSDeformParams_proj() const {
+    int flag = get_param_int("setWSDeformParams_proj");
+    if (flag == 0) {
+        return(false);
+    } else {
+        return(true);
+    }
+}
+
+bool Parameters::setWSDeformParams_targ() const {
+    int flag = get_param_int("setWSDeformParams_targ");
+    if (flag == 0) {
+        return(false);
+    } else {
+        return(true);
+    }
+}
+
+int Parameters::lightNucleusOption() const {
+    return get_param_int("lightNucleusOption");
+}
 
 int Parameters::getLightNucleusOption() const {
     return(get_param_int("light_nucleus_option", 0));
@@ -284,5 +337,79 @@ real Parameters::get_BG() const {
     assert(BG > 0.);
     return(BG);
 }
+
+real Parameters::get_BG_proj() const {
+    real BG = static_cast<real>(get_param_double("BG_proj"));
+    assert(BG > 0.);
+    return(BG);
+}
+
+real Parameters::get_BG_targ() const {
+    real BG = static_cast<real>(get_param_double("BG_targ"));
+    assert(BG > 0.);
+    return(BG);
+}
+
+real Parameters::get_beta2_proj() const {
+    real BG = static_cast<real>(get_param_double("beta2_proj"));
+    return(BG);
+}
+
+real Parameters::get_beta2_targ() const {
+    real BG = static_cast<real>(get_param_double("beta2_targ"));
+    return(BG);
+}
+
+real Parameters::get_beta3_proj() const {
+    real BG = static_cast<real>(get_param_double("beta3_proj"));
+    return(BG);
+}
+
+real Parameters::get_beta3_targ() const {
+    real BG = static_cast<real>(get_param_double("beta3_targ"));
+    return(BG);
+}
+
+real Parameters::get_beta4_proj() const {
+    real BG = static_cast<real>(get_param_double("beta4_proj"));
+    return(BG);
+}
+
+real Parameters::get_beta4_targ() const {
+    real BG = static_cast<real>(get_param_double("beta4_targ"));
+    return(BG);
+}
+
+real Parameters::get_gamma_proj() const {
+    real BG = static_cast<real>(get_param_double("gamma_proj"));
+    return(BG);
+}
+
+int Parameters::get_Pol_proj() const {
+    int BG = static_cast<real>(get_param_double("Pol_proj"));
+    return(BG);
+}
+
+int Parameters::get_Pol_targ() const {
+    int BG = static_cast<real>(get_param_double("Pol_targ"));
+    return(BG);
+}
+
+real Parameters::get_gamma_targ() const {
+    real BG = static_cast<real>(get_param_double("gamma_targ"));
+    return(BG);
+}
+
+real Parameters::get_dmin_proj() const {
+    real BG = static_cast<real>(get_param_double("dmin_proj"));
+    return(BG);
+}
+
+real Parameters::get_dmin_targ() const {
+    real BG = static_cast<real>(get_param_double("dmin_targ"));
+    return(BG);
+}
+
+
 
 }

@@ -12,6 +12,8 @@
 #include <iostream>
 #include <algorithm>
 #include <memory>
+#include <math.h>
+#include <vector>
 
 using std::cout;
 using std::endl;
@@ -45,6 +47,7 @@ Glauber::Glauber(const MCGlb::Parameters &param_in,
 
     bool deformed = true;
     bool nucleonConfFromFile = parameter_list.nucleon_configuration_from_file();
+    int lightNucleusOption = parameter_list.lightNucleusOption();
     projectile = std::unique_ptr<Nucleus>(
             new Nucleus(parameter_list.get_projectle_nucleus_name(), ran_gen,
                         sample_valence_quark, parameter_list.get_BG(),
@@ -133,14 +136,70 @@ Glauber::Glauber(const MCGlb::Parameters &param_in,
     real alpha = alpha2/alpha1;
     yloss_param_a = alpha/(1. - alpha);
     yloss_param_b = alpha2/yloss_param_a;
+    collision_energy = parameter_list.get_roots();
+    real ybeam_AA = acosh(collision_energy/(2.*PhysConsts::MProton));
+    real rootgammaN_low = 2.0;
+    real rootgammaN_up = parameter_list.get_roots()/2.0;
 
-    ybeam = acosh(parameter_list.get_roots()/(2.*PhysConsts::MProton));
-
-    real siginNN = compute_NN_inelastic_cross_section(
-                                            parameter_list.get_roots());
+    if (parameter_list.use_roots_distribution()) {
+        if (parameter_list.use_roots_cut()) {
+            rootgammaN_low = parameter_list.get_UPC_root_low_cut();
+            rootgammaN_up  = parameter_list.get_UPC_root_up_cut();
+        }
+        collision_energy = get_roots_from_distribution(parameter_list.get_roots(), 
+                           rootgammaN_low, rootgammaN_up,
+                           parameter_list.get_target_nucleus_name());
+    }
+    ybeam = acosh(collision_energy/(2.*PhysConsts::MProton));
+    std::ofstream output_rapidity_shift("rapidity_shift");
+    output_rapidity_shift << parameter_list.use_roots_distribution() << "  "
+                          << collision_energy << "  " << ybeam - ybeam_AA << endl;
+    output_rapidity_shift.close();
+    real siginNN = compute_NN_inelastic_cross_section(collision_energy);
     sigma_eff_ = get_sig_eff(siginNN);
-    cout << "sqrt{s} = " << parameter_list.get_roots() << " GeV, "
+    cout << "sqrt{s} = " << collision_energy << " GeV, "
          << "siginNN = " << siginNN << " mb" << endl;
+}
+
+real Glauber::get_roots_from_distribution(real roots, real rootgammaN_low_cut, 
+                                          real rootgammaN_up_cut, std::string nucleus_name) {
+    real radius; int Z_in;
+    if (nucleus_name.compare("Au") == 0) {
+        radius = 6.38; Z_in = 79;
+    } else if (nucleus_name.compare("Pb") == 0) {
+        radius = 6.62; Z_in = 82;
+    } else {
+        cout << "[Error] Unknown_nucleus: " << nucleus_name << endl;
+        cout << "Exiting... " << endl;
+        exit(1);
+    }
+    double gammaL = roots/2./PhysConsts::MProton;
+    double probability_sum = 0.0;
+    real rootgammaN_sampled = roots;
+    std::vector<double> dNdrootgammaN;
+    for (double rootgammaN=rootgammaN_low_cut; rootgammaN < rootgammaN_up_cut; rootgammaN++) {
+        double k = rootgammaN * rootgammaN/2./roots;
+        double omegaAA = 2.* k * radius / gammaL / PhysConsts::HBARC;
+        // The dN/dk get from the Eq. (6) in arXiv: 0706.3356
+        double temp = rootgammaN/roots*2. * Z_in*Z_in/M_PI/k *
+                      (omegaAA * std::cyl_bessel_k(0,omegaAA)*std::cyl_bessel_k(1,omegaAA) 
+                      - omegaAA * omegaAA/2. *
+                      (std::cyl_bessel_k(1,omegaAA)*std::cyl_bessel_k(1,omegaAA) 
+                      - std::cyl_bessel_k(0,omegaAA)*std::cyl_bessel_k(0,omegaAA)));
+        dNdrootgammaN.push_back(temp);
+        probability_sum = probability_sum + temp;
+    }
+    real MCprobability = ran_gen_ptr_->rand_uniform();
+    int index = 0;
+    for (double rootgammaN=rootgammaN_low_cut; rootgammaN < rootgammaN_up_cut; rootgammaN++) {
+        MCprobability = MCprobability - dNdrootgammaN[index]/probability_sum;
+        if (MCprobability <= 0.) {
+            rootgammaN_sampled = rootgammaN+1.;
+            break;
+        }
+        index++;
+    }
+    return(rootgammaN_sampled);
 }
 
 void Glauber::make_nuclei() {
@@ -148,8 +207,18 @@ void Glauber::make_nuclei() {
     target->generate_nucleus_3d_configuration();
     //projectile->output_nucleon_positions("projectile_before_accelaration.dat");
     //target->output_nucleon_positions("target_before_accelaration.dat");
-    projectile->accelerate_nucleus(parameter_list.get_roots(), 1);
-    target->accelerate_nucleus(parameter_list.get_roots(), -1);
+    int Nucleus_projectile = projectile->get_nucleus_A();
+    if (Nucleus_projectile > 0) {
+        projectile->accelerate_nucleus(collision_energy, 1);
+    } else {
+        projectile->accelerate_dipole(collision_energy, 1);
+    }
+    int Nucleus_target = target->get_nucleus_A();
+    if (Nucleus_target > 0) {
+         target->accelerate_nucleus(collision_energy, -1);
+    } else {
+         target->accelerate_dipole(collision_energy, -1);
+    }
 
     // sample impact parameters
     auto b_max = parameter_list.get_b_max();
@@ -188,6 +257,17 @@ int Glauber::make_collision_schedule() {
             }
         }
     }
+    
+    // copy the collision_schedule information to outside 
+    collision_schedule_list_.clear();
+    int pos=0;
+    for (auto &it: collision_schedule) {
+        collision_schedule_list_.push_back(*it);  // collision list is time ordered
+        //auto xvec = collision_schedule_list_[pos].get_collision_position();
+        //std::cout << xvec[0]<<" "<< xvec[1]<<" "<< xvec[2]<<" "<< xvec[3]<<" " << std::endl;
+        pos++;
+    }
+        get_collision_information();
     return(collision_schedule.size());
 }
 
@@ -302,12 +382,24 @@ int Glauber::decide_produce_string_num(
 
 int Glauber::decide_QCD_strings_production() {
     if (sample_valence_quark) {
-        projectile->sample_valence_quarks_inside_nucleons(
-                                    parameter_list.get_roots(), 1);
-        target->sample_valence_quarks_inside_nucleons(
-                                    parameter_list.get_roots(), -1);
-        projectile->add_soft_parton_ball(parameter_list.get_roots(), 1);
-        target->add_soft_parton_ball(parameter_list.get_roots(), -1);
+        int Nucleus_projectile = projectile->get_nucleus_A();
+        if (Nucleus_projectile > 0) {
+            projectile->sample_valence_quarks_inside_nucleons(
+                                           collision_energy, 1);
+        } else {
+            projectile->sample_valence_quarks_inside_dipole(
+                                           collision_energy, 1);
+        }
+        int Nucleus_target=target->get_nucleus_A();
+        if (Nucleus_target>0) {
+            target->sample_valence_quarks_inside_nucleons(
+                                           collision_energy, -1);
+        } else {
+            target->sample_valence_quarks_inside_dipole(
+                                           collision_energy, -1);
+        }
+        projectile->add_soft_parton_ball(collision_energy, 1);
+        target->add_soft_parton_ball(collision_energy, -1);
     }
     std::vector<shared_ptr<CollisionEvent>> collision_list;
     for (auto &it: collision_schedule)
@@ -448,8 +540,14 @@ int Glauber::perform_string_production() {
                     parameter_list.get_QCD_string_evolution_mode());
     const auto baryon_junctions = parameter_list.get_baryon_junctions();
 
-    // sqrt(parameter_list.get_roots()); // ~s^{-1/4} 
-    real lambdaB = parameter_list.get_lambdaB();
+    // sqrt(parameter_list.get_roots()); // ~s^{-1/4}
+    real lambdaB;
+    if ( parameter_list.use_E_dependent_LB() ) {
+        // lambdaB = CB / s^{1/4}
+        lambdaB = parameter_list.get_CB() / sqrt(collision_energy);
+    } else {
+        lambdaB = parameter_list.get_lambdaB();
+    }
     lambdaB = std::min(1., lambdaB);
     real lambdaBs = parameter_list.get_lambdaBs();
     lambdaBs = std::min(1., lambdaBs);
@@ -483,7 +581,10 @@ int Glauber::perform_string_production() {
             std::shared_ptr<Quark> proj_q;
             std::shared_ptr<Quark> targ_q;
             if (sample_valence_quark) {
+                auto proj_xvec = proj->get_x();
+                auto targ_xvec = targ->get_x();
                 proj_q = proj->get_a_valence_quark();
+                auto proj_q_xvec = proj_q->get_x();
                 if (proj_q->get_number_of_connections() == 1) {
                     // first time pick-up the valence quark
                     // we need to substract the valence quark energy-momentum
@@ -491,7 +592,9 @@ int Glauber::perform_string_production() {
                     auto p_q = proj_q->get_p();
                     proj->substract_momentum_from_remnant(p_q);
                 }
-                targ_q = targ->get_a_valence_quark();
+                //targ_q = targ->get_a_valence_quark();
+                targ_q = targ->get_a_close_valence_quark(proj_q_xvec[1] + proj_xvec[1] - targ_xvec[1], 
+                                                         proj_q_xvec[2] + proj_xvec[2] - targ_xvec[2]);
                 if (targ_q->get_number_of_connections() == 1) {
                     // first time pick-up the valence quark
                     // we need to substract the valence quark energy-momentum
@@ -515,6 +618,7 @@ int Glauber::perform_string_production() {
                                      has_baryon_right, has_baryon_left);
                 QCD_string_list.push_back(qcd_string);
             } else {
+                // Connect the closest quark pairs into string
                 auto proj_q_xvec = proj_q->get_x();
                 auto targ_q_xvec = targ_q->get_x();
                 SpatialVec x_coll_q = {
@@ -560,6 +664,8 @@ int Glauber::perform_string_production() {
         if (idx < Nstrings) {
             // put baryon of the projectile in the selected string
             auto proj = QCD_string_list[idx].get_proj();
+            if (proj->get_baryon_number() == 0)
+                proj->set_baryon_used(true);
             if (!proj->baryon_was_used()) {
                 if (ran_gen_ptr_->rand_uniform() < baryonInStringProb) {
                     proj->set_baryon_used(true);
@@ -577,6 +683,8 @@ int Glauber::perform_string_production() {
             //    mass = sqrt(p_i[0]*p_i[0] - p_i[3]*p_i[3]);
             //}
             //if (!proj->baryon_was_used() && mass > 0.1) {}
+            if (proj->get_baryon_number() == 0)
+                proj->set_baryon_used(true);
             if (!proj->baryon_was_used()) {
                 proj->set_baryon_used(true);
                 proj->set_remnant_carry_baryon_number(true);
@@ -589,6 +697,8 @@ int Glauber::perform_string_production() {
         if (idx < Nstrings) {
             // put baryon of the target in the selected string
             auto targ = QCD_string_list[idx].get_targ();
+            if (targ->get_baryon_number() == 0)
+                targ->set_baryon_used(true);
             if (!targ->baryon_was_used()) {
                 if (ran_gen_ptr_->rand_uniform() < baryonInStringProb) {
                     targ->set_baryon_used(true);
@@ -606,6 +716,8 @@ int Glauber::perform_string_production() {
             //    mass = sqrt(p_i[0]*p_i[0] - p_i[3]*p_i[3]);
             //}
             //if (!targ->baryon_was_used() && mass > 0.1) {}
+            if (targ->get_baryon_number() == 0)
+                targ->set_baryon_used(true);
             if (!targ->baryon_was_used()) {
                 targ->set_baryon_used(true);
                 targ->set_remnant_carry_baryon_number(true);
@@ -680,16 +792,38 @@ int Glauber::perform_string_production() {
             // record the freeze-out space-time position for the remnant of
             // the collding nucleons at their last produced strings
             auto proj_n = it->get_proj();
+            SpatialVec remnant_proj = {0., 0., 0., 0.};
+            SpatialVec x_frez_proj = {0., 0., 0., 0.};
+            SpatialVec x_frez_targ = {0., 0., 0., 0.};
             if (!proj_n->is_remnant_set()) {
                 proj_n->set_remnant(true);
                 auto x_frez = proj_n->get_x();
-                proj_n->set_remnant_x_frez(x_frez);
+                x_frez_proj = x_frez;
+                if (parameter_list.set_remnant_x_ori()) {
+                    proj_n->set_remnant_x_frez(x_frez);
+                } else {
+                    std::shared_ptr<Quark> remnant_q = proj_n->get_a_valence_quark();
+                    remnant_proj =  remnant_q->get_x();
+                    auto remnant_q_xvec = remnant_q->get_x();
+                    SpatialVec xvec_rem_q = {x_frez[0], remnant_q_xvec[1], remnant_q_xvec[2], x_frez[3]};
+                    proj_n->set_remnant_x_frez(xvec_rem_q);
+                }
             }
             auto targ_n = it->get_targ();
             if (!targ_n->is_remnant_set()) {
                 targ_n->set_remnant(true);
                 auto x_frez = targ_n->get_x();
-                targ_n->set_remnant_x_frez(x_frez);
+                x_frez_targ = x_frez;
+                if (parameter_list.set_remnant_x_ori()) {
+                    targ_n->set_remnant_x_frez(x_frez);
+                } else {
+                    //std::shared_ptr<Quark> remnant_q = targ_n->get_a_valence_quark();
+                    std::shared_ptr<Quark> remnant_q = targ_n->get_a_close_valence_quark(remnant_proj[1]+x_frez_proj[1]-x_frez_targ[1], 
+                                                                                         remnant_proj[2]+x_frez_proj[2]-x_frez_targ[2]);
+                    auto remnant_q_xvec = remnant_q->get_x();
+                    SpatialVec xvec_rem_q = {x_frez[0], remnant_q_xvec[1], remnant_q_xvec[2], x_frez[3]};
+                    targ_n->set_remnant_x_frez(xvec_rem_q);
+                }
             }
 
             // set flags for quark remnants at their last connected strings

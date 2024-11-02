@@ -10,6 +10,11 @@ useQuarks 1                          # switch to use valence quarks
 Q2 1.                                # the scale when evaluating the pdf
 b_min 0.                             # minimum impact parameter (fm)
 b_max 0.                             # maximum impact parameter (fm)
+use_roots_distribution 0             # The collision energy is sampled from a distribution
+                                     # Only for the gamma* + A collisions currenty
+use_roots_cut 0                      # Do the trigger for the gamma* + A collisions
+roots_low_cut 100.                   # The lower cut the center-of-mass energy for gamma* + A
+roots_up_cut 200.                    # The upper cut the center-of-mass energy for gamma* + A
 seed -1                              # random seed (-1: system)
 only_event_statistics 0              # flag to only output the event_summary file
 batch_density_output 0               # output density profile in batch

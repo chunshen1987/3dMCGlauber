@@ -37,6 +37,8 @@ class Nucleus {
 
     std::vector< std::array<float, 3> > proton_valence_quark_x_;
     std::vector< std::array<float, 3> > neutron_valence_quark_x_;
+    std::vector< std::array<float, 2> > dipole_valence_quark_x_;
+    int Pol_;
 
     int system_status_;
     int number_of_valence_quark_samples_;
@@ -74,6 +76,7 @@ class Nucleus {
     int get_nucleus_Z() const {return(Z_);}
     WoodsSaxonParam get_woods_saxon_parameters() const {return(WS_param_vec);}
     bool is_deformed() const {return(deformed_);}
+    real spherical_harmonics_Y22(int l, real ct, real phi) const;
 
     void add_a_participant(std::shared_ptr<Nucleon> ipart) {
         if (!ipart->is_wounded()) {
@@ -106,6 +109,9 @@ class Nucleus {
     real sample_r_from_deformed_woods_saxon() const;
     void sample_r_and_costheta_from_deformed_woods_saxon(
                                     real &phi, real &r, real &costheta) const;
+    void setWoodsSaxonParameters(real rho, real w, real R, real a,
+                                 real beta2, real beta3, real beta4,
+                                 real gamma);
     //! Fermi Distribution 
     real fermi_distribution(real r, real R_WS, real a_WS) const;
     real getAvgWoodsSaxonDensity(real r) const;
@@ -132,14 +138,17 @@ class Nucleus {
     void rotate_nucleus_3D(real phi, real theta, real gamma);
 
     void accelerate_nucleus(real ecm, int direction);
+    void accelerate_dipole(real ecm, int direction);
     void lorentz_contraction(real gamma);
     void set_nucleons_momentum_with_collision_energy(real beam_rapidity);
+    void set_dipole_momentum_with_collision_energy(real beam_rapidity);
     real get_z_min() const;
     real get_z_max() const;
 
     void output_nucleon_positions(std::string filename) const;
 
     void sample_valence_quarks_inside_nucleons(real ecm, int direction);
+    void sample_valence_quarks_inside_dipole(real ecm, int direction);
     void add_soft_parton_ball(real ecm, int direction);
 
     void sample_fermi_momentum();
@@ -148,7 +157,12 @@ class Nucleus {
                                         const int number_of_quarks,
                                         const int electric_charge,
                                         const real ecm) const;
+    void sample_quark_momentum_fraction_in_dipole(
+            std::vector<real> &xQuark, const int number_of_quarks,
+            const real ecm) const;
+
     SpatialVec sample_valence_quark_position() const;
+    SpatialVec sample_valence_polarized_quark_position(const real bxq, const int id ) const;
     real ExponentialDistribution(const real a, const real r) const;
 };
 

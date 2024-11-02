@@ -42,6 +42,7 @@ class EventGenerator {
     void generate_events(int nev, int event_id_offset=0);
     bool event_of_interest_trigger(const int Npart, const int Ncoll,
                                    const int Nstrings) const;
+    std::vector<CollisionEvent> get_CollisionEventvector();
 };
 
 };

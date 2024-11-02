@@ -32,7 +32,15 @@ class Parameters : public ParametersMap {
     real get_quarks_Q2() const;
 
     real get_roots() const;
+    real get_UPC_root_low_cut() const;
+    real get_UPC_root_up_cut() const;
 
+    bool use_roots_distribution() const;
+    bool use_roots_cut() const;
+    int get_Pol_targ() const;
+    int get_Pol_proj() const;
+
+    bool use_E_dependent_LB() const;
     real get_lambdaB() const;
     real get_lambdaBs() const;
     real get_baryon_in_string_prob() const;

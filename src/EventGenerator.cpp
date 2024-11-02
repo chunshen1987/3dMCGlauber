@@ -8,6 +8,9 @@
 
 namespace MCGlb {
 
+std::vector<CollisionEvent> EventGenerator::get_CollisionEventvector() {
+    return mc_glauber_ptr_->get_collision_information();
+}
 
 EventGenerator::EventGenerator(std::string input_filename,
                                int argc, char* argv[], int seed) {
@@ -109,6 +112,15 @@ void EventGenerator::generateMinBiasEventList() {
     parameter_list_.set_b_max(b_max_tmp);
 }
 
+/* get the collisions information for the JETSCAPE framework*/
+void EventGenerator::generate_pre_events() {
+    messager << "Random seed = " << ran_gen_ptr_->get_seed();
+    messager.flush("info");
+    messager << "Generating 1 events ... ";
+    messager.flush("info");
+
+    mc_glauber_ptr_->make_nuclei();
+}
 
 void EventGenerator::generate_events(int nev, int event_id_offset) {
     messager << "Random seed = " << ran_gen_ptr_->get_seed();
@@ -140,6 +152,7 @@ void EventGenerator::generate_events(int nev, int event_id_offset) {
 
             Ncoll = mc_glauber_ptr_->perform_string_production();
             auto b = mc_glauber_ptr_->get_impact_parameter();
+
             // write event information to the record file
             record_file << event_id << "  " << Npart << "  " << Ncoll << "  "
                         << Nstrings << "  " << b << std::endl;

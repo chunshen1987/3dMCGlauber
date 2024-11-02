@@ -4,8 +4,8 @@ project (3DMCGlb LANGUAGES CXX)
 set(libname "3dMCGlb")
 set(exename "3dMCGlb.e")
 
-# require C++11
-set(CMAKE_CXX_STANDARD 11)
+# require C++17
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
@@ -24,8 +24,8 @@ message("rpath = " ${CMAKE_INSTALL_RPATH})
 option (link_with_lib "Link executable with library" ON)
 option (unittest "Build Unit tests" OFF)
 
-#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -O3 -Wall -std=c++11 -fsanitize=address")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -O3 -Wall -std=c++11")
+#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -O3 -Wall -std=c++17 -fsanitize=address")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -O3 -Wall -std=c++17")
 
 if (unittest)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DDOCTEST_CONFIG_IMPLEMENT_WITH_MAIN")
