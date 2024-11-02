@@ -544,8 +544,6 @@ int Glauber::perform_string_production() {
     real lambdaBs = parameter_list.get_lambdaBs();
     lambdaBs = std::min(1., lambdaBs);
 
-    // cout << lambdaB <<endl;
-
     real t_current = 0.0;
     int number_of_collided_events = 0;
     while (collision_schedule.size() > 0) {

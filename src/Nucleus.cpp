@@ -183,6 +183,7 @@ void Nucleus::generate_nucleus_3d_configuration() {
             generate_nucleus_configuration_with_deformed_woods_saxon();
         }
     }
+
     if (A_ > 0) {
         // assign the proton or neutron identity to the nucleons
         std::vector<int> electric_charges_arr(A_, 0);
@@ -207,7 +208,6 @@ void Nucleus::generate_nucleus_3d_configuration() {
     real phi = 2. * M_PI * ran_gen_ptr->rand_uniform();
     real theta = acos(1. - 2. * ran_gen_ptr->rand_uniform());
     real gamma = 2 * M_PI * ran_gen_ptr->rand_uniform();
-    // rotate_nucleus(phi, theta);
     rotate_nucleus_3D(phi, theta, gamma);
 }
 
@@ -221,9 +221,9 @@ void Nucleus::recenter_nucleus() {
         meanz += x_vec[3];
     }
 
-    meanx /= static_cast<real>(A_);
-    meany /= static_cast<real>(A_);
-    meanz /= static_cast<real>(A_);
+    meanx /= std::max(1., static_cast<real>(A_));
+    meany /= std::max(1., static_cast<real>(A_));
+    meanz /= std::max(1., static_cast<real>(A_));
 
     SpatialVec x_shift = {0, -meanx, -meany, -meanz};
     shift_nucleus(x_shift);
