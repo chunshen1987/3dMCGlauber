@@ -153,17 +153,16 @@ void Nucleus::generate_nucleus_3d_configuration() {
     // sample the nucleons' positions
     if (A_ == 1) {  // p
         SpatialVec x = {0.0};
-        MomentumVec p = {0.0};
-        std::shared_ptr<Nucleon> nucleon_ptr(
-            new Nucleon(x, p, PhysConsts::MProton, ran_gen_ptr));
+        MomentumVec p = {PhysConsts::MProton, 0.0, 0.0, 0.0};
+        std::shared_ptr<Nucleon> nucleon_ptr(new Nucleon(x, p, ran_gen_ptr));
         nucleon_list_.push_back(std::move(nucleon_ptr));
         status = 0;
     } else if (A_ == 0) {  // dipole
         SpatialVec x = {0.0};
-        MomentumVec p = {0.0};
-        std::shared_ptr<Nucleon> nucleon_ptr(
-            new Nucleon(x, p, PhysConsts::MDipole, ran_gen_ptr));
+        MomentumVec p = {PhysConsts::MDipole, 0.0, 0.0, 0.0};
+        std::shared_ptr<Nucleon> nucleon_ptr(new Nucleon(x, p, ran_gen_ptr));
         nucleon_list_.push_back(std::move(nucleon_ptr));
+        cout << "mass = " << nucleon_list_[0]->get_mass() << endl;
         status = 0;
         /*
         for (auto const &nucleon_i : nucleon_list_) {
@@ -331,8 +330,9 @@ void Nucleus::sample_valence_quarks_inside_nucleons(real ecm, int direction) {
 }
 
 void Nucleus::add_soft_parton_ball(real ecm, int direction) {
+    const real mN = nucleon_list_[0]->get_mass();
     real E_rem_min = 0.1;  // GeV
-    real beam_rapidity = direction * acosh(ecm / (2. * PhysConsts::MProton));
+    real beam_rapidity = direction * acosh(ecm / (2. * mN));
     real Pz_rem_min = E_rem_min * tanh(beam_rapidity);
     for (auto &nucleon_i : nucleon_list_) {
         if (nucleon_i->is_wounded() && nucleon_i->get_number_of_quarks() != 0) {
@@ -346,20 +346,20 @@ void Nucleus::add_soft_parton_ball(real ecm, int direction) {
             }
             soft_pvec[0] -= E_rem_min;
             soft_pvec[3] -= Pz_rem_min;
-            real mass = PhysConsts::MQuarkValence;
-            if (soft_pvec[0] > mass) {
+            real mq = PhysConsts::MQuarkValence;
+            if (soft_pvec[0] > mq) {
                 // assuming the soft parton ball has valence quark mass
                 // only add a soft parton when the leftover energy is
                 // larger than mq
-                real rapidity = direction * acosh(soft_pvec[0] / mass);
-                soft_pvec[3] = mass * sinh(rapidity);
+                real rapidity = direction * acosh(soft_pvec[0] / mq);
+                soft_pvec[3] = mq * sinh(rapidity);
 
                 // Scale soft partons momentum to Pmu/N_sea_partons
                 // Add as many soft partons as N_sea_partons
                 // with momentum soft_pvec/N_sea_partons for energy-momentum
                 // conservation.
                 for (int j = 0; j < 4; j++) {
-                    soft_pvec[j] /= (double)N_sea_partons_;
+                    soft_pvec[j] /= static_cast<double>(N_sea_partons_);
                 }
                 for (int i = 0; i < N_sea_partons_; i++) {
                     auto xvec = sample_valence_quark_position();
@@ -386,7 +386,7 @@ void Nucleus::generate_deuteron_configuration() {
     real z = 0.5 * r_dis * cos(theta);
     SpatialVec x_1 = {0.0, x, y, z};
     SpatialVec x_2 = {0.0, -x, -y, -z};
-    MomentumVec p_1 = {0.0};
+    MomentumVec p_1 = {PhysConsts::MProton, 0.0, 0.0, 0.0};
     MomentumVec p_2 = p_1;
 
     std::shared_ptr<Nucleon> nucleon1_ptr(new Nucleon(x_1, p_1, ran_gen_ptr));
@@ -647,7 +647,7 @@ int Nucleus::sample_nucleon_configuration() {
     auto conf_i = heavyIon_pos_[rand_num];
     for (int iA = 0; iA < A_; iA++) {
         SpatialVec x_i = {0.0, conf_i[iA][0], conf_i[iA][1], conf_i[iA][2]};
-        MomentumVec p_i = {0.0};
+        MomentumVec p_i = {PhysConsts::MProton, 0.0, 0.0, 0.0};
 
         std::shared_ptr<Nucleon> nucleon_i_ptr(
             new Nucleon(x_i, p_i, ran_gen_ptr));
@@ -761,7 +761,7 @@ void Nucleus::generate_nucleus_configuration_with_woods_saxon() {
     }
     for (unsigned int i = 0; i < r_array.size(); i++) {
         SpatialVec x_in = {0.0, x_array[i], y_array[i], z_array[i]};
-        MomentumVec p_in = {0.0};
+        MomentumVec p_in = {PhysConsts::MProton, 0.0, 0.0, 0.0};
         std::shared_ptr<Nucleon> nucleon_ptr(
             new Nucleon(x_in, p_in, ran_gen_ptr));
         nucleon_list_.push_back(std::move(nucleon_ptr));
@@ -822,7 +822,7 @@ void Nucleus::generate_nucleus_configuration_with_deformed_woods_saxon() {
     }
     for (int i = 0; i < A_; i++) {
         SpatialVec x_in = {0.0, x_array[i], y_array[i], z_array[i]};
-        MomentumVec p_in = {0.0};
+        MomentumVec p_in = {PhysConsts::MProton, 0.0, 0.0, 0.0};
         std::shared_ptr<Nucleon> nucleon_ptr(
             new Nucleon(x_in, p_in, ran_gen_ptr));
         nucleon_list_.push_back(std::move(nucleon_ptr));
