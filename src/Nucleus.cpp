@@ -154,13 +154,15 @@ void Nucleus::generate_nucleus_3d_configuration() {
     if (A_ == 1) {  // p
         SpatialVec x = {0.0};
         MomentumVec p = {0.0};
-        std::shared_ptr<Nucleon> nucleon_ptr(new Nucleon(x, p, ran_gen_ptr));
+        std::shared_ptr<Nucleon> nucleon_ptr(
+            new Nucleon(x, p, PhysConsts::MProton, ran_gen_ptr));
         nucleon_list_.push_back(std::move(nucleon_ptr));
         status = 0;
     } else if (A_ == 0) {  // dipole
         SpatialVec x = {0.0};
         MomentumVec p = {0.0};
-        std::shared_ptr<Nucleon> nucleon_ptr(new Nucleon(x, p, ran_gen_ptr));
+        std::shared_ptr<Nucleon> nucleon_ptr(
+            new Nucleon(x, p, PhysConsts::MDipole, ran_gen_ptr));
         nucleon_list_.push_back(std::move(nucleon_ptr));
         status = 0;
         /*
@@ -303,12 +305,20 @@ void Nucleus::sample_fermi_momentum() {
 }
 
 void Nucleus::sample_valence_quarks_inside_nucleons(real ecm, int direction) {
-    const int number_of_quarks = PhysConsts::NumValenceQuark;
+    int number_of_quarks = PhysConsts::NumValenceQuark;
+    int nucleonType = 0;
+    if (A_ == 0) {
+        nucleonType = -1;
+        number_of_quarks = PhysConsts::NumQuarkinDipole;
+    }
     for (auto &nucleon_i : nucleon_list_) {
         if (nucleon_i->is_wounded() && nucleon_i->get_number_of_quarks() == 0) {
             std::vector<real> xQuark;
+            if (A_ > 0) {
+                nucleonType = nucleon_i->get_electric_charge();
+            }
             sample_quark_momentum_fraction(
-                xQuark, number_of_quarks, nucleon_i->get_electric_charge(),
+                xQuark, number_of_quarks, nucleonType, nucleon_i->get_mass(),
                 ecm);
             for (int i = 0; i < number_of_quarks; i++) {
                 auto xvec = sample_valence_quark_position();
@@ -316,23 +326,6 @@ void Nucleus::sample_valence_quarks_inside_nucleons(real ecm, int direction) {
                 nucleon_i->push_back_quark(quark_ptr);
             }
             nucleon_i->accelerate_quarks(ecm, direction);
-        }
-    }
-}
-
-void Nucleus::sample_valence_quarks_inside_dipole(real ecm, int direction) {
-    const int number_of_quarks = PhysConsts::NumQuarkinDipole;
-    for (auto &nucleon_i : nucleon_list_) {
-        if (nucleon_i->is_wounded() && nucleon_i->get_number_of_quarks() == 0) {
-            std::vector<real> xQuark;
-            sample_quark_momentum_fraction_in_dipole(
-                xQuark, number_of_quarks, ecm);
-            for (int i = 0; i < number_of_quarks; i++) {
-                auto xvec = sample_valence_quark_position();
-                std::shared_ptr<Quark> quark_ptr(new Quark(xvec, xQuark[i]));
-                nucleon_i->push_back_quark(quark_ptr);
-            }
-            nucleon_i->accelerate_quarks_in_dipole(ecm, direction);
         }
     }
 }
@@ -884,16 +877,10 @@ real Nucleus::spherical_harmonics_Y22(int l, real ct, real phi) const {
 }
 
 void Nucleus::accelerate_nucleus(real ecm, int direction) {
-    assert(ecm > 2. * PhysConsts::MProton);
-    real beam_rapidity = direction * acosh(ecm / (2. * PhysConsts::MProton));
+    const real mass = nucleon_list_[0]->get_mass();
+    assert(ecm > 2. * mass);
+    real beam_rapidity = direction * acosh(ecm / (2. * mass));
     set_nucleons_momentum_with_collision_energy(beam_rapidity);
-    lorentz_contraction(cosh(beam_rapidity));
-}
-
-void Nucleus::accelerate_dipole(real ecm, int direction) {
-    assert(ecm > 2. * PhysConsts::MDipole);
-    real beam_rapidity = direction * acosh(ecm / (2. * PhysConsts::MDipole));
-    set_dipole_momentum_with_collision_energy(beam_rapidity);
     lorentz_contraction(cosh(beam_rapidity));
 }
 
@@ -910,20 +897,10 @@ void Nucleus::lorentz_contraction(real gamma) {
 }
 
 void Nucleus::set_nucleons_momentum_with_collision_energy(real beam_rapidity) {
-    MomentumVec p = {
-        PhysConsts::MProton * cosh(beam_rapidity), 0.0, 0.0,
-        PhysConsts::MProton * sinh(beam_rapidity)};
     for (auto &it : nucleon_list_) {
-        it->set_p(p);
-        it->set_remnant_p(p);
-    }
-}
-
-void Nucleus::set_dipole_momentum_with_collision_energy(real beam_rapidity) {
-    MomentumVec p = {
-        PhysConsts::MDipole * cosh(beam_rapidity), 0.0, 0.0,
-        PhysConsts::MDipole * sinh(beam_rapidity)};
-    for (auto &it : nucleon_list_) {
+        auto mass = it->get_mass();
+        MomentumVec p = {
+            mass * cosh(beam_rapidity), 0.0, 0.0, mass * sinh(beam_rapidity)};
         it->set_p(p);
         it->set_remnant_p(p);
     }
@@ -965,7 +942,7 @@ void Nucleus::output_nucleon_positions(std::string filename) const {
 
 void Nucleus::sample_quark_momentum_fraction(
     std::vector<real> &xQuark, const int number_of_quarks,
-    const int electric_charge, const real ecm) const {
+    const int nucleonType, const real mass, const real ecm) const {
     if (!sample_valence_quarks) {
         for (int i = 0; i < number_of_quarks; i++) {
             xQuark.push_back(1. / number_of_quarks);
@@ -974,58 +951,30 @@ void Nucleus::sample_quark_momentum_fraction(
     }
 
     const real mq = PhysConsts::MQuarkValence;
-    const real mp = PhysConsts::MProton;
-    const real ybeam = acosh(ecm / (2. * mp));
+    const real ybeam = acosh(ecm / (2. * mass));
     real total_energy = 0.;
-    real E_proton = mp * cosh(ybeam);
+    real E_proton = mass * cosh(ybeam);
     do {
         auto sample_idx = static_cast<int>(
             ran_gen_ptr->rand_uniform() * number_of_valence_quark_samples_);
         xQuark.clear();
-        if (electric_charge == 1) {
+        if (nucleonType == 1) {
             for (int i = 0; i < number_of_quarks; i++)
                 xQuark.push_back(proton_valence_quark_x_[sample_idx][i]);
-        } else {
+        } else if (nucleonType == 0) {
             for (int i = 0; i < number_of_quarks; i++)
                 xQuark.push_back(neutron_valence_quark_x_[sample_idx][i]);
+        } else if (nucleonType == -1) {
+            for (int i = 0; i < number_of_quarks; i++)
+                xQuark.push_back(dipole_valence_quark_x_[sample_idx][i]);
         }
         total_energy = 0.;
         for (int i = 0; i < number_of_quarks; i++) {
-            real rap_local = asinh(xQuark[i] * mp / mq * sinh(ybeam));
+            real rap_local = asinh(xQuark[i] * mass / mq * sinh(ybeam));
             real E_local = mq * cosh(rap_local);
             total_energy += E_local;
         }
     } while (total_energy > E_proton);
-}
-
-void Nucleus::sample_quark_momentum_fraction_in_dipole(
-    std::vector<real> &xQuark, const int number_of_quarks,
-    const real ecm) const {
-    if (!sample_valence_quarks) {
-        for (int i = 0; i < number_of_quarks; i++) {
-            xQuark.push_back(1. / number_of_quarks);
-        }
-        return;
-    }
-
-    const real mq = PhysConsts::MQuarkValence;
-    const real md = PhysConsts::MDipole;
-    const real ydipole = acosh(ecm / (2. * md));
-    real E_dipole = md * cosh(ydipole);
-    real total_energy = 0.;
-    do {
-        auto sample_idx = static_cast<int>(
-            ran_gen_ptr->rand_uniform() * number_of_valence_quark_samples_);
-        xQuark.clear();
-        for (int i = 0; i < number_of_quarks; i++)
-            xQuark.push_back(dipole_valence_quark_x_[sample_idx][i]);
-        total_energy = 0.;
-        for (int i = 0; i < number_of_quarks; i++) {
-            real rap_local = asinh(xQuark[i] * md / mq * sinh(ydipole));
-            real E_local = mq * cosh(rap_local);
-            total_energy += E_local;
-        }
-    } while (total_energy > E_dipole);
 }
 
 SpatialVec Nucleus::sample_valence_quark_position() const {

@@ -17,8 +17,6 @@
 #include "PhysConsts.h"
 #include "data_structs.h"
 
-using std::cout;
-using std::endl;
 using std::shared_ptr;
 
 namespace MCGlb {
@@ -132,8 +130,8 @@ Glauber::Glauber(
     real alpha = alpha2 / alpha1;
     yloss_param_a = alpha / (1. - alpha);
     yloss_param_b = alpha2 / yloss_param_a;
-    collision_energy = parameter_list.get_roots();
-    real ybeam_AA = acosh(collision_energy / (2. * PhysConsts::MProton));
+    collision_energy_ = parameter_list.get_roots();
+    real ybeam_AA = acosh(collision_energy_ / (2. * PhysConsts::MProton));
     real rootgammaN_low = 2.0;
     real rootgammaN_up = parameter_list.get_roots() / 2.0;
 
@@ -142,39 +140,28 @@ Glauber::Glauber(
             rootgammaN_low = parameter_list.get_UPC_root_low_cut();
             rootgammaN_up = parameter_list.get_UPC_root_up_cut();
         }
-        collision_energy = get_roots_from_distribution(
-            parameter_list.get_roots(), rootgammaN_low, rootgammaN_up,
-            parameter_list.get_target_nucleus_name());
+        collision_energy_ = get_roots_from_distribution(
+            parameter_list.get_roots(), rootgammaN_low, rootgammaN_up);
     }
-    ybeam = acosh(collision_energy / (2. * PhysConsts::MProton));
+    ybeam = acosh(collision_energy_ / (2. * PhysConsts::MProton));
     std::ofstream output_rapidity_shift("rapidity_shift");
     output_rapidity_shift << parameter_list.use_roots_distribution() << "  "
-                          << collision_energy << "  " << ybeam - ybeam_AA
-                          << endl;
+                          << collision_energy_ << "  " << ybeam - ybeam_AA
+                          << std::endl;
     output_rapidity_shift.close();
-    real siginNN = compute_NN_inelastic_cross_section(collision_energy);
+    real siginNN = compute_NN_inelastic_cross_section(collision_energy_);
     sigma_eff_ = get_sig_eff(siginNN);
-    cout << "sqrt{s} = " << collision_energy << " GeV, "
-         << "siginNN = " << siginNN << " mb" << endl;
+    std::cout << "sqrt{s} = " << collision_energy_ << " GeV, "
+              << "siginNN = " << siginNN << " mb" << std::endl;
 }
 
 real Glauber::get_roots_from_distribution(
-    real roots, real rootgammaN_low_cut, real rootgammaN_up_cut,
-    std::string nucleus_name) {
-    real radius;
-    int Z_in;
-    if (nucleus_name.compare("Au") == 0) {
-        radius = 6.38;
-        Z_in = 79;
-    } else if (nucleus_name.compare("Pb") == 0) {
-        radius = 6.62;
-        Z_in = 82;
-    } else {
-        cout << "[Error] Unknown_nucleus: " << nucleus_name << endl;
-        cout << "Exiting... " << endl;
-        exit(1);
-    }
-    double gammaL = roots / 2. / PhysConsts::MProton;
+    real roots, real rootgammaN_low_cut, real rootgammaN_up_cut) {
+    auto defaultWSParam = target->get_woods_saxon_parameters();
+    real radius = defaultWSParam[2];
+    int Z_in = target->get_nucleus_Z();
+
+    double gammaL = roots / (2. * PhysConsts::MProton);
     double probability_sum = 0.0;
     real rootgammaN_sampled = roots;
     std::vector<double> dNdrootgammaN;
@@ -213,18 +200,8 @@ void Glauber::make_nuclei() {
     target->generate_nucleus_3d_configuration();
     // projectile->output_nucleon_positions("projectile_before_accelaration.dat");
     // target->output_nucleon_positions("target_before_accelaration.dat");
-    int Nucleus_projectile = projectile->get_nucleus_A();
-    if (Nucleus_projectile > 0) {
-        projectile->accelerate_nucleus(collision_energy, 1);
-    } else {
-        projectile->accelerate_dipole(collision_energy, 1);
-    }
-    int Nucleus_target = target->get_nucleus_A();
-    if (Nucleus_target > 0) {
-        target->accelerate_nucleus(collision_energy, -1);
-    } else {
-        target->accelerate_dipole(collision_energy, -1);
-    }
+    projectile->accelerate_nucleus(collision_energy_, 1);
+    target->accelerate_nucleus(collision_energy_, -1);
 
     // sample impact parameters
     auto b_max = parameter_list.get_b_max();
@@ -389,22 +366,10 @@ int Glauber::decide_produce_string_num(
 
 int Glauber::decide_QCD_strings_production() {
     if (sample_valence_quark) {
-        int Nucleus_projectile = projectile->get_nucleus_A();
-        if (Nucleus_projectile > 0) {
-            projectile->sample_valence_quarks_inside_nucleons(
-                collision_energy, 1);
-        } else {
-            projectile->sample_valence_quarks_inside_dipole(
-                collision_energy, 1);
-        }
-        int Nucleus_target = target->get_nucleus_A();
-        if (Nucleus_target > 0) {
-            target->sample_valence_quarks_inside_nucleons(collision_energy, -1);
-        } else {
-            target->sample_valence_quarks_inside_dipole(collision_energy, -1);
-        }
-        projectile->add_soft_parton_ball(collision_energy, 1);
-        target->add_soft_parton_ball(collision_energy, -1);
+        projectile->sample_valence_quarks_inside_nucleons(collision_energy_, 1);
+        target->sample_valence_quarks_inside_nucleons(collision_energy_, -1);
+        projectile->add_soft_parton_ball(collision_energy_, 1);
+        target->add_soft_parton_ball(collision_energy_, -1);
     }
     std::vector<shared_ptr<CollisionEvent>> collision_list;
     for (auto &it : collision_schedule)
@@ -1104,7 +1069,7 @@ void Glauber::output_QCD_strings(
            << " Ncoll = " << Ncoll << " Nstrings = " << Nstrings
            << " total_energy = " << total_energy << " GeV, "
            << "net_Pz = " << net_Pz << " GeV, "
-           << "seed = " << seed << endl;
+           << "seed = " << seed << std::endl;
 
     output
         << "# mass[GeV]  m_over_sigma[fm]  tau_form[fm]  tau_0[fm]  eta_s_0  "
@@ -1112,14 +1077,14 @@ void Glauber::output_QCD_strings(
         << "eta_s_left  eta_s_right  y_l  y_r  remnant_l  remnant_r "
         << "y_l_i  y_r_i "
         << "eta_s_baryon_left  eta_s_baryon_right  y_l_baryon  y_r_baryon  "
-        << "baryon_fraction_l  baryon_fraction_r" << endl;
+        << "baryon_fraction_l  baryon_fraction_r" << std::endl;
 
     for (auto &string_i : QCD_string_output_arr_) {
         output << std::scientific << std::setprecision(8);
         for (auto &ival : string_i) {
             output << std::setw(15) << ival << "  ";
         }
-        output << endl;
+        output << std::endl;
     }
     output.close();
 }
@@ -1170,13 +1135,13 @@ void Glauber::outputParticipants(std::string filename) {
     prepareParticipantList();
 
     std::ofstream output(filename.c_str());
-    output << "# t[fm]  x[fm]  y[fm]  z[fm]  dir  e" << endl;
+    output << "# t[fm]  x[fm]  y[fm]  z[fm]  dir  e" << std::endl;
     for (auto &ipart : participantList_) {
         output << std::scientific << std::setprecision(6);
         for (auto &x_i : ipart) {
             output << std::setw(10) << x_i << "  ";
         }
-        output << endl;
+        output << std::endl;
     }
     output.close();
 }
@@ -1189,7 +1154,7 @@ void Glauber::output_spectators(std::string filename) {
 
     std::ofstream output(filename.c_str());
     output << "# t[fm]  x[fm]  y[fm]  z[fm]  m[GeV]  px[GeV]  py[GeV]  y  e"
-           << endl;
+           << std::endl;
     auto proj_nucleon_list = projectile->get_nucleon_list();
     for (auto &iproj : (*proj_nucleon_list)) {
         if (!iproj->is_wounded()) {
@@ -1220,7 +1185,7 @@ void Glauber::output_spectators(std::string filename) {
             output << std::setw(10) << mass << "  " << std::setw(10)
                    << proj_p[1] << "  " << std::setw(10) << proj_p[2] << "  "
                    << std::setw(10) << rap << "  "
-                   << iproj->get_electric_charge() << endl;
+                   << iproj->get_electric_charge() << std::endl;
         }
     }
     auto targ_nucleon_list = target->get_nucleon_list();
@@ -1253,7 +1218,7 @@ void Glauber::output_spectators(std::string filename) {
             output << std::setw(10) << mass << "  " << std::setw(10)
                    << targ_p[1] << "  " << std::setw(10) << targ_p[2] << "  "
                    << std::setw(10) << rap << "  "
-                   << itarg->get_electric_charge() << endl;
+                   << itarg->get_electric_charge() << std::endl;
         }
     }
     output.close();

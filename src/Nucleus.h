@@ -143,14 +143,13 @@ class Nucleus {
     void output_nucleon_positions(std::string filename) const;
 
     void sample_valence_quarks_inside_nucleons(real ecm, int direction);
-    void sample_valence_quarks_inside_dipole(real ecm, int direction);
     void add_soft_parton_ball(real ecm, int direction);
 
     void sample_fermi_momentum();
 
     void sample_quark_momentum_fraction(
         std::vector<real> &xQuark, const int number_of_quarks,
-        const int electric_charge, const real ecm) const;
+        const int nucleonType, const real mass, const real ecm) const;
     void sample_quark_momentum_fraction_in_dipole(
         std::vector<real> &xQuark, const int number_of_quarks,
         const real ecm) const;

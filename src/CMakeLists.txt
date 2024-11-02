@@ -43,17 +43,12 @@ set_target_properties(Metropolis.e
 set_target_properties(Metropolis_for_dipole.e
     PROPERTIES
     INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib;${CMAKE_HOME_DIRECTORY}/LHAPDF_Lib/lib/")
-    
-install(TARGETS ${exename} Metropolis.e ${libname}
+
+install(TARGETS ${exename} Metropolis.e Metropolis_for_dipole.e ${libname}
         RUNTIME DESTINATION ${CMAKE_HOME_DIRECTORY}
         LIBRARY DESTINATION lib
         ARCHIVE DESTINATION lib/static)
 
-install(TARGETS ${exename} Metropolis_for_dipole.e ${libname}
-        RUNTIME DESTINATION ${CMAKE_HOME_DIRECTORY}
-        LIBRARY DESTINATION lib
-        ARCHIVE DESTINATION lib/static)
-        
 if (unittest)
     add_executable (unittest_CollisionEvent.e CollisionEvent_UnitTest.cpp)
     target_link_libraries (unittest_CollisionEvent.e ${libname} ${LIBS})
