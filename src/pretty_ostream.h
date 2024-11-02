@@ -4,26 +4,26 @@
 #ifndef PRETTY_OSTREAM_H_
 #define PRETTY_OSTREAM_H_
 
+#include <cstring>
 #include <iostream>
 #include <sstream>
-#include <cstring>
 
-#define BOLD    "\033[1m"       // Bold
-#define BLACK   "\033[30m"      // Black
-#define RED     "\033[31m"      // Red
-#define GREEN   "\033[32m"      // Green
-#define YELLOW  "\033[33m"      // Yellow
-#define BLUE    "\033[34m"      // Blue
-#define MAGENTA "\033[35m"      // Magenta
-#define CYAN    "\033[36m"      // Cyan
-#define WHITE   "\033[37m"      // White
-#define RESET   "\033[0m"       // reset
+#define BOLD "\033[1m"      // Bold
+#define BLACK "\033[30m"    // Black
+#define RED "\033[31m"      // Red
+#define GREEN "\033[32m"    // Green
+#define YELLOW "\033[33m"   // Yellow
+#define BLUE "\033[34m"     // Blue
+#define MAGENTA "\033[35m"  // Magenta
+#define CYAN "\033[36m"     // Cyan
+#define WHITE "\033[37m"    // White
+#define RESET "\033[0m"     // reset
 
 class pretty_ostream {
- private:
+  private:
     std::ostringstream message_stream;
 
- public:
+  public:
     pretty_ostream();
     ~pretty_ostream();
 
@@ -46,9 +46,10 @@ class pretty_ostream {
     std::string get_memory_usage();
 
     //! reload the << operator
-    template <typename T> pretty_ostream& operator<<(T const& value) {
+    template <typename T>
+    pretty_ostream& operator<<(T const& value) {
         message_stream << value;
-        return(*this);
+        return (*this);
     }
 };
 

@@ -1,6 +1,7 @@
 // Copyright (C) 2018 Chun Shen
-#include "doctest.h"
 #include "Parameters.h"
+
+#include "doctest.h"
 
 TEST_CASE("Test set and get parameters") {
     MCGlb::Parameters parameter_list;

@@ -4,6 +4,7 @@
 #define SRC_PARAMETERS_H_
 
 #include <string>
+
 #include "ParametersMap.h"
 #include "data_structs.h"
 
@@ -12,16 +13,16 @@ using std::string;
 namespace MCGlb {
 
 class Parameters : public ParametersMap {
- public:
+  public:
     Parameters() = default;
     ~Parameters() {};
 
-    int get_seed() const {return(get_param_int("seed"));}
+    int get_seed() const { return (get_param_int("seed")); }
 
     string get_projectle_nucleus_name() const {
-        return(get_param_val("Projectile"));
+        return (get_param_val("Projectile"));
     }
-    string get_target_nucleus_name() const {return(get_param_val("Target"));}
+    string get_target_nucleus_name() const { return (get_param_val("Target")); }
 
     void set_b_max(real b_in);
     real get_b_max() const;
@@ -83,6 +84,6 @@ class Parameters : public ParametersMap {
     int getLightNucleusOption() const;
 };
 
-}
+}  // namespace MCGlb
 
 #endif  // SRC_PARAMETERS_H_

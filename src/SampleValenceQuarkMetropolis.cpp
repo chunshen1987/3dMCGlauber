@@ -2,17 +2,18 @@
 // with single valence quark distribution provided by nuclear PDF
 // Copyright @ Chun Shen 2020
 
-#include <memory>
 #include <array>
 #include <iostream>
+#include <memory>
 #include <sstream>
-#include "eps09.h"
-#include "Random.h"
+
 #include "LHAPDF/LHAPDF.h"
+#include "Random.h"
+#include "eps09.h"
 
 using RandomUtil::Random;
-using std::shared_ptr;
 using std::array;
+using std::shared_ptr;
 
 const int number_of_quarks = 3;
 const int number_of_samples = 100000;
@@ -21,15 +22,14 @@ const double allow_violation_fraction = 0;
 const long int ntol = 5000000;
 const double EPS = 1e-15;
 
-typedef struct{
+typedef struct {
     array<double, number_of_quarks> Xarr;
     double score;
 } Triplet;
 
-
 double sample_a_u_quark_momentum_fraction(
-        const bool flag_NPDF, const shared_ptr<LHAPDF::PDF> pdf,
-        const shared_ptr<Random> ran_gen_ptr, const double A) {
+    const bool flag_NPDF, const shared_ptr<LHAPDF::PDF> pdf,
+    const shared_ptr<Random> ran_gen_ptr, const double A) {
     double x;
     double xfu, xfubar, tmp, correction;
     double ruv = 1.;
@@ -39,22 +39,20 @@ double sample_a_u_quark_momentum_fraction(
         x = ran_gen_ptr->rand_uniform();
         if (flag_NPDF) {
             double ru, rd, rs, rc, rb, rg;
-            eps09(2, 1, A, x, sqrt(Q2), ruv, rdv, ru, rd, rs,
-                  rc, rb, rg);
+            eps09(2, 1, A, x, sqrt(Q2), ruv, rdv, ru, rd, rs, rc, rb, rg);
         }
 
-        xfubar     = pdf->xfxQ2(-2, x, Q2);
-        xfu        = pdf->xfxQ2( 2, x, Q2);
-        tmp        = ran_gen_ptr->rand_uniform();
+        xfubar = pdf->xfxQ2(-2, x, Q2);
+        xfu = pdf->xfxQ2(2, x, Q2);
+        tmp = ran_gen_ptr->rand_uniform();
         correction = 1.0;
-    } while (tmp > ((xfu - xfubar)*ruv*correction));
-    return(x);
+    } while (tmp > ((xfu - xfubar) * ruv * correction));
+    return (x);
 }
 
-
 double sample_a_d_quark_momentum_fraction(
-        const bool flag_NPDF, const shared_ptr<LHAPDF::PDF> pdf,
-        const shared_ptr<Random> ran_gen_ptr, const double A) {
+    const bool flag_NPDF, const shared_ptr<LHAPDF::PDF> pdf,
+    const shared_ptr<Random> ran_gen_ptr, const double A) {
     double x;
     double xfd, xfdbar, tmp, correction;
     double ruv = 1.;
@@ -64,20 +62,18 @@ double sample_a_d_quark_momentum_fraction(
         x = ran_gen_ptr->rand_uniform();
         if (flag_NPDF) {
             double ru, rd, rs, rc, rb, rg;
-            eps09(2, 1, A, x, sqrt(Q2), ruv, rdv, ru, rd, rs,
-                  rc, rb, rg);
+            eps09(2, 1, A, x, sqrt(Q2), ruv, rdv, ru, rd, rs, rc, rb, rg);
         }
         // ruv seems to be always equal to rdv,
         // so I am fine not distinguishing proton and neutron here
 
-        xfdbar     = pdf->xfxQ2(-1, x, Q2);
-        xfd        = pdf->xfxQ2( 1, x, Q2);
-        tmp        = ran_gen_ptr->rand_uniform();
+        xfdbar = pdf->xfxQ2(-1, x, Q2);
+        xfd = pdf->xfxQ2(1, x, Q2);
+        tmp = ran_gen_ptr->rand_uniform();
         correction = 1.0;
-    } while (tmp > ((xfd - xfdbar)*rdv*correction));
-    return(x);
+    } while (tmp > ((xfd - xfdbar) * rdv * correction));
+    return (x);
 }
-
 
 void compute_score(Triplet &triplet_i) {
     double sum = 0.;
@@ -90,7 +86,6 @@ void compute_score(Triplet &triplet_i) {
         triplet_i.score = sum;
 }
 
-
 void swap_two_quarks(Triplet &triplet_1, Triplet &triplet_2, const int q_id) {
     double swap = triplet_1.Xarr[q_id];
     triplet_1.Xarr[q_id] = triplet_2.Xarr[q_id];
@@ -101,12 +96,10 @@ void swap_two_quarks(Triplet &triplet_1, Triplet &triplet_2, const int q_id) {
     compute_score(triplet_2);
 }
 
-
 void one_metropolis_step(
     shared_ptr<Random> ran_int_gen_1, shared_ptr<Random> ran_int_gen_2,
     array<Triplet, number_of_samples> &quark_samples, int flag_force_violation,
     double &delta_score, int &delta_violations) {
-
     int sample1 = ran_int_gen_1->rand_int_uniform();
     if (flag_force_violation == 1) {
         for (int ii = 0; ii < number_of_samples; ii++) {
@@ -129,21 +122,21 @@ void one_metropolis_step(
         sample2_prev_score = quark_samples[sample2].score;
 
         score_prev = sample1_prev_score + sample2_prev_score;
-        swap_two_quarks(quark_samples[sample1], quark_samples[sample2],
-                        quark_id);
-        score_curr = (  quark_samples[sample1].score
-                      + quark_samples[sample2].score);
+        swap_two_quarks(
+            quark_samples[sample1], quark_samples[sample2], quark_id);
+        score_curr =
+            (quark_samples[sample1].score + quark_samples[sample2].score);
 
         if (score_curr < score_prev) {
             // swap back
-            swap_two_quarks(quark_samples[sample1], quark_samples[sample2],
-                            quark_id);
-            score_curr = (  quark_samples[sample1].score
-                          + quark_samples[sample2].score);
+            swap_two_quarks(
+                quark_samples[sample1], quark_samples[sample2], quark_id);
+            score_curr =
+                (quark_samples[sample1].score + quark_samples[sample2].score);
         }
     } while (flag_force_violation == 1 && score_curr < score_prev);
 
-    delta_score = (score_curr - score_prev)/number_of_samples;
+    delta_score = (score_curr - score_prev) / number_of_samples;
 
     delta_violations = 0;
     if (sample1_prev_score < EPS && quark_samples[sample1].score > EPS)
@@ -156,38 +149,35 @@ void one_metropolis_step(
         delta_violations += 1;
 }
 
-
 double compute_total_score(
-        const array<Triplet, number_of_samples> &quark_samples) {
+    const array<Triplet, number_of_samples> &quark_samples) {
     double sum = 0.;
     for (const auto &triplet_i : quark_samples) {
         sum += triplet_i.score;
     }
     sum /= quark_samples.size();
-    return(sum);
+    return (sum);
 }
 
-
 int number_of_violations(
-        const array<Triplet, number_of_samples> &quark_samples) {
+    const array<Triplet, number_of_samples> &quark_samples) {
     int n_voilations = 0;
     for (const auto &triplet_i : quark_samples) {
         if (triplet_i.score < EPS) {
             n_voilations++;
         }
     }
-    return(n_voilations);
+    return (n_voilations);
 }
 
-
-int main(int argc, char* argv[]) {
+int main(int argc, char *argv[]) {
     // create LHA pdf object
     const std::string setname = "CT10nnlo";
     const int imem = 0;
     shared_ptr<LHAPDF::PDF> pdf;
     pdf = shared_ptr<LHAPDF::PDF>(LHAPDF::mkPDF(setname, imem));
 
-    int A = 1;          // proton
+    int A = 1;  // proton
     if (argc > 1) {
         A = std::stoi(*(argv + 1));
     }
@@ -204,19 +194,19 @@ int main(int argc, char* argv[]) {
     shared_ptr<Random> ran_gen_ptr;
     shared_ptr<Random> ran_int_gen_1, ran_int_gen_2;
     ran_gen_ptr = shared_ptr<Random>(new Random(ran_seed, 0.0, 1.0));
-    ran_int_gen_1 = shared_ptr<Random>(
-                    new Random(ran_seed, 0, number_of_samples - 1));
-    ran_int_gen_2 = shared_ptr<Random>(
-                    new Random(ran_seed, 0, number_of_quarks - 1));
+    ran_int_gen_1 =
+        shared_ptr<Random>(new Random(ran_seed, 0, number_of_samples - 1));
+    ran_int_gen_2 =
+        shared_ptr<Random>(new Random(ran_seed, 0, number_of_quarks - 1));
 
     for (int i = 0; i < number_of_samples; i++) {
         array<double, number_of_quarks> d_x;
         array<double, number_of_quarks> u_x;
         for (int iq = 0; iq < number_of_quarks; iq++) {
-            d_x[iq] = sample_a_d_quark_momentum_fraction(flag_NPDF, pdf,
-                                                         ran_gen_ptr, A);
-            u_x[iq] = sample_a_u_quark_momentum_fraction(flag_NPDF, pdf,
-                                                         ran_gen_ptr, A);
+            d_x[iq] = sample_a_d_quark_momentum_fraction(
+                flag_NPDF, pdf, ran_gen_ptr, A);
+            u_x[iq] = sample_a_u_quark_momentum_fraction(
+                flag_NPDF, pdf, ran_gen_ptr, A);
         }
         proton_quark_samples[i].Xarr[0] = d_x[0];
         proton_quark_samples[i].Xarr[1] = u_x[0];
@@ -237,22 +227,22 @@ int main(int argc, char* argv[]) {
     long int itol = 0;
     while (proton_nviolations > 0 && itol < ntol) {
         if (iter % 1000000 == 0) {
-            std::cout << "proton iter = " << iter << ": nviolations = "
-                      << proton_nviolations
+            std::cout << "proton iter = " << iter
+                      << ": nviolations = " << proton_nviolations
                       << ", <sum_x> = " << proton_total_score << std::endl;
         }
         double delta_p;
         int delta_violation_p;
 
-        if (proton_nviolations > number_of_samples*acc_violation_fraction) {
-            one_metropolis_step(ran_int_gen_1, ran_int_gen_2,
-                                proton_quark_samples, 0,
-                                delta_p, delta_violation_p);
-        } else if (proton_nviolations
-                   > number_of_samples*allow_violation_fraction) {
-            one_metropolis_step(ran_int_gen_1, ran_int_gen_2,
-                                proton_quark_samples, 1,
-                                delta_p, delta_violation_p);
+        if (proton_nviolations > number_of_samples * acc_violation_fraction) {
+            one_metropolis_step(
+                ran_int_gen_1, ran_int_gen_2, proton_quark_samples, 0, delta_p,
+                delta_violation_p);
+        } else if (
+            proton_nviolations > number_of_samples * allow_violation_fraction) {
+            one_metropolis_step(
+                ran_int_gen_1, ran_int_gen_2, proton_quark_samples, 1, delta_p,
+                delta_violation_p);
             itol++;
         } else {
             break;
@@ -263,8 +253,8 @@ int main(int argc, char* argv[]) {
 
         iter++;
     }
-    std::cout << "proton iter = " << iter << ": nviolations = "
-              << proton_nviolations
+    std::cout << "proton iter = " << iter
+              << ": nviolations = " << proton_nviolations
               << ", <sum_x> = " << proton_total_score << std::endl;
 
     // output to file in binary
@@ -277,13 +267,14 @@ int main(int argc, char* argv[]) {
     } else {
         of_p_name << ".dat";
     }
-    std::ofstream of_p(of_p_name.str().c_str(),
-                       std::ios::out | std::ios::binary | std::ofstream::app);
-    for (const auto triplet_i: proton_quark_samples) {
+    std::ofstream of_p(
+        of_p_name.str().c_str(),
+        std::ios::out | std::ios::binary | std::ofstream::app);
+    for (const auto triplet_i : proton_quark_samples) {
         if (triplet_i.score < 1.) {
             for (int i = 0; i < number_of_quarks; i++) {
                 float x_i = static_cast<float>(triplet_i.Xarr[i]);
-                of_p.write((char*) &(x_i), sizeof(float));
+                of_p.write((char *)&(x_i), sizeof(float));
             }
         }
     }
@@ -293,22 +284,23 @@ int main(int argc, char* argv[]) {
     itol = 0;
     while (neutron_nviolations > 0 && itol < ntol) {
         if (iter % 1000000 == 0) {
-            std::cout << "neutron iter = " << iter << ": nviolations = "
-                      << neutron_nviolations
+            std::cout << "neutron iter = " << iter
+                      << ": nviolations = " << neutron_nviolations
                       << ", <sum_x> = " << neutron_total_score << std::endl;
         }
         double delta_n;
         int delta_violation_n;
 
-        if (neutron_nviolations > number_of_samples*acc_violation_fraction) {
-            one_metropolis_step(ran_int_gen_1, ran_int_gen_2,
-                                neutron_quark_samples, 0,
-                                delta_n, delta_violation_n);
-        } else if (neutron_nviolations
-                   > number_of_samples*allow_violation_fraction) {
-            one_metropolis_step(ran_int_gen_1, ran_int_gen_2,
-                                neutron_quark_samples, 1,
-                                delta_n, delta_violation_n);
+        if (neutron_nviolations > number_of_samples * acc_violation_fraction) {
+            one_metropolis_step(
+                ran_int_gen_1, ran_int_gen_2, neutron_quark_samples, 0, delta_n,
+                delta_violation_n);
+        } else if (
+            neutron_nviolations
+            > number_of_samples * allow_violation_fraction) {
+            one_metropolis_step(
+                ran_int_gen_1, ran_int_gen_2, neutron_quark_samples, 1, delta_n,
+                delta_violation_n);
             itol++;
         } else {
             break;
@@ -318,8 +310,8 @@ int main(int argc, char* argv[]) {
         neutron_nviolations += delta_violation_n;
         iter++;
     }
-    std::cout << "neutron iter = " << iter << ": nviolations = "
-              << neutron_nviolations
+    std::cout << "neutron iter = " << iter
+              << ": nviolations = " << neutron_nviolations
               << ", <sum_x> = " << neutron_total_score << std::endl;
     std::stringstream of_n_name;
     of_n_name << "tables/neutron_valence_quark_samples";
@@ -330,13 +322,14 @@ int main(int argc, char* argv[]) {
     } else {
         of_n_name << ".dat";
     }
-    std::ofstream of_n(of_n_name.str().c_str(),
-                       std::ios::out | std::ios::binary | std::ofstream::app);
-    for (const auto triplet_i: neutron_quark_samples) {
+    std::ofstream of_n(
+        of_n_name.str().c_str(),
+        std::ios::out | std::ios::binary | std::ofstream::app);
+    for (const auto triplet_i : neutron_quark_samples) {
         if (triplet_i.score < 1.) {
             for (int i = 0; i < number_of_quarks; i++) {
                 float x_i = static_cast<float>(triplet_i.Xarr[i]);
-                of_n.write((char*) &(x_i), sizeof(float));
+                of_n.write((char *)&(x_i), sizeof(float));
             }
         }
     }

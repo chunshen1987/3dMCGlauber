@@ -3,22 +3,23 @@
 #ifndef SRC_NUCLEON_H_
 #define SRC_NUCLEON_H_
 
-#include "Particle.h"
-#include "Random.h"
-#include "Quark.h"
-#include <vector>
-#include <memory>
 #include <algorithm>
+#include <memory>
+#include <vector>
+
+#include "Particle.h"
+#include "Quark.h"
+#include "Random.h"
 
 namespace MCGlb {
 
 class Nucleon : public Particle {
- private:
+  private:
     std::vector<std::shared_ptr<Quark>> quark_list;
     int collided_times = 0;
     int total_connected_times_ = 0;
     int electric_charge_ = 0;
-    int baryon_number_=1;
+    int baryon_number_ = 1;
     bool wounded_ = false;
     bool baryon_used = false;
     bool remnant_set_ = false;
@@ -31,39 +32,44 @@ class Nucleon : public Particle {
     SpatialVec remnant_x_frez_ = {0.0, 0.0, 0.0, 0.0};
     MomentumVec fermi_momentum_ = {0.0, 0.0, 0.0, 0.0};
 
- public:
+  public:
     Nucleon() = default;
-    Nucleon(SpatialVec x_in, MomentumVec p_in,
-            std::shared_ptr<RandomUtil::Random> ran_gen_ptr);
+    Nucleon(
+        SpatialVec x_in, MomentumVec p_in,
+        std::shared_ptr<RandomUtil::Random> ran_gen_ptr);
 
-    Nucleon(SpatialVec x_in, MomentumVec p_in, real mass_in,
-            std::shared_ptr<RandomUtil::Random> ran_gen_ptr);
+    Nucleon(
+        SpatialVec x_in, MomentumVec p_in, real mass_in,
+        std::shared_ptr<RandomUtil::Random> ran_gen_ptr);
 
     ~Nucleon();
 
+    void set_baryon_number(int baryon_number) {
+        baryon_number_ = baryon_number;
+    }
+    int get_baryon_number() const { return (baryon_number_); }
 
-    void set_baryon_number(int baryon_number) {baryon_number_ = baryon_number;}
-    int get_baryon_number() const {return(baryon_number_);}
+    void set_electric_charge(int charge) { electric_charge_ = charge; }
+    int get_electric_charge() const { return (electric_charge_); }
 
-    void set_electric_charge(int charge) {electric_charge_ = charge;}
-    int get_electric_charge() const {return(electric_charge_);}
+    int get_number_of_quarks() const { return (quark_list.size()); }
+    void push_back_quark(std::shared_ptr<Quark> q) { quark_list.push_back(q); }
+    std::vector<std::shared_ptr<Quark>> get_quark_list() {
+        return (quark_list);
+    }
 
-    int get_number_of_quarks() const {return(quark_list.size());}
-    void push_back_quark(std::shared_ptr<Quark> q) {quark_list.push_back(q);}
-    std::vector<std::shared_ptr<Quark>> get_quark_list() {return(quark_list);}
+    bool is_wounded() const { return (wounded_); }
+    bool baryon_was_used() const { return (baryon_used); }
+    void set_wounded(bool hit) { wounded_ = hit; }
+    void set_baryon_used(bool hit) { baryon_used = hit; }
 
-    bool is_wounded() const {return(wounded_);}
-    bool baryon_was_used() const {return(baryon_used);}
-    void set_wounded(bool hit) {wounded_ = hit;}
-    void set_baryon_used(bool hit) {baryon_used = hit;}
-
-    void increment_collided_times() {collided_times++;}
-    int get_collided_times() const {return(collided_times);}
+    void increment_collided_times() { collided_times++; }
+    int get_collided_times() const { return (collided_times); }
     void add_collide_nucleon(std::weak_ptr<Nucleon> collide_nucleon) {
         collide_with.push_back(collide_nucleon);
     }
     std::vector<std::weak_ptr<Nucleon>>* get_collide_nucleon_list() {
-        return(&collide_with);
+        return (&collide_with);
     }
 
     void add_connected_nucleon(std::weak_ptr<Nucleon> connected_nucleon) {
@@ -75,12 +81,10 @@ class Nucleon : public Particle {
         total_connected_times_ += N_connections;
     }
 
-    int get_number_of_connections() const {
-        return(total_connected_times_);
-    }
+    int get_number_of_connections() const { return (total_connected_times_); }
 
     int get_number_of_connections(const int idx) const {
-        return(connected_times_[idx]);
+        return (connected_times_[idx]);
     }
 
     int get_number_of_connections(std::shared_ptr<Nucleon> targ) const;
@@ -93,21 +97,20 @@ class Nucleon : public Particle {
     std::shared_ptr<Quark> get_a_valence_quark();
     std::shared_ptr<Quark> get_a_close_valence_quark(real xq, real yq);
 
-    bool is_remnant_set() const {return(remnant_set_);}
-    void set_remnant(bool remnant) {remnant_set_ = remnant;}
+    bool is_remnant_set() const { return (remnant_set_); }
+    void set_remnant(bool remnant) { remnant_set_ = remnant; }
 
     bool is_remnant_carry_baryon_number() const {
-        return(remnant_carry_baryon_number_);
+        return (remnant_carry_baryon_number_);
     }
     void set_remnant_carry_baryon_number(bool remnant) {
         remnant_carry_baryon_number_ = remnant;
     }
 
-    void set_remnant_p(MomentumVec p_in) {remnant_p_ = p_in;}
-    MomentumVec get_remnant_p() const {return(remnant_p_);}
+    void set_remnant_p(MomentumVec p_in) { remnant_p_ = p_in; }
+    MomentumVec get_remnant_p() const { return (remnant_p_); }
     void substract_momentum_from_remnant(MomentumVec p_q) {
-        for (int i = 0; i < 4; i++)
-            remnant_p_[i] -= p_q[i];
+        for (int i = 0; i < 4; i++) remnant_p_[i] -= p_q[i];
     }
 
     void set_fermi_momentum(real px, real py, real pz) {
@@ -115,12 +118,12 @@ class Nucleon : public Particle {
         fermi_momentum_[2] = py;
         fermi_momentum_[3] = pz;
     }
-    MomentumVec get_fermi_momentum() const {return(fermi_momentum_);}
+    MomentumVec get_fermi_momentum() const { return (fermi_momentum_); }
 
-    void set_remnant_x_frez(SpatialVec x_in) {remnant_x_frez_ = x_in;}
-    SpatialVec get_remnant_x_frez() const {return(remnant_x_frez_);}
+    void set_remnant_x_frez(SpatialVec x_in) { remnant_x_frez_ = x_in; }
+    SpatialVec get_remnant_x_frez() const { return (remnant_x_frez_); }
 };
 
-}
+}  // namespace MCGlb
 
 #endif  // SRC_NUCLEON_H_

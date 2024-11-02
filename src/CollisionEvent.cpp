@@ -6,9 +6,9 @@ using std::shared_ptr;
 
 namespace MCGlb {
 
-CollisionEvent::CollisionEvent(SpatialVec x_coll_in,
-                               shared_ptr<Nucleon> proj_in,
-                               shared_ptr<Nucleon> targ_in) {
+CollisionEvent::CollisionEvent(
+    SpatialVec x_coll_in, shared_ptr<Nucleon> proj_in,
+    shared_ptr<Nucleon> targ_in) {
     proj_nucleon = proj_in;
     targ_nucleon = targ_in;
     x_coll = x_coll_in;
@@ -23,7 +23,7 @@ bool CollisionEvent::is_valid() const {
         flag = false;
     if (targ_collided_times != targ_nucleon.lock()->get_collided_times())
         flag = false;
-    return(flag);
+    return (flag);
 }
 
-}
+}  // namespace MCGlb

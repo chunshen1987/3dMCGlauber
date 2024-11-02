@@ -1,9 +1,9 @@
 // Copyright @ Chun Shen 2018
 
-#include "EventGenerator.h"
-#include <string>
 #include <iostream>
+#include <string>
 
+#include "EventGenerator.h"
 
 void print_help() {
     std::cout << "Usage: ./3dMCGlb.e nev [input_file] [seed] [param=value]"
@@ -11,7 +11,6 @@ void print_help() {
     std::cout << "Default input_file: input" << std::endl;
     std::cout << "Default seed: -1 (use device random seed)" << std::endl;
 }
-
 
 int main(int argc, char* argv[]) {
     std::string input_filename = "input";
@@ -35,5 +34,5 @@ int main(int argc, char* argv[]) {
     MCGlb::EventGenerator mc_gen(input_filename, argc, argv, seed);
     mc_gen.generateMinBiasEventList();
     mc_gen.generate_events(nev);
-    return(0);
+    return (0);
 }

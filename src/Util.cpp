@@ -1,8 +1,9 @@
 // Copyright (C) 2018 Chun Shen
 
-#include <vector>
-#include <string>
 #include "Util.h"
+
+#include <string>
+#include <vector>
 
 namespace StringUtility {
 
@@ -11,7 +12,7 @@ vector<string> parse_a_line(string line, string delimiter, string ignore) {
     if (ignore.length() != 0) {
         trimed_line = line.substr(0, line.find(ignore));
     }
-    return(parse_a_line(trimed_line, delimiter));
+    return (parse_a_line(trimed_line, delimiter));
 }
 
 vector<string> parse_a_line(string line, string delimiter) {
@@ -28,7 +29,7 @@ vector<string> parse_a_line(string line, string delimiter) {
     if (line.length() != 0) {
         word_list.push_back(line);
     }
-    return(word_list);
+    return (word_list);
 }
 
-}
+}  // namespace StringUtility

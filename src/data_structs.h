@@ -13,7 +13,6 @@ typedef std::array<real, 4> SpatialVec;
 typedef std::array<real, 4> MomentumVec;
 typedef std::array<real, 8> WoodsSaxonParam;
 
-}
+}  // namespace MCGlb
 
-
-#endif   // SRC_DATA_STRUCTS_H_
+#endif  // SRC_DATA_STRUCTS_H_

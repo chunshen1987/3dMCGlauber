@@ -1,6 +1,7 @@
 // Copyright (C) 2018 Chun Shen
-#include "doctest.h"
 #include "Random.h"
+
+#include "doctest.h"
 
 TEST_CASE("Test fixed random seed") {
     RandomUtil::Random ran_test1(1, 0., 1.);
@@ -20,6 +21,5 @@ TEST_CASE("Test device random seed") {
 
 TEST_CASE("Test random number range") {
     RandomUtil::Random ran_test1(-1, 1., 2.);
-    for (int i = 0; i < 10; i++)
-        CHECK(ran_test1.rand_uniform() >= 1.);
+    for (int i = 0; i < 10; i++) CHECK(ran_test1.rand_uniform() >= 1.);
 }
