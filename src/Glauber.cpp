@@ -213,7 +213,16 @@ int Glauber::get_Npart() const {
                   + target->get_number_of_wounded_nucleons());
     return(Npart);
 }
-
+int Glauber::get_Neutronspart() const {
+    int Neutronspart = (projectile->get_number_of_wounded_neutrons()
+                  + target->get_number_of_wounded_neutrons());
+    return(Neutronspart);
+}
+int Glauber::get_Protonspart() const {
+    int Protonspart = (projectile->get_number_of_wounded_protons()
+                  + target->get_number_of_wounded_protons());
+    return(Protonspart);
+}
 
 bool Glauber::hit(real d2) const {
     //real G = 0.92;  // from Glassando
