@@ -10,6 +10,7 @@
 #include <vector>
 #include <string>
 #include <memory>
+#include <cmath>
 
 namespace MCGlb {
 
@@ -30,6 +31,8 @@ class Nucleus {
 
     std::vector<std::shared_ptr<Nucleon>> nucleon_list_;
     std::vector<std::shared_ptr<Nucleon>> participant_list_;
+    std::vector<std::shared_ptr<Nucleon>> participant_proton_list;
+    std::vector<std::shared_ptr<Nucleon>> participant_neutron_list;
     std::shared_ptr<RandomUtil::Random> ran_gen_ptr;
 
     bool nucleon_configuration_loaded_;
@@ -80,6 +83,14 @@ class Nucleus {
         if (!ipart->is_wounded()) {
             // only at ipart one time
             participant_list_.push_back(ipart);
+	    if(std::abs(ipart->get_electric_charge())<1e-8){
+            	// The participant is a neutron
+		participant_neutron_list.push_back(ipart); 
+	    }
+	    else{
+	    	// The participant is a proton
+		participant_proton_list.push_back(ipart);
+	    }
         }
     }
 
@@ -123,6 +134,12 @@ class Nucleus {
     }
     int get_number_of_wounded_nucleons() const {
         return(static_cast<int>(participant_list_.size()));
+    }
+    int get_number_of_wounded_neutrons() const {
+        return(static_cast<int>(participant_neutron_list.size()));
+    }
+    int get_number_of_wounded_protons() const {
+        return(static_cast<int>(participant_proton_list.size()));
     }
     std::shared_ptr<Nucleon> get_participant(unsigned int idx) {
         return(participant_list_.at(idx));

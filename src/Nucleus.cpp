@@ -44,6 +44,8 @@ Nucleus::Nucleus(std::string nucleus_name,
 
 Nucleus::~Nucleus() {
     participant_list_.clear();
+    participant_neutron_list.clear();
+    participant_proton_list.clear();
     nucleon_list_.clear();
     if (sample_valence_quarks) {
         proton_valence_quark_x_.clear();
@@ -159,6 +161,12 @@ void Nucleus::generate_nucleus_3d_configuration() {
 
     if (participant_list_.size() > 0)
         participant_list_.clear();
+
+    if (participant_proton_list.size() > 0)
+        participant_proton_list.clear();
+
+    if (participant_neutron_list.size() > 0)
+        participant_neutron_list.clear();
 
     int status = 2;
     // sample the nucleons' positions
