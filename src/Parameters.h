@@ -42,8 +42,6 @@ class Parameters : public ParametersMap {
     int get_QCD_string_evolution_mode() const;
     int get_rapidity_loss_method() const;
 
-    real get_Omega_GG() const;
-
     bool subtract_hard_momentum() const;
     int get_N_sea_partons() const;
 

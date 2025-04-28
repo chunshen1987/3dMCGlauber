@@ -36,13 +36,10 @@ d_min 0.9                            # the minimum distance between nucleon pair
 
 lambdaB 0.2                          # parameter the controls the strength of the baryon junction stopping
 BG 5.                               # Gaussian width square for sampling the valence quark positions (GeV^2)
-Omega_GG 1.10
-use_GG_distribution 0
 Subtract_hard_momentum 1
 lambdaBs 0.0                         # the fraction of single-to-double junction stopping
-baryonInStringProb 1.0               # the relative probility to put a baryon charge in the string
+baryonInStringProb 0.2               # the relative probility to put a baryon charge in the string
                                      # rather than at the wounded nucleon remnant
-BG 16.                               # Gaussian width square for sampling the valence quark positions (GeV^2)
 cenMin 0.
 cenMax 100.
 ###############################################################

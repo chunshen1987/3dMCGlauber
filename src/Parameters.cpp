@@ -113,14 +113,6 @@ bool Parameters::subtract_hard_momentum() const {
 }
 
 
-real Parameters::get_Omega_GG() const {
-    real Omega_GG = static_cast<real>(
-            get_param_double("Omega_GG", 1.0));
-    assert(Omega_GG > 0.);
-    return(Omega_GG);
-}
-
-
 double Parameters::get_remnant_energy_loss_fraction() const {
     real frac = static_cast<real>(
             get_param_double("remnant_energy_loss_fraction", 0.5));
