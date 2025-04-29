@@ -55,6 +55,18 @@ void EventGenerator::set_parameter(std::string parameter_name, double value) {
     parameter_list_.set_parameter(parameter_name, value);
 }
 
+void EventGenerator::set_parameter(std::string parameter_name, float value) {
+    parameter_list_.set_parameter(parameter_name, value);
+}
+
+void EventGenerator::set_parameter(std::string parameter_name, int value) {
+    parameter_list_.set_parameter(parameter_name, value);
+}
+
+void EventGenerator::set_parameter(std::string parameter_name, string value) {
+    parameter_list_.set_parameter(parameter_name, value);
+}
+
 
 
 void EventGenerator::generate_pre_events() {

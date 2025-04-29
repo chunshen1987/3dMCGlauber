@@ -56,6 +56,9 @@ class EventGenerator {
     void generate_pre_events();
 
     void set_parameter(string par, double val);
+    void set_parameter(string par, float val);
+    void set_parameter(string par, int val);
+    void set_parameter(string par, string val);
 
     //! after substracted the parton's momentum,
     //! generate the 3D Glauber initial conditions for MUSIC
