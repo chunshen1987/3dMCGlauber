@@ -1077,6 +1077,9 @@ int Glauber::perform_string_production() {
 
 void Glauber::produce_remnant_strings() {
     // create strings for the beam remnants
+    // clear any old remnants in case of multiple calls
+    Mom_remnant_proj_.clear();
+    Mom_remnant_targ_.clear();
     const auto string_evolution_mode = -4;
     real tau_form = 0.5;
     real m_over_sigma = 1.0;  // [fm]
