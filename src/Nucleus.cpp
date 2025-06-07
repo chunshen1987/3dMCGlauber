@@ -535,68 +535,61 @@ int Nucleus::readin_valence_quark_samples() {
 void Nucleus::readin_nucleon_positions() {
     std::cout << "read in nucleon positions for Nucleus: " << name << "  "
               << std::flush;
-    std::ostringstream filename;
+    std::string filename;
     if (A_ == 3) {  // he3 or t
+        filename = "tables/He3.bin.in";
         if (lightNucleusOption_ == 0) {
-            filename << "tables/He3.bin.in";
+            filename = "tables/He3.bin.in";
         } else if (lightNucleusOption_ == 1) {
-            filename << "tables/triton.bin.in";
-        } else {
-            std::cout << "A = 3 nucleus does not support lightNucleusOption = "
-                      << lightNucleusOption_ << std::endl;
-            exit(1);
+            filename = "tables/triton.bin.in";
         }
     } else if (A_ == 4) {  // he4
-        filename << "tables/He4.bin.in";
+        filename = "tables/He4.bin.in";
     } else if (A_ == 12) {  // carbon
+        filename = "tables/C12_VMC.bin.in";
         if (lightNucleusOption_ == 0) {
-            filename << "tables/C12_VMC.bin.in";
+            filename = "tables/C12_VMC.bin.in";
         } else if (lightNucleusOption_ == 1) {
-            filename << "tables/C12_alphaCluster.bin.in";
-        } else {
-            std::cout << "C12 nucleus does not support lightNucleusOption = "
-                      << lightNucleusOption_ << std::endl;
-            exit(1);
+            filename = "tables/C12_alphaCluster.bin.in";
         }
     } else if (A_ == 16) {  // oxygen 16
+        filename = "tables/O16_VMC.bin.in";
         if (lightNucleusOption_ == 0) {
-            filename << "tables/O16_VMC.bin.in";
+            filename = "tables/O16_VMC.bin.in";
         } else if (lightNucleusOption_ == 1) {
-            filename << "tables/O16_alphaCluster.bin.in";
+            filename = "tables/O16_alphaCluster.bin.in";
         } else if (lightNucleusOption_ == 2) {
-            filename << "tables/O16_PGCM_clustered_dmin0.bin.in";
+            filename = "tables/O16_PGCM_clustered_dmin0.bin.in";
         } else if (lightNucleusOption_ == 3) {
-            filename << "tables/O16_PGCM_uniform_dmin0.bin.in";
+            filename = "tables/O16_PGCM_uniform_dmin0.bin.in";
         } else if (lightNucleusOption_ == 4) {
-            filename << "tables/O16_NLEFT_dmin0.5fm_positiveweights.bin.in";
+            filename = "tables/O16_NLEFT_dmin0.5fm_positiveweights.bin.in";
         } else if (lightNucleusOption_ == 5) {
-            filename << "tables/O16_NLEFT_dmin0.5fm_negativeweights.bin.in";
-        } else {
-            std::cout << "O16 nucleus does not support lightNucleusOption = "
-                      << lightNucleusOption_ << std::endl;
-            exit(1);
+            filename = "tables/O16_NLEFT_dmin0.5fm_negativeweights.bin.in";
         }
     } else if (A_ == 20) {  // Neon 20
         // to be consistent with the O16 options
+        filename = "tables/Ne20_PGCM_clustered_dmin0.bin.in";
         if (lightNucleusOption_ == 2) {
-            filename << "tables/Ne20_PGCM_clustered_dmin0.bin.in";
+            filename = "tables/Ne20_PGCM_clustered_dmin0.bin.in";
         } else if (lightNucleusOption_ == 3) {
-            filename << "tables/Ne20_PGCM_uniform_dmin0.bin.in";
+            filename = "tables/Ne20_PGCM_uniform_dmin0.bin.in";
         } else if (lightNucleusOption_ == 4) {
-            filename << "tables/Ne20_NLEFT_dmin0.5fm_positiveweights.bin.in";
+            filename = "tables/Ne20_NLEFT_dmin0.5fm_positiveweights.bin.in";
         } else if (lightNucleusOption_ == 5) {
-            filename << "tables/Ne20_NLEFT_dmin0.5fm_negativeweights.bin.in";
-        } else {
-            std::cout << "Ne20 nucleus does not support lightNucleusOption = "
-                      << lightNucleusOption_ << std::endl;
-            exit(1);
+            filename = "tables/Ne20_NLEFT_dmin0.5fm_negativeweights.bin.in";
         }
     } else if (A_ == 40) {  // Ar
-        filename << "tables/Ar40_VMC.bin.in";
+        filename = "tables/Ar40_VMC.bin.in";
+        if (lightNucleusOption_ == 0) {
+            filename = "tables/Ar40_VMC.bin.in";
+        } else if (lightNucleusOption_ == 1) {
+            filename = "tables/Ar40_NLEFT.bin.in";
+        }
     } else if (A_ == 197) {  // Au
-        filename << "tables/Au197.bin.in";
+        filename = "tables/Au197.bin.in";
     } else if (A_ == 208) {  // Pb
-        filename << "tables/Pb208.bin.in";
+        filename = "tables/Pb208.bin.in";
     } else {
         std::cout << "[Warning]: No configuration file for Nucleus: " << name
                   << std::endl;
@@ -604,11 +597,11 @@ void Nucleus::readin_nucleon_positions() {
                   << std::endl;
         return;
     }
-    std::cout << " fileName: " << filename.str() << " " << std::flush;
-    std::ifstream input(filename.str().c_str(), std::ios::binary);
+    std::cout << " fileName: " << filename << " " << std::flush;
+    std::ifstream input(filename.c_str(), std::ios::binary);
     if (!input.good()) {
         std::cout << "Configuration file not found!" << std::endl;
-        std::cout << "Please check file: " << filename.str() << std::endl;
+        std::cout << "Please check file: " << filename << std::endl;
         exit(1);
     }
 
