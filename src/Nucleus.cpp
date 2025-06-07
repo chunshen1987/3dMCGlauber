@@ -583,7 +583,8 @@ void Nucleus::readin_nucleon_positions() {
         filename = "tables/Ar40_VMC.bin.in";
         if (lightNucleusOption_ == 0) {
             filename = "tables/Ar40_VMC.bin.in";
-        } else if (lightNucleusOption_ == 1) {
+        } else if (lightNucleusOption_ == 4) {
+            // to be consistent with the O16 options
             filename = "tables/Ar40_NLEFT.bin.in";
         }
     } else if (A_ == 197) {  // Au
