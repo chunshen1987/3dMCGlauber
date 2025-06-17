@@ -16,6 +16,10 @@ class Quark : public Particle {
     bool remnant_set_ = false;
     int number_of_connections = 0;
 
+    int baryon_part = 0; // represents 1/3: a baryon # of +-1 would be +-3.
+    int charge_part = 0; // represents 1/3: a charge # of +-2/3 would be +-2.
+    int strangeness = 0;
+
   public:
     Quark() = default;
     Quark(SpatialVec x_in, MomentumVec p_in) {
