@@ -51,6 +51,15 @@ class Quark : public Particle {
 
     void add_a_connection() { number_of_connections++; }
     int get_number_of_connections() const { return (number_of_connections); }
+
+    void set_baryon(int baryon_in) {baryon_part = baryon_in; }
+    int get_baryon() const { return (baryon_part); }
+
+    void set_charge(int charge_in) {charge_part = charge_in; }
+    int get_charge() const { return (charge_part); }
+
+    void set_strange(int strange_in) {strangeness = strange_in; }
+    int get_strange() const { return (strangeness); } 
 };
 
 }  // namespace MCGlb
