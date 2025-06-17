@@ -16,8 +16,8 @@ class Quark : public Particle {
     bool remnant_set_ = false;
     int number_of_connections = 0;
 
-    int baryon_part = 0; // represents 1/3: a baryon # of +-1 would be +-3.
-    int charge_part = 0; // represents 1/3: a charge # of +-2/3 would be +-2.
+    real baryon = 0; // represents 1/3: a baryon # of +-1 would be +-3.
+    real charge = 0; // represents 1/3: a charge # of +-2/3 would be +-2.
     int strangeness = 0;
 
   public:
@@ -52,11 +52,11 @@ class Quark : public Particle {
     void add_a_connection() { number_of_connections++; }
     int get_number_of_connections() const { return (number_of_connections); }
 
-    void set_baryon(int baryon_in) {baryon_part = baryon_in; }
-    int get_baryon() const { return (baryon_part); }
+    void set_baryon(real baryon_in) {baryon = baryon_in; }
+    real get_baryon() const { return (baryon); }
 
-    void set_charge(int charge_in) {charge_part = charge_in; }
-    int get_charge() const { return (charge_part); }
+    void set_charge(real charge_in) {charge = charge_in; }
+    real get_charge() const { return (charge); }
 
     void set_strange(int strange_in) {strangeness = strange_in; }
     int get_strange() const { return (strangeness); } 
