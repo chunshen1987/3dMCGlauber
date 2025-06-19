@@ -246,14 +246,13 @@ int Glauber::make_collision_schedule() {
     collision_schedule_list_.clear();
     int pos = 0;
     for (auto &it : collision_schedule) {
-        collision_schedule_list_.push_back(
-            *it);  // collision list is time ordered
+        // collision list is time ordered
+        collision_schedule_list_.push_back(*it);
         // auto xvec = collision_schedule_list_[pos].get_collision_position();
         // std::cout << xvec[0]<<" "<< xvec[1]<<" "<< xvec[2]<<" "<< xvec[3]<<"
         // " << std::endl;
         pos++;
     }
-    get_collision_information();
     return (collision_schedule.size());
 }
 
@@ -1139,6 +1138,20 @@ void Glauber::outputParticipants(std::string filename) {
     for (auto &ipart : participantList_) {
         output << std::scientific << std::setprecision(6);
         for (auto &x_i : ipart) {
+            output << std::setw(10) << x_i << "  ";
+        }
+        output << std::endl;
+    }
+    output.close();
+}
+
+void Glauber::outputBinaryCollisions(std::string filename) {
+    std::ofstream output(filename.c_str());
+    output << "# t[fm]  x[fm]  y[fm]  z[fm]" << std::endl;
+    for (auto &icoll : collision_schedule_list_) {
+        auto xvec = icoll.get_collision_position();
+        output << std::scientific << std::setprecision(6);
+        for (auto &x_i : xvec) {
             output << std::setw(10) << x_i << "  ";
         }
         output << std::endl;
