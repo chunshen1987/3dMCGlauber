@@ -31,12 +31,12 @@ TEST_CASE("Test copy") {
 TEST_CASE("Test new variables") {
     MCGlb::SpatialVec x = {1.0, 0.0, -2.0, 3.0};
     MCGlb::MomentumVec p = {5.0, 0.0, -4.0, 3.0};
-    real b1 = 1;
-    real c1 = 0;
-    real s1 = -1;
-    real b2 = 0;
-    real c2 = 1;
-    real s2 = 0;
+    MCGlb::real b1 = 1;
+    MCGlb::real c1 = 0;
+    MCGlb::real s1 = -1;
+    MCGlb::real b2 = 0;
+    MCGlb::real c2 = 1;
+    MCGlb::real s2 = 0;
     MCGlb::Quark testParticle1(x, p, b1, c1, s1);
     MCGlb::Quark testParticle2(x, p, b2, c2, s2);
     CHECK(testParticle1.get_baryon() == b1);
