@@ -18,22 +18,31 @@ class Quark : public Particle {
 
     real baryon = 0;
     real charge = 0;
-    real strangeness = 0;
+    real strange = 0;
 
   public:
     Quark() = default;
-    Quark(SpatialVec x_in, MomentumVec p_in) {
+    Quark(SpatialVec x_in, MomentumVec p_in, real baryon_in = 0, real charge_in = 0, real strange_in = 0) {
         set_particle_variables(x_in, p_in);
+        baryon = baryon_in;
+        charge = charge_in;
+        strange = strange_in;
     }
 
-    Quark(SpatialVec x_in, MomentumVec p_in, real mass_in) {
+    Quark(SpatialVec x_in, MomentumVec p_in, real mass_in, real baryon_in = 0, real charge_in = 0, real strange_in = 0) {
         set_particle_variables(x_in, p_in, mass_in);
+        baryon = baryon_in;
+        charge = charge_in;
+        strange = strange_in;
     }
 
-    Quark(SpatialVec x_in, real pdf_x_in) {
+    Quark(SpatialVec x_in, real pdf_x_in, real baryon_in = 0, real charge_in = 0, real strange_in = 0) {
         set_pdf_x(pdf_x_in);
         MomentumVec p_in = {0.0};
         set_particle_variables(x_in, p_in);
+        baryon = baryon_in;
+        charge = charge_in;
+        strange = strange_in;
     }
 
     void set_pdf_x(real x_in) {
@@ -58,8 +67,8 @@ class Quark : public Particle {
     void set_charge(real charge_in) {charge = charge_in; }
     real get_charge() const { return (charge); }
 
-    void set_strange(real strange_in) {strangeness = strange_in; }
-    real get_strange() const { return (strangeness); } 
+    void set_strange(real strange_in) {strange = strange_in; }
+    real get_strange() const { return (strange); } 
 };
 
 }  // namespace MCGlb
