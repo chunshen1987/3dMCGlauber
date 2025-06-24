@@ -59,6 +59,14 @@ class EventGenerator {
     void set_parameter(string par, float val);
     void set_parameter(string par, int val);
     void set_parameter(string par, string val);
+    void print_parameter_list() const {
+        parameter_list_.print_parameter_list();
+    };
+
+    void initializeGlauberModel() {
+        mc_glauber_ptr_ = std::unique_ptr<Glauber>(
+                    new Glauber(parameter_list_, ran_gen_ptr_));
+    };
 
     //! after substracted the parton's momentum,
     //! generate the 3D Glauber initial conditions for MUSIC
