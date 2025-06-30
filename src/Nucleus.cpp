@@ -318,9 +318,43 @@ void Nucleus::sample_valence_quarks_inside_nucleons(real ecm, int direction) {
             sample_quark_momentum_fraction(
                 xQuark, number_of_quarks, nucleonType, nucleon_i->get_mass(),
                 ecm);
+
+            // defining quark baryon, charge, and strange numbers
+            real b = 1.0/3.0;
+            real c = 0.;
+            real s = 0.;
             for (int i = 0; i < number_of_quarks; i++) {
                 auto xvec = sample_valence_quark_position();
-                std::shared_ptr<Quark> quark_ptr(new Quark(xvec, xQuark[i]));
+                // if nucleon is dipole, assign charge based on quark
+                if (nucleonType == -1) {
+                    if (i == 0) {
+                        c = 2.0/3.0;  // u quark
+                    }
+                    else if (i == 1){
+                        c = 1.0/3.0; // d-bar quark
+                    }
+                }
+                // if nucleon is proton or neutron, define first and last quark to be up and down.
+                // for middle quark, define as up for proton, down for neutron.
+                else {
+                    if (i == 0) {
+                        c = 2.0/3.0;  // u quark
+                    }
+                    else if (i == 1){
+                        if (nucleonType == 0) {
+                            c = -1.0/3.0; // d quark
+                        }
+                        else if (nucleonType == 1){
+                            c = 2.0/3.0;  // u quark
+                        }
+                    }
+                    else if (i == 2){
+                        c = -1.0/3.0; // d quark
+                    }
+                }
+                    
+                    
+                std::shared_ptr<Quark> quark_ptr(new Quark(xvec, xQuark[i], b, c, s));
                 nucleon_i->push_back_quark(quark_ptr);
             }
             nucleon_i->accelerate_quarks(ecm, direction);
