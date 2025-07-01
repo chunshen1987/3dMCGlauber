@@ -320,7 +320,7 @@ void Nucleus::sample_valence_quarks_inside_nucleons(real ecm, int direction) {
                 ecm);
 
             // defining quark baryon, charge, and strange numbers
-            real b = 1.0/3.0;
+            real b = 1.0/number_of_quarks;
             real c = 0.;
             real s = 0.;
             for (int i = 0; i < number_of_quarks; i++) {
@@ -331,7 +331,7 @@ void Nucleus::sample_valence_quarks_inside_nucleons(real ecm, int direction) {
                         c = 2.0/3.0;  // u quark
                     }
                     else if (i == 1){
-                        c = 1.0/3.0; // d-bar quark
+                        c = -2.0/3.0; // u-bar quark
                     }
                 }
                 // if nucleon is proton or neutron, define first and last quark to be up and down.
