@@ -30,7 +30,34 @@ TEST_CASE("Test copy") {
     CHECK(testParticle2.get_mass() == 0.0);
 }
 
-TEST_CASE("Test new variables") {
+TEST_CASE("Test new variables in constructors") {
+    MCGlb::SpatialVec x = {1.0, 0.0, -2.0, 3.0};
+    MCGlb::MomentumVec p = {5.0, 0.0, -4.0, 3.0};
+    real pdf_x = 0.2;
+    real b1 = 1;
+    real c1 = 0;
+    real s1 = -1;
+    real b2 = 0;
+    real c2 = 1;
+    real s2 = 0;
+    real b3 = 1;
+    real c3 = -1;
+    real s3 = 1;
+    MCGlb::Quark testParticle1(x, p, b1, c1, s1);
+    MCGlb::Quark testParticle2(x, p, b2, c2, s2);
+    MCGlb::Quark testParticle3(x, p, b3, c3, s3);
+    CHECK(testParticle1.get_baryon() == b1);
+    CHECK(testParticle1.get_charge() == c1);
+    CHECK(testParticle1.get_strange() == s1);
+    CHECK(testParticle2.get_baryon() == b2);
+    CHECK(testParticle2.get_charge() == c2);
+    CHECK(testParticle2.get_strange() == s2);
+    CHECK(testParticle3.get_baryon() == b3);
+    CHECK(testParticle3.get_charge() == c3);
+    CHECK(testParticle3.get_strange() == s3);
+}
+
+TEST_CASE("Test new variables setters") {
     MCGlb::SpatialVec x = {1.0, 0.0, -2.0, 3.0};
     MCGlb::MomentumVec p = {5.0, 0.0, -4.0, 3.0};
     real b1 = 1;
@@ -40,11 +67,19 @@ TEST_CASE("Test new variables") {
     real c2 = 1;
     real s2 = 0;
     MCGlb::Quark testParticle1(x, p, b1, c1, s1);
+    testParticle1.set_baryon(b2);
+    testParticle1.set_charge(c2);
+    testParticle1.set_strange(s2);
+
     MCGlb::Quark testParticle2(x, p, b2, c2, s2);
-    CHECK(testParticle1.get_baryon() == b1);
-    CHECK(testParticle1.get_charge() == c1);
-    CHECK(testParticle1.get_strange() == s1);
-    CHECK(testParticle2.get_baryon() == b2);
-    CHECK(testParticle2.get_charge() == c2);
-    CHECK(testParticle2.get_strange() == s2);
+    testParticle2.set_charges(b1, c1, s1);
+    
+    CHECK(testParticle1.get_baryon() == b2);
+    CHECK(testParticle1.get_charge() == c2);
+    CHECK(testParticle1.get_strange() == s2);
+
+    CHECK(testParticle2.get_baryon() == b1);
+    CHECK(testParticle2.get_charge() == c1);
+    CHECK(testParticle2.get_strange() == s1);
+    
 }
