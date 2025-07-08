@@ -394,10 +394,54 @@ void Nucleus::add_soft_parton_ball(real ecm, int direction) {
                 for (int j = 0; j < 4; j++) {
                     soft_pvec[j] /= static_cast<double>(N_sea_partons_);
                 }
+
+
+                // defining quark baryon, charge, and strange numbers
+                real b = 1.0/3.0; // '3.0' may need replacement with actual number of quarks
+                real c = 0.;
+                real s = 0.;
+                // adding baryon string junction (or not)
+                if (baryon_string_junction)
+                {
+                    b = 0.0;
+                    std::shared_ptr<Quark> quark_ptr(
+                        new Quark(xvec, soft_pvec, 1.0, 0.0, 0.0));
+                    quark_ptr->set_rapidity(rapidity);
+                    nucleon_i->push_back_quark(quark_ptr);
+                }
                 for (int i = 0; i < N_sea_partons_; i++) {
                     auto xvec = sample_valence_quark_position();
+
+                    
+                    // if nucleon is dipole, assign charge based on quark (don't know if needed)
+                    if (A_ == 0) {
+                        if (i == 0) {
+                            c = 2.0/3.0;  // u quark
+                        }
+                        else if (i == 1){
+                            c = -2.0/3.0; // u-bar quark
+                        }
+                    }
+                    // if nucleon is proton or neutron, define first and last quark to be up and down.
+                    // for middle quark, define as up for proton, down for neutron.
+                    else {
+                        if (i == 0) {
+                            c = 2.0/3.0;  // u quark
+                        }
+                        else if (i == 1){
+                            if (nucleonType == 0) {
+                                c = -1.0/3.0; // d quark
+                            }
+                            else if (nucleonType == 1){
+                                c = 2.0/3.0;  // u quark
+                            }
+                        }
+                        else if (i == 2){
+                            c = -1.0/3.0; // d quark
+                        }
+                    }
                     std::shared_ptr<Quark> quark_ptr(
-                        new Quark(xvec, soft_pvec));
+                        new Quark(xvec, soft_pvec, b, c, s));
                     quark_ptr->set_rapidity(rapidity);
                     nucleon_i->push_back_quark(quark_ptr);
                 }
