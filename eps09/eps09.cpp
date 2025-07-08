@@ -145,6 +145,7 @@ void eps09(int order, int pset, int AAA,
     static double allvalues[31+1][8+1][50+1][50+1];
     //static int psetlast = -10;
     static int Alast = -10, orderlast = -10;
+    bool baryon_string_junction = true;
 
     //
     // Stop if the set specifications are wrong ones
