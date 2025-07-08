@@ -401,9 +401,12 @@ void Nucleus::add_soft_parton_ball(real ecm, int direction) {
                 real c = 0.;
                 real s = 0.;
                 // adding baryon string junction (or not)
-                if (baryon_string_junction)
+                if (true) // will need to be fixed properly ASAP
                 {
                     b = 0.0;
+
+                    auto xvec = sample_valence_quark_position();
+                    
                     std::shared_ptr<Quark> quark_ptr(
                         new Quark(xvec, soft_pvec, 1.0, 0.0, 0.0));
                     quark_ptr->set_rapidity(rapidity);
@@ -429,10 +432,10 @@ void Nucleus::add_soft_parton_ball(real ecm, int direction) {
                             c = 2.0/3.0;  // u quark
                         }
                         else if (i == 1){
-                            if (nucleonType == 0) {
+                            if (nucleon_i->get_electric_charge() == 0) {
                                 c = -1.0/3.0; // d quark
                             }
-                            else if (nucleonType == 1){
+                            else if (nucleon_i->get_electric_charge() == 1){
                                 c = 2.0/3.0;  // u quark
                             }
                         }
