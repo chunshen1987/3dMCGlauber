@@ -1295,23 +1295,26 @@ real Glauber::sample_rapidity_loss_from_parametrization_with_fluct(
     const real y_init) const {
     real y_mean = y_init / 2.;
     real var = 0.5;
+    real var_rhic = var;
+    real var_lhc = var;
     if (parameter_list.get_rapidity_loss_method() == 3) {
         y_mean = sample_rapidity_loss_from_parametrization(y_init);
-        auto y_rhic = 5.5;
-        auto y_lhc = 9.0;
-        auto var_rhic = parameter_list.get_yloss_param_fluct_var_RHIC();
-        auto var_lhc = parameter_list.get_yloss_param_fluct_var_LHC();
-        var = var_rhic;
-        if (y_init > y_lhc) {
-            var = var_lhc;
-        } else if (y_init > y_rhic) {
-            var =
-                (var_rhic
-                 + (y_init - y_rhic) / (y_lhc - y_rhic) * (var_lhc - var_rhic));
-        }
+        var_rhic = parameter_list.get_yloss_param_fluct_var_RHIC();
+        var_lhc = parameter_list.get_yloss_param_fluct_var_LHC();
     } else if (parameter_list.get_rapidity_loss_method() == 4) {
         y_mean = sample_rapidity_loss_from_piecewise_parametrization(y_init);
-        var = parameter_list.getParam("ylossParam4var", 0.5);
+        var_rhic = parameter_list.getParam("ylossParam4var", 0.5);
+        var_lhc = parameter_list.get_yloss_param_fluct_var_LHC();
+    }
+    auto y_rhic = 5.5;
+    auto y_lhc = 9.0;
+    var = var_rhic;
+    if (y_init > y_lhc) {
+        var = var_lhc;
+    } else if (y_init > y_rhic) {
+        var =
+            (var_rhic
+             + (y_init - y_rhic) / (y_lhc - y_rhic) * (var_lhc - var_rhic));
     }
 
     // sample logit distribution for y_loss given the mean and variance
