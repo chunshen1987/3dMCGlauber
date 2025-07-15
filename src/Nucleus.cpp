@@ -15,6 +15,7 @@
 
 #include "PhysConsts.h"
 #include "eps09.h"
+#include "Parameters.h"
 
 using std::cout;
 using std::endl;
@@ -320,11 +321,15 @@ void Nucleus::sample_valence_quarks_inside_nucleons(real ecm, int direction) {
                 ecm);
 
             // defining quark baryon, charge, and strange numbers
-            real b = 1.0/number_of_quarks;
-            real c = 0.;
-            real s = 0.;
+            real b;
+            real c;
+            real s;
             for (int i = 0; i < number_of_quarks; i++) {
                 auto xvec = sample_valence_quark_position();
+
+                // defining base numbers for quark
+                b = 0.0;
+                s = 0.0;
                 // if nucleon is dipole, assign charge based on quark
                 if (nucleonType == -1) {
                     if (i == 0) {
@@ -338,9 +343,11 @@ void Nucleus::sample_valence_quarks_inside_nucleons(real ecm, int direction) {
                 // for middle quark, define as up for proton, down for neutron.
                 else {
                     if (i == 0) {
+                        b = 1.0/3.0;
                         c = 2.0/3.0;  // u quark
                     }
                     else if (i == 1){
+                        b = 1.0/3.0;
                         if (nucleonType == 0) {
                             c = -1.0/3.0; // d quark
                         }
@@ -349,6 +356,7 @@ void Nucleus::sample_valence_quarks_inside_nucleons(real ecm, int direction) {
                         }
                     }
                     else if (i == 2){
+                        b = 1.0/3.0;
                         c = -1.0/3.0; // d quark
                     }
                 }
@@ -397,27 +405,15 @@ void Nucleus::add_soft_parton_ball(real ecm, int direction) {
 
 
                 // defining quark baryon, charge, and strange numbers
-                real b = 1.0/3.0; // '3.0' may need replacement with actual number of quarks
-                real c = 0.;
-                real s = 0.;
-                // adding baryon string junction (or not)
-                if (true) // will need to be fixed properly ASAP
-                {
-                    b = 0.0;
-
-                    auto xvec = sample_valence_quark_position();
-                    
-                    std::shared_ptr<Quark> quark_ptr(
-                        new Quark(xvec, soft_pvec, 1.0, 0.0, 0.0));
-                    quark_ptr->set_rapidity(rapidity);
-                    nucleon_i->push_back_quark(quark_ptr);
-                }
+                real b = 1.0/3.0;
+                real c;
+                real s;
                 for (int i = 0; i < N_sea_partons_; i++) {
                     auto xvec = sample_valence_quark_position();
-
-                    
+                    s = 0.0;
                     // if nucleon is dipole, assign charge based on quark (don't know if needed)
                     if (A_ == 0) {
+                        b = 0.0;
                         if (i == 0) {
                             c = 2.0/3.0;  // u quark
                         }
@@ -429,9 +425,15 @@ void Nucleus::add_soft_parton_ball(real ecm, int direction) {
                     // for middle quark, define as up for proton, down for neutron.
                     else {
                         if (i == 0) {
-                            c = 2.0/3.0;  // u quark
+                            if (!baryon_num_div()) { // if the baryon number is not split, set it to 1 for this iteration
+                                b = 1.0;
+                            }
+                            c = 2.0/3.0;  // u quark   
                         }
                         else if (i == 1){
+                            if (!baryon_num_div()) { // if the baryon number is not split, set it to 0 for this and following iterations.
+                                b = 0.0;
+                            }
                             if (nucleon_i->get_electric_charge() == 0) {
                                 c = -1.0/3.0; // d quark
                             }
