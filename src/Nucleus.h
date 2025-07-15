@@ -28,6 +28,7 @@ class Nucleus {
     bool sample_valence_quarks;
     real Q2;  // Q2 when sampling valence quark
     real BG_;
+    Parameters parameter_list_;
 
     std::vector<std::shared_ptr<Nucleon>> nucleon_list_;
     std::vector<std::shared_ptr<Nucleon>> participant_list_;
