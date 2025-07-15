@@ -82,6 +82,8 @@ class Parameters : public ParametersMap {
     real get_d_min() const;
     bool nucleon_configuration_from_file() const;
     int getLightNucleusOption() const;
+
+    bool baryon_num_div() const;
 };
 
 }  // namespace MCGlb

@@ -276,4 +276,13 @@ real Parameters::get_BG() const {
     return (BG);
 }
 
+bool Parameters::baryon_num_div() const {
+    int flag = get_param_int("baryon_split", 0);
+    if (flag == 0) {
+        return (false);
+    } else {
+        return (true);
+    }
+}
+
 }  // namespace MCGlb
