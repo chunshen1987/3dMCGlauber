@@ -374,6 +374,7 @@ void Nucleus::add_soft_parton_ball(real ecm, int direction) {
     real E_rem_min = 0.1;  // GeV
     real beam_rapidity = direction * acosh(ecm / (2. * mN));
     real Pz_rem_min = E_rem_min * tanh(beam_rapidity);
+    bool string_junction = parameter_list_.baryon_num_div();
     for (auto &nucleon_i : nucleon_list_) {
         if (nucleon_i->is_wounded() && nucleon_i->get_number_of_quarks() != 0) {
             auto soft_pvec = nucleon_i->get_p();
@@ -424,13 +425,15 @@ void Nucleus::add_soft_parton_ball(real ecm, int direction) {
                     // for middle quark, define as up for proton, down for neutron.
                     else {
                         if (i == 0) {
-                            if (!MCGlb::baryon_num_div()) { // if the baryon number is not split, set it to 1 for this iteration
+
+                            if (string_junction) { // if the baryon number is not split, set it to 1 for this iteration
+
                                 b = 1.0;
                             }
                             c = 2.0/3.0;  // u quark   
                         }
                         else if (i == 1){
-                            if (!MCGlb::baryon_num_div()) { // if the baryon number is not split, set it to 0 for this and following iterations.
+                            if (string_junction) { // if the baryon number is not split, set it to 0 for this and following iterations.
                                 b = 0.0;
                             }
                             if (nucleon_i->get_electric_charge() == 0) {
