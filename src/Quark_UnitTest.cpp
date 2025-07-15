@@ -45,7 +45,7 @@ TEST_CASE("Test new variables in constructors") {
     real c3 = -1;
     real s3 = 1;
     MCGlb::Quark testParticle1(x, p, b1, c1, s1);
-    MCGlb::Quark testParticle2(x, p, m, b2, c2, s2);
+    MCGlb::Quark testParticle2(x, p, mass, b2, c2, s2);
     MCGlb::Quark testParticle3(x, pdf_x, b3, c3, s3);
     CHECK(testParticle1.get_baryon() == b1);
     CHECK(testParticle1.get_charge() == c1);
