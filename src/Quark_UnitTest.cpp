@@ -33,6 +33,7 @@ TEST_CASE("Test copy") {
 TEST_CASE("Test new variables in constructors") {
     MCGlb::SpatialVec x = {1.0, 0.0, -2.0, 3.0};
     MCGlb::MomentumVec p = {5.0, 0.0, -4.0, 3.0};
+    real mass = 1.234;
     real pdf_x = 0.2;
     real b1 = 1;
     real c1 = 0;
@@ -44,8 +45,8 @@ TEST_CASE("Test new variables in constructors") {
     real c3 = -1;
     real s3 = 1;
     MCGlb::Quark testParticle1(x, p, b1, c1, s1);
-    MCGlb::Quark testParticle2(x, p, b2, c2, s2);
-    MCGlb::Quark testParticle3(x, p, b3, c3, s3);
+    MCGlb::Quark testParticle2(x, p, m, b2, c2, s2);
+    MCGlb::Quark testParticle3(x, pdf_x, b3, c3, s3);
     CHECK(testParticle1.get_baryon() == b1);
     CHECK(testParticle1.get_charge() == c1);
     CHECK(testParticle1.get_strange() == s1);
