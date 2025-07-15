@@ -15,7 +15,6 @@
 
 #include "PhysConsts.h"
 #include "eps09.h"
-#include "Parameters.h"
 
 using std::cout;
 using std::endl;

@@ -10,6 +10,7 @@
 #include "Nucleon.h"
 #include "Random.h"
 #include "data_structs.h"
+#include "Parameters.h"
 
 namespace MCGlb {
 
