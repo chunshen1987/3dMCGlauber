@@ -1271,22 +1271,27 @@ real Glauber::sample_rapidity_loss_from_parametrization(
 
 real Glauber::sample_rapidity_loss_from_piecewise_parametrization(
     const real y_init) const {
-    auto y_loss1 = parameter_list.getParam("ylossParam4At2", 1.60);
-    auto y_loss2 = parameter_list.getParam("ylossParam4At4", 2.15);
-    auto y_loss3 = parameter_list.getParam("ylossParam4At6", 2.45);
-    auto y_loss4 = parameter_list.getParam("ylossParam4At10", 2.95);
+    auto y_loss2 = parameter_list.getParam("ylossParam4At2", 1.60);
+    auto y_loss4 = parameter_list.getParam("ylossParam4At4", 2.15);
+    auto y_loss6 = parameter_list.getParam("ylossParam4At6", 2.45);
+    auto y_loss10 = parameter_list.getParam("ylossParam4At10", 2.95);
+    auto y_loss8 =
+        parameter_list.getParam("ylossParam4At8", (y_loss6 + y_loss10) / 2.);
 
     real y_loss = 0.;
     if (y_init < 2) {
-        y_loss = y_loss1 / 2. * y_init;
+        y_loss = y_loss2 / 2. * y_init;
     } else if (y_init < 4) {
-        y_loss = (y_loss2 - y_loss1) / 2. * y_init + (2. * y_loss1 - y_loss2);
+        y_loss = (y_loss4 - y_loss2) / 2. * y_init + (2. * y_loss2 - y_loss4);
     } else if (y_init < 6) {
         y_loss =
-            (y_loss3 - y_loss2) / 2. * y_init + (3. * y_loss2 - 2. * y_loss3);
+            (y_loss6 - y_loss4) / 2. * y_init + (3. * y_loss4 - 2. * y_loss6);
+    } else if (y_init < 8) {
+        y_loss =
+            (y_loss8 - y_loss6) / 2. * y_init + (4. * y_loss6 - 3. * y_loss8);
     } else {
         y_loss =
-            (y_loss4 - y_loss3) / 4. * y_init + (2.5 * y_loss3 - 1.5 * y_loss4);
+            (y_loss10 - y_loss8) / 2. * y_init + (5 * y_loss8 - 4 * y_loss10);
     }
     return (y_loss);
 }
@@ -1307,7 +1312,7 @@ real Glauber::sample_rapidity_loss_from_parametrization_with_fluct(
         var_lhc = parameter_list.get_yloss_param_fluct_var_LHC();
     }
     auto y_rhic = 5.5;
-    auto y_lhc = 9.0;
+    auto y_lhc = 8.0;
     var = var_rhic;
     if (y_init > y_lhc) {
         var = var_lhc;
