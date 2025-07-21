@@ -305,6 +305,7 @@ void Nucleus::sample_fermi_momentum() {
 void Nucleus::sample_valence_quarks_inside_nucleons(real ecm, int direction) {
     int number_of_quarks = PhysConsts::NumValenceQuark;
     int nucleonType = 0;
+    bool string_junction = parameter_list_.baryon_num_div();
     if (A_ == 0) {
         nucleonType = -1;
         number_of_quarks = PhysConsts::NumQuarkinDipole;
