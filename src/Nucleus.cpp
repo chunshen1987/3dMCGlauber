@@ -323,6 +323,13 @@ void Nucleus::sample_valence_quarks_inside_nucleons(real ecm, int direction) {
             real b;
             real c;
             real s;
+
+            // define baryon value for first three quarks
+            real baryonTri = 1.0/3.0;
+            if (string_junction)
+            {
+                baryonTri = 0.0;
+            }
             for (int i = 0; i < number_of_quarks; i++) {
                 auto xvec = sample_valence_quark_position();
 
@@ -342,11 +349,11 @@ void Nucleus::sample_valence_quarks_inside_nucleons(real ecm, int direction) {
                 // for middle quark, define as up for proton, down for neutron.
                 else {
                     if (i == 0) {
-                        b = 1.0/3.0;
+                        b = baryonTri;
                         c = 2.0/3.0;  // u quark
                     }
                     else if (i == 1){
-                        b = 1.0/3.0;
+                        b = baryonTri;
                         if (nucleonType == 0) {
                             c = -1.0/3.0; // d quark
                         }
@@ -355,7 +362,7 @@ void Nucleus::sample_valence_quarks_inside_nucleons(real ecm, int direction) {
                         }
                     }
                     else if (i == 2){
-                        b = 1.0/3.0;
+                        b = baryonTri;
                         c = -1.0/3.0; // d quark
                     }
                 }
@@ -405,46 +412,20 @@ void Nucleus::add_soft_parton_ball(real ecm, int direction) {
 
 
                 // defining quark baryon, charge, and strange numbers
-                real b = 1.0/3.0;
-                real c;
-                real s;
+                real b;
+                real c = 0.0;
+                real s = 0.0;
                 for (int i = 0; i < N_sea_partons_; i++) {
                     auto xvec = sample_valence_quark_position();
-                    s = 0.0;
-                    // if nucleon is dipole, assign charge based on quark (don't know if needed)
-                    if (A_ == 0) {
-                        b = 0.0;
-                        if (i == 0) {
-                            c = 2.0/3.0;  // u quark
-                        }
-                        else if (i == 1){
-                            c = -2.0/3.0; // u-bar quark
-                        }
-                    }
-                    // if nucleon is proton or neutron, define first and last quark to be up and down.
-                    // for middle quark, define as up for proton, down for neutron.
-                    else {
+                    b = 0.0;
+                    // if nucleon is proton or neutron, define a gluon with a baryon charge 
+                    if (A_ > 0) {
                         if (i == 0) {
 
                             if (string_junction) { // if the baryon number is not split, set it to 1 for this iteration
 
                                 b = 1.0;
                             }
-                            c = 2.0/3.0;  // u quark   
-                        }
-                        else if (i == 1){
-                            if (string_junction) { // if the baryon number is not split, set it to 0 for this and following iterations.
-                                b = 0.0;
-                            }
-                            if (nucleon_i->get_electric_charge() == 0) {
-                                c = -1.0/3.0; // d quark
-                            }
-                            else if (nucleon_i->get_electric_charge() == 1){
-                                c = 2.0/3.0;  // u quark
-                            }
-                        }
-                        else if (i == 2){
-                            c = -1.0/3.0; // d quark
                         }
                     }
                     std::shared_ptr<Quark> quark_ptr(
