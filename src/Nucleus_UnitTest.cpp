@@ -456,18 +456,21 @@ TEST_CASE("Test particle baryon, charge & strange number with null string juncti
 
     real baryon_num = 0.0;
     real charge_num = 0.0;
+    real strange_num = 0.0;
     for (int i = 0; i < nucleon.get_number_of_quarks(); i++)
     {
         std::shared_ptr<MCGlb::Quark> quark = quark_list.at(i);
         baryon_num += quark->get_baryon();
         charge_num += quark->get_charge();
-
+        strange_num += quark->get_strange();
     }
     CHECK(baryon_num == 1.0);
     CHECK(charge_num == 1.0);
+    CHECK(strange_num == 0.0);
     
     baryon_num = 0.0;
     charge_num = 0.0;
+    strange_num = 0.0;
     
     Nucleus test_nucleus1("Au", ran_gen_ptr);
     test_nucleus1.generate_nucleus_3d_configuration();
@@ -484,12 +487,13 @@ TEST_CASE("Test particle baryon, charge & strange number with null string juncti
             std::shared_ptr<MCGlb::Quark> quark = quark_list.at(i);
             baryon_num += quark->get_baryon();
             charge_num += quark->get_charge();
-
+            strange_num += quark->get_strange();
         }
         
     }
     CHECK(baryon_num == 197.0);
     CHECK(charge_num == 79.0);
+    CHECK(strange_num == 0.0);
     
 }
 
@@ -513,13 +517,15 @@ TEST_CASE("Test particle baryon, charge & strange number with positive string ju
         std::shared_ptr<MCGlb::Quark> quark = quark_list.at(i);
         baryon_num += quark->get_baryon();
         charge_num += quark->get_charge();
-
+        strange_num += quark->get_strange();
     }
     CHECK(baryon_num == 1.0);
     CHECK(charge_num == 1.0);
+    CHECK(strange_num == 0.0);
     
     baryon_num = 0.0;
     charge_num = 0.0;
+    strange_num = 0.0;
     
     Nucleus test_nucleus1("Au", ran_gen_ptr);
     test_nucleus1.generate_nucleus_3d_configuration();
@@ -536,12 +542,13 @@ TEST_CASE("Test particle baryon, charge & strange number with positive string ju
             std::shared_ptr<MCGlb::Quark> quark = quark_list.at(i);
             baryon_num += quark->get_baryon();
             charge_num += quark->get_charge();
-
+            strange_num += quark->get_strange();
         }
         
     }
     CHECK(baryon_num == 197.0);
     CHECK(charge_num == 79.0);
+    CHECK(strange_num == 0.0);
     
 }
 
