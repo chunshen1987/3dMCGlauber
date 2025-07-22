@@ -15,6 +15,7 @@ using MCGlb::Nucleus;
 using MCGlb::real;
 using MCGlb::SpatialVec;
 using MCGlb::WoodsSaxonParam;
+using MCGlb::Parameters;
 
 TEST_CASE("Test random seed") {
     int seed = 23;
@@ -456,7 +457,8 @@ TEST_CASE("Test particle baryon, charge & strange number with null string juncti
     real baryon_num = 0.0;
     for (int i = 0; i < nucleon.get_number_of_quarks(); i++)
     {
-        baryon_num += quark_list[i].get_baryon()
+        quark = quark_list[i];
+        baryon_num += quark.get_baryon();
 
     }
     CHECK(baryon_num == 1.0);
