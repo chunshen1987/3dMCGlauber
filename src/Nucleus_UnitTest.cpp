@@ -440,3 +440,24 @@ TEST_CASE("Test sampled valence quark spatial distribution") {
               << std::endl;
     CHECK(std::abs(sum_th - sum_sampled) / sum_th < 0.01);
 }
+TEST_CASE("Test particle baryon, charge & strange number with null string junction flag") {
+    Parameters parameter_list;
+    parameter_list.set_parameter("baryon_split", 0);
+    std::shared_ptr<RandomUtil::Random> ran_gen_ptr(
+        new RandomUtil::Random(-1, 0., 1.));
+    Nucleus test_nucleus("p", ran_gen_ptr);
+    test_nucleus.generate_nucleus_3d_configuration();
+    test_nucleus.sample_valence_quarks_inside_nucleons(1.0,1);
+    test_nucleus.add_soft_parton_ball(1.0,1);
+    
+    auto nucleon = *test_nucleus.get_nucleon(0);
+    std::vector<std::shared_ptr<Quark>> quark_list = nucleon.get_quark_list();
+
+    real baryon_num = 0.0;
+    for (int i = 0; i < nucleon.get_number_of_quarks(); i++)
+    {
+        baryon_num += quark_list[i].get_baryon()
+
+    }
+    CHECK(baryon_num == 1.0);
+}
