@@ -512,6 +512,7 @@ TEST_CASE("Test particle baryon, charge & strange number with positive string ju
 
     real baryon_num = 0.0;
     real charge_num = 0.0;
+    real strange_num = 0.0;
     for (int i = 0; i < nucleon.get_number_of_quarks(); i++)
     {
         std::shared_ptr<MCGlb::Quark> quark = quark_list.at(i);
