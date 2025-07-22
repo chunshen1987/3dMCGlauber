@@ -452,12 +452,12 @@ TEST_CASE("Test particle baryon, charge & strange number with null string juncti
     test_nucleus.add_soft_parton_ball(1.0,1);
     
     auto nucleon = *test_nucleus.get_nucleon(0);
-    std::vector<std::shared_ptr<MCGlb::Quark>> quark_list = nucleon.get_quark_list();
+    std::vector<MCGlb::Quark> quark_list = nucleon.get_quark_list();
 
     real baryon_num = 0.0;
     for (int i = 0; i < nucleon.get_number_of_quarks(); i++)
     {
-        std::shared_ptr<MCGlb::Quark> quark = quark_list.at(i);
+        MCGlb::Quark quark = quark_list.at(i);
         baryon_num += quark.get_baryon();
 
     }
