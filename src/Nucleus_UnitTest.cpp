@@ -457,7 +457,7 @@ TEST_CASE("Test particle baryon, charge & strange number with null string juncti
     real baryon_num = 0.0;
     for (int i = 0; i < nucleon.get_number_of_quarks(); i++)
     {
-        MCGlb::Quark quark = quark_list[i];
+        MCGlb::Quark quark = quark_list.at(i);
         baryon_num += quark.get_baryon();
 
     }
