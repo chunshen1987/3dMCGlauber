@@ -455,11 +455,93 @@ TEST_CASE("Test particle baryon, charge & strange number with null string juncti
     std::vector<std::shared_ptr<MCGlb::Quark>> quark_list = nucleon.get_quark_list();
 
     real baryon_num = 0.0;
+    real charge_num = 0.0;
     for (int i = 0; i < nucleon.get_number_of_quarks(); i++)
     {
         std::shared_ptr<MCGlb::Quark> quark = quark_list.at(i);
         baryon_num += quark->get_baryon();
+        charge_num += quark->get_charge();
 
     }
     CHECK(baryon_num == 1.0);
+    CHECK(charge_num == 1.0);
+    
+    baryon_num = 0.0;
+    charge_num = 0.0;
+    
+    Nucleus test_nucleus1("Au", ran_gen_ptr);
+    test_nucleus1.generate_nucleus_3d_configuration();
+    test_nucleus1.sample_valence_quarks_inside_nucleons(1.0,1);
+    test_nucleus1.add_soft_parton_ball(1.0,1);
+
+    for (int nuNum = 0; nuNum < test_nucleus1.get_number_of_nucleons(); nuNum++)
+    {
+        nucleon = *test_nucleus1.get_nucleon(nuNum);
+        quark_list = nucleon.get_quark_list();
+
+        for (int i = 0; i < nucleon.get_number_of_quarks(); i++)
+        {
+            std::shared_ptr<MCGlb::Quark> quark = quark_list.at(i);
+            baryon_num += quark->get_baryon();
+            charge_num += quark->get_charge();
+
+        }
+        
+    }
+    CHECK(baryon_num == 197.0);
+    CHECK(charge_num == 79.0);
+    
 }
+
+TEST_CASE("Test particle baryon, charge & strange number with positive string junction flag") {
+    Parameters parameter_list;
+    parameter_list.set_parameter("baryon_split", 1);
+    std::shared_ptr<RandomUtil::Random> ran_gen_ptr(
+        new RandomUtil::Random(-1, 0., 1.));
+    Nucleus test_nucleus("p", ran_gen_ptr);
+    test_nucleus.generate_nucleus_3d_configuration();
+    test_nucleus.sample_valence_quarks_inside_nucleons(1.0,1);
+    test_nucleus.add_soft_parton_ball(1.0,1);
+    
+    auto nucleon = *test_nucleus.get_nucleon(0);
+    std::vector<std::shared_ptr<MCGlb::Quark>> quark_list = nucleon.get_quark_list();
+
+    real baryon_num = 0.0;
+    real charge_num = 0.0;
+    for (int i = 0; i < nucleon.get_number_of_quarks(); i++)
+    {
+        std::shared_ptr<MCGlb::Quark> quark = quark_list.at(i);
+        baryon_num += quark->get_baryon();
+        charge_num += quark->get_charge();
+
+    }
+    CHECK(baryon_num == 1.0);
+    CHECK(charge_num == 1.0);
+    
+    baryon_num = 0.0;
+    charge_num = 0.0;
+    
+    Nucleus test_nucleus1("Au", ran_gen_ptr);
+    test_nucleus1.generate_nucleus_3d_configuration();
+    test_nucleus1.sample_valence_quarks_inside_nucleons(1.0,1);
+    test_nucleus1.add_soft_parton_ball(1.0,1);
+
+    for (int nuNum = 0; nuNum < test_nucleus1.get_number_of_nucleons(); nuNum++)
+    {
+        nucleon = *test_nucleus1.get_nucleon(nuNum);
+        quark_list = nucleon.get_quark_list();
+
+        for (int i = 0; i < nucleon.get_number_of_quarks(); i++)
+        {
+            std::shared_ptr<MCGlb::Quark> quark = quark_list.at(i);
+            baryon_num += quark->get_baryon();
+            charge_num += quark->get_charge();
+
+        }
+        
+    }
+    CHECK(baryon_num == 197.0);
+    CHECK(charge_num == 79.0);
+    
+}
+
