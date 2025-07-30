@@ -477,12 +477,15 @@ void Glauber::Pick_and_subtract_hard_parton_momentum() {
                                                    HardPartonMomProj_[0]);
                     p_q = proj_q->get_p();
                     if (p_q[0] <= HardPartonMomProj_[0]) {
-                        // resample the valence quark
+                        // resample the valence quark requiring
+                        // one parton with x >= x_hard
+                        const real mq = PhysConsts::MQuarkValence;
+                        real x_hard = acosh(HardPartonMomProj_[0]/mq);
                         std::vector<double> xvec_q = (
                                        proj_collided->output_quark_pos());
                         proj_collided->resample_valence_quarks(
                                ecm, 1, proj_collided->get_electric_charge(),
-                               xvec_q);
+                               xvec_q, x_hard);
                         proj_collided->readd_soft_parton_ball(
                                ecm, 1, xvec_q, parameter_list.get_BG(),
                                proj_collided->get_p(),
@@ -504,11 +507,14 @@ void Glauber::Pick_and_subtract_hard_parton_momentum() {
                                                         HardPartonMomTarg_[0]);
                     p_q = targ_q->get_p();
                     if (p_q[0] <= HardPartonMomTarg_[0]) { // 0.346**2~ 0.12
-                        // resample the valence quark
+                        // resample the valence quark requiring
+                        // one parton with x >= x_hard
+                        const real mq = PhysConsts::MQuarkValence;
+                        real x_hard = acosh(HardPartonMomTarg_[0]/mq);
                         std::vector<double> xvec_q = targ_collided->output_quark_pos();
                         targ_collided->resample_valence_quarks(
                                ecm, -1, targ_collided->get_electric_charge(),
-                               xvec_q);
+                               xvec_q, x_hard);
                         targ_collided->readd_soft_parton_ball(
                                ecm, -1, xvec_q, parameter_list.get_BG(),
                                targ_collided->get_p(),

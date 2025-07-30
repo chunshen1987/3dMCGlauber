@@ -2,7 +2,7 @@
 
 #include "Nucleon.h"
 #include "PhysConsts.h"
-#include<cmath>
+#include <cmath>
 #include <iostream>
 #include <iomanip>
 #include <sstream>
@@ -12,6 +12,7 @@
 #include <cmath>
 #include <cstdlib>
 #include <utility>
+#include <random>
 
 #include "eps09.h"
 #include "LHAPDF/LHAPDF.h"
@@ -37,6 +38,7 @@ Nucleon::~Nucleon() {
     quark_list.clear();
     proton_resample_quark_x_.clear();
     neutron_resample_quark_x_.clear();
+    sample_quark_idx_arr_.clear();
 }
 
 bool Nucleon::is_connected_with(std::shared_ptr<Nucleon> targ) {
@@ -123,36 +125,52 @@ int Nucleon::re_readin_valence_quark_samples() {
     of_n.close();
     int size = std::min(proton_resample_quark_x_.size(),
                         neutron_resample_quark_x_.size());
+    for (int i = 0; i < size; i++) {
+        sample_quark_idx_arr_.push_back(i);
+    }
     return(size);
 }
 
+
 void Nucleon::resample_quark_momentum_fraction(std::vector<real> &xQuark,
                                                const int electric_charge,
-                                               const real ecm) const {
+                                               const real ecm,
+                                               const real x_hard) {
     const real mq = PhysConsts::MQuarkValence;
     const real mp = PhysConsts::MProton;
     const int number_of_quarks = PhysConsts::NumValenceQuark;
     const real ybeam = acosh(ecm/(2.*mp));
     real total_energy = 0.;
     real E_proton = mp*cosh(ybeam);
-    do {
-        auto sample_idx = static_cast<int>(
-            ran_gen_ptr_->rand_uniform()*number_of_valence_quark_resamples_);
+    std::shuffle(sample_quark_idx_arr_.begin(), sample_quark_idx_arr_.end(),
+                 *ran_gen_ptr_->getRanGenerator());
+    int status = 0;
+    for (int idx = 0; idx < number_of_valence_quark_resamples_; idx++) {
+        int sample_idx = sample_quark_idx_arr_[idx];
         xQuark.clear();
         if (electric_charge == 1) {
             for (int i = 0; i < number_of_quarks; i++)
-                xQuark.push_back(proton_resample_quark_x_[sample_idx][i]);
+                xQuark[i] = proton_resample_quark_x_[sample_idx][i];
         } else  {
             for (int i = 0; i < number_of_quarks; i++)
-                xQuark.push_back(proton_resample_quark_x_[sample_idx][i]);
+                xQuark[i] = neutron_resample_quark_x_[sample_idx][i];
         }
-        total_energy = 0.;
-        for (int i = 0; i < number_of_quarks; i++) {
-            real rap_local = asinh(xQuark[i]*mp/mq*sinh(ybeam));
-            real E_local = mq*cosh(rap_local);
-            total_energy += E_local;
+        if (xQuark[0] > x_hard || xQuark[1] > x_hard || xQuark[2] > x_hard) {
+            total_energy = 0.;
+            for (int i = 0; i < number_of_quarks; i++) {
+                real rap_local = asinh(xQuark[i]*mp/mq*sinh(ybeam));
+                real E_local = mq*cosh(rap_local);
+                total_energy += E_local;
+            }
+            if (total_energy < E_proton) {
+                status = 1;
+                break;
+            }
         }
-    } while (total_energy > E_proton);
+    }
+    if (status == 0) {
+        std::cout << "Can not find x > x_hard = "  << x_hard << std::endl;
+    }
 }
 
 
@@ -169,12 +187,13 @@ SpatialVec Nucleon::resample_valence_quark_position(real BG) const {
     return(xq);
 }
 
+
 void Nucleon::resample_valence_quarks(real ecm, int direction, real charge, 
-                   std::vector<double> xvec_q) {
+                   std::vector<double> xvec_q, const real x_hard) {
     const int number_of_quarks = PhysConsts::NumValenceQuark;
     erase_quarks();
     std::vector<real> xQuark;
-    resample_quark_momentum_fraction(xQuark, charge, ecm);
+    resample_quark_momentum_fraction(xQuark, charge, ecm, x_hard);
     for (int i = 0; i < number_of_quarks; i++) {
         SpatialVec xvec = {0.0, xvec_q[i*3], xvec_q[i*3+1], xvec_q[i*3+2]}; 
         std::shared_ptr<Quark> quark_ptr(new Quark(xvec, xQuark[i]));

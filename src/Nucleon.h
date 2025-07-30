@@ -32,6 +32,7 @@ class Nucleon : public Particle {
     SpatialVec remnant_x_frez_ = {0.0, 0.0, 0.0, 0.0};
     std::vector< std::array<float, 3> > proton_resample_quark_x_;
     std::vector< std::array<float, 3> > neutron_resample_quark_x_;
+    std::vector<int> sample_quark_idx_arr_;
     int number_of_valence_quark_resamples_;
     int nucleon_system_status_;
     static int random_value_;
@@ -128,9 +129,10 @@ class Nucleon : public Particle {
 
     void resample_quark_momentum_fraction(
             std::vector<real> &xQuark, const int electric_charge,
-            const real ecm) const;
+            const real ecm, const real x_hard);
     void resample_valence_quarks(
-            real ecm, int direction, real charge, std::vector<double> xvec_q);
+            real ecm, int direction, real charge,
+            std::vector<double> xvec_q, const real x_hard);
     void readd_soft_parton_ball(
             real ecm, int direction, std::vector<double> xvec_q,
             real BG, MomentumVec soft_pvec,
