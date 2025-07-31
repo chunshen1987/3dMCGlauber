@@ -150,10 +150,10 @@ void Nucleon::resample_quark_momentum_fraction(std::vector<real> &xQuark,
         xQuark.clear();
         if (electric_charge == 1) {
             for (int i = 0; i < number_of_quarks; i++)
-                xQuark[i] = proton_resample_quark_x_[sample_idx][i];
+                xQuark.push_back(proton_resample_quark_x_[sample_idx][i]);
         } else  {
             for (int i = 0; i < number_of_quarks; i++)
-                xQuark[i] = neutron_resample_quark_x_[sample_idx][i];
+                xQuark.push_back(neutron_resample_quark_x_[sample_idx][i]);
         }
         if (xQuark[0] > x_hard || xQuark[1] > x_hard || xQuark[2] > x_hard) {
             total_energy = 0.;

@@ -425,6 +425,8 @@ std::vector<double>  Glauber::OutputquarkPosTarg() {
 
 void Glauber::Pick_and_subtract_hard_parton_momentum() {
     real ecm = parameter_list.get_roots();
+    const real mN = PhysConsts::MProton;
+    real nucleonPz = mN*sinh(ybeam);
     // Positions and Momentum for the leading hard partons.
     auto binary_collision_x = HardPartonPosAndMomProj_[1];
     auto binary_collision_y = HardPartonPosAndMomProj_[2];
@@ -479,8 +481,7 @@ void Glauber::Pick_and_subtract_hard_parton_momentum() {
                     if (p_q[0] <= HardPartonMomProj_[0]) {
                         // resample the valence quark requiring
                         // one parton with x >= x_hard
-                        const real mq = PhysConsts::MQuarkValence;
-                        real x_hard = acosh(HardPartonMomProj_[0]/mq);
+                        real x_hard = std::abs(HardPartonMomProj_[3]/nucleonPz);
                         std::vector<double> xvec_q = (
                                        proj_collided->output_quark_pos());
                         proj_collided->resample_valence_quarks(
@@ -509,8 +510,7 @@ void Glauber::Pick_and_subtract_hard_parton_momentum() {
                     if (p_q[0] <= HardPartonMomTarg_[0]) { // 0.346**2~ 0.12
                         // resample the valence quark requiring
                         // one parton with x >= x_hard
-                        const real mq = PhysConsts::MQuarkValence;
-                        real x_hard = acosh(HardPartonMomTarg_[0]/mq);
+                        real x_hard = std::abs(HardPartonMomTarg_[3]/nucleonPz);
                         std::vector<double> xvec_q = targ_collided->output_quark_pos();
                         targ_collided->resample_valence_quarks(
                                ecm, -1, targ_collided->get_electric_charge(),
