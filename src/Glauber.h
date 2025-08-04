@@ -133,6 +133,7 @@ class Glauber {
         return (participantList_);
     }
     void outputParticipants(std::string filename);
+    void outputBinaryCollisions(std::string filename);
     std::vector<std::vector<real>> get_QCD_strings_output_list() {
         prepare_output_QCD_strings();
         return (QCD_string_output_arr_);

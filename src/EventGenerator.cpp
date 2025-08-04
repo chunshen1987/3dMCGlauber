@@ -138,6 +138,13 @@ void EventGenerator::generate_events(int nev, int event_id_offset) {
                          << " is done.";
                 messager.flush("info");
             }
+            if (!batchDensityOutput_) {
+                std::ostringstream binaryCollFilename;
+                binaryCollFilename << "binaryCollisions_event_" << event_id
+                                   << ".dat";
+                mc_glauber_ptr_->outputBinaryCollisions(
+                    binaryCollFilename.str());
+            }
 
             Ncoll = mc_glauber_ptr_->perform_string_production();
             auto b = mc_glauber_ptr_->get_impact_parameter();
