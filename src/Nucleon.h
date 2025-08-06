@@ -84,7 +84,10 @@ class Nucleon : public Particle {
     }
 
     int get_number_of_connections() const {
-        return(total_connected_times_);
+        if (is_hard_collided())
+            return(total_connected_times_ + 1);
+        else
+            return(total_connected_times_);
     }
 
     int get_number_of_connections(const int idx) const {

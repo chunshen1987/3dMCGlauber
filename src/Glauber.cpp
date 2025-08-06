@@ -590,6 +590,9 @@ int Glauber::decide_produce_string_num(
         if (ran_gen_ptr_->rand_uniform() < production_prob) {
             form_n_string = 1;
         }
+        if (proj->is_hard_collided() && targ->is_hard_collided()) {
+            form_n_string = 0;
+        }
     }
     return(form_n_string);
 }
