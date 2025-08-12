@@ -118,6 +118,32 @@ Glauber::Glauber(
         target->setLightNucleusOption(parameter_list.getLightNucleusOption());
     }
 
+    if (parameter_list.get_projectle_nucleus_name() == "d") {
+        auto polarizationFlag =
+            (parameter_list.getParam("ProjPolarizationFlag", 0));
+        if (polarizationFlag == 1) {
+            projectile->setPolarizationFlag(true);
+        } else {
+            projectile->setPolarizationFlag(false);
+        }
+        if (polarizationFlag == 1) {
+            projectile->setPolJz(parameter_list.getParam("Proj_polJz", 0));
+        }
+    }
+
+    if (parameter_list.get_target_nucleus_name() == "d") {
+        auto polarizationFlag =
+            (parameter_list.getParam("TargPolarizationFlag", 0));
+        if (polarizationFlag == 1) {
+            target->setPolarizationFlag(true);
+        } else {
+            target->setPolarizationFlag(false);
+        }
+        if (polarizationFlag == 1) {
+            target->setPolJz(parameter_list.getParam("Targ_polJz", 0));
+        }
+    }
+
     if (sample_valence_quark) {
         projectile->set_valence_quark_Q2(parameter_list.get_quarks_Q2());
         target->set_valence_quark_Q2(parameter_list.get_quarks_Q2());
