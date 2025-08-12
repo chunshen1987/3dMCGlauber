@@ -21,4 +21,5 @@
 
 git clone https://Chunshen1987@bitbucket.org/wayne_state_nuclear_theory/glaubernucleusconfigs.git --depth 1
 mv glaubernucleusconfigs/nucleusConfigurations/*.bin.in .
+mv glaubernucleusconfigs/polarizedConfigurations/*.bin.in .
 rm -fr glaubernucleusconfigs
