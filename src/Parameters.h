@@ -84,6 +84,7 @@ class Parameters : public ParametersMap {
     int getLightNucleusOption() const;
 
     bool baryon_num_div() const;
+    bool qcd_s_list_quark() const;
 };
 
 }  // namespace MCGlb

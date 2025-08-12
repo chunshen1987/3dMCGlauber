@@ -284,5 +284,13 @@ bool Parameters::baryon_num_div() const {
         return (true);
     }
 }
+bool Parameters::qcd_s_list_quark() const {
+    int flag = get_param_int("use_quarks", 0);
+    if (flag == 0) {
+        return (false);
+    } else {
+        return (true);
+    }
+}
 
 }  // namespace MCGlb

@@ -508,6 +508,8 @@ int Glauber::perform_string_production() {
     real lambdaBs = parameter_list.get_lambdaBs();
     lambdaBs = std::min(1., lambdaBs);
 
+    bool use_quarks_qcd_list = parameter_list.qcd_s_list_quark();
+
     real t_current = 0.0;
     int number_of_collided_events = 0;
     while (collision_schedule.size() > 0) {
@@ -619,62 +621,128 @@ int Glauber::perform_string_production() {
     std::shuffle(
         random_idx.begin(), random_idx.end(), *ran_gen_ptr_->getRanGenerator());
     for (auto &idx : random_idx) {
-        if (idx < Nstrings) {
-            // put baryon of the projectile in the selected string
-            auto proj = QCD_string_list[idx].get_proj();
-            if (proj->get_baryon_number() == 0) proj->set_baryon_used(true);
-            if (!proj->baryon_was_used()) {
-                if (ran_gen_ptr_->rand_uniform() < baryonInStringProb) {
+        if (use_quarks_qcd_list)
+        {
+            if (idx < Nstrings) {
+                // put baryon of the projectile in the selected string
+                auto proj_q = QCD_string_list[idx].get_proj_q();
+                if (proj_q->get_baryon() == 0) proj_q->set_baryon_used(true);
+                if (!proj_q->baryon_was_used()) {
+                    if (ran_gen_ptr_->rand_uniform() < baryonInStringProb) {
+                        proj_q->set_baryon_used(true);
+                        QCD_string_list[idx].set_has_baryon_right(true);
+                    }
+                }
+            } else if (idx < Nstrings + Npart_proj) {
+                // put baryon of the projectile in the projectile remnant
+                auto proj = projectile->get_participant(idx - Nstrings);
+                auto p_i = proj->get_remnant_p();
+                if (p_i[0] <= 0) continue;
+                // auto mass = 0.;
+                // if (std::abs(p_i[3]) < p_i[0]) {
+                //     // a time-like beam remnant
+                //     mass = sqrt(p_i[0]*p_i[0] - p_i[3]*p_i[3]);
+                // }
+                // if (!proj->baryon_was_used() && mass > 0.1) {}
+                if (proj->get_baryon_number() == 0) proj->set_baryon_used(true);
+                if (!proj->baryon_was_used()) {
                     proj->set_baryon_used(true);
-                    QCD_string_list[idx].set_has_baryon_right(true);
+                    proj->set_remnant_carry_baryon_number(true);
                 }
             }
-        } else if (idx < Nstrings + Npart_proj) {
-            // put baryon of the projectile in the projectile remnant
-            auto proj = projectile->get_participant(idx - Nstrings);
-            auto p_i = proj->get_remnant_p();
-            if (p_i[0] <= 0) continue;
-            // auto mass = 0.;
-            // if (std::abs(p_i[3]) < p_i[0]) {
-            //     // a time-like beam remnant
-            //     mass = sqrt(p_i[0]*p_i[0] - p_i[3]*p_i[3]);
-            // }
-            // if (!proj->baryon_was_used() && mass > 0.1) {}
-            if (proj->get_baryon_number() == 0) proj->set_baryon_used(true);
-            if (!proj->baryon_was_used()) {
-                proj->set_baryon_used(true);
-                proj->set_remnant_carry_baryon_number(true);
+        }
+        else
+        {
+            if (idx < Nstrings) {
+                // put baryon of the projectile in the selected string
+                auto proj = QCD_string_list[idx].get_proj();
+                if (proj->get_baryon_number() == 0) proj->set_baryon_used(true);
+                if (!proj->baryon_was_used()) {
+                    if (ran_gen_ptr_->rand_uniform() < baryonInStringProb) {
+                        proj->set_baryon_used(true);
+                        QCD_string_list[idx].set_has_baryon_right(true);
+                    }
+                }
+            } else if (idx < Nstrings + Npart_proj) {
+                // put baryon of the projectile in the projectile remnant
+                auto proj = projectile->get_participant(idx - Nstrings);
+                auto p_i = proj->get_remnant_p();
+                if (p_i[0] <= 0) continue;
+                // auto mass = 0.;
+                // if (std::abs(p_i[3]) < p_i[0]) {
+                //     // a time-like beam remnant
+                //     mass = sqrt(p_i[0]*p_i[0] - p_i[3]*p_i[3]);
+                // }
+                // if (!proj->baryon_was_used() && mass > 0.1) {}
+                if (proj->get_baryon_number() == 0) proj->set_baryon_used(true);
+                if (!proj->baryon_was_used()) {
+                    proj->set_baryon_used(true);
+                    proj->set_remnant_carry_baryon_number(true);
+                }
             }
         }
     }
     std::shuffle(
         random_idx.begin(), random_idx.end(), *ran_gen_ptr_->getRanGenerator());
     for (auto &idx : random_idx) {
-        if (idx < Nstrings) {
-            // put baryon of the target in the selected string
-            auto targ = QCD_string_list[idx].get_targ();
-            if (targ->get_baryon_number() == 0) targ->set_baryon_used(true);
-            if (!targ->baryon_was_used()) {
-                if (ran_gen_ptr_->rand_uniform() < baryonInStringProb) {
+        if (use_quarks_qcd_list)
+        {
+            if (idx < Nstrings) {
+                // put baryon of the target in the selected string
+                auto targ_q = QCD_string_list[idx].get_targ_q();
+                if (targ_q->get_baryon() == 0) targ_q->set_baryon_used(true);
+                if (!targ_q->baryon_was_used()) {
+                    if (ran_gen_ptr_->rand_uniform() < baryonInStringProb) {
+                        targ_q->set_baryon_used(true);
+                        QCD_string_list[idx].set_has_baryon_left(true);
+                    }
+                }
+            } else if (idx > Nstrings + Npart_proj - 1) {
+                // put baryon of the target in the target remnant
+                auto targ = target->get_participant(idx - Nstrings - Npart_proj);
+                auto p_i = targ->get_remnant_p();
+                if (p_i[0] <= 0) continue;
+                // auto mass = 0.;
+                // if (std::abs(p_i[3]) < p_i[0]) {
+                //     // a time-like beam remnant
+                //     mass = sqrt(p_i[0]*p_i[0] - p_i[3]*p_i[3]);
+                // }
+                // if (!targ->baryon_was_used() && mass > 0.1) {}
+                if (targ->get_baryon_number() == 0) targ->set_baryon_used(true);
+                if (!targ->baryon_was_used()) {
                     targ->set_baryon_used(true);
-                    QCD_string_list[idx].set_has_baryon_left(true);
+                    targ->set_remnant_carry_baryon_number(true);
                 }
             }
-        } else if (idx > Nstrings + Npart_proj - 1) {
-            // put baryon of the target in the target remnant
-            auto targ = target->get_participant(idx - Nstrings - Npart_proj);
-            auto p_i = targ->get_remnant_p();
-            if (p_i[0] <= 0) continue;
-            // auto mass = 0.;
-            // if (std::abs(p_i[3]) < p_i[0]) {
-            //     // a time-like beam remnant
-            //     mass = sqrt(p_i[0]*p_i[0] - p_i[3]*p_i[3]);
-            // }
-            // if (!targ->baryon_was_used() && mass > 0.1) {}
-            if (targ->get_baryon_number() == 0) targ->set_baryon_used(true);
-            if (!targ->baryon_was_used()) {
-                targ->set_baryon_used(true);
-                targ->set_remnant_carry_baryon_number(true);
+        }
+        else
+        {
+            if (idx < Nstrings) {
+                // put baryon of the target in the selected string
+                auto targ = QCD_string_list[idx].get_targ();
+                if (targ->get_baryon_number() == 0) targ->set_baryon_used(true);
+                if (!targ->baryon_was_used()) {
+                    if (ran_gen_ptr_->rand_uniform() < baryonInStringProb) {
+                        targ->set_baryon_used(true);
+                        QCD_string_list[idx].set_has_baryon_left(true);
+                    }
+                }
+            } else if (idx > Nstrings + Npart_proj - 1) {
+                // put baryon of the target in the target remnant
+                auto targ = target->get_participant(idx - Nstrings - Npart_proj);
+                auto p_i = targ->get_remnant_p();
+                if (p_i[0] <= 0) continue;
+                // auto mass = 0.;
+                // if (std::abs(p_i[3]) < p_i[0]) {
+                //     // a time-like beam remnant
+                //     mass = sqrt(p_i[0]*p_i[0] - p_i[3]*p_i[3]);
+                // }
+                // if (!targ->baryon_was_used() && mass > 0.1) {}
+                if (targ->get_baryon_number() == 0) targ->set_baryon_used(true);
+                if (!targ->baryon_was_used()) {
+                    targ->set_baryon_used(true);
+                    targ->set_remnant_carry_baryon_number(true);
+                }
             }
         }
     }

@@ -19,6 +19,7 @@ class Quark : public Particle {
     real baryon = 0;
     real charge = 0;
     real strange = 0;
+    bool baryon_used = false;
 
   public:
     Quark() = default;
@@ -79,6 +80,9 @@ class Quark : public Particle {
         charge = charge_in;
         strange = strange_in;
     }
+
+    void set_baryon_used(bool used) {baryon_used = used; }
+    bool baryon_was_used() const { return (baryon_used);}
 };
 
 }  // namespace MCGlb
