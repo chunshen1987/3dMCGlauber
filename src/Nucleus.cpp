@@ -685,7 +685,6 @@ int Nucleus::sample_nucleon_configuration() {
     const int rand_num =
         static_cast<int>(ran_gen_ptr->rand_uniform() * num_configuration);
     auto conf_i = heavyIon_pos_[rand_num];
-    std::cout << "Using configuration: " << rand_num << std::endl;
     for (int iA = 0; iA < A_; iA++) {
         SpatialVec x_i = {0.0, conf_i[iA][0], conf_i[iA][1], conf_i[iA][2]};
         MomentumVec p_i = {PhysConsts::MProton, 0.0, 0.0, 0.0};
