@@ -38,7 +38,7 @@ ProjWS_a 0.52
 ProjWS_beta2 0.06
 ProjWS_beta3 0.2
 ProjWS_gamma 0.0
-ProjPolarizationFlag 0
+ProjPolarizationFlag 0               # 0: unpolarized; 1: longitudinal polarized; 2: transverse polarized
 TargPolarizationFlag 0
 Proj_polJz 0
 Targ_polJz 0

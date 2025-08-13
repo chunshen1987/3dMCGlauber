@@ -121,12 +121,8 @@ Glauber::Glauber(
     if (parameter_list.get_projectle_nucleus_name() == "d") {
         auto polarizationFlag =
             (parameter_list.getParam("ProjPolarizationFlag", 0));
-        if (polarizationFlag == 1) {
-            projectile->setPolarizationFlag(true);
-        } else {
-            projectile->setPolarizationFlag(false);
-        }
-        if (polarizationFlag == 1) {
+        projectile->setPolarizationFlag(polarizationFlag);
+        if (polarizationFlag != 0) {
             projectile->setPolJz(parameter_list.getParam("Proj_polJz", 0));
         }
     }
@@ -134,12 +130,8 @@ Glauber::Glauber(
     if (parameter_list.get_target_nucleus_name() == "d") {
         auto polarizationFlag =
             (parameter_list.getParam("TargPolarizationFlag", 0));
-        if (polarizationFlag == 1) {
-            target->setPolarizationFlag(true);
-        } else {
-            target->setPolarizationFlag(false);
-        }
-        if (polarizationFlag == 1) {
+        target->setPolarizationFlag(polarizationFlag);
+        if (polarizationFlag != 0) {
             target->setPolJz(parameter_list.getParam("Targ_polJz", 0));
         }
     }

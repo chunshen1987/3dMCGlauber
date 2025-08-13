@@ -22,7 +22,7 @@ class Nucleus {
     bool deformed_;
     bool confFromFile_;
     int lightNucleusOption_;
-    bool polarizationFlag_;
+    int polarizationFlag_;
     int polJz_;
     WoodsSaxonParam WS_param_vec;  // rho, w, R, a, beta2, beta3, beta4, gamma
     real d_min_;                   // minimum distance between nucleons
@@ -60,9 +60,9 @@ class Nucleus {
 
     void setLightNucleusOption(int option) { lightNucleusOption_ = option; }
 
-    void setPolarizationFlag(bool flag) {
+    void setPolarizationFlag(int flag) {
         polarizationFlag_ = flag;
-        if (polarizationFlag_) confFromFile_ = true;
+        if (polarizationFlag_ != 0) confFromFile_ = true;
     }
     void setPolJz(int Jz) { polJz_ = Jz; }
 

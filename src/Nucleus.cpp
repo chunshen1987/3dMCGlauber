@@ -39,7 +39,7 @@ Nucleus::Nucleus(
     }
     nucleon_configuration_loaded_ = false;
     lightNucleusOption_ = 0;
-    polarizationFlag_ = false;
+    polarizationFlag_ = 0;
     polJz_ = 0;
 }
 
@@ -172,7 +172,7 @@ void Nucleus::generate_nucleus_3d_configuration() {
         }
         */
     } else if (A_ == 2) {  // deuteron
-        if (polarizationFlag_) {
+        if (polarizationFlag_ != 0) {
             status = sample_nucleon_configuration();
             if (status != 0) {
                 generate_deuteron_configuration();
@@ -216,12 +216,19 @@ void Nucleus::generate_nucleus_3d_configuration() {
     sample_fermi_momentum();
 
     real phi = 2. * M_PI * ran_gen_ptr->rand_uniform();
-    if (polarizationFlag_) {
-        rotate_nucleus_phiOnly(phi);
-    } else {
+    if (polarizationFlag_ == 0) {
         real theta = acos(1. - 2. * ran_gen_ptr->rand_uniform());
         real gamma = 2 * M_PI * ran_gen_ptr->rand_uniform();
         rotate_nucleus_3D(phi, theta, gamma);
+    } else if (polarizationFlag_ == 1) {
+        // longitudinal polarization only rotates phi randomly
+        real theta = 0;
+        rotate_nucleus(phi, theta);
+    } else if (polarizationFlag_ == 2) {
+        // rotate Jz to the positive y-axis
+        phi = M_PI / 2;
+        real theta = M_PI / 2;
+        rotate_nucleus(phi, theta);
     }
 }
 
@@ -566,7 +573,7 @@ void Nucleus::readin_nucleon_positions() {
               << std::flush;
     std::string filename;
     if (A_ == 2) {
-        if (!polarizationFlag_) {
+        if (polarizationFlag_ != 0) {
             std::cout << "[Warning]: No configuration file for Nucleus: "
                       << name << std::endl;
             std::cout << "Generate configuration with Hulthen distribution"
