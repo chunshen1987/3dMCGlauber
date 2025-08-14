@@ -573,7 +573,7 @@ void Nucleus::readin_nucleon_positions() {
               << std::flush;
     std::string filename;
     if (A_ == 2) {
-        if (polarizationFlag_ != 0) {
+        if (polarizationFlag_ == 0) {
             std::cout << "[Warning]: No configuration file for Nucleus: "
                       << name << std::endl;
             std::cout << "Generate configuration with Hulthen distribution"
