@@ -227,11 +227,17 @@ void Glauber::make_nuclei() {
     impact_b = sqrt(
         b_min * b_min
         + (b_max * b_max - b_min * b_min) * ran_gen_ptr_->rand_uniform());
+
+    real phiRP = 0.;
+    if (std::abs(parameter_list.getParam("randomRPflag", 0)) > 1e-8)
+        phiRP = ran_gen_ptr_->rand_uniform() * 2. * M_PI;
+    auto impact_x = impact_b / 2. * cos(phiRP);
+    auto impact_y = impact_b / 2. * sin(phiRP);
     SpatialVec proj_shift = {
-        0., impact_b / 2., 0., -projectile->get_z_max() - 1e-15};
+        0, impact_x, impact_y, -projectile->get_z_max() - 1e-15};
     projectile->shift_nucleus(proj_shift);
     SpatialVec targ_shift = {
-        0., -impact_b / 2., 0., -target->get_z_min() + 1e-15};
+        0, -impact_x, -impact_y, -target->get_z_min() + 1e-15};
     target->shift_nucleus(targ_shift);
     // projectile->output_nucleon_positions("projectile.dat");
     // target->output_nucleon_positions("target.dat");
