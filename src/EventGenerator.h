@@ -70,7 +70,7 @@ class EventGenerator {
 
     //! after substracted the parton's momentum,
     //! generate the 3D Glauber initial conditions for MUSIC
-    std::vector< std::vector<real> > generate_strings();
+    std::vector< std::vector<real> > generate_strings(bool wound_nucleons);
 
     //! calculate the total nucleon density at Lab frame, unit is 1/fm^3
     double MCGlb_nucleon_density(double t, double x,

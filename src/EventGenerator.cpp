@@ -208,7 +208,8 @@ std::vector<double> EventGenerator::GetRemMom_Targ() {
 }
 
 
-std::vector< std::vector<real> > EventGenerator::generate_strings() {
+std::vector< std::vector<real> > EventGenerator::generate_strings(
+    bool wound_nucleons) {
     //messager << "Random seed = " << ran_gen_ptr_->get_seed();
     //messager.flush("info");
     //messager << "Generating 1 events after subtracted four momentum of hard partons ... ";
@@ -219,31 +220,34 @@ std::vector< std::vector<real> > EventGenerator::generate_strings() {
 
     int iev = 0;
     //real mean_Npart = 0;
-    HardPartonPosAndMomProj.clear();
-    HardPartonPosAndMomProj.push_back(proj_t);
-    HardPartonPosAndMomProj.push_back(proj_x);
-    HardPartonPosAndMomProj.push_back(proj_y);
-    HardPartonPosAndMomProj.push_back(proj_z);
-    HardPartonPosAndMomProj.push_back(proj_E);
-    HardPartonPosAndMomProj.push_back(proj_px);
-    HardPartonPosAndMomProj.push_back(proj_py);
-    HardPartonPosAndMomProj.push_back(proj_pz);
+    if (wound_nucleons) {
+        HardPartonPosAndMomProj.clear();
+        HardPartonPosAndMomProj.push_back(proj_t);
+        HardPartonPosAndMomProj.push_back(proj_x);
+        HardPartonPosAndMomProj.push_back(proj_y);
+        HardPartonPosAndMomProj.push_back(proj_z);
+        HardPartonPosAndMomProj.push_back(proj_E);
+        HardPartonPosAndMomProj.push_back(proj_px);
+        HardPartonPosAndMomProj.push_back(proj_py);
+        HardPartonPosAndMomProj.push_back(proj_pz);
+    
+        HardPartonPosAndMomTarg.clear();
+        HardPartonPosAndMomTarg.push_back(proj_t);
+        HardPartonPosAndMomTarg.push_back(proj_x);
+        HardPartonPosAndMomTarg.push_back(proj_y);
+        HardPartonPosAndMomTarg.push_back(proj_z);
+        HardPartonPosAndMomTarg.push_back(targ_E);
+        HardPartonPosAndMomTarg.push_back(targ_px);
+        HardPartonPosAndMomTarg.push_back(targ_py);
+        HardPartonPosAndMomTarg.push_back(targ_pz);
 
-    HardPartonPosAndMomTarg.clear();
-    HardPartonPosAndMomTarg.push_back(proj_t);
-    HardPartonPosAndMomTarg.push_back(proj_x);
-    HardPartonPosAndMomTarg.push_back(proj_y);
-    HardPartonPosAndMomTarg.push_back(proj_z);
-    HardPartonPosAndMomTarg.push_back(targ_E);
-    HardPartonPosAndMomTarg.push_back(targ_px);
-    HardPartonPosAndMomTarg.push_back(targ_py);
-    HardPartonPosAndMomTarg.push_back(targ_pz);
+        mc_glauber_ptr_->Set_hard_parton_momentum(
+            HardPartonPosAndMomProj, HardPartonPosAndMomTarg);
+        mc_glauber_ptr_->Pick_and_subtract_hard_parton_momentum();
+    }
 
-    int event_id = iev; 
+    int event_id = iev;
     //mean_Npart += Npart_;
-    mc_glauber_ptr_->Set_hard_parton_momentum(
-                     HardPartonPosAndMomProj, HardPartonPosAndMomTarg);
-    mc_glauber_ptr_->Pick_and_subtract_hard_parton_momentum();
     Npart_ = mc_glauber_ptr_->get_Npart();
     auto Nstrings = (
             mc_glauber_ptr_->decide_QCD_strings_production_second_stage());
