@@ -30,10 +30,6 @@ class Nucleon : public Particle {
     std::vector<int> connected_times_;
     MomentumVec remnant_p_ = {0.0, 0.0, 0.0, 0.0};
     SpatialVec remnant_x_frez_ = {0.0, 0.0, 0.0, 0.0};
-    std::vector< std::array<float, 3> > proton_resample_quark_x_;
-    std::vector< std::array<float, 3> > neutron_resample_quark_x_;
-    std::vector<int> sample_quark_idx_arr_;
-    int number_of_valence_quark_resamples_;
     int nucleon_system_status_;
     static int random_value_;
     MomentumVec fermi_momentum_ = {0.0, 0.0, 0.0, 0.0};
@@ -50,7 +46,6 @@ class Nucleon : public Particle {
 
     void set_electric_charge(int charge) {electric_charge_ = charge;}
     int get_electric_charge() const {return(electric_charge_);}
-    int re_readin_valence_quark_samples();
 
     int get_number_of_quarks() const {return(quark_list.size());}
     void push_back_quark(std::shared_ptr<Quark> q) {quark_list.push_back(q);}
@@ -136,12 +131,10 @@ class Nucleon : public Particle {
             remnant_p_[i] -= p_q[i];
     }
 
-    void resample_quark_momentum_fraction(
-            std::vector<real> &xQuark, const int electric_charge,
-            const real ecm, const real x_hard);
     void resample_valence_quarks(
-            real ecm, int direction, real charge,
-            std::vector<double> xvec_q, const real x_hard);
+            const real ecm, const int direction,
+            const std::vector<double> &xvec_q,
+            const std::vector<real> &xQuark);
     void readd_soft_parton_ball(
             real ecm, int direction, std::vector<double> xvec_q,
             real BG, MomentumVec soft_pvec,
@@ -158,8 +151,6 @@ class Nucleon : public Particle {
 
     void set_remnant_x_frez(SpatialVec x_in) {remnant_x_frez_ = x_in;}
     SpatialVec get_remnant_x_frez() const {return(remnant_x_frez_);}
-    static int get_random_gen(int i) {return random_value_%i;}
-    static void set_random_gen(int i) {random_value_ = i;}
 };
 
 }

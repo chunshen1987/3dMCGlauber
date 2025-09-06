@@ -37,6 +37,7 @@ class Nucleus {
 
     std::vector< std::array<float, 3> > proton_valence_quark_x_;
     std::vector< std::array<float, 3> > neutron_valence_quark_x_;
+    std::vector<int> sample_quark_idx_arr_;
 
     int system_status_;
     int number_of_valence_quark_samples_;
@@ -143,6 +144,11 @@ class Nucleus {
 
     void sample_valence_quarks_inside_nucleons(real ecm, int direction);
     void add_soft_parton_ball(real ecm, int direction);
+
+    int resample_quark_momentum_fraction(std::vector<real> &xQuark,
+                                         const int electric_charge,
+                                         const real ecm,
+                                         const real x_hard);
 
     void sample_fermi_momentum();
 

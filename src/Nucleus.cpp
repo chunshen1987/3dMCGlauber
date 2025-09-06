@@ -48,6 +48,7 @@ Nucleus::~Nucleus() {
     if (sample_valence_quarks) {
         proton_valence_quark_x_.clear();
         neutron_valence_quark_x_.clear();
+        sample_quark_idx_arr_.clear();
     }
 }
 
@@ -476,6 +477,9 @@ int Nucleus::readin_valence_quark_samples() {
     of_n.close();
     int size = std::min(proton_valence_quark_x_.size(),
                         neutron_valence_quark_x_.size());
+    for (int i = 0; i < size; i++) {
+        sample_quark_idx_arr_.push_back(i);
+    }
     return(size);
 }
 
@@ -926,6 +930,49 @@ void Nucleus::sample_quark_momentum_fraction(std::vector<real> &xQuark,
             total_energy += E_local;
         }
     } while (total_energy > E_proton);
+}
+
+
+int Nucleus::resample_quark_momentum_fraction(std::vector<real> &xQuark,
+                                               const int electric_charge,
+                                               const real ecm,
+                                               const real x_hard) {
+    const real mq = PhysConsts::MQuarkValence;
+    const real mp = PhysConsts::MProton;
+    const int number_of_quarks = PhysConsts::NumValenceQuark;
+    const real ybeam = acosh(ecm/(2.*mp));
+    real total_energy = 0.;
+    real E_proton = mp*cosh(ybeam);
+    std::shuffle(sample_quark_idx_arr_.begin(), sample_quark_idx_arr_.end(),
+                 *ran_gen_ptr->getRanGenerator());
+    int status = 0;
+    for (int idx = 0; idx < number_of_valence_quark_samples_; idx++) {
+        int sample_idx = sample_quark_idx_arr_[idx];
+        xQuark.clear();
+        if (electric_charge == 1) {
+            for (int i = 0; i < number_of_quarks; i++)
+                xQuark.push_back(proton_valence_quark_x_[sample_idx][i]);
+        } else  {
+            for (int i = 0; i < number_of_quarks; i++)
+                xQuark.push_back(neutron_valence_quark_x_[sample_idx][i]);
+        }
+        if (xQuark[0] > x_hard || xQuark[1] > x_hard || xQuark[2] > x_hard) {
+            total_energy = 0.;
+            for (int i = 0; i < number_of_quarks; i++) {
+                real rap_local = asinh(xQuark[i]*mp/mq*sinh(ybeam));
+                real E_local = mq*cosh(rap_local);
+                total_energy += E_local;
+            }
+            if (total_energy < E_proton) {
+                status = 1;
+                break;
+            }
+        }
+    }
+    if (status == 0) {
+        std::cout << "Can not find x > x_hard = "  << x_hard << std::endl;
+    }
+    return(status);
 }
 
 
