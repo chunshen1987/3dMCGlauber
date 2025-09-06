@@ -94,6 +94,12 @@ class Nucleon : public Particle {
         return(connected_times_[idx]);
     }
 
+    void reset_connections() {
+        total_connected_times_ = 0;
+        connected_times_.clear();
+        connected_with.clear();
+    }
+
     int get_number_of_connections(std::shared_ptr<Nucleon> targ) const;
 
     bool is_connected_with(std::shared_ptr<Nucleon> targ);

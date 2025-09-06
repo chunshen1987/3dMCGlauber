@@ -598,7 +598,7 @@ int Glauber::decide_produce_string_num(
 }
 
 
-int Glauber::decide_QCD_strings_production() {
+void Glauber::sample_valence_quarks() {
     if (sample_valence_quark) {
         projectile->sample_valence_quarks_inside_nucleons(
                                     parameter_list.get_roots(), 1);
@@ -607,6 +607,11 @@ int Glauber::decide_QCD_strings_production() {
         projectile->add_soft_parton_ball(parameter_list.get_roots(), 1);
         target->add_soft_parton_ball(parameter_list.get_roots(), -1);
     }
+}
+
+
+int Glauber::decide_QCD_strings_production() {
+    sample_valence_quarks();
     std::vector<shared_ptr<CollisionEvent>> collision_list;
     for (auto &it: collision_schedule)
         collision_list.push_back(it);  // collision list is time ordered
@@ -673,13 +678,14 @@ int Glauber::decide_QCD_strings_production_second_stage() {
             auto form_N_strings = decide_produce_string_num(ievent);
             auto proj = ievent->get_proj_nucleon_ptr();
             auto targ = ievent->get_targ_nucleon_ptr();
+            ievent->set_produced_n_strings(form_N_strings);
             if (form_N_strings > 0) {
                 number_of_strings += form_N_strings;
                 proj.lock()->add_connected_nucleon(targ);
                 proj.lock()->add_num_connections(form_N_strings);
                 targ.lock()->add_connected_nucleon(proj);
                 targ.lock()->add_num_connections(form_N_strings);
-                ievent->set_produced_n_strings(form_N_strings);
+                //ievent->set_produced_n_strings(form_N_strings);
             } else {
                 if (   proj.lock()->get_number_of_connections() == 0
                     || targ.lock()->get_number_of_connections() == 0)
@@ -807,6 +813,28 @@ int Glauber::perform_string_production() {
         assert(dt > 0.);
         t_current = first_event->get_collision_time();
         propagate_nuclei(dt);
+
+        auto proj = first_event->get_proj_nucleon_ptr().lock();
+        auto targ = first_event->get_targ_nucleon_ptr().lock();
+        if (proj->is_hard_collided() && !proj->nucleon_is_subtracted()) {
+            MomentumVec HardPartonMomProj_ = { HardPartonPosAndMomProj_[4],
+                                               HardPartonPosAndMomProj_[5],
+                                               HardPartonPosAndMomProj_[6],
+                                               HardPartonPosAndMomProj_[7] };
+            proj->substract_momentum_from_remnant(HardPartonMomProj_);
+            proj->set_hard_subtracted(true);
+            //std::cout << "Subtract four momentum from picked up nucleon in proj." << std::endl;
+        }
+        if (targ->is_hard_collided() && !targ->nucleon_is_subtracted()) {
+            MomentumVec HardPartonMomTarg_ = { HardPartonPosAndMomTarg_[4],
+                                               HardPartonPosAndMomTarg_[5],
+                                               HardPartonPosAndMomTarg_[6],
+                                               HardPartonPosAndMomTarg_[7] };
+            targ->substract_momentum_from_remnant(HardPartonMomTarg_);
+            targ->set_hard_subtracted(true);
+            //std::cout << "Subtract four momentum from picked up nucleon in targ." << std::endl;
+        }
+
         if (first_event->get_num_strings() == 0) {
             collision_schedule.erase((*collision_schedule.begin()));
             continue;
@@ -881,27 +909,6 @@ int Glauber::perform_string_production() {
                 update_momentum_quark(targ_q,  y_shift);
             }
         }
-        auto proj = first_event->get_proj_nucleon_ptr().lock();
-        auto targ = first_event->get_targ_nucleon_ptr().lock();
-        if (proj->is_hard_collided() && !proj->nucleon_is_subtracted()) {
-            MomentumVec HardPartonMomProj_ = { HardPartonPosAndMomProj_[4], 
-                                               HardPartonPosAndMomProj_[5],
-                                               HardPartonPosAndMomProj_[6],
-                                               HardPartonPosAndMomProj_[7] };
-            proj->substract_momentum_from_remnant(HardPartonMomProj_);
-            proj->set_hard_subtracted(true);
-            //std::cout << "Subtract four momentum from picked up nucleon in proj." << std::endl;
-        }
-        if (targ->is_hard_collided() && !targ->nucleon_is_subtracted()) {
-            MomentumVec HardPartonMomTarg_ = { HardPartonPosAndMomTarg_[4], 
-                                               HardPartonPosAndMomTarg_[5],
-                                               HardPartonPosAndMomTarg_[6],
-                                               HardPartonPosAndMomTarg_[7] };
-            targ->substract_momentum_from_remnant(HardPartonMomTarg_);
-            targ->set_hard_subtracted(true);
-            //std::cout << "Subtract four momentum from picked up nucleon in targ." << std::endl;
-        }
-
         update_collision_schedule(first_event);
         collision_schedule.erase((*collision_schedule.begin()));
     }

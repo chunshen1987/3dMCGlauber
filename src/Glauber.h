@@ -93,6 +93,7 @@ class Glauber {
     //! will produce a string
     int decide_produce_string_num(shared_ptr<CollisionEvent> event_ptr) const;
 
+    void sample_valence_quarks();
     real get_tau_form(const int string_evolution_mode) const;
     void get_tau_form_and_moversigma(const int string_evolution_mode,
                                      const real y_in_lrf,

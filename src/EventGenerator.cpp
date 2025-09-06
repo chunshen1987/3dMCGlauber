@@ -79,8 +79,8 @@ void EventGenerator::generate_pre_events() {
         mc_glauber_ptr_->make_nuclei();
         Ncoll_ = mc_glauber_ptr_->make_collision_schedule();
         Npart_ = mc_glauber_ptr_->get_Npart();
-        auto Nstrings = mc_glauber_ptr_->decide_QCD_strings_production();
-        if (event_of_interest_trigger(Npart_, Ncoll_, Nstrings))iev++;
+        mc_glauber_ptr_->sample_valence_quarks();
+        if (Npart_ > 1) iev++;
     }
 }
 
