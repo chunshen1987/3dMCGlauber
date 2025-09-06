@@ -209,7 +209,7 @@ std::vector<double> EventGenerator::GetRemMom_Targ() {
 
 
 std::vector< std::vector<real> > EventGenerator::generate_strings(
-    bool wound_nucleons) {
+                                    bool wound_nucleons, int event_id) {
     //messager << "Random seed = " << ran_gen_ptr_->get_seed();
     //messager.flush("info");
     //messager << "Generating 1 events after subtracted four momentum of hard partons ... ";
@@ -218,7 +218,6 @@ std::vector< std::vector<real> > EventGenerator::generate_strings(
     std::ofstream record_file("events_summary.dat", std::ios::out);
     record_file << "# event_id  Npart  Ncoll  Nstrings  b(fm)" << std::endl;
 
-    int iev = 0;
     //real mean_Npart = 0;
     if (wound_nucleons) {
         HardPartonPosAndMomProj.clear();
@@ -230,7 +229,7 @@ std::vector< std::vector<real> > EventGenerator::generate_strings(
         HardPartonPosAndMomProj.push_back(proj_px);
         HardPartonPosAndMomProj.push_back(proj_py);
         HardPartonPosAndMomProj.push_back(proj_pz);
-    
+
         HardPartonPosAndMomTarg.clear();
         HardPartonPosAndMomTarg.push_back(proj_t);
         HardPartonPosAndMomTarg.push_back(proj_x);
@@ -246,7 +245,6 @@ std::vector< std::vector<real> > EventGenerator::generate_strings(
         mc_glauber_ptr_->Pick_and_subtract_hard_parton_momentum();
     }
 
-    int event_id = iev;
     //mean_Npart += Npart_;
     Npart_ = mc_glauber_ptr_->get_Npart();
     auto Nstrings = (
@@ -260,6 +258,13 @@ std::vector< std::vector<real> > EventGenerator::generate_strings(
         mc_glauber_ptr_->output_QCD_strings(
                         filename.str(), Npart_, Ncoll_, Nstrings, b,
                         ran_gen_ptr_->get_seed());
+    }
+    if (batchDensityOutput_) {
+        density_maker_ptr_->set_QCD_string_output_arr(QCDstringList);
+        density_maker_ptr_->output_netBaryon_eta_distribution(
+                "nB_etas_distribution", event_id);
+        density_maker_ptr_->output_energyDensity_eta_distribution(
+                "ed_etas_distribution", event_id);
     }
 
     // write event information to the record file
