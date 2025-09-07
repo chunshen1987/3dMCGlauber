@@ -31,10 +31,10 @@ class EventGenerator {
     int Npart_;
     std::vector<double> HardPartonPosAndMomProj;
     std::vector<double> HardPartonPosAndMomTarg;
-    double proj_t, proj_x, proj_y, proj_z;
-    double proj_E, proj_px, proj_py, proj_pz;
-    double targ_t, targ_x, targ_y, targ_z;
-    double targ_E, targ_px, targ_py, targ_pz;
+    double proj_t = 0, proj_x = 0, proj_y = 0, proj_z = 0;
+    double proj_E = 0, proj_px = 0, proj_py = 0, proj_pz = 0;
+    double targ_t = 0, targ_x = 0, targ_y = 0, targ_z = 0;
+    double targ_E = 0, targ_px = 0, targ_py = 0, targ_pz = 0;
 
     real ecm_;
     std::vector<float> cenEstMinBiasList_;
