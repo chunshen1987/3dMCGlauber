@@ -109,6 +109,10 @@ void Nucleus::set_nucleus_parameters(std::string nucleus_name) {
         // Atomic Data and Nuclear Data Tables, 36, 3, May 1987, 495-536
         set_woods_saxon_parameters(
             20, 10, 0.17, 0.0, 2.8, 0.57, 0.0, 0.0, 0.0, 0.0, 1);
+    } else if (nucleus_name.compare("Ne22") == 0) {
+        // Atomic Data and Nuclear Data Tables, 36, 3, May 1987, 495-536
+        set_woods_saxon_parameters(
+            22, 10, 0.17, 0.0, 2.782, 0.549, 0.0, 0.0, 0.0, 0.0, 1);
     } else if (nucleus_name.compare("Al") == 0) {
         set_woods_saxon_parameters(
             27, 13, 0.17, 0.0, 3.07, 0.519, 0.0, 0.0, 0.0, 0.0, 3);
@@ -626,6 +630,8 @@ void Nucleus::readin_nucleon_positions() {
         } else if (lightNucleusOption_ == 5) {
             filename = "tables/Ne20_NLEFT_dmin0.5fm_negativeweights.bin.in";
         }
+    } else if (A_ == 22) {  // Neon 22
+        filename = "tables/Ne22_NLEFT.bin.in";
     } else if (A_ == 40) {  // Ar
         filename = "tables/Ar40_VMC.bin.in";
         if (lightNucleusOption_ == 0) {
