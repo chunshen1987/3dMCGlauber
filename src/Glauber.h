@@ -32,6 +32,8 @@ class Glauber {
     std::shared_ptr<RandomUtil::Random> ran_gen_ptr_;
     std::vector<double> Proj_nucleonz_;
     std::vector<double> Targ_nucleonz_;
+    std::vector<SpatialVec> Proj_nucleonxyz_;
+    std::vector<SpatialVec> Targ_nucleonxyz_;
     std::vector<double> HardPartonPosAndMomProj_;
     std::vector<double> HardPartonPosAndMomTarg_;
     std::vector<double> HardPartonPos_;
@@ -128,6 +130,9 @@ class Glauber {
     std::vector<double> get_all_proj_nucleon_z();
     std::vector<double> get_all_targ_nucleon_z();
 
+    std::vector<SpatialVec> get_all_proj_nucleon_xyz();
+    std::vector<SpatialVec> get_all_targ_nucleon_xyz();
+    
     std::vector<double>  OutputquarkPosProj();
     std::vector<double>  OutputquarkPosTarg();
 

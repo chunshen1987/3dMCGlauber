@@ -220,6 +220,25 @@ std::vector<double>  Glauber::get_all_proj_nucleon_z() {
     return (Proj_nucleonz_);
 }
 
+std::vector<SpatialVec>  Glauber::get_all_proj_nucleon_xyz() {
+    Proj_nucleonxyz_.clear();
+    auto nucleon_list = projectile->get_nucleon_list();
+    for (auto &inucleon: (*nucleon_list)) {
+        SpatialVec nucl_x = inucleon->get_x();
+        Proj_nucleonxyz_.push_back(nucl_x);
+    }
+    return (Proj_nucleonxyz_);
+}
+
+std::vector<SpatialVec>  Glauber::get_all_targ_nucleon_xyz() {
+    Targ_nucleonxyz_.clear();
+    auto nucleon_list = target->get_nucleon_list();
+    for (auto &inucleon: (*nucleon_list)) {
+        SpatialVec nucl_x = inucleon->get_x();
+        Targ_nucleonxyz_.push_back(nucl_x);
+    }
+    return (Targ_nucleonxyz_);
+}
 
 std::vector<double>  Glauber::get_all_targ_nucleon_z() {
     Targ_nucleonz_.clear();
