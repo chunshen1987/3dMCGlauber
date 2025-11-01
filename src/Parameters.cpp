@@ -142,8 +142,9 @@ int Parameters::get_rapidity_loss_method() const {
     assert(flag > 0 && flag < 5);
     return (flag);
 }
-int Parameters::get_N_sea_partons() const {
-    int flag = get_param_int("N_sea_partons", 1);
+
+real Parameters::get_N_sea_partons() const {
+    real flag = get_param_double("N_sea_partons", 1.);
     assert(flag > 0);
     return (flag);
 }

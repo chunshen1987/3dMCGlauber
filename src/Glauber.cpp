@@ -1,4 +1,4 @@
-// Copyright @ Chun Shen 2018
+// Copyright @Chun Shen 2018
 
 #include "Glauber.h"
 
@@ -42,7 +42,7 @@ Glauber::Glauber(
 
     real d_min = parameter_list.get_d_min();
 
-    int N_sea_partons = parameter_list.get_N_sea_partons();
+    real N_sea_partons = parameter_list.get_N_sea_partons();
 
     bool deformed = true;
     bool nucleonConfFromFile = parameter_list.nucleon_configuration_from_file();

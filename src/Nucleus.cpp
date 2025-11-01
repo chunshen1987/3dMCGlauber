@@ -24,7 +24,7 @@ namespace MCGlb {
 Nucleus::Nucleus(
     std::string nucleus_name, std::shared_ptr<RandomUtil::Random> ran_gen,
     bool sample_valence_quarks_in, real BG, real d_min, bool deformed,
-    bool confFromFile, int N_sea_partons) {
+    bool confFromFile, real N_sea_partons) {
     d_min_ = d_min;
     deformed_ = deformed;
     confFromFile_ = confFromFile;
@@ -398,9 +398,14 @@ void Nucleus::add_soft_parton_ball(real ecm, int direction) {
                 // with momentum soft_pvec/N_sea_partons for energy-momentum
                 // conservation.
                 for (int j = 0; j < 4; j++) {
-                    soft_pvec[j] /= static_cast<double>(N_sea_partons_);
+                    soft_pvec[j] /= N_sea_partons_;
                 }
-                for (int i = 0; i < N_sea_partons_; i++) {
+                int N_sea_partons_int = static_cast<int>(N_sea_partons_);
+                real N_sea_partons_rem = N_sea_partons_ - N_sea_partons_int;
+                if (ran_gen_ptr->rand_uniform() < N_sea_partons_rem) {
+                    N_sea_partons_int++;
+                }
+                for (int i = 0; i < N_sea_partons_int; i++) {
                     auto xvec = sample_valence_quark_position();
                     std::shared_ptr<Quark> quark_ptr(
                         new Quark(xvec, soft_pvec));
