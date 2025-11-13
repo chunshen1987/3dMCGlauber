@@ -369,10 +369,7 @@ void Nucleus::sample_valence_quarks_inside_nucleons(real ecm, int direction) {
 }
 
 void Nucleus::add_soft_parton_ball(real ecm, int direction) {
-    const real mN = nucleon_list_[0]->get_mass();
     real E_rem_min = 0.1;  // GeV
-    real beam_rapidity = direction * acosh(ecm / (2. * mN));
-    real Pz_rem_min = E_rem_min * tanh(beam_rapidity);
     for (auto &nucleon_i : nucleon_list_) {
         if (nucleon_i->is_wounded() && nucleon_i->get_number_of_quarks() != 0) {
             auto soft_pvec = nucleon_i->get_p();
@@ -383,35 +380,43 @@ void Nucleus::add_soft_parton_ball(real ecm, int direction) {
                     soft_pvec[i] -= quark_pvec[i];
                 }
             }
-            soft_pvec[0] -= E_rem_min;
-            soft_pvec[3] -= Pz_rem_min;
+            real Esoft = soft_pvec[0] - E_rem_min;
             real mq = PhysConsts::MQuarkValence;
-            if (soft_pvec[0] > mq) {
+            int Nmq = static_cast<int>(Esoft / mq);
+
+            // determine how many sea partons to add
+            int N_sea_partons_int = static_cast<int>(N_sea_partons_);
+            real N_sea_partons_rem = N_sea_partons_ - N_sea_partons_int;
+            if (ran_gen_ptr->rand_uniform() < N_sea_partons_rem) {
+                N_sea_partons_int++;
+            }
+            N_sea_partons_int = std::min(N_sea_partons_int, Nmq);
+            if (N_sea_partons_int == 0) continue;
+
+            Esoft -= N_sea_partons_int * mq;  // subtract the base mass
+            std::vector<real> xSoft(N_sea_partons_int + 1, 0.);
+            for (int i = 1; i < N_sea_partons_int; i++) {
+                xSoft[i] = ran_gen_ptr->rand_uniform();
+            }
+            xSoft[0] = 0.;
+            xSoft[N_sea_partons_int] = 1.;
+            std::sort(xSoft.begin(), xSoft.end());
+
+            for (int i = 0; i < N_sea_partons_int; i++) {
+                MomentumVec soft_pvec_i = {0., 0., 0., 0.};
+                real xSoft_i = xSoft[i + 1] - xSoft[i];
+                soft_pvec_i[0] = mq + Esoft * xSoft_i;
+
                 // assuming the soft parton ball has valence quark mass
                 // only add a soft parton when the leftover energy is
                 // larger than mq
-                real rapidity = direction * acosh(soft_pvec[0] / mq);
-                soft_pvec[3] = mq * sinh(rapidity);
+                real rapidity = direction * acosh(soft_pvec_i[0] / mq);
+                soft_pvec_i[3] = mq * sinh(rapidity);
 
-                // Scale soft partons momentum to Pmu/N_sea_partons
-                // Add as many soft partons as N_sea_partons
-                // with momentum soft_pvec/N_sea_partons for energy-momentum
-                // conservation.
-                for (int j = 0; j < 4; j++) {
-                    soft_pvec[j] /= N_sea_partons_;
-                }
-                int N_sea_partons_int = static_cast<int>(N_sea_partons_);
-                real N_sea_partons_rem = N_sea_partons_ - N_sea_partons_int;
-                if (ran_gen_ptr->rand_uniform() < N_sea_partons_rem) {
-                    N_sea_partons_int++;
-                }
-                for (int i = 0; i < N_sea_partons_int; i++) {
-                    auto xvec = sample_valence_quark_position();
-                    std::shared_ptr<Quark> quark_ptr(
-                        new Quark(xvec, soft_pvec));
-                    quark_ptr->set_rapidity(rapidity);
-                    nucleon_i->push_back_quark(quark_ptr);
-                }
+                auto xvec = sample_valence_quark_position();
+                std::shared_ptr<Quark> quark_ptr(new Quark(xvec, soft_pvec_i));
+                quark_ptr->set_rapidity(rapidity);
+                nucleon_i->push_back_quark(quark_ptr);
             }
         }
     }
