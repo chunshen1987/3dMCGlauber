@@ -24,6 +24,7 @@ class Nucleon : public Particle {
     bool baryon_used = false;
     bool remnant_set_ = false;
     bool remnant_carry_baryon_number_ = false;
+    real remnant_baryon_number = 1;
     std::vector<std::weak_ptr<Nucleon>> collide_with;
     std::vector<std::weak_ptr<Nucleon>> connected_with;
     std::shared_ptr<RandomUtil::Random> ran_gen_ptr_;
@@ -102,8 +103,14 @@ class Nucleon : public Particle {
     bool is_remnant_carry_baryon_number() const {
         return (remnant_carry_baryon_number_);
     }
+    real remnant_baryon_number() const {
+        return (remnant_baryon_number);
+    }
     void set_remnant_carry_baryon_number(bool remnant) {
         remnant_carry_baryon_number_ = remnant;
+    }
+    void set_remnant_carry_baryon_number(real remnant) {
+        remnant_baryon_number = remnant;
     }
 
     void set_remnant_p(MomentumVec p_in) { remnant_p_ = p_in; }
