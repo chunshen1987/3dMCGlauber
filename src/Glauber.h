@@ -43,6 +43,7 @@ class Glauber {
     real remnant_energy_loss_fraction_;
 
     std::vector<std::vector<real>> participantList_;
+    std::vector<int> HardParton_id_;
 
     real impact_b;
     real yloss_param_slope;
@@ -141,7 +142,10 @@ class Glauber {
     std::vector<double>  GetRemMomProj() {
         return(Mom_remnant_proj_);
     }
-
+    std::vector<int> Get_HardParton_id() {
+        return(HardParton_id_);
+    }
+    
     void set_Proj_hot_spot_x(SpatialVec x) {Proj_hot_spot_x_ = x;}
     void set_Targ_hot_spot_x(SpatialVec x) {Targ_hot_spot_x_ = x;}
 

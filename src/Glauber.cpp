@@ -480,6 +480,7 @@ void Glauber::Pick_and_subtract_hard_parton_momentum() {
                     HardPartonPosAndMomTarg_[ihard][5] = 0.0;
                     HardPartonPosAndMomTarg_[ihard][6] = 0.0;
                     HardPartonPosAndMomTarg_[ihard][7] = 0.0;
+                    HardParton_id_.push_back(9999);
                 }
                 MomentumVec HardPartonMomProj_ = {
                     HardPartonPosAndMomProj_[ihard][4],
@@ -538,6 +539,7 @@ void Glauber::Pick_and_subtract_hard_parton_momentum() {
                                            proj_q_pos[3] + proj_n_pos[3]};
                              set_Proj_hot_spot_x(proj_q->get_x());
                              do_resample_proj = 0;
+                             proj_collided->set_subtracted_parton_id(ihard);
                          }
                     }
                     proj_collided->erase_one_quark();
@@ -591,6 +593,7 @@ void Glauber::Pick_and_subtract_hard_parton_momentum() {
                             targ_q->set_x(tarj_q_pos);
                             set_Targ_hot_spot_x(tarj_q_pos);
                             do_resample_targ = 0;
+                            targ_collided->set_subtracted_parton_id(ihard);
                         }
                     }
                     targ_collided->erase_one_quark();
@@ -1188,6 +1191,7 @@ void Glauber::produce_remnant_strings() {
             if (iproj->is_hard_collided() && iproj->nucleon_is_subtracted()) {
                 for (unsigned int ip = 0; ip < p_i.size(); ip++) {
                     Mom_remnant_proj_.push_back(p_i[ip]);
+                    HardParton_id_.push_back(iproj->get_subtracted_parton_id());
                     if (parameter_list.subtract_hard_momentum()) {
                         p_i[ip] = 0.0;
                     }

@@ -194,6 +194,10 @@ std::vector<double> EventGenerator::GetRemMom_Targ() {
     return(RemMomTarg);
 }
 
+std::vector<int> EventGenerator::Get_Hard_p_id() {
+    std::vector<int> HardParton_id = mc_glauber_ptr_->Get_HardParton_id();
+    return(HardParton_id);
+}
 
 std::vector< std::vector<real> > EventGenerator::generate_strings(
                                     bool wound_nucleons, int event_id) {

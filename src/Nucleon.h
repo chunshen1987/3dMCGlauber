@@ -18,6 +18,7 @@ class Nucleon : public Particle {
     int collided_times = 0;
     int total_connected_times_ = 0;
     int electric_charge_ = 0;
+    int sub_parton_id = 9999;
     bool wounded_ = false;
     bool baryon_used = false;
     bool remnant_set_ = false;
@@ -46,6 +47,8 @@ class Nucleon : public Particle {
 
     void set_electric_charge(int charge) {electric_charge_ = charge;}
     int get_electric_charge() const {return(electric_charge_);}
+    int get_subtracted_parton_id() const {return(sub_parton_id);}
+    void set_subtracted_parton_id(int p_id) {sub_parton_id = p_id;}
 
     int get_number_of_quarks() const {return(quark_list.size());}
     void push_back_quark(std::shared_ptr<Quark> q) {quark_list.push_back(q);}
