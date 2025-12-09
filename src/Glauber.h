@@ -36,8 +36,8 @@ class Glauber {
     std::vector<SpatialVec> Targ_nucleonxyz_;
     std::vector< std::vector<double> > HardPartonPosAndMomProj_;
     std::vector< std::vector<double> > HardPartonPosAndMomTarg_;
-    std::vector<double> Mom_remnant_proj_;
-    std::vector<double> Mom_remnant_targ_;
+    std::vector< std::vector<double> > Mom_remnant_proj_;
+    std::vector< std::vector<double> > Mom_remnant_targ_;
     bool sample_valence_quark;
     bool fluct_Nstrings_per_NN_collision_;
     real remnant_energy_loss_fraction_;
@@ -133,19 +133,16 @@ class Glauber {
     std::vector<SpatialVec> get_all_proj_nucleon_xyz();
     std::vector<SpatialVec> get_all_targ_nucleon_xyz();
 
-    std::vector<double>  OutputquarkPosProj(std::vector<double> &HardPos);
-    std::vector<double>  OutputquarkPosTarg(std::vector<double> &HardPos);
+    std::vector<double> OutputquarkPosProj(std::vector<double> &HardPos);
+    std::vector<double> OutputquarkPosTarg(std::vector<double> &HardPos);
 
-    std::vector<double>  GetRemMomTarg() {
+    std::vector<std::vector<double>> GetRemMomTarg() {
         return(Mom_remnant_targ_);
     }
-    std::vector<double>  GetRemMomProj() {
+    std::vector<std::vector<double>> GetRemMomProj() {
         return(Mom_remnant_proj_);
     }
-    std::vector<int> Get_HardParton_id() {
-        return(HardParton_id_);
-    }
-    
+
     void set_Proj_hot_spot_x(SpatialVec x) {Proj_hot_spot_x_ = x;}
     void set_Targ_hot_spot_x(SpatialVec x) {Targ_hot_spot_x_ = x;}
 

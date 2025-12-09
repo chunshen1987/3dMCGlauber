@@ -18,13 +18,13 @@ class Nucleon : public Particle {
     int collided_times = 0;
     int total_connected_times_ = 0;
     int electric_charge_ = 0;
-    int sub_parton_id = 9999;
     bool wounded_ = false;
     bool baryon_used = false;
     bool remnant_set_ = false;
     bool remnant_carry_baryon_number_ = false;
     bool collided_ = false;
     bool subtracted_ = false;
+    int hardCollIdx_ = 0;
     std::vector<std::weak_ptr<Nucleon>> collide_with;
     std::vector<std::weak_ptr<Nucleon>> connected_with;
     std::shared_ptr<RandomUtil::Random> ran_gen_ptr_;
@@ -47,8 +47,6 @@ class Nucleon : public Particle {
 
     void set_electric_charge(int charge) {electric_charge_ = charge;}
     int get_electric_charge() const {return(electric_charge_);}
-    int get_subtracted_parton_id() const {return(sub_parton_id);}
-    void set_subtracted_parton_id(int p_id) {sub_parton_id = p_id;}
 
     int get_number_of_quarks() const {return(quark_list.size());}
     void push_back_quark(std::shared_ptr<Quark> q) {quark_list.push_back(q);}
@@ -119,6 +117,12 @@ class Nucleon : public Particle {
     void set_hard_subtracted(bool subtracted_index) {
         subtracted_ = subtracted_index;
     }
+
+    void setHardCollIdx(int hardCollIdx) {
+        hardCollIdx_ = hardCollIdx;
+    }
+
+    int getHardCollIdx() const {return(hardCollIdx_);}
 
     bool is_remnant_carry_baryon_number() const {
         return(remnant_carry_baryon_number_);

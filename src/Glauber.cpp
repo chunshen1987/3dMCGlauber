@@ -480,7 +480,6 @@ void Glauber::Pick_and_subtract_hard_parton_momentum() {
                     HardPartonPosAndMomTarg_[ihard][5] = 0.0;
                     HardPartonPosAndMomTarg_[ihard][6] = 0.0;
                     HardPartonPosAndMomTarg_[ihard][7] = 0.0;
-                    HardParton_id_.push_back(9999);
                 }
                 MomentumVec HardPartonMomProj_ = {
                     HardPartonPosAndMomProj_[ihard][4],
@@ -539,7 +538,6 @@ void Glauber::Pick_and_subtract_hard_parton_momentum() {
                                            proj_q_pos[3] + proj_n_pos[3]};
                              set_Proj_hot_spot_x(proj_q->get_x());
                              do_resample_proj = 0;
-                             proj_collided->set_subtracted_parton_id(ihard);
                          }
                     }
                     proj_collided->erase_one_quark();
@@ -593,7 +591,6 @@ void Glauber::Pick_and_subtract_hard_parton_momentum() {
                             targ_q->set_x(tarj_q_pos);
                             set_Targ_hot_spot_x(tarj_q_pos);
                             do_resample_targ = 0;
-                            targ_collided->set_subtracted_parton_id(ihard);
                         }
                     }
                     targ_collided->erase_one_quark();
@@ -876,6 +873,7 @@ int Glauber::perform_string_production() {
         auto xvec = first_event->get_collision_position();
         if (proj->is_hard_collided() && !proj->nucleon_is_subtracted()) {
             MomentumVec HardPartonMomProj_ = {0, 0, 0, 0};
+            int hardCollIdx = 0;
             for (int ihard = 0;
                  ihard < HardPartonPosAndMomProj_.size();
                  ihard++) {
@@ -888,15 +886,18 @@ int Glauber::perform_string_production() {
                         HardPartonPosAndMomProj_[ihard][5],
                         HardPartonPosAndMomProj_[ihard][6],
                         HardPartonPosAndMomProj_[ihard][7] };
+                    hardCollIdx = ihard;
                     break;
                 }
             }
             proj->substract_momentum_from_remnant(HardPartonMomProj_);
             proj->set_hard_subtracted(true);
+            proj->setHardCollIdx(hardCollIdx);
             //std::cout << "Subtract four momentum from picked up nucleon in proj." << std::endl;
         }
         if (targ->is_hard_collided() && !targ->nucleon_is_subtracted()) {
             MomentumVec HardPartonMomTarg_ = {0, 0, 0, 0};
+            int hardCollIdx = 0;
             for (int ihard = 0;
                  ihard < HardPartonPosAndMomProj_.size();
                  ihard++) {
@@ -909,11 +910,13 @@ int Glauber::perform_string_production() {
                         HardPartonPosAndMomProj_[ihard][5],
                         HardPartonPosAndMomProj_[ihard][6],
                         HardPartonPosAndMomProj_[ihard][7] };
+                    hardCollIdx = ihard;
                     break;
                 }
             }
             targ->substract_momentum_from_remnant(HardPartonMomTarg_);
             targ->set_hard_subtracted(true);
+            targ->setHardCollIdx(hardCollIdx);
             //std::cout << "Subtract four momentum from picked up nucleon in targ." << std::endl;
         }
 
@@ -1178,6 +1181,8 @@ void Glauber::produce_remnant_strings() {
     // clear any old remnants in case of multiple calls
     Mom_remnant_proj_.clear();
     Mom_remnant_targ_.clear();
+    Mom_remnant_proj_.resize(HardPartonPosAndMomProj_.size());
+    Mom_remnant_targ_.resize(HardPartonPosAndMomTarg_.size());
     const auto string_evolution_mode = -4;
     real tau_form = 0.5;
     real m_over_sigma = 1.0;  // [fm]
@@ -1189,10 +1194,12 @@ void Glauber::produce_remnant_strings() {
             auto x_i = iproj->get_remnant_x_frez();
             auto p_i = iproj->get_remnant_p();
             if (iproj->is_hard_collided() && iproj->nucleon_is_subtracted()) {
+                int hardCollIdx = iproj->getHardCollIdx();
                 for (unsigned int ip = 0; ip < p_i.size(); ip++) {
-                    Mom_remnant_proj_.push_back(p_i[ip]);
-                    HardParton_id_.push_back(iproj->get_subtracted_parton_id());
-                    if (parameter_list.subtract_hard_momentum()) {
+                    Mom_remnant_proj_[hardCollIdx].push_back(p_i[ip]);
+                }
+                if (parameter_list.subtract_hard_momentum()) {
+                    for (unsigned int ip = 0; ip < p_i.size(); ip++) {
                         p_i[ip] = 0.0;
                     }
                 }
@@ -1208,7 +1215,8 @@ void Glauber::produce_remnant_strings() {
                 y_rem = 0.5*log((p_i[0] + p_i[3])/(p_i[0] - p_i[3]));
             } else {
                 //std::cout<< " Warning: The beam remnant of projectile is space-like vector." << std::endl;
-                auto pT_temp = std::min(pT_i, std::sqrt(p_i[0]*p_i[0]-mass_min*mass_min));
+                auto pT_temp = std::min(
+                        pT_i, std::sqrt(p_i[0]*p_i[0] - mass_min*mass_min));
                 if (pT_temp < pT_i) {
                     //std::cout<< " Warning: E < pT of remnant of projectile, change pT from " << pT_i;
                     //std::cout<< " to " << pT_temp << std::endl;
@@ -1216,11 +1224,12 @@ void Glauber::produce_remnant_strings() {
                     p_i[2] = p_i[2]*pT_temp/pT_i;
                 }
                 //std::cout<< " Now change pz from " <<p_i[3];
-                pT_i   = pT_temp;
-                auto ymax = acosh(p_i[0] / std::sqrt(pT_i*pT_i + mass_min*mass_min));
+                pT_i = pT_temp;
+                double mT = sqrt(pT_i*pT_i + mass_min*mass_min);
+                auto ymax = acosh(p_i[0] / mT);
                 y_rem = std::min(ymax, ybeam);
-                auto mT_square = p_i[0]*p_i[0]/cosh(y_rem)/cosh(y_rem);
-                p_i[3] = std::sqrt(mT_square) * sinh(y_rem);
+                mT = p_i[0] / cosh(y_rem);
+                p_i[3] = mT * sinh(y_rem);
                 //std::cout<< " to " << p_i[3] << std::endl;
             }
             MomentumVec targ_p_vec = {p_i[0], p_i[1], p_i[2], -p_i[3]};
@@ -1243,10 +1252,13 @@ void Glauber::produce_remnant_strings() {
         if (itarg->is_wounded()) {
             auto x_i = itarg->get_remnant_x_frez();
             auto p_i = itarg->get_remnant_p();
+            int hardCollIdx = itarg->getHardCollIdx();
             if (itarg->is_hard_collided() && itarg->nucleon_is_subtracted()) {
                 for (unsigned int ip = 0; ip < p_i.size(); ip++) {
-                    Mom_remnant_targ_.push_back(p_i[ip]);
-                    if (parameter_list.subtract_hard_momentum()) {
+                    Mom_remnant_targ_[hardCollIdx].push_back(p_i[ip]);
+                }
+                if (parameter_list.subtract_hard_momentum()) {
+                    for (unsigned int ip = 0; ip < p_i.size(); ip++) {
                         p_i[ip] = 0.0;
                     }
                 }
@@ -1262,7 +1274,8 @@ void Glauber::produce_remnant_strings() {
                 y_rem = 0.5*log((p_i[0] + p_i[3])/(p_i[0] - p_i[3]));
             } else {
                 //std::cout<< " Warning: The beam remnant of target is space-like vector." << std::endl;
-                auto pT_temp = std::min(pT_i, std::sqrt(p_i[0]*p_i[0]-mass_min*mass_min));
+                auto pT_temp = std::min(
+                        pT_i, std::sqrt(p_i[0]*p_i[0] - mass_min*mass_min));
                 if (pT_temp < pT_i) {
                     //std::cout<< " Warning: E < pT of remnant of projectile, change pT from " << pT_i;
                     //std::cout<< " to " << pT_temp << std::endl;
@@ -1271,10 +1284,11 @@ void Glauber::produce_remnant_strings() {
                 }
                 //std::cout<< " Now change beam pz from " <<p_i[3];
                 pT_i   = pT_temp;
-                auto ymax = acosh(p_i[0] / std::sqrt(pT_i*pT_i + mass_min*mass_min));
-                y_rem = -std::min(ymax, ybeam);
-                auto mT_square = p_i[0]*p_i[0]/cosh(y_rem)/cosh(y_rem);
-                p_i[3] = std::sqrt(mT_square) * sinh(y_rem);
+                double mT = std::sqrt(pT_i*pT_i + mass_min*mass_min);
+                auto ymax = acosh(p_i[0] / mT);
+                y_rem = - std::min(ymax, ybeam);
+                mT = p_i[0] / cosh(y_rem);
+                p_i[3] = mT * sinh(y_rem);
                 //std::cout<< " to " << p_i[3] << std::endl;
             }
             MomentumVec proj_p_vec = {p_i[0], p_i[1], p_i[2], -p_i[3]};

@@ -183,21 +183,15 @@ std::vector<double> EventGenerator::GetQuarkPosTarg(double t, double x,
 }
 
 
-std::vector<double> EventGenerator::GetRemMom_Proj() {
-    std::vector<double> RemMomProj = mc_glauber_ptr_->GetRemMomProj();
-    return(RemMomProj);
+std::vector<std::vector<double>> EventGenerator::GetRemMom_Proj() {
+    return(mc_glauber_ptr_->GetRemMomProj());
 }
 
 
-std::vector<double> EventGenerator::GetRemMom_Targ() {
-    std::vector<double> RemMomTarg = mc_glauber_ptr_->GetRemMomTarg();
-    return(RemMomTarg);
+std::vector<std::vector<double>> EventGenerator::GetRemMom_Targ() {
+    return(mc_glauber_ptr_->GetRemMomTarg());
 }
 
-std::vector<int> EventGenerator::Get_Hard_p_id() {
-    std::vector<int> HardParton_id = mc_glauber_ptr_->Get_HardParton_id();
-    return(HardParton_id);
-}
 
 std::vector< std::vector<real> > EventGenerator::generate_strings(
                                     bool wound_nucleons, int event_id) {

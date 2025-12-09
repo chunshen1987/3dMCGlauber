@@ -114,10 +114,8 @@ class EventGenerator {
     std::vector<double> MCGlb_Targ_hot_spot_x();
     std::vector<double> GetQuarkPosProj(double t, double x, double y, double z);
     std::vector<double> GetQuarkPosTarg(double t, double x, double y, double z);
-    std::vector<double> GetRemMom_Proj();
-    std::vector<double> GetRemMom_Targ();
-    
-    std::vector<int> Get_Hard_p_id();
+    std::vector<std::vector<double>> GetRemMom_Proj();
+    std::vector<std::vector<double>> GetRemMom_Targ();
 
     std::vector<CollisionEvent> get_CollisionEventvector();
     bool event_of_interest_trigger(const int Npart, const int Ncoll,
