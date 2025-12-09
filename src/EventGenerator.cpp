@@ -134,82 +134,60 @@ std::vector<double> EventGenerator::MCGlb_target_nucleon_z() {
 }
 
 void EventGenerator::GetMomandPos_Proj(
-        double &t, double &x, double &y, double &z,
-        double &E, double &px, double &py, double &pz) {
-    proj_t = t;
-    proj_x = x;
-    proj_y = y;
-    proj_z = z;
-    proj_E = E;
-    proj_px = px;
-    proj_py = py;
-    proj_pz = pz;
+        std::vector<double> &t, std::vector<double> &x,
+        std::vector<double> &y, std::vector<double> &z,
+        std::vector<double> &E, std::vector<double> &px,
+        std::vector<double> &py, std::vector<double> &pz) {
+    proj_t_ = t;
+    proj_x_ = x;
+    proj_y_ = y;
+    proj_z_ = z;
+    proj_E_ = E;
+    proj_px_ = px;
+    proj_py_ = py;
+    proj_pz_ = pz;
 }
 
 void EventGenerator::GetMomandPos_Targ(
-        double &t, double &x, double &y, double &z,
-        double &E, double &px, double &py, double &pz) {
-    targ_t = t;
-    targ_x = x;
-    targ_y = y;
-    targ_z = z;
-    targ_E = E;
-    targ_px = px;
-    targ_py = py;
-    targ_pz = pz;
+        std::vector<double> &t, std::vector<double> &x,
+        std::vector<double> &y, std::vector<double> &z,
+        std::vector<double> &E, std::vector<double> &px,
+        std::vector<double> &py, std::vector<double> &pz) {
+    targ_t_ = t;
+    targ_x_ = x;
+    targ_y_ = y;
+    targ_z_ = z;
+
+    targ_E_ = E;
+    targ_px_ = px;
+    targ_py_ = py;
+    targ_pz_ = pz;
 }
 
-void EventGenerator::GetMom_Proj(double &E, double &px,
-                                 double &py, double &pz) {
-    proj_E  = E;
-    proj_px = px;
-    proj_py = py;
-    proj_pz = pz;
-}
 
-void EventGenerator::GetMom_Targ(double &E, double &px,
-                                 double &py, double &pz) {
-    targ_E  = E;
-    targ_px = px;
-    targ_py = py;
-    targ_pz = pz;
-}
-
-void EventGenerator::GetHardPos(double &t, double &x, double &y, double &z) {
-    proj_t = t;
-    proj_x = x;
-    proj_y = y;
-    proj_z = z;
-}
-
-std::vector<double> EventGenerator::GetQuarkPosProj() {
-    std::vector<double> HardPartonPos;
-    HardPartonPos.push_back(proj_t);
-    HardPartonPos.push_back(proj_x);
-    HardPartonPos.push_back(proj_y);
-    HardPartonPos.push_back(proj_z);
-
-    mc_glauber_ptr_->Set_hard_collisions_Pos(HardPartonPos);
-    std::vector<double> quarkxvec = mc_glauber_ptr_->OutputquarkPosProj();
+std::vector<double> EventGenerator::GetQuarkPosProj(double t, double x,
+                                                    double y, double z) {
+    std::vector<double> HardPartonPos = {t, x, y, z};
+    std::vector<double> quarkxvec = (
+            mc_glauber_ptr_->OutputquarkPosProj(HardPartonPos));
     return(quarkxvec);
 }
 
-std::vector<double> EventGenerator::GetQuarkPosTarg() {
-    std::vector<double> HardPartonPos;
-    HardPartonPos.push_back(proj_t);
-    HardPartonPos.push_back(proj_x);
-    HardPartonPos.push_back(proj_y);
-    HardPartonPos.push_back(proj_z);
 
-    mc_glauber_ptr_->Set_hard_collisions_Pos(HardPartonPos);
-    std::vector<double> quarkxvec = mc_glauber_ptr_->OutputquarkPosTarg();
+std::vector<double> EventGenerator::GetQuarkPosTarg(double t, double x,
+                                                    double y, double z) {
+    std::vector<double> HardPartonPos = {t, x, y, z};
+    std::vector<double> quarkxvec = (
+            mc_glauber_ptr_->OutputquarkPosTarg(HardPartonPos));
     return(quarkxvec);
 }
+
 
 std::vector<double> EventGenerator::GetRemMom_Proj() {
     std::vector<double> RemMomProj = mc_glauber_ptr_->GetRemMomProj();
     return(RemMomProj);
 }
+
 
 std::vector<double> EventGenerator::GetRemMom_Targ() {
     std::vector<double> RemMomTarg = mc_glauber_ptr_->GetRemMomTarg();
@@ -229,28 +207,11 @@ std::vector< std::vector<real> > EventGenerator::generate_strings(
 
     //real mean_Npart = 0;
     if (wound_nucleons) {
-        HardPartonPosAndMomProj.clear();
-        HardPartonPosAndMomProj.push_back(proj_t);
-        HardPartonPosAndMomProj.push_back(proj_x);
-        HardPartonPosAndMomProj.push_back(proj_y);
-        HardPartonPosAndMomProj.push_back(proj_z);
-        HardPartonPosAndMomProj.push_back(proj_E);
-        HardPartonPosAndMomProj.push_back(proj_px);
-        HardPartonPosAndMomProj.push_back(proj_py);
-        HardPartonPosAndMomProj.push_back(proj_pz);
-
-        HardPartonPosAndMomTarg.clear();
-        HardPartonPosAndMomTarg.push_back(proj_t);
-        HardPartonPosAndMomTarg.push_back(proj_x);
-        HardPartonPosAndMomTarg.push_back(proj_y);
-        HardPartonPosAndMomTarg.push_back(proj_z);
-        HardPartonPosAndMomTarg.push_back(targ_E);
-        HardPartonPosAndMomTarg.push_back(targ_px);
-        HardPartonPosAndMomTarg.push_back(targ_py);
-        HardPartonPosAndMomTarg.push_back(targ_pz);
-
         mc_glauber_ptr_->Set_hard_parton_momentum(
-            HardPartonPosAndMomProj, HardPartonPosAndMomTarg);
+            proj_t_, proj_x_, proj_y_, proj_z_,
+            proj_E_, proj_px_, proj_py_, proj_pz_,
+            targ_t_, targ_x_, targ_y_, targ_z_,
+            targ_E_, targ_px_, targ_py_, targ_pz_);
         mc_glauber_ptr_->Pick_and_subtract_hard_parton_momentum();
     }
 

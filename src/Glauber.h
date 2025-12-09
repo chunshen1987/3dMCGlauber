@@ -34,9 +34,8 @@ class Glauber {
     std::vector<double> Targ_nucleonz_;
     std::vector<SpatialVec> Proj_nucleonxyz_;
     std::vector<SpatialVec> Targ_nucleonxyz_;
-    std::vector<double> HardPartonPosAndMomProj_;
-    std::vector<double> HardPartonPosAndMomTarg_;
-    std::vector<double> HardPartonPos_;
+    std::vector< std::vector<double> > HardPartonPosAndMomProj_;
+    std::vector< std::vector<double> > HardPartonPosAndMomTarg_;
     std::vector<double> Mom_remnant_proj_;
     std::vector<double> Mom_remnant_targ_;
     bool sample_valence_quark;
@@ -132,9 +131,9 @@ class Glauber {
 
     std::vector<SpatialVec> get_all_proj_nucleon_xyz();
     std::vector<SpatialVec> get_all_targ_nucleon_xyz();
-    
-    std::vector<double>  OutputquarkPosProj();
-    std::vector<double>  OutputquarkPosTarg();
+
+    std::vector<double>  OutputquarkPosProj(std::vector<double> &HardPos);
+    std::vector<double>  OutputquarkPosTarg(std::vector<double> &HardPos);
 
     std::vector<double>  GetRemMomTarg() {
         return(Mom_remnant_targ_);
@@ -167,11 +166,16 @@ class Glauber {
                             const real Ncoll, const real Nstrings,
                             const real b, const unsigned int seed);
 
-    //void Pick_and_subtract_hard_parton_momentum_in_nucleon();
     void Pick_and_subtract_hard_parton_momentum();
-    void Set_hard_parton_momentum(std::vector<double> &HardMomandPosProj,
-                                  std::vector<double> &HardMomandPosTarg);
-    void Set_hard_collisions_Pos(std::vector<double> &HardPosProj);
+    void Set_hard_parton_momentum(
+        std::vector<double> &proj_t, std::vector<double> &proj_x,
+        std::vector<double> &proj_y, std::vector<double> &proj_z,
+        std::vector<double> &proj_E, std::vector<double> &proj_px,
+        std::vector<double> &proj_py, std::vector<double> &proj_pz,
+        std::vector<double> &targ_t, std::vector<double> &targ_x,
+        std::vector<double> &targ_y, std::vector<double> &targ_z,
+        std::vector<double> &targ_E, std::vector<double> &targ_px,
+        std::vector<double> &targ_py, std::vector<double> &targ_pz);
 
     void output_spectators(std::string filename);
     void prepareParticipantList();

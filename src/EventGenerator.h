@@ -29,12 +29,22 @@ class EventGenerator {
 
     int Ncoll_;
     int Npart_;
-    std::vector<double> HardPartonPosAndMomProj;
-    std::vector<double> HardPartonPosAndMomTarg;
-    double proj_t = 0, proj_x = 0, proj_y = 0, proj_z = 0;
-    double proj_E = 0, proj_px = 0, proj_py = 0, proj_pz = 0;
-    double targ_t = 0, targ_x = 0, targ_y = 0, targ_z = 0;
-    double targ_E = 0, targ_px = 0, targ_py = 0, targ_pz = 0;
+    std::vector<double> proj_t_;
+    std::vector<double> proj_x_;
+    std::vector<double> proj_y_;
+    std::vector<double> proj_z_;
+    std::vector<double> proj_E_;
+    std::vector<double> proj_px_;
+    std::vector<double> proj_py_;
+    std::vector<double> proj_pz_;
+    std::vector<double> targ_t_;
+    std::vector<double> targ_x_;
+    std::vector<double> targ_y_;
+    std::vector<double> targ_z_;
+    std::vector<double> targ_E_;
+    std::vector<double> targ_px_;
+    std::vector<double> targ_py_;
+    std::vector<double> targ_pz_;
 
     real ecm_;
     std::vector<float> cenEstMinBiasList_;
@@ -85,13 +95,16 @@ class EventGenerator {
     double MCGlb_projectile_nucleon_density(double t, double x,
                                             double y, double z);
 
-    void GetMomandPos_Proj(double &t, double &x, double &y, double &z,
-                           double &E, double &px, double &py, double &pz);
-    void GetMomandPos_Targ(double &t, double &x, double &y, double &z,
-                           double &E, double &px, double &py, double &pz);
-    void GetMom_Proj(double &E, double &px, double &py, double &pz);
-    void GetMom_Targ(double &E, double &px, double &py, double &pz);
-    void GetHardPos(double &t, double &x, double &y, double &z);
+    void GetMomandPos_Proj(
+        std::vector<double> &t, std::vector<double> &x,
+        std::vector<double> &y, std::vector<double> &z,
+        std::vector<double> &E, std::vector<double> &px,
+        std::vector<double> &py, std::vector<double> &pz);
+    void GetMomandPos_Targ(
+        std::vector<double> &t, std::vector<double> &x,
+        std::vector<double> &y, std::vector<double> &z,
+        std::vector<double> &E, std::vector<double> &px,
+        std::vector<double> &py, std::vector<double> &pz);
 
     std::vector<double> MCGlb_projectile_nucleon_z();
     std::vector<double> MCGlb_target_nucleon_z();
@@ -99,8 +112,8 @@ class EventGenerator {
     std::vector<SpatialVec> MCGlb_target_nucleon_xyz();
     std::vector<double> MCGlb_Proj_hot_spot_x();
     std::vector<double> MCGlb_Targ_hot_spot_x();
-    std::vector<double> GetQuarkPosProj();
-    std::vector<double> GetQuarkPosTarg();
+    std::vector<double> GetQuarkPosProj(double t, double x, double y, double z);
+    std::vector<double> GetQuarkPosTarg(double t, double x, double y, double z);
     std::vector<double> GetRemMom_Proj();
     std::vector<double> GetRemMom_Targ();
 

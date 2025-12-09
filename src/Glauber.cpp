@@ -377,13 +377,26 @@ real Glauber::compute_NN_inelastic_cross_section(real ecm) const {
 }
 
 
-void Glauber::Set_hard_parton_momentum(std::vector<double> &HardMomandPosProj,
-                                       std::vector<double> &HardMomandPosTarg) {
+void Glauber::Set_hard_parton_momentum(
+        std::vector<double> &proj_t, std::vector<double> &proj_x,
+        std::vector<double> &proj_y, std::vector<double> &proj_z,
+        std::vector<double> &proj_E, std::vector<double> &proj_px,
+        std::vector<double> &proj_py, std::vector<double> &proj_pz,
+        std::vector<double> &targ_t, std::vector<double> &targ_x,
+        std::vector<double> &targ_y, std::vector<double> &targ_z,
+        std::vector<double> &targ_E, std::vector<double> &targ_px,
+        std::vector<double> &targ_py, std::vector<double> &targ_pz) {
     HardPartonPosAndMomProj_.clear();
     HardPartonPosAndMomTarg_.clear();
-    for (unsigned int i=0; i<HardMomandPosProj.size(); i++) {
-        HardPartonPosAndMomProj_.push_back(HardMomandPosProj[i]);
-        HardPartonPosAndMomTarg_.push_back(HardMomandPosTarg[i]);
+    for (unsigned int i = 0; i < proj_t.size(); i++) {
+        std::vector<double> hardPartonVecProj = {
+            proj_t[i], proj_x[i], proj_y[i], proj_z[i],
+            proj_E[i], proj_px[i], proj_py[i], proj_pz[i]};
+        HardPartonPosAndMomProj_.push_back(hardPartonVecProj);
+        std::vector<double> hardPartonVecTarg = {
+            targ_t[i], targ_x[i], targ_y[i], targ_z[i],
+            targ_E[i], targ_px[i], targ_py[i], targ_pz[i]};
+        HardPartonPosAndMomTarg_.push_back(hardPartonVecTarg);
     }
 }
 
@@ -393,16 +406,10 @@ real Glauber::GG_probality(real x, real Lambda, real Omega, real Sigma0) const {
             exp(-1 * pow(x/Lambda/Sigma0 - 1., 2.) / Omega/Omega));
 }
 
-void Glauber::Set_hard_collisions_Pos(std::vector<double> &HardPosProj) {
-    HardPartonPos_.clear();
-    for (unsigned int i=0; i<HardPosProj.size(); i++) {
-        HardPartonPos_.push_back(HardPosProj[i]);
-    }
-}
 
-std::vector<double>  Glauber::OutputquarkPosProj() {
-    auto binary_collision_x = HardPartonPos_[1];
-    auto binary_collision_y = HardPartonPos_[2];
+std::vector<double>  Glauber::OutputquarkPosProj(std::vector<double> &HardPos) {
+    auto binary_collision_x = HardPos[1];
+    auto binary_collision_y = HardPos[2];
     std::vector<double> quark_xvec;
     // pick up the colliding nucleon pair generated hard partons
     for (auto &it: collision_schedule_list_) {
@@ -421,9 +428,9 @@ std::vector<double>  Glauber::OutputquarkPosProj() {
     return(quark_xvec);
 }
 
-std::vector<double>  Glauber::OutputquarkPosTarg() {
-    auto binary_collision_x = HardPartonPos_[1];
-    auto binary_collision_y = HardPartonPos_[2];
+std::vector<double>  Glauber::OutputquarkPosTarg(std::vector<double> &HardPos) {
+    auto binary_collision_x = HardPos[1];
+    auto binary_collision_y = HardPos[2];
     std::vector<double> quark_xvec;
     // pick up the colliding nucleon pair generated hard partons
     for (auto &it: collision_schedule_list_) {
@@ -446,145 +453,155 @@ void Glauber::Pick_and_subtract_hard_parton_momentum() {
     real ecm = parameter_list.get_roots();
     const real mN = PhysConsts::MProton;
     real nucleonPz = mN*sinh(ybeam);
-    // Positions and Momentum for the leading hard partons.
-    auto binary_collision_x = HardPartonPosAndMomProj_[1];
-    auto binary_collision_y = HardPartonPosAndMomProj_[2];
-    // pick up the colliding nucleon pair generated hard partons
-    for (auto &it: collision_schedule_list_) {
-        // collision list is time ordered
-        auto xvec = it.get_collision_position();
-        if ((std::abs(xvec[1] - binary_collision_x) < 1.e-5) &&
-            (std::abs(xvec[2] - binary_collision_y) < 1.e-5)) {
-            // Pick up one valence quark,
-            // substract the four momentum from this valence quark
-            auto proj_collided = it.get_proj_nucleon_ptr().lock();
-            auto targ_collided = it.get_targ_nucleon_ptr().lock();
-            proj_collided->set_hard_collided(true);
-            targ_collided->set_hard_collided(true);
-            if (!parameter_list.subtract_hard_momentum()) {
-                HardPartonPosAndMomProj_[4] = 0.0;
-                HardPartonPosAndMomProj_[5] = 0.0;
-                HardPartonPosAndMomProj_[6] = 0.0;
-                HardPartonPosAndMomProj_[7] = 0.0;
+    for (unsigned int ihard = 0; ihard < HardPartonPosAndMomProj_.size();
+            ihard++) {
+        // Positions and Momentum for the leading hard partons.
+        auto binary_collision_x = HardPartonPosAndMomProj_[ihard][1];
+        auto binary_collision_y = HardPartonPosAndMomProj_[ihard][2];
+        // pick up the colliding nucleon pair generated hard partons
+        for (auto &it: collision_schedule_list_) {
+            // collision list is time ordered
+            auto xvec = it.get_collision_position();
+            if ((std::abs(xvec[1] - binary_collision_x) < 1.e-5) &&
+                (std::abs(xvec[2] - binary_collision_y) < 1.e-5)) {
+                // Pick up one valence quark,
+                // substract the four momentum from this valence quark
+                auto proj_collided = it.get_proj_nucleon_ptr().lock();
+                auto targ_collided = it.get_targ_nucleon_ptr().lock();
+                proj_collided->set_hard_collided(true);
+                targ_collided->set_hard_collided(true);
+                if (!parameter_list.subtract_hard_momentum()) {
+                    HardPartonPosAndMomProj_[ihard][4] = 0.0;
+                    HardPartonPosAndMomProj_[ihard][5] = 0.0;
+                    HardPartonPosAndMomProj_[ihard][6] = 0.0;
+                    HardPartonPosAndMomProj_[ihard][7] = 0.0;
 
-                HardPartonPosAndMomTarg_[4] = 0.0;
-                HardPartonPosAndMomTarg_[5] = 0.0;
-                HardPartonPosAndMomTarg_[6] = 0.0;
-                HardPartonPosAndMomTarg_[7] = 0.0;
-            }
-            MomentumVec HardPartonMomProj_ = { HardPartonPosAndMomProj_[4], 
-                                               HardPartonPosAndMomProj_[5],
-                                               HardPartonPosAndMomProj_[6],
-                                               HardPartonPosAndMomProj_[7] };
-            MomentumVec HardPartonMomTarg_ = { HardPartonPosAndMomTarg_[4], 
-                                               HardPartonPosAndMomTarg_[5],
-                                               HardPartonPosAndMomTarg_[6],
-                                               HardPartonPosAndMomTarg_[7] };
-            // Pick up the valence quark
-            if (sample_valence_quark) {
-                if (HardPartonMomProj_[0] > ecm/2.1
-                       || HardPartonMomTarg_[0] > ecm/2.1) {
-                    std::cout << "Sorry for the too large hard collision energy,";
-                    std::cout << " Bye ~~" << std::endl;
-                    exit(-1);
+                    HardPartonPosAndMomTarg_[ihard][4] = 0.0;
+                    HardPartonPosAndMomTarg_[ihard][5] = 0.0;
+                    HardPartonPosAndMomTarg_[ihard][6] = 0.0;
+                    HardPartonPosAndMomTarg_[ihard][7] = 0.0;
                 }
-                std::shared_ptr<Quark> proj_q;
-                std::shared_ptr<Quark> targ_q;
-                MomentumVec p_q;
-                int do_resample_proj = 1;
-                SpatialVec pos_q_Proj, pos_q_Targ;
-                while (do_resample_proj == 1) {
-                    proj_q = proj_collided->get_a_valence_quark_sub_mom(
-                                                   HardPartonMomProj_[0]);
-                    p_q = proj_q->get_p();
-                    if (p_q[0] <= HardPartonMomProj_[0]) {
-                        // resample the valence quark requiring
-                        // one parton with x >= x_hard
-                        real x_hard = std::abs(HardPartonMomProj_[3]/nucleonPz);
-                        std::vector<double> xvec_q = (
-                                       proj_collided->output_quark_pos());
-
-                        std::vector<real> xQuark;
-                        projectile->resample_quark_momentum_fraction(
-                                xQuark,
-                                proj_collided->get_electric_charge(),
-                                ecm, x_hard);
-                        proj_collided->resample_valence_quarks(ecm, 1, xvec_q,
-                                                               xQuark);
-                        proj_collided->readd_soft_parton_ball(
-                               ecm, 1, xvec_q, parameter_list.get_BG(),
-                               proj_collided->get_p(),
-                               proj_collided->get_quark_list());
-                        //std::cout << " re-sample the valence quark in proj." <<std::endl;
-                    } else {
-                        proj_q->set_subtracted(true);
-                        auto proj_q_pos = proj_q->get_x();
-                        auto proj_n_pos = proj_collided->get_x();
-                         pos_q_Proj = {0.0,
-                                       proj_q_pos[1] + proj_n_pos[1],
-                                       proj_q_pos[2] + proj_n_pos[2],
-                                       proj_q_pos[3] + proj_n_pos[3]};
-                         set_Proj_hot_spot_x(proj_q->get_x());
-                         do_resample_proj = 0;
-                     }
-                }
-                proj_collided->erase_one_quark();
-                int do_resample_targ = 1;
-                while (do_resample_targ == 1) {
-                    targ_q = targ_collided->get_a_valence_quark_sub_mom(
-                                                        HardPartonMomTarg_[0]);
-                    p_q = targ_q->get_p();
-                    if (p_q[0] <= HardPartonMomTarg_[0]) { // 0.346**2~ 0.12
-                        // resample the valence quark requiring
-                        // one parton with x >= x_hard
-                        real x_hard = std::abs(HardPartonMomTarg_[3]/nucleonPz);
-                        std::vector<double> xvec_q = targ_collided->output_quark_pos();
-                        std::vector<real> xQuark;
-                        target->resample_quark_momentum_fraction(
-                                xQuark,
-                                targ_collided->get_electric_charge(),
-                                ecm, x_hard);
-                        targ_collided->resample_valence_quarks(ecm, -1, xvec_q,
-                                                               xQuark);
-                        targ_collided->readd_soft_parton_ball(
-                               ecm, -1, xvec_q, parameter_list.get_BG(),
-                               targ_collided->get_p(),
-                               targ_collided->get_quark_list());
-                        //std::cout << " re-sample the valence quark in targ." <<std::endl;
-                    } else {
-                        targ_q->set_subtracted(true);
-                        SpatialVec tarj_q_pos = targ_q->get_x();
-                        auto tarj_n = targ_collided->get_x();
-                        pos_q_Targ = {0.0,
-                                      tarj_q_pos[1] + tarj_n[1],
-                                      tarj_q_pos[2] + tarj_n[2],
-                                      tarj_q_pos[3] + tarj_n[3]};
-                        auto dis_square_q_xy = (pos_q_Targ[1] - pos_q_Proj[1])*(pos_q_Targ[1] - pos_q_Proj[1]) +
-                                               (pos_q_Targ[2] - pos_q_Proj[2])*(pos_q_Targ[2] - pos_q_Proj[2]);
-                        SpatialVec newplace = pos_q_Targ;
-                        while (dis_square_q_xy > 0.25) {
-                            tarj_q_pos = (
-                               targ_collided->resample_valence_quark_position(
-                                   parameter_list.get_BG())
-                            );
-                            newplace = {0,
-                                        tarj_q_pos[1] + tarj_n[1],
-                                        tarj_q_pos[2] + tarj_n[2],
-                                        tarj_q_pos[3] + tarj_n[3]};
-                            dis_square_q_xy = (newplace[1] - pos_q_Proj[1])*(newplace[1] - pos_q_Proj[1]) +
-                                              (newplace[2] - pos_q_Proj[2])*(newplace[2] - pos_q_Proj[2]);
-                        }
-                        targ_q->set_x(tarj_q_pos);
-                        set_Targ_hot_spot_x(tarj_q_pos);
-                        do_resample_targ = 0;
+                MomentumVec HardPartonMomProj_ = {
+                    HardPartonPosAndMomProj_[ihard][4],
+                    HardPartonPosAndMomProj_[ihard][5],
+                    HardPartonPosAndMomProj_[ihard][6],
+                    HardPartonPosAndMomProj_[ihard][7] };
+                MomentumVec HardPartonMomTarg_ = {
+                    HardPartonPosAndMomTarg_[ihard][4],
+                    HardPartonPosAndMomTarg_[ihard][5],
+                    HardPartonPosAndMomTarg_[ihard][6],
+                    HardPartonPosAndMomTarg_[ihard][7] };
+                // Pick up the valence quark
+                if (sample_valence_quark) {
+                    if (HardPartonMomProj_[0] > ecm/2.1
+                           || HardPartonMomTarg_[0] > ecm/2.1) {
+                        std::cout << "Sorry for the too large hard collision energy,";
+                        std::cout << " Bye ~~" << std::endl;
+                        exit(-1);
                     }
+                    std::shared_ptr<Quark> proj_q;
+                    std::shared_ptr<Quark> targ_q;
+                    MomentumVec p_q;
+                    int do_resample_proj = 1;
+                    SpatialVec pos_q_Proj, pos_q_Targ;
+                    while (do_resample_proj == 1) {
+                        proj_q = proj_collided->get_a_valence_quark_sub_mom(
+                                                       HardPartonMomProj_[0]);
+                        p_q = proj_q->get_p();
+                        if (p_q[0] <= HardPartonMomProj_[0]) {
+                            // resample the valence quark requiring
+                            // one parton with x >= x_hard
+                            real x_hard = std::abs(
+                                    HardPartonMomProj_[3]/nucleonPz);
+                            std::vector<double> xvec_q = (
+                                           proj_collided->output_quark_pos());
+
+                            std::vector<real> xQuark;
+                            projectile->resample_quark_momentum_fraction(
+                                    xQuark,
+                                    proj_collided->get_electric_charge(),
+                                    ecm, x_hard);
+                            proj_collided->resample_valence_quarks(
+                                    ecm, 1, xvec_q, xQuark);
+                            proj_collided->readd_soft_parton_ball(
+                                   ecm, 1, xvec_q, parameter_list.get_BG(),
+                                   proj_collided->get_p(),
+                                   proj_collided->get_quark_list());
+                            //std::cout << " re-sample the valence quark in proj." <<std::endl;
+                        } else {
+                            proj_q->set_subtracted(true);
+                            auto proj_q_pos = proj_q->get_x();
+                            auto proj_n_pos = proj_collided->get_x();
+                             pos_q_Proj = {0.0,
+                                           proj_q_pos[1] + proj_n_pos[1],
+                                           proj_q_pos[2] + proj_n_pos[2],
+                                           proj_q_pos[3] + proj_n_pos[3]};
+                             set_Proj_hot_spot_x(proj_q->get_x());
+                             do_resample_proj = 0;
+                         }
+                    }
+                    proj_collided->erase_one_quark();
+                    int do_resample_targ = 1;
+                    while (do_resample_targ == 1) {
+                        targ_q = targ_collided->get_a_valence_quark_sub_mom(
+                                                        HardPartonMomTarg_[0]);
+                        p_q = targ_q->get_p();
+                        if (p_q[0] <= HardPartonMomTarg_[0]) { // 0.346**2~ 0.12
+                            // resample the valence quark requiring
+                            // one parton with x >= x_hard
+                            real x_hard = std::abs(
+                                    HardPartonMomTarg_[3]/nucleonPz);
+                            std::vector<double> xvec_q = (
+                                    targ_collided->output_quark_pos());
+                            std::vector<real> xQuark;
+                            target->resample_quark_momentum_fraction(
+                                    xQuark,
+                                    targ_collided->get_electric_charge(),
+                                    ecm, x_hard);
+                            targ_collided->resample_valence_quarks(
+                                    ecm, -1, xvec_q, xQuark);
+                            targ_collided->readd_soft_parton_ball(
+                                   ecm, -1, xvec_q, parameter_list.get_BG(),
+                                   targ_collided->get_p(),
+                                   targ_collided->get_quark_list());
+                            //std::cout << " re-sample the valence quark in targ." <<std::endl;
+                        } else {
+                            targ_q->set_subtracted(true);
+                            SpatialVec tarj_q_pos = targ_q->get_x();
+                            auto tarj_n = targ_collided->get_x();
+                            pos_q_Targ = {0.0,
+                                          tarj_q_pos[1] + tarj_n[1],
+                                          tarj_q_pos[2] + tarj_n[2],
+                                          tarj_q_pos[3] + tarj_n[3]};
+                            auto dis_square_q_xy = (pos_q_Targ[1] - pos_q_Proj[1])*(pos_q_Targ[1] - pos_q_Proj[1]) +
+                                                   (pos_q_Targ[2] - pos_q_Proj[2])*(pos_q_Targ[2] - pos_q_Proj[2]);
+                            SpatialVec newplace = pos_q_Targ;
+                            while (dis_square_q_xy > 0.25) {
+                                tarj_q_pos = (
+                                   targ_collided->resample_valence_quark_position(
+                                       parameter_list.get_BG())
+                                );
+                                newplace = {0,
+                                            tarj_q_pos[1] + tarj_n[1],
+                                            tarj_q_pos[2] + tarj_n[2],
+                                            tarj_q_pos[3] + tarj_n[3]};
+                                dis_square_q_xy = (newplace[1] - pos_q_Proj[1])*(newplace[1] - pos_q_Proj[1]) +
+                                                  (newplace[2] - pos_q_Proj[2])*(newplace[2] - pos_q_Proj[2]);
+                            }
+                            targ_q->set_x(tarj_q_pos);
+                            set_Targ_hot_spot_x(tarj_q_pos);
+                            do_resample_targ = 0;
+                        }
+                    }
+                    targ_collided->erase_one_quark();
+                    break;
+                } else {
+                    proj_collided->substract_momentum_from_remnant(
+                            HardPartonMomProj_);
+                    targ_collided->substract_momentum_from_remnant(
+                            HardPartonMomTarg_);
+                    break;
                 }
-                targ_collided->erase_one_quark();
-                break;
-            } else {
-                proj_collided->substract_momentum_from_remnant(HardPartonMomProj_);
-                targ_collided->substract_momentum_from_remnant(HardPartonMomTarg_);
-                break;
             }
         }
     }
@@ -853,20 +870,45 @@ int Glauber::perform_string_production() {
 
         auto proj = first_event->get_proj_nucleon_ptr().lock();
         auto targ = first_event->get_targ_nucleon_ptr().lock();
+        auto xvec = first_event->get_collision_position();
         if (proj->is_hard_collided() && !proj->nucleon_is_subtracted()) {
-            MomentumVec HardPartonMomProj_ = { HardPartonPosAndMomProj_[4],
-                                               HardPartonPosAndMomProj_[5],
-                                               HardPartonPosAndMomProj_[6],
-                                               HardPartonPosAndMomProj_[7] };
+            MomentumVec HardPartonMomProj_ = {0, 0, 0, 0};
+            for (int ihard = 0;
+                 ihard < HardPartonPosAndMomProj_.size();
+                 ihard++) {
+                auto binary_collision_x = HardPartonPosAndMomProj_[ihard][1];
+                auto binary_collision_y = HardPartonPosAndMomProj_[ihard][2];
+                if ((std::abs(xvec[1] - binary_collision_x) < 1.e-5) &&
+                    (std::abs(xvec[2] - binary_collision_y) < 1.e-5)) {
+                    HardPartonMomProj_ = {
+                        HardPartonPosAndMomProj_[ihard][4],
+                        HardPartonPosAndMomProj_[ihard][5],
+                        HardPartonPosAndMomProj_[ihard][6],
+                        HardPartonPosAndMomProj_[ihard][7] };
+                    break;
+                }
+            }
             proj->substract_momentum_from_remnant(HardPartonMomProj_);
             proj->set_hard_subtracted(true);
             //std::cout << "Subtract four momentum from picked up nucleon in proj." << std::endl;
         }
         if (targ->is_hard_collided() && !targ->nucleon_is_subtracted()) {
-            MomentumVec HardPartonMomTarg_ = { HardPartonPosAndMomTarg_[4],
-                                               HardPartonPosAndMomTarg_[5],
-                                               HardPartonPosAndMomTarg_[6],
-                                               HardPartonPosAndMomTarg_[7] };
+            MomentumVec HardPartonMomTarg_ = {0, 0, 0, 0};
+            for (int ihard = 0;
+                 ihard < HardPartonPosAndMomProj_.size();
+                 ihard++) {
+                auto binary_collision_x = HardPartonPosAndMomProj_[ihard][1];
+                auto binary_collision_y = HardPartonPosAndMomProj_[ihard][2];
+                if ((std::abs(xvec[1] - binary_collision_x) < 1.e-5) &&
+                    (std::abs(xvec[2] - binary_collision_y) < 1.e-5)) {
+                    HardPartonMomTarg_ = {
+                        HardPartonPosAndMomProj_[ihard][4],
+                        HardPartonPosAndMomProj_[ihard][5],
+                        HardPartonPosAndMomProj_[ihard][6],
+                        HardPartonPosAndMomProj_[ihard][7] };
+                    break;
+                }
+            }
             targ->substract_momentum_from_remnant(HardPartonMomTarg_);
             targ->set_hard_subtracted(true);
             //std::cout << "Subtract four momentum from picked up nucleon in targ." << std::endl;
