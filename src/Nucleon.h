@@ -24,7 +24,7 @@ class Nucleon : public Particle {
     bool remnant_carry_baryon_number_ = false;
     bool collided_ = false;
     bool subtracted_ = false;
-    int hardCollIdx_ = 0;
+    std::vector<int> hardCollIdx_;
     std::vector<std::weak_ptr<Nucleon>> collide_with;
     std::vector<std::weak_ptr<Nucleon>> connected_with;
     std::shared_ptr<RandomUtil::Random> ran_gen_ptr_;
@@ -81,7 +81,7 @@ class Nucleon : public Particle {
 
     int get_number_of_connections() const {
         if (is_hard_collided())
-            return(total_connected_times_ + 1);
+            return(total_connected_times_ + hardCollIdx_.size());
         else
             return(total_connected_times_);
     }
@@ -119,10 +119,10 @@ class Nucleon : public Particle {
     }
 
     void setHardCollIdx(int hardCollIdx) {
-        hardCollIdx_ = hardCollIdx;
+        hardCollIdx_.push_back(hardCollIdx);
     }
 
-    int getHardCollIdx() const {return(hardCollIdx_);}
+    std::vector<int> getHardCollIdx() const {return(hardCollIdx_);}
 
     bool is_remnant_carry_baryon_number() const {
         return(remnant_carry_baryon_number_);

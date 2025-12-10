@@ -872,24 +872,28 @@ int Glauber::perform_string_production() {
         auto targ = first_event->get_targ_nucleon_ptr().lock();
         auto xvec = first_event->get_collision_position();
         if (proj->is_hard_collided() && !proj->nucleon_is_subtracted()) {
-            int hardCollIdx = proj->getHardCollIdx();
-            MomentumVec HardPartonMomProj_ = {
-                        HardPartonPosAndMomProj_[hardCollIdx][4],
-                        HardPartonPosAndMomProj_[hardCollIdx][5],
-                        HardPartonPosAndMomProj_[hardCollIdx][6],
-                        HardPartonPosAndMomProj_[hardCollIdx][7] };
-            proj->substract_momentum_from_remnant(HardPartonMomProj_);
+            std::vector<int> hardCollIdxList = proj->getHardCollIdx();
+            for (int ihard : hardCollIdxList) {
+                MomentumVec HardPartonMomProj_ = {
+                            HardPartonPosAndMomProj_[ihard][4],
+                            HardPartonPosAndMomProj_[ihard][5],
+                            HardPartonPosAndMomProj_[ihard][6],
+                            HardPartonPosAndMomProj_[ihard][7] };
+                proj->substract_momentum_from_remnant(HardPartonMomProj_);
+            }
             proj->set_hard_subtracted(true);
             //std::cout << "Subtract four momentum from picked up nucleon in proj." << std::endl;
         }
         if (targ->is_hard_collided() && !targ->nucleon_is_subtracted()) {
-            int hardCollIdx = targ->getHardCollIdx();
-            MomentumVec HardPartonMomTarg_ = {
-                        HardPartonPosAndMomTarg_[hardCollIdx][4],
-                        HardPartonPosAndMomTarg_[hardCollIdx][5],
-                        HardPartonPosAndMomTarg_[hardCollIdx][6],
-                        HardPartonPosAndMomTarg_[hardCollIdx][7] };
-            targ->substract_momentum_from_remnant(HardPartonMomTarg_);
+            std::vector<int> hardCollIdxList = targ->getHardCollIdx();
+            for (int ihard : hardCollIdxList) {
+                MomentumVec HardPartonMomTarg_ = {
+                            HardPartonPosAndMomTarg_[ihard][4],
+                            HardPartonPosAndMomTarg_[ihard][5],
+                            HardPartonPosAndMomTarg_[ihard][6],
+                            HardPartonPosAndMomTarg_[ihard][7] };
+                targ->substract_momentum_from_remnant(HardPartonMomTarg_);
+            }
             targ->set_hard_subtracted(true);
             //std::cout << "Subtract four momentum from picked up nucleon in targ." << std::endl;
         }
@@ -1168,9 +1172,11 @@ void Glauber::produce_remnant_strings() {
             auto x_i = iproj->get_remnant_x_frez();
             auto p_i = iproj->get_remnant_p();
             if (iproj->is_hard_collided() && iproj->nucleon_is_subtracted()) {
-                int hardCollIdx = iproj->getHardCollIdx();
-                for (unsigned int ip = 0; ip < p_i.size(); ip++) {
-                    Mom_remnant_proj_[hardCollIdx].push_back(p_i[ip]);
+                std::vector<int> hardCollIdxList = iproj->getHardCollIdx();
+                for (int ihard : hardCollIdxList) {
+                    for (unsigned int ip = 0; ip < p_i.size(); ip++) {
+                        Mom_remnant_proj_[ihard].push_back(p_i[ip]);
+                    }
                 }
                 if (parameter_list.subtract_hard_momentum()) {
                     for (unsigned int ip = 0; ip < p_i.size(); ip++) {
@@ -1226,10 +1232,12 @@ void Glauber::produce_remnant_strings() {
         if (itarg->is_wounded()) {
             auto x_i = itarg->get_remnant_x_frez();
             auto p_i = itarg->get_remnant_p();
-            int hardCollIdx = itarg->getHardCollIdx();
             if (itarg->is_hard_collided() && itarg->nucleon_is_subtracted()) {
-                for (unsigned int ip = 0; ip < p_i.size(); ip++) {
-                    Mom_remnant_targ_[hardCollIdx].push_back(p_i[ip]);
+                std::vector<int> hardCollIdxList = itarg->getHardCollIdx();
+                for (int ihard : hardCollIdxList) {
+                    for (unsigned int ip = 0; ip < p_i.size(); ip++) {
+                        Mom_remnant_targ_[ihard].push_back(p_i[ip]);
+                    }
                 }
                 if (parameter_list.subtract_hard_momentum()) {
                     for (unsigned int ip = 0; ip < p_i.size(); ip++) {
