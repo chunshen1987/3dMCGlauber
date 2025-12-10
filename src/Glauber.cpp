@@ -469,7 +469,9 @@ void Glauber::Pick_and_subtract_hard_parton_momentum() {
                 auto proj_collided = it.get_proj_nucleon_ptr().lock();
                 auto targ_collided = it.get_targ_nucleon_ptr().lock();
                 proj_collided->set_hard_collided(true);
+                proj_collided->setHardCollIdx(ihard);
                 targ_collided->set_hard_collided(true);
+                targ_collided->setHardCollIdx(ihard);
                 if (!parameter_list.subtract_hard_momentum()) {
                     HardPartonPosAndMomProj_[ihard][4] = 0.0;
                     HardPartonPosAndMomProj_[ihard][5] = 0.0;
@@ -502,9 +504,9 @@ void Glauber::Pick_and_subtract_hard_parton_momentum() {
                     std::shared_ptr<Quark> proj_q;
                     std::shared_ptr<Quark> targ_q;
                     MomentumVec p_q;
-                    int do_resample_proj = 1;
+                    bool do_resample_proj = true;
                     SpatialVec pos_q_Proj, pos_q_Targ;
-                    while (do_resample_proj == 1) {
+                    while (do_resample_proj) {
                         proj_q = proj_collided->get_a_valence_quark_sub_mom(
                                                        HardPartonMomProj_[0]);
                         p_q = proj_q->get_p();
@@ -536,12 +538,12 @@ void Glauber::Pick_and_subtract_hard_parton_momentum() {
                                           proj_q_pos[1] + proj_n_pos[1],
                                           proj_q_pos[2] + proj_n_pos[2],
                                           proj_q_pos[3] + proj_n_pos[3]};
-                            do_resample_proj = 0;
+                            do_resample_proj = false;
                          }
                     }
                     proj_collided->erase_one_quark();
-                    int do_resample_targ = 1;
-                    while (do_resample_targ == 1) {
+                    bool do_resample_targ = true;
+                    while (do_resample_targ) {
                         targ_q = targ_collided->get_a_valence_quark_sub_mom(
                                                         HardPartonMomTarg_[0]);
                         p_q = targ_q->get_p();
@@ -588,7 +590,7 @@ void Glauber::Pick_and_subtract_hard_parton_momentum() {
                                                   (newplace[2] - pos_q_Proj[2])*(newplace[2] - pos_q_Proj[2]);
                             }
                             targ_q->set_x(tarj_q_pos);
-                            do_resample_targ = 0;
+                            do_resample_targ = false;
                         }
                     }
                     targ_collided->erase_one_quark();
@@ -870,51 +872,25 @@ int Glauber::perform_string_production() {
         auto targ = first_event->get_targ_nucleon_ptr().lock();
         auto xvec = first_event->get_collision_position();
         if (proj->is_hard_collided() && !proj->nucleon_is_subtracted()) {
-            MomentumVec HardPartonMomProj_ = {0, 0, 0, 0};
-            int hardCollIdx = 0;
-            for (int ihard = 0;
-                 ihard < HardPartonPosAndMomProj_.size();
-                 ihard++) {
-                auto binary_collision_x = HardPartonPosAndMomProj_[ihard][1];
-                auto binary_collision_y = HardPartonPosAndMomProj_[ihard][2];
-                if ((std::abs(xvec[1] - binary_collision_x) < 1.e-5) &&
-                    (std::abs(xvec[2] - binary_collision_y) < 1.e-5)) {
-                    HardPartonMomProj_ = {
-                        HardPartonPosAndMomProj_[ihard][4],
-                        HardPartonPosAndMomProj_[ihard][5],
-                        HardPartonPosAndMomProj_[ihard][6],
-                        HardPartonPosAndMomProj_[ihard][7] };
-                    hardCollIdx = ihard;
-                    break;
-                }
-            }
+            int hardCollIdx = proj->getHardCollIdx();
+            MomentumVec HardPartonMomProj_ = {
+                        HardPartonPosAndMomProj_[hardCollIdx][4],
+                        HardPartonPosAndMomProj_[hardCollIdx][5],
+                        HardPartonPosAndMomProj_[hardCollIdx][6],
+                        HardPartonPosAndMomProj_[hardCollIdx][7] };
             proj->substract_momentum_from_remnant(HardPartonMomProj_);
             proj->set_hard_subtracted(true);
-            proj->setHardCollIdx(hardCollIdx);
             //std::cout << "Subtract four momentum from picked up nucleon in proj." << std::endl;
         }
         if (targ->is_hard_collided() && !targ->nucleon_is_subtracted()) {
-            MomentumVec HardPartonMomTarg_ = {0, 0, 0, 0};
-            int hardCollIdx = 0;
-            for (int ihard = 0;
-                 ihard < HardPartonPosAndMomProj_.size();
-                 ihard++) {
-                auto binary_collision_x = HardPartonPosAndMomProj_[ihard][1];
-                auto binary_collision_y = HardPartonPosAndMomProj_[ihard][2];
-                if ((std::abs(xvec[1] - binary_collision_x) < 1.e-5) &&
-                    (std::abs(xvec[2] - binary_collision_y) < 1.e-5)) {
-                    HardPartonMomTarg_ = {
-                        HardPartonPosAndMomProj_[ihard][4],
-                        HardPartonPosAndMomProj_[ihard][5],
-                        HardPartonPosAndMomProj_[ihard][6],
-                        HardPartonPosAndMomProj_[ihard][7] };
-                    hardCollIdx = ihard;
-                    break;
-                }
-            }
+            int hardCollIdx = targ->getHardCollIdx();
+            MomentumVec HardPartonMomTarg_ = {
+                        HardPartonPosAndMomTarg_[hardCollIdx][4],
+                        HardPartonPosAndMomTarg_[hardCollIdx][5],
+                        HardPartonPosAndMomTarg_[hardCollIdx][6],
+                        HardPartonPosAndMomTarg_[hardCollIdx][7] };
             targ->substract_momentum_from_remnant(HardPartonMomTarg_);
             targ->set_hard_subtracted(true);
-            targ->setHardCollIdx(hardCollIdx);
             //std::cout << "Subtract four momentum from picked up nucleon in targ." << std::endl;
         }
 
