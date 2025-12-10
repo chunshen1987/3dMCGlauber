@@ -110,8 +110,6 @@ class EventGenerator {
     std::vector<double> MCGlb_target_nucleon_z();
     std::vector<SpatialVec> MCGlb_projectile_nucleon_xyz();
     std::vector<SpatialVec> MCGlb_target_nucleon_xyz();
-    std::vector<double> MCGlb_Proj_hot_spot_x();
-    std::vector<double> MCGlb_Targ_hot_spot_x();
     std::vector<double> GetQuarkPosProj(double t, double x, double y, double z);
     std::vector<double> GetQuarkPosTarg(double t, double x, double y, double z);
     std::vector<std::vector<double>> GetRemMom_Proj();

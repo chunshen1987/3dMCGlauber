@@ -532,12 +532,11 @@ void Glauber::Pick_and_subtract_hard_parton_momentum() {
                             proj_q->set_subtracted(true);
                             auto proj_q_pos = proj_q->get_x();
                             auto proj_n_pos = proj_collided->get_x();
-                             pos_q_Proj = {0.0,
-                                           proj_q_pos[1] + proj_n_pos[1],
-                                           proj_q_pos[2] + proj_n_pos[2],
-                                           proj_q_pos[3] + proj_n_pos[3]};
-                             set_Proj_hot_spot_x(proj_q->get_x());
-                             do_resample_proj = 0;
+                            pos_q_Proj = {0.0,
+                                          proj_q_pos[1] + proj_n_pos[1],
+                                          proj_q_pos[2] + proj_n_pos[2],
+                                          proj_q_pos[3] + proj_n_pos[3]};
+                            do_resample_proj = 0;
                          }
                     }
                     proj_collided->erase_one_quark();
@@ -589,7 +588,6 @@ void Glauber::Pick_and_subtract_hard_parton_momentum() {
                                                   (newplace[2] - pos_q_Proj[2])*(newplace[2] - pos_q_Proj[2]);
                             }
                             targ_q->set_x(tarj_q_pos);
-                            set_Targ_hot_spot_x(tarj_q_pos);
                             do_resample_targ = 0;
                         }
                     }
