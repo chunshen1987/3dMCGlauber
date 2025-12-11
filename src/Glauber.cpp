@@ -870,7 +870,6 @@ int Glauber::perform_string_production() {
 
         auto proj = first_event->get_proj_nucleon_ptr().lock();
         auto targ = first_event->get_targ_nucleon_ptr().lock();
-        auto xvec = first_event->get_collision_position();
         if (proj->is_hard_collided() && !proj->nucleon_is_subtracted()) {
             std::vector<int> hardCollIdxList = proj->getHardCollIdx();
             for (int ihard : hardCollIdxList) {
@@ -1173,9 +1172,11 @@ void Glauber::produce_remnant_strings() {
             auto p_i = iproj->get_remnant_p();
             if (iproj->is_hard_collided() && iproj->nucleon_is_subtracted()) {
                 std::vector<int> hardCollIdxList = iproj->getHardCollIdx();
+                int nHardCollions = hardCollIdxList.size();
                 for (int ihard : hardCollIdxList) {
                     for (unsigned int ip = 0; ip < p_i.size(); ip++) {
-                        Mom_remnant_proj_[ihard].push_back(p_i[ip]);
+                        Mom_remnant_proj_[ihard].push_back(
+                                                    p_i[ip]/nHardCollions);
                     }
                 }
                 if (parameter_list.subtract_hard_momentum()) {
@@ -1234,9 +1235,11 @@ void Glauber::produce_remnant_strings() {
             auto p_i = itarg->get_remnant_p();
             if (itarg->is_hard_collided() && itarg->nucleon_is_subtracted()) {
                 std::vector<int> hardCollIdxList = itarg->getHardCollIdx();
+                int nHardCollions = hardCollIdxList.size();
                 for (int ihard : hardCollIdxList) {
                     for (unsigned int ip = 0; ip < p_i.size(); ip++) {
-                        Mom_remnant_targ_[ihard].push_back(p_i[ip]);
+                        Mom_remnant_targ_[ihard].push_back(
+                                                p_i[ip]/nHardCollions);
                     }
                 }
                 if (parameter_list.subtract_hard_momentum()) {
