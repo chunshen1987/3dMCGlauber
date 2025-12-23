@@ -75,6 +75,28 @@ QCDString::QCDString(
     has_remnant_right_ = false;
 }
 
+QCDString::QCDString(
+    SpatialVec x_in, real tau_form_in, shared_ptr<Quark> proj_q_in,
+    shared_ptr<Quark> targ_q_in, MomentumVec proj_p_in, MomentumVec targ_p_in,
+    real m_over_sigma_in, bool has_baryon_right_in, bool has_baryon_left_in) {
+    x_production = x_in;
+    tau_form = tau_form_in;
+    proj_q = proj_q_in;
+    targ_q = targ_q_in;
+    y_i_left = atanh(targ_p_in[3] / targ_p_in[0]);
+    y_i_right = atanh(proj_p_in[3] / proj_p_in[0]);
+    m_over_sigma = m_over_sigma_in;
+    mass_ = sqrt(
+        proj_p_in[0] * proj_p_in[0] - proj_p_in[1] * proj_p_in[1]
+        - proj_p_in[2] * proj_p_in[2] - proj_p_in[3] * proj_p_in[3]);
+    has_baryon_right_ = has_baryon_right_in;
+    has_baryon_left_ = has_baryon_left_in;
+    eta_s_baryon_left = 0.;
+    eta_s_baryon_right = 0.;
+    has_remnant_left_ = false;
+    has_remnant_right_ = false;
+}
+
 void QCDString::evolve_QCD_string() {
     if (m_over_sigma > 1e6) {
         evolve_QCD_string_with_free_streaming();

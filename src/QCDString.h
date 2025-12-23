@@ -50,6 +50,11 @@ class QCDString {
         shared_ptr<Nucleon> targ_in, MomentumVec proj_p_in,
         MomentumVec targ_p_in, real m_over_sigma_in, bool has_baryon_right_in,
         bool has_baryon_left_in);
+    QCDString(
+        SpatialVec x_in, real tau_form_in, shared_ptr<Quark> proj_q_in,
+        shared_ptr<Quark> targ_q_in, MomentumVec proj_p_in,
+        MomentumVec targ_p_in, real m_over_sigma_in, bool has_baryon_right_in,
+        bool has_baryon_left_in);
 
     real get_string_mass() const { return (mass_); }
 
@@ -69,7 +74,6 @@ class QCDString {
     real get_y_i_right() const { return (y_i_right); }
 
     void set_final_rapidities(real y_f_l, real y_f_r) {
-        y_f_left = y_f_l;
         y_f_right = y_f_r;
     }
     real get_y_f_left() const { return (y_f_left); }

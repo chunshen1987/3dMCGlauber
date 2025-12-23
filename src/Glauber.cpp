@@ -665,6 +665,8 @@ int Glauber::perform_string_production() {
                 if (proj_q->get_baryon() == 0) proj_q->set_baryon_used(true);
                 if (!proj_q->baryon_was_used()) {
                     proj_q->set_baryon_used(true);
+                    proj_q->set_remnant_carry_baryon_number(true);
+                    proj_q->set_remnant_baryon_number(proj_q->get_baryon());
                     baryon_num += proj_q->get_baryon();
                 }
             }
@@ -717,6 +719,8 @@ int Glauber::perform_string_production() {
                 if (targ_q->get_baryon() == 0) targ_q->set_baryon_used(true);
                 if (!targ_q->baryon_was_used()) {
                     targ_q->set_baryon_used(true);
+                    targ_q->set_remnant_carry_baryon_number(true);
+                    targ_q->set_remnant_baryon_number(targ_q->get_baryon());
                     baryon_num += targ_q->get_baryon();
                 }
             }
@@ -921,6 +925,7 @@ void Glauber::produce_remnant_strings() {
     real tau_form = 0.5;
     real m_over_sigma = 1.0;  // [fm]
     real y_loss = 0.;
+    bool use_quarks_qcd_list = parameter_list.qcd_s_list_quark();
     auto proj_nucleon_list = projectile->get_nucleon_list();
     for (auto &iproj : (*proj_nucleon_list)) {
         if (iproj->is_wounded()) {
@@ -942,16 +947,35 @@ void Glauber::produce_remnant_strings() {
 
             get_tau_form_and_moversigma(
                 string_evolution_mode, y_rem, tau_form, m_over_sigma, y_loss);
-            bool has_baryon_left = false;
-            bool has_baryon_right = iproj->is_remnant_carry_baryon_number();
-            real baryon_right = iproj->get_remnant_baryon_number();
-            QCDString qcd_string(
-                x_i, tau_form, iproj, iproj, p_i, targ_p_vec, m_over_sigma,
-                has_baryon_right, has_baryon_left);
-            qcd_string.set_has_remnant_right(true);
-            qcd_string.evolve_QCD_string();
-            qcd_string.set_final_baryon_rapidities(0., y_rem - y_loss);
-            remnant_string_list_.push_back(qcd_string);
+
+            //if (use_quarks_qcd_list) { // this section breaks
+            if (false) {
+                auto quarkList = iproj->get_quark_list();
+                for (auto &iproj_q : quarkList)
+                {
+                    bool has_baryon_left = false;
+                    bool has_baryon_right = iproj_q->is_remnant_carry_baryon_number();
+                    
+                    QCDString qcd_string(
+                        x_i, tau_form, iproj_q, iproj_q, p_i, targ_p_vec, m_over_sigma,
+                        has_baryon_right, has_baryon_left);
+                    qcd_string.set_has_remnant_right(true);
+                    qcd_string.evolve_QCD_string();
+                    qcd_string.set_final_baryon_rapidities(0., y_rem - y_loss);
+                    remnant_string_list_.push_back(qcd_string);
+                }
+            }
+            else {
+                bool has_baryon_left = false;
+                bool has_baryon_right = iproj->is_remnant_carry_baryon_number();
+                QCDString qcd_string(
+                    x_i, tau_form, iproj, iproj, p_i, targ_p_vec, m_over_sigma,
+                    has_baryon_right, has_baryon_left);
+                qcd_string.set_has_remnant_right(true);
+                qcd_string.evolve_QCD_string();
+                qcd_string.set_final_baryon_rapidities(0., y_rem - y_loss);
+                remnant_string_list_.push_back(qcd_string);
+            }
         }
     }
     auto targ_nucleon_list = target->get_nucleon_list();
@@ -976,16 +1000,35 @@ void Glauber::produce_remnant_strings() {
             get_tau_form_and_moversigma(
                 string_evolution_mode, std::abs(y_rem), tau_form, m_over_sigma,
                 y_loss);
-            bool has_baryon_left = itarg->is_remnant_carry_baryon_number();
-            real baryon_left = itarg->get_remnant_baryon_number();
-            bool has_baryon_right = false;
-            QCDString qcd_string(
-                x_i, tau_form, itarg, itarg, proj_p_vec, p_i, m_over_sigma,
-                has_baryon_right, has_baryon_left);
-            qcd_string.set_has_remnant_left(true);
-            qcd_string.evolve_QCD_string();
-            qcd_string.set_final_baryon_rapidities(y_rem + y_loss, 0.);
-            remnant_string_list_.push_back(qcd_string);
+            
+            // if (use_quarks_qcd_list) { // broken
+            if (false) {
+                auto quarkList = itarg->get_quark_list();
+                for (auto &itarg_q : quarkList)
+                    bool has_baryon_left = itarg_q->is_remnant_carry_baryon_number();
+                    bool has_baryon_right = false;
+                    
+                    QCDString qcd_string(
+                        x_i, tau_form, itarg_q, itarg_q, proj_p_vec, p_i, m_over_sigma,
+                        has_baryon_right, has_baryon_left);
+                    qcd_string.set_has_remnant_left(true);
+                    qcd_string.evolve_QCD_string();
+                    qcd_string.set_final_baryon_rapidities(y_rem + y_loss, 0.);
+                    remnant_string_list_.push_back(qcd_string);
+                }
+            }
+            else {
+                bool has_baryon_left = itarg->is_remnant_carry_baryon_number();
+                bool has_baryon_right = false;
+                
+                QCDString qcd_string(
+                    x_i, tau_form, itarg, itarg, proj_p_vec, p_i, m_over_sigma,
+                    has_baryon_right, has_baryon_left);
+                qcd_string.set_has_remnant_left(true);
+                qcd_string.evolve_QCD_string();
+                qcd_string.set_final_baryon_rapidities(y_rem + y_loss, 0.);
+                remnant_string_list_.push_back(qcd_string);
+            }
         }
     }
 }
