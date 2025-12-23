@@ -1004,7 +1004,7 @@ void Glauber::produce_remnant_strings() {
             // if (use_quarks_qcd_list) { // broken
             if (false) {
                 auto quarkList = itarg->get_quark_list();
-                for (auto &itarg_q : quarkList)
+                for (auto &itarg_q : quarkList) {
                     bool has_baryon_left = itarg_q->is_remnant_carry_baryon_number();
                     bool has_baryon_right = false;
                     
