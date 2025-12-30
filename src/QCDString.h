@@ -73,9 +73,7 @@ class QCDString {
     real get_y_i_left() const { return (y_i_left); }
     real get_y_i_right() const { return (y_i_right); }
 
-    void set_final_rapidities(real y_f_l, real y_f_r) {
-        y_f_right = y_f_r;
-    }
+    void set_final_rapidities(real y_f_l, real y_f_r) { y_f_right = y_f_r; }
     real get_y_f_left() const { return (y_f_left); }
     real get_y_f_right() const { return (y_f_right); }
 

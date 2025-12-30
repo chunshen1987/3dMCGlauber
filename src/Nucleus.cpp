@@ -326,9 +326,8 @@ void Nucleus::sample_valence_quarks_inside_nucleons(real ecm, int direction) {
             real s;
 
             // define baryon value for first three quarks
-            real baryonTri = 1.0/3.0;
-            if (string_junction)
-            {
+            real baryonTri = 1.0 / 3.0;
+            if (string_junction) {
                 baryonTri = 0.0;
             }
             for (int i = 0; i < number_of_quarks; i++) {
@@ -340,36 +339,33 @@ void Nucleus::sample_valence_quarks_inside_nucleons(real ecm, int direction) {
                 // if nucleon is dipole, assign charge based on quark
                 if (nucleonType == -1) {
                     if (i == 0) {
-                        c = 2.0/3.0;  // u quark
-                    }
-                    else if (i == 1){
-                        c = -2.0/3.0; // u-bar quark
+                        c = 2.0 / 3.0;  // u quark
+                    } else if (i == 1) {
+                        c = -2.0 / 3.0;  // u-bar quark
                     }
                 }
-                // if nucleon is proton or neutron, define first and last quark to be up and down.
-                // for middle quark, define as up for proton, down for neutron.
+                // if nucleon is proton or neutron, define first and last quark
+                // to be up and down. for middle quark, define as up for proton,
+                // down for neutron.
                 else {
                     if (i == 0) {
                         b = baryonTri;
-                        c = 2.0/3.0;  // u quark
-                    }
-                    else if (i == 1){
+                        c = 2.0 / 3.0;  // u quark
+                    } else if (i == 1) {
                         b = baryonTri;
                         if (nucleonType == 0) {
-                            c = -1.0/3.0; // d quark
+                            c = -1.0 / 3.0;  // d quark
+                        } else if (nucleonType == 1) {
+                            c = 2.0 / 3.0;  // u quark
                         }
-                        else if (nucleonType == 1){
-                            c = 2.0/3.0;  // u quark
-                        }
-                    }
-                    else if (i == 2){
+                    } else if (i == 2) {
                         b = baryonTri;
-                        c = -1.0/3.0; // d quark
+                        c = -1.0 / 3.0;  // d quark
                     }
                 }
-                    
-                    
-                std::shared_ptr<Quark> quark_ptr(new Quark(xvec, xQuark[i], b, c, s));
+
+                std::shared_ptr<Quark> quark_ptr(
+                    new Quark(xvec, xQuark[i], b, c, s));
                 nucleon_i->push_back_quark(quark_ptr);
             }
             nucleon_i->accelerate_quarks(ecm, direction);
@@ -411,7 +407,6 @@ void Nucleus::add_soft_parton_ball(real ecm, int direction) {
                     soft_pvec[j] /= static_cast<double>(N_sea_partons_);
                 }
 
-
                 // defining quark baryon, charge, and strange numbers
                 real b;
                 real c = 0.0;
@@ -419,11 +414,13 @@ void Nucleus::add_soft_parton_ball(real ecm, int direction) {
                 for (int i = 0; i < N_sea_partons_; i++) {
                     auto xvec = sample_valence_quark_position();
                     b = 0.0;
-                    // if nucleon is proton or neutron, define a gluon with a baryon charge 
+                    // if nucleon is proton or neutron, define a gluon with a
+                    // baryon charge
                     if (A_ > 0) {
                         if (i == 0) {
-
-                            if (string_junction) { // if the baryon number is not split, set it to 1 for this iteration
+                            if (string_junction) {  // if the baryon number is
+                                                    // not split, set it to 1
+                                                    // for this iteration
 
                                 b = 1.0;
                             }

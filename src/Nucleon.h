@@ -103,9 +103,7 @@ class Nucleon : public Particle {
     bool is_remnant_carry_baryon_number() const {
         return (remnant_carry_baryon_number_);
     }
-    real get_remnant_baryon_number() const {
-        return (remnant_baryon_number);
-    }
+    real get_remnant_baryon_number() const { return (remnant_baryon_number); }
     void set_remnant_carry_baryon_number(bool remnant) {
         remnant_carry_baryon_number_ = remnant;
     }

@@ -21,7 +21,7 @@ class Quark : public Particle {
     real strange = 0;
     bool baryon_used = false;
     bool remnant_carry_baryon_number_ = false;
-    real remnant_baryon_number = 1.0/3.0;
+    real remnant_baryon_number = 1.0 / 3.0;
 
   public:
     Quark() = default;
@@ -35,19 +35,25 @@ class Quark : public Particle {
         set_charges(0, 0, 0);
     }
 
-     Quark(SpatialVec x_in, real pdf_x_in, real baryon_in = 0, real charge_in = 0, real strange_in = 0) {
+    Quark(
+        SpatialVec x_in, real pdf_x_in, real baryon_in = 0, real charge_in = 0,
+        real strange_in = 0) {
         set_pdf_x(pdf_x_in);
         MomentumVec p_in = {0.0};
         set_particle_variables(x_in, p_in);
         set_charges(baryon_in, charge_in, strange_in);
     }
 
-    Quark(SpatialVec x_in, MomentumVec p_in, real baryon_in, real charge_in, real strange_in) {
+    Quark(
+        SpatialVec x_in, MomentumVec p_in, real baryon_in, real charge_in,
+        real strange_in) {
         set_particle_variables(x_in, p_in);
         set_charges(baryon_in, charge_in, strange_in);
     }
 
-    Quark(SpatialVec x_in, MomentumVec p_in, real mass_in,  real baryon_in, real charge_in, real strange_in) {
+    Quark(
+        SpatialVec x_in, MomentumVec p_in, real mass_in, real baryon_in,
+        real charge_in, real strange_in) {
         set_particle_variables(x_in, p_in, mass_in);
         set_charges(baryon_in, charge_in, strange_in);
     }
@@ -68,13 +74,13 @@ class Quark : public Particle {
     void add_a_connection() { number_of_connections++; }
     int get_number_of_connections() const { return (number_of_connections); }
 
-    void set_baryon(real baryon_in) {baryon = baryon_in; }
+    void set_baryon(real baryon_in) { baryon = baryon_in; }
     real get_baryon() const { return (baryon); }
 
-    void set_charge(real charge_in) {charge = charge_in; }
+    void set_charge(real charge_in) { charge = charge_in; }
     real get_charge() const { return (charge); }
 
-    void set_strange(real strange_in) {strange = strange_in; }
+    void set_strange(real strange_in) { strange = strange_in; }
     real get_strange() const { return (strange); }
 
     void set_charges(real baryon_in, real charge_in, real strange_in) {
@@ -83,14 +89,12 @@ class Quark : public Particle {
         strange = strange_in;
     }
 
-    void set_baryon_used(bool used) {baryon_used = used; }
-    bool baryon_was_used() const { return (baryon_used);}
+    void set_baryon_used(bool used) { baryon_used = used; }
+    bool baryon_was_used() const { return (baryon_used); }
     bool is_remnant_carry_baryon_number() const {
         return (remnant_carry_baryon_number_);
     }
-    real get_remnant_baryon_number() const {
-        return (remnant_baryon_number);
-    }
+    real get_remnant_baryon_number() const { return (remnant_baryon_number); }
     void set_remnant_carry_baryon_number(bool remnant) {
         remnant_carry_baryon_number_ = remnant;
     }

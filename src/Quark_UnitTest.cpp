@@ -74,7 +74,7 @@ TEST_CASE("Test new variables setters") {
 
     MCGlb::Quark testParticle2(x, p, b2, c2, s2);
     testParticle2.set_charges(b1, c1, s1);
-    
+
     CHECK(testParticle1.get_baryon() == b2);
     CHECK(testParticle1.get_charge() == c2);
     CHECK(testParticle1.get_strange() == s2);
@@ -82,5 +82,4 @@ TEST_CASE("Test new variables setters") {
     CHECK(testParticle2.get_baryon() == b1);
     CHECK(testParticle2.get_charge() == c1);
     CHECK(testParticle2.get_strange() == s1);
-    
 }

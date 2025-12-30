@@ -8,9 +8,9 @@
 #include <vector>
 
 #include "Nucleon.h"
+#include "Parameters.h"
 #include "Random.h"
 #include "data_structs.h"
-#include "Parameters.h"
 
 namespace MCGlb {
 
