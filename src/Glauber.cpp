@@ -936,10 +936,6 @@ void Glauber::prepare_output_QCD_strings() {
     computeCenterOfMass(x_o, y_o);
 
     bool use_quarks_qcd_list = parameter_list.qcd_s_list_quark();
-    real baryonPart = 1.0;
-    if (use_quarks_qcd_list) {
-        baryonPart = 1.0 / 3.0;
-    }
 
     // prepare output strings
     for (auto &it : QCD_string_list) {
@@ -961,22 +957,30 @@ void Glauber::prepare_output_QCD_strings() {
 
         real remnant_left = 0.;
         if (it.get_has_remnant_left()) {
-            remnant_left = baryonPart;
+            remnant_left = 1.;
         }
 
         real remnant_right = 0.;
         if (it.get_has_remnant_right()) {
-            remnant_right = baryonPart;
+            remnant_right = 1.;
         }
 
         real baryon_fraction_left = 0.;
         if (it.get_has_baryon_left()) {
-            baryon_fraction_left = baryonPart;
+            if (use_quarks_qcd_list) {
+                baryon_fraction_left = it.get_targ_q()->get_baryon();
+            } else {
+                baryon_fraction_left = 1.;
+            }
         }
 
         real baryon_fraction_right = 0.;
         if (it.get_has_baryon_right()) {
-            baryon_fraction_right = baryonPart;
+            if (use_quarks_qcd_list) {
+                baryon_fraction_right = it.get_proj_q()->get_baryon();
+            } else {
+                baryon_fraction_right = 1.;
+            }
         }
 
         auto mass = it.get_string_mass();
@@ -1022,22 +1026,30 @@ void Glauber::prepare_output_QCD_strings() {
 
             real remnant_left = 0.;
             if (it.get_has_remnant_left()) {
-                remnant_left = baryonPart;
+                remnant_left = 1.;
             }
 
             real remnant_right = 0.;
             if (it.get_has_remnant_right()) {
-                remnant_right = baryonPart;
+                remnant_right = 1.;
             }
 
             real baryon_fraction_left = 0.;
             if (it.get_has_baryon_left()) {
-                baryon_fraction_left = baryonPart;
+                if (use_quarks_qcd_list) {
+                    baryon_fraction_left = it.get_targ_q()->get_baryon();
+                } else {
+                    baryon_fraction_left = 1.0;
+                }
             }
 
             real baryon_fraction_right = 0.;
             if (it.get_has_baryon_right()) {
-                baryon_fraction_right = baryonPart;
+                if (use_quarks_qcd_list) {
+                    baryon_fraction_right = it.get_proj_q()->get_baryon();
+                } else {
+                    baryon_fraction_right = 1.0;
+                }
             }
 
             auto mass = it.get_string_mass();
