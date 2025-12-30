@@ -321,9 +321,9 @@ void Nucleus::sample_valence_quarks_inside_nucleons(real ecm, int direction) {
                 ecm);
 
             // defining quark baryon, charge, and strange numbers
-            real b;
-            real c;
-            real s;
+            real b = 0;
+            real q = 0;
+            real s = 0;
 
             // define baryon value for first three quarks
             real baryonTri = 1.0 / 3.0;
@@ -336,36 +336,33 @@ void Nucleus::sample_valence_quarks_inside_nucleons(real ecm, int direction) {
                 // defining base numbers for quark
                 b = 0.0;
                 s = 0.0;
-                // if nucleon is dipole, assign charge based on quark
                 if (nucleonType == -1) {
+                    // if nucleon is dipole, assign charge based on quark
                     if (i == 0) {
-                        c = 2.0 / 3.0;  // u quark
+                        q = 2.0 / 3.0;  // u quark
                     } else if (i == 1) {
-                        c = -2.0 / 3.0;  // u-bar quark
+                        q = -2.0 / 3.0;  // u-bar quark
                     }
-                }
-                // if nucleon is proton or neutron, define first and last quark
-                // to be up and down. for middle quark, define as up for proton,
-                // down for neutron.
-                else {
+                } else {
+                    // if nucleon is proton or neutron, define first and last
+                    // quark to be up and down. for middle quark, define as up
+                    // for proton, down for neutron.
+                    b = baryonTri;
                     if (i == 0) {
-                        b = baryonTri;
-                        c = 2.0 / 3.0;  // u quark
+                        q = 2.0 / 3.0;  // u quark
                     } else if (i == 1) {
-                        b = baryonTri;
                         if (nucleonType == 0) {
-                            c = -1.0 / 3.0;  // d quark
+                            q = -1.0 / 3.0;  // d quark
                         } else if (nucleonType == 1) {
-                            c = 2.0 / 3.0;  // u quark
+                            q = 2.0 / 3.0;  // u quark
                         }
                     } else if (i == 2) {
-                        b = baryonTri;
-                        c = -1.0 / 3.0;  // d quark
+                        q = -1.0 / 3.0;  // d quark
                     }
                 }
 
                 std::shared_ptr<Quark> quark_ptr(
-                    new Quark(xvec, xQuark[i], b, c, s));
+                    new Quark(xvec, xQuark[i], b, q, s));
                 nucleon_i->push_back_quark(quark_ptr);
             }
             nucleon_i->accelerate_quarks(ecm, direction);
@@ -408,8 +405,8 @@ void Nucleus::add_soft_parton_ball(real ecm, int direction) {
                 }
 
                 // defining quark baryon, charge, and strange numbers
-                real b;
-                real c = 0.0;
+                real b = 0.;
+                real q = 0.0;
                 real s = 0.0;
                 for (int i = 0; i < N_sea_partons_; i++) {
                     auto xvec = sample_valence_quark_position();
@@ -418,16 +415,16 @@ void Nucleus::add_soft_parton_ball(real ecm, int direction) {
                     // baryon charge
                     if (A_ > 0) {
                         if (i == 0) {
-                            if (string_junction) {  // if the baryon number is
-                                                    // not split, set it to 1
-                                                    // for this iteration
-
+                            if (string_junction) {
+                                // if the baryon number is
+                                // not split, set it to 1
+                                // for this iteration
                                 b = 1.0;
                             }
                         }
                     }
                     std::shared_ptr<Quark> quark_ptr(
-                        new Quark(xvec, soft_pvec, b, c, s));
+                        new Quark(xvec, soft_pvec, b, q, s));
                     quark_ptr->set_rapidity(rapidity);
                     nucleon_i->push_back_quark(quark_ptr);
                 }
