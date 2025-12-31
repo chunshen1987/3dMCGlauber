@@ -650,15 +650,18 @@ int Glauber::perform_string_production() {
             auto p_i = proj->get_remnant_p();
             if (p_i[0] <= 0) continue;
             if (!proj->baryon_was_used()) {
+                real remnant_baryon_number = 0.;
                 if (use_quarks_qcd_list) {
                     for (auto &proj_q : proj->get_quark_list()) {
                         if (!proj_q->Q_was_used()) {
                             proj_q->set_Q_used(true);
+                            remnant_baryon_number += proj_q->get_baryon();
                         }
                     }
                 }
                 proj->set_baryon_used(true);
                 proj->set_remnant_carry_baryon_number(true);
+                proj->set_remnant_baryon_number(remnant_baryon_number);
             }
         }
     }
@@ -692,15 +695,18 @@ int Glauber::perform_string_production() {
             auto p_i = targ->get_remnant_p();
             if (p_i[0] <= 0) continue;
             if (!targ->baryon_was_used()) {
+                real remnant_baryon_number = 0.;
                 if (use_quarks_qcd_list) {
                     for (auto &targ_q : targ->get_quark_list()) {
                         if (!targ_q->Q_was_used()) {
                             targ_q->set_Q_used(true);
+                            remnant_baryon_number += targ_q->get_baryon();
                         }
                     }
                 }
                 targ->set_baryon_used(true);
                 targ->set_remnant_carry_baryon_number(true);
+                targ->set_remnant_baryon_number(remnant_baryon_number);
             }
         }
     }
@@ -1037,7 +1043,7 @@ void Glauber::prepare_output_QCD_strings() {
             real baryon_fraction_left = 0.;
             if (it.get_has_baryon_left()) {
                 if (use_quarks_qcd_list) {
-                    baryon_fraction_left = it.get_targ_q()->get_baryon();
+                    baryon_fraction_left = it.get_targ()->get_remnant_baryon_number();
                 } else {
                     baryon_fraction_left = 1.0;
                 }
@@ -1046,7 +1052,7 @@ void Glauber::prepare_output_QCD_strings() {
             real baryon_fraction_right = 0.;
             if (it.get_has_baryon_right()) {
                 if (use_quarks_qcd_list) {
-                    baryon_fraction_right = it.get_proj_q()->get_baryon();
+                    baryon_fraction_right = it.get_proj()->get_remnant_baryon_number();
                 } else {
                     baryon_fraction_right = 1.0;
                 }
