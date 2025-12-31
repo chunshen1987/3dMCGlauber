@@ -401,12 +401,6 @@ void Glauber::Set_hard_parton_momentum(
 }
 
 
-real Glauber::GG_probality(real x, real Lambda, real Omega, real Sigma0) const {
-    return( 1./Lambda * x/Lambda / (x/Lambda + Sigma0) *
-            exp(-1 * pow(x/Lambda/Sigma0 - 1., 2.) / Omega/Omega));
-}
-
-
 std::vector<double>  Glauber::OutputquarkPosProj(std::vector<double> &HardPos) {
     auto binary_collision_x = HardPos[1];
     auto binary_collision_y = HardPos[2];
