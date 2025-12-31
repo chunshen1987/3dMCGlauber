@@ -388,7 +388,36 @@ void Glauber::Set_hard_parton_momentum(
         std::vector<double> &targ_py, std::vector<double> &targ_pz) {
     HardPartonPosAndMomProj_.clear();
     HardPartonPosAndMomTarg_.clear();
+    std::vector< std::vector<double> > uniqueHardCollisionPosAndMom;
     for (unsigned int i = 0; i < proj_t.size(); i++) {
+        bool newCollision = true;
+        int collIdx = 0;
+        for (unsigned int j = 0; j < uniqueHardCollisionPosAndMom.size(); j++) {
+            if (std::abs(proj_t[i] - uniqueHardCollisionPosAndMom[j][0]) < 1e-8
+                && std::abs(proj_x[i] - uniqueHardCollisionPosAndMom[j][1]) < 1e-8
+                && std::abs(proj_y[i] - uniqueHardCollisionPosAndMom[j][2]) < 1e-8
+                && std::abs(proj_z[i] - uniqueHardCollisionPosAndMom[j][3]) < 1e-8) {
+                newCollision = false;
+                collIdx = j;
+                break;
+            }
+        }
+        if (newCollision) {
+            std::vector<double> newCollVec = {
+                proj_t[i], proj_x[i], proj_y[i], proj_z[i],
+                proj_E[i], proj_px[i], proj_py[i], proj_pz[i],
+                targ_E[i], targ_px[i], targ_py[i], targ_pz[i]};
+            uniqueHardCollisionPosAndMom.push_back(newCollVec);
+        } else {
+            uniqueHardCollisionPosAndMom[collIdx][4] += proj_E[i];
+            uniqueHardCollisionPosAndMom[collIdx][5] += proj_px[i];
+            uniqueHardCollisionPosAndMom[collIdx][6] += proj_py[i];
+            uniqueHardCollisionPosAndMom[collIdx][7] += proj_pz[i];
+            uniqueHardCollisionPosAndMom[collIdx][8] += targ_E[i];
+            uniqueHardCollisionPosAndMom[collIdx][9] += targ_px[i];
+            uniqueHardCollisionPosAndMom[collIdx][10] += targ_py[i];
+            uniqueHardCollisionPosAndMom[collIdx][11] += targ_pz[i];
+        }
         std::vector<double> hardPartonVecProj = {
             proj_t[i], proj_x[i], proj_y[i], proj_z[i],
             proj_E[i], proj_px[i], proj_py[i], proj_pz[i]};
@@ -397,6 +426,50 @@ void Glauber::Set_hard_parton_momentum(
             targ_t[i], targ_x[i], targ_y[i], targ_z[i],
             targ_E[i], targ_px[i], targ_py[i], targ_pz[i]};
         HardPartonPosAndMomTarg_.push_back(hardPartonVecTarg);
+    }
+
+    double energyTreshold = 0.99*parameter_list.get_roots()/2.;
+    for (unsigned int j = 0; j < uniqueHardCollisionPosAndMom.size(); j++) {
+        if (uniqueHardCollisionPosAndMom[j][4] > energyTreshold
+             || uniqueHardCollisionPosAndMom[j][8] > energyTreshold) {
+            std::cout << "Requesting too much energy from hard collisions!"
+                      << std::endl;
+            std::cout << "Energy threhold = " << energyTreshold << " GeV"
+                      << std::endl;
+            std::cout << "unique hard collision point " << j << ": "
+                      << " t = " << uniqueHardCollisionPosAndMom[j][0]
+                      << " x = " << uniqueHardCollisionPosAndMom[j][1]
+                      << " y = " << uniqueHardCollisionPosAndMom[j][2]
+                      << " z = " << uniqueHardCollisionPosAndMom[j][3]
+                      << std::endl;
+            std::cout << "proj_E = " << uniqueHardCollisionPosAndMom[j][4]
+                      << " GeV, proj_px = " << uniqueHardCollisionPosAndMom[j][5]
+                      << " GeV, proj_py = " << uniqueHardCollisionPosAndMom[j][6]
+                      << " GeV, proj_pz = " << uniqueHardCollisionPosAndMom[j][7]
+                      << " GeV" << std::endl;
+            std::cout << "targ_E = " << uniqueHardCollisionPosAndMom[j][8]
+                      << " GeV, targ_px = " << uniqueHardCollisionPosAndMom[j][9]
+                      << " GeV, targ_py = " << uniqueHardCollisionPosAndMom[j][10]
+                      << " GeV, targ_pz = " << uniqueHardCollisionPosAndMom[j][11]
+                      << std::endl;
+            std::cout << "all the hard collision pos. and mom. are:"
+                      << std::endl;
+            for (unsigned int i = 0; i < proj_t.size(); i++) {
+                std::cout << i << ": t = " << proj_t[i]
+                          << ", x = " << proj_x[i]
+                          << ", y = " << proj_y[i]
+                          << ", z = " << proj_z[i] << std::endl;
+                std::cout << "proj_E = " << proj_E[i]
+                          << "GeV, proj_px = " << proj_px[i]
+                          << "GeV, proj_py = " << proj_py[i]
+                          << "GeV, proj_pz = " << proj_pz[i] << std::endl;
+                std::cout << "targ_E = " << targ_E[i]
+                          << "GeV, targ_px = " << targ_px[i]
+                          << "GeV, targ_py = " << targ_py[i]
+                          << "GeV, targ_pz = " << targ_pz[i] << std::endl;
+            }
+            exit(1);
+        }
     }
 }
 
