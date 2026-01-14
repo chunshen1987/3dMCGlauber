@@ -64,6 +64,7 @@ class EventGenerator {
 
     //! get the collisions information for the JETSCAPE framework
     void generate_pre_events();
+    void generate_pre_eAcollision()
 
     void set_parameter(string par, double val);
     void set_parameter(string par, float val);

@@ -85,6 +85,11 @@ void EventGenerator::generate_pre_events() {
 }
 
 
+void EventGenerator::generate_pre_eAcollision() {
+    mc_glauber_ptr_->make_target_nucleus_for_eA();
+}
+
+
 double EventGenerator::MCGlb_nucleon_density(double t, double x,
                                              double y, double z) {
     return(mc_glauber_ptr_->get_nucleon_density(t, x, y, z));

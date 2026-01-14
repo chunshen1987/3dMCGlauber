@@ -141,6 +141,7 @@ Glauber::Glauber(const MCGlb::Parameters &param_in,
          << "siginNN = " << siginNN << " mb" << endl;
 }
 
+
 void Glauber::make_nuclei() {
     projectile->generate_nucleus_3d_configuration();
     target->generate_nucleus_3d_configuration();
@@ -160,6 +161,12 @@ void Glauber::make_nuclei() {
     target->shift_nucleus(targ_shift);
     //projectile->output_nucleon_positions("projectile.dat");
     //target->output_nucleon_positions("target.dat");
+}
+
+
+void Glauber::make_target_nucleus_for_eA() {
+    // generate a targe nucleus at rest
+    target->generate_nucleus_3d_configuration();
 }
 
 

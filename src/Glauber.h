@@ -68,6 +68,7 @@ class Glauber {
     }
 
     void make_nuclei();
+    void make_target_nucleus_for_eA();
     real get_impact_parameter() const {return(impact_b);}
 
     int make_collision_schedule();
