@@ -224,7 +224,7 @@ bool EventGenerator::event_of_interest_trigger(
     bool pick = false;
     float cenEst = computeCenEstimator(Npart, Ncoll, Nstrings);
     pick =
-        ((Npart > NpartMin_) && (Npart < NpartMax_) && (cenEst >= cenEstMin_)
+        ((Npart >= NpartMin_) && (Npart <= NpartMax_) && (cenEst >= cenEstMin_)
          && (cenEst <= cenEstMax_));
     return (pick);
 }
