@@ -30,6 +30,8 @@ class EventGenerator {
     std::vector<float> cenEstMinBiasList_;
     float cenEstMin_;
     float cenEstMax_;
+    int NpartMin_;
+    int NpartMax_;
 
   public:
     EventGenerator() = default;
