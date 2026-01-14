@@ -219,13 +219,13 @@ void EventGenerator::generate_events(int nev, int event_id_offset) {
     }
 }
 
-
 bool EventGenerator::event_of_interest_trigger(
     const int Npart, const int Ncoll, const int Nstrings) const {
     bool pick = false;
     float cenEst = computeCenEstimator(Npart, Ncoll, Nstrings);
-    pick = ((Npart > NpartMin_) && (Npart < NpartMax_) 
-            && (cenEst >= cenEstMin_) && (cenEst <= cenEstMax_));
+    pick =
+        ((Npart > NpartMin_) && (Npart < NpartMax_) && (cenEst >= cenEstMin_)
+         && (cenEst <= cenEstMax_));
     return (pick);
 }
 
