@@ -29,7 +29,7 @@ TEST_CASE("Test random seed") {
 TEST_CASE("Test set nucleus parameters") {
     Parameters parameter_list;
     std::shared_ptr<RandomUtil::Random> ran_gen_ptr(
-        new RandomUtil::Random(seed, 0., 1.0));
+        new RandomUtil::Random(-1, 0., 1.0));
     Nucleus test_nucleus("Au", ran_gen_ptr, parameter_list);
     test_nucleus.set_nucleus_parameters("p");
     CHECK(test_nucleus.get_nucleus_A() == 1);
