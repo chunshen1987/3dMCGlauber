@@ -40,16 +40,8 @@ Glauber::Glauber(
         }
     }
 
-    real d_min = parameter_list.get_d_min();
-
-    int N_sea_partons = parameter_list.get_N_sea_partons();
-
-    bool deformed = true;
-    bool nucleonConfFromFile = parameter_list.nucleon_configuration_from_file();
     projectile = std::unique_ptr<Nucleus>(new Nucleus(
-        parameter_list.get_projectle_nucleus_name(), ran_gen,
-        sample_valence_quark, parameter_list.get_BG(), d_min, deformed,
-        nucleonConfFromFile, N_sea_partons));
+        parameter_list.get_projectle_nucleus_name(), ran_gen, parameter_list));
     int resetProjWS =
         static_cast<int>(parameter_list.getParam("resetProjWS", 0.0));
     if (resetProjWS != 0) {
@@ -71,9 +63,7 @@ Glauber::Glauber(
     }
 
     target = std::unique_ptr<Nucleus>(new Nucleus(
-        parameter_list.get_target_nucleus_name(), ran_gen, sample_valence_quark,
-        parameter_list.get_BG(), d_min, deformed, nucleonConfFromFile,
-        N_sea_partons));
+        parameter_list.get_target_nucleus_name(), ran_gen, parameter_list));
     int resetTargWS =
         static_cast<int>(parameter_list.getParam("resetTargWS", 0.0));
     if (resetTargWS != 0) {
@@ -111,11 +101,6 @@ Glauber::Glauber(
         }
         target->setWoodsSaxonParameters(
             WS_rho, WS_w, WS_R, WS_a, WS_beta2, WS_beta3, WS_beta4, WS_gamma);
-    }
-    if (nucleonConfFromFile) {
-        projectile->setLightNucleusOption(
-            parameter_list.getLightNucleusOption());
-        target->setLightNucleusOption(parameter_list.getLightNucleusOption());
     }
 
     if (sample_valence_quark) {
@@ -1043,7 +1028,8 @@ void Glauber::prepare_output_QCD_strings() {
             real baryon_fraction_left = 0.;
             if (it.get_has_baryon_left()) {
                 if (use_quarks_qcd_list) {
-                    baryon_fraction_left = it.get_targ()->get_remnant_baryon_number();
+                    baryon_fraction_left =
+                        it.get_targ()->get_remnant_baryon_number();
                 } else {
                     baryon_fraction_left = 1.0;
                 }
@@ -1052,7 +1038,8 @@ void Glauber::prepare_output_QCD_strings() {
             real baryon_fraction_right = 0.;
             if (it.get_has_baryon_right()) {
                 if (use_quarks_qcd_list) {
-                    baryon_fraction_right = it.get_proj()->get_remnant_baryon_number();
+                    baryon_fraction_right =
+                        it.get_proj()->get_remnant_baryon_number();
                 } else {
                     baryon_fraction_right = 1.0;
                 }

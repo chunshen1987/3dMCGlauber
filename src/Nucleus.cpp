@@ -23,22 +23,31 @@ namespace MCGlb {
 
 Nucleus::Nucleus(
     std::string nucleus_name, std::shared_ptr<RandomUtil::Random> ran_gen,
-    bool sample_valence_quarks_in, real BG, real d_min, bool deformed,
-    bool confFromFile, int N_sea_partons) {
-    d_min_ = d_min;
-    deformed_ = deformed;
-    confFromFile_ = confFromFile;
-    BG_ = BG;
+    const MCGlb::Parameters &param_in)
+    : parameter_list_(param_in) {
     ran_gen_ptr = ran_gen;
     set_nucleus_parameters(nucleus_name);
-    N_sea_partons_ = N_sea_partons;
+    deformed_ = true;
+    d_min_ = parameter_list_.get_d_min();
+    BG_ = parameter_list_.get_BG();
+    N_sea_partons_ = parameter_list_.get_N_sea_partons();
 
-    sample_valence_quarks = sample_valence_quarks_in;
+    sample_valence_quarks = false;
+    if (parameter_list_.get_use_quarks() > 0) {
+        sample_valence_quarks = true;
+    }
     if (sample_valence_quarks) {
         number_of_valence_quark_samples_ = readin_valence_quark_samples();
     }
+
     nucleon_configuration_loaded_ = false;
+    confFromFile_ = parameter_list_.nucleon_configuration_from_file();
     lightNucleusOption_ = 0;
+    if (confFromFile_) {
+        lightNucleusOption_ = parameter_list_.getLightNucleusOption();
+    }
+
+    baryonInStringJunction_ = parameter_list_.baryon_num_div();
 }
 
 Nucleus::~Nucleus() {
@@ -305,7 +314,6 @@ void Nucleus::sample_fermi_momentum() {
 void Nucleus::sample_valence_quarks_inside_nucleons(real ecm, int direction) {
     int number_of_quarks = PhysConsts::NumValenceQuark;
     int nucleonType = 0;
-    bool string_junction = parameter_list_.baryon_num_div();
     if (A_ == 0) {
         nucleonType = -1;
         number_of_quarks = PhysConsts::NumQuarkinDipole;
@@ -327,7 +335,7 @@ void Nucleus::sample_valence_quarks_inside_nucleons(real ecm, int direction) {
 
             // define baryon value for first three quarks
             real baryonTri = 1.0 / 3.0;
-            if (string_junction) {
+            if (baryonInStringJunction_) {
                 baryonTri = 0.0;
             }
             for (int i = 0; i < number_of_quarks; i++) {
@@ -344,9 +352,9 @@ void Nucleus::sample_valence_quarks_inside_nucleons(real ecm, int direction) {
                         q = -2.0 / 3.0;  // u-bar quark
                     }
                 } else {
-                    // if nucleon is proton or neutron, define first and last
-                    // quark to be up and down. for middle quark, define as up
-                    // for proton, down for neutron.
+                    // if nucleon is proton or neutron, define first and
+                    // last quark to be up and down. for middle quark,
+                    // define as up for proton, down for neutron.
                     b = baryonTri;
                     if (i == 0) {
                         q = 2.0 / 3.0;  // u quark
@@ -375,7 +383,6 @@ void Nucleus::add_soft_parton_ball(real ecm, int direction) {
     real E_rem_min = 0.1;  // GeV
     real beam_rapidity = direction * acosh(ecm / (2. * mN));
     real Pz_rem_min = E_rem_min * tanh(beam_rapidity);
-    bool string_junction = parameter_list_.baryon_num_div();
     for (auto &nucleon_i : nucleon_list_) {
         if (nucleon_i->is_wounded() && nucleon_i->get_number_of_quarks() != 0) {
             auto soft_pvec = nucleon_i->get_p();
@@ -411,11 +418,11 @@ void Nucleus::add_soft_parton_ball(real ecm, int direction) {
                 for (int i = 0; i < N_sea_partons_; i++) {
                     auto xvec = sample_valence_quark_position();
                     b = 0.0;
-                    // if nucleon is proton or neutron, define a gluon with a
-                    // baryon charge
+                    // if nucleon is proton or neutron, define a gluon with
+                    // a baryon charge
                     if (A_ > 0) {
                         if (i == 0) {
-                            if (string_junction) {
+                            if (baryonInStringJunction_) {
                                 // if the baryon number is
                                 // not split, set it to 1
                                 // for this iteration

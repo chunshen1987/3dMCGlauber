@@ -16,6 +16,7 @@ namespace MCGlb {
 
 class Nucleus {
   private:
+    const Parameters &parameter_list_;
     std::string name;
     int density_function_type;
     int A_;
@@ -28,7 +29,6 @@ class Nucleus {
     bool sample_valence_quarks;
     real Q2;  // Q2 when sampling valence quark
     real BG_;
-    Parameters parameter_list_;
 
     std::vector<std::shared_ptr<Nucleon>> nucleon_list_;
     std::vector<std::shared_ptr<Nucleon>> participant_list_;
@@ -45,12 +45,13 @@ class Nucleus {
     int number_of_valence_quark_samples_;
     int N_sea_partons_;
 
+    bool baryonInStringJunction_;
+
   public:
     Nucleus() = default;
     Nucleus(
         std::string nucleus_name, std::shared_ptr<RandomUtil::Random> ran_gen,
-        bool sample_valence_quarks = false, real BG = 4., real d_min = 0.9,
-        bool deformed = true, bool confFromFile = false, int N_sea_partons = 1);
+        const MCGlb::Parameters &param_in);
     ~Nucleus();
 
     std::string get_name() const { return (name); }
