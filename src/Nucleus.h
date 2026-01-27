@@ -48,7 +48,7 @@ class Nucleus {
     bool baryonInStringJunction_;
 
   public:
-    Nucleus() = default;
+    Nucleus() = delete;
     Nucleus(
         std::string nucleus_name, std::shared_ptr<RandomUtil::Random> ran_gen,
         const MCGlb::Parameters &param_in);
@@ -77,6 +77,7 @@ class Nucleus {
     WoodsSaxonParam get_woods_saxon_parameters() const {
         return (WS_param_vec);
     }
+    void set_deformed(bool deformed) { deformed_ = deformed; }
     bool is_deformed() const { return (deformed_); }
 
     void add_a_participant(std::shared_ptr<Nucleon> ipart) {
