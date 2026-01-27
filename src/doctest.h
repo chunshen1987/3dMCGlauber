@@ -4486,7 +4486,7 @@ void popFromContexts() { contextState->contexts.pop_back(); }
 DOCTEST_MSVC_SUPPRESS_WARNING_WITH_PUSH(
     4996)  // std::uncaught_exception is deprecated in C++17
 void useContextIfExceptionOccurred(IContextScope* ptr) {
-    if (std::uncaught_exception()) {
+    if (std::uncaught_exceptions() > 0) {
         std::ostringstream stream;
         ptr->build(&stream);
         contextState->exceptionalContexts.push_back(stream.str());
