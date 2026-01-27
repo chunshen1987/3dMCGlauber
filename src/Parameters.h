@@ -83,8 +83,8 @@ class Parameters : public ParametersMap {
     bool nucleon_configuration_from_file() const;
     int getLightNucleusOption() const;
 
-    bool baryon_num_div() const;
-    bool qcd_s_list_quark() const;
+    bool getISBaryonInStringJunction() const;
+    bool getISorFSStopping() const;
 };
 
 }  // namespace MCGlb

@@ -97,7 +97,7 @@ real Parameters::get_lambdaBs() const {
 }
 
 real Parameters::get_baryon_in_string_prob() const {
-    real prob = static_cast<real>(get_param_double("baryonInStringProb", 1.));
+    real prob = static_cast<real>(get_param_double("FSbaryonInStringProb", 1.));
     assert(prob >= 0. && prob <= 1.);
     return (prob);
 }
@@ -276,16 +276,17 @@ real Parameters::get_BG() const {
     return (BG);
 }
 
-bool Parameters::baryon_num_div() const {
-    int flag = get_param_int("baryon_split", 0);
+bool Parameters::getISBaryonInStringJunction() const {
+    int flag = get_param_int("ISBaryonInStringJunction", 0);
     if (flag == 0) {
         return (false);
     } else {
         return (true);
     }
 }
-bool Parameters::qcd_s_list_quark() const {
-    int flag = get_param_int("use_quarks", 0);
+
+bool Parameters::getISorFSStopping() const {
+    int flag = get_param_int("ISorFSStopping", 0);
     if (flag == 0) {
         return (false);
     } else {

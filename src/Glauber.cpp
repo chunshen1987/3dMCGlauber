@@ -493,7 +493,7 @@ int Glauber::perform_string_production() {
     real lambdaBs = parameter_list.get_lambdaBs();
     lambdaBs = std::min(1., lambdaBs);
 
-    bool use_quarks_qcd_list = parameter_list.qcd_s_list_quark();
+    bool ISStopping = parameter_list.getISorFSStopping();
 
     real t_current = 0.0;
     int number_of_collided_events = 0;
@@ -611,7 +611,7 @@ int Glauber::perform_string_production() {
     // assign charges for projectile hotspots
     for (auto &idx : random_idx) {
         if (idx < Nstrings) {
-            if (use_quarks_qcd_list) {
+            if (ISStopping) {
                 // put baryon of the projectile in the selected string
                 auto proj_q = QCD_string_list[idx].get_proj_q();
                 if (!proj_q->Q_was_used()) {
@@ -636,7 +636,7 @@ int Glauber::perform_string_production() {
             if (p_i[0] <= 0) continue;
             if (!proj->baryon_was_used()) {
                 real remnant_baryon_number = 0.;
-                if (use_quarks_qcd_list) {
+                if (ISStopping) {
                     for (auto &proj_q : proj->get_quark_list()) {
                         if (!proj_q->Q_was_used()) {
                             proj_q->set_Q_used(true);
@@ -657,7 +657,7 @@ int Glauber::perform_string_production() {
 
     for (auto &idx : random_idx) {
         if (idx < Nstrings) {
-            if (use_quarks_qcd_list) {
+            if (ISStopping) {
                 auto targ_q = QCD_string_list[idx].get_targ_q();
                 if (!targ_q->Q_was_used()) {
                     targ_q->set_Q_used(true);
@@ -681,7 +681,7 @@ int Glauber::perform_string_production() {
             if (p_i[0] <= 0) continue;
             if (!targ->baryon_was_used()) {
                 real remnant_baryon_number = 0.;
-                if (use_quarks_qcd_list) {
+                if (ISStopping) {
                     for (auto &targ_q : targ->get_quark_list()) {
                         if (!targ_q->Q_was_used()) {
                             targ_q->set_Q_used(true);
@@ -704,7 +704,7 @@ int Glauber::perform_string_production() {
             // if no junction transport is used
             it.set_final_baryon_rapidities(
                 it.get_y_f_left(), it.get_y_f_right());
-        } else if (use_quarks_qcd_list) {
+        } else if (ISStopping) {
             it.set_final_baryon_rapidities(
                 it.get_y_f_left(), it.get_y_f_right());
         } else {
@@ -926,7 +926,7 @@ void Glauber::prepare_output_QCD_strings() {
     real y_o = 0.;
     computeCenterOfMass(x_o, y_o);
 
-    bool use_quarks_qcd_list = parameter_list.qcd_s_list_quark();
+    bool ISStopping = parameter_list.getISorFSStopping();
 
     // prepare output strings
     for (auto &it : QCD_string_list) {
@@ -958,7 +958,7 @@ void Glauber::prepare_output_QCD_strings() {
 
         real baryon_fraction_left = 0.;
         if (it.get_has_baryon_left()) {
-            if (use_quarks_qcd_list) {
+            if (ISStopping) {
                 baryon_fraction_left = it.get_targ_q()->get_baryon();
             } else {
                 baryon_fraction_left = 1.;
@@ -967,7 +967,7 @@ void Glauber::prepare_output_QCD_strings() {
 
         real baryon_fraction_right = 0.;
         if (it.get_has_baryon_right()) {
-            if (use_quarks_qcd_list) {
+            if (ISStopping) {
                 baryon_fraction_right = it.get_proj_q()->get_baryon();
             } else {
                 baryon_fraction_right = 1.;
@@ -1027,7 +1027,7 @@ void Glauber::prepare_output_QCD_strings() {
 
             real baryon_fraction_left = 0.;
             if (it.get_has_baryon_left()) {
-                if (use_quarks_qcd_list) {
+                if (ISStopping) {
                     baryon_fraction_left =
                         it.get_targ()->get_remnant_baryon_number();
                 } else {
@@ -1037,7 +1037,7 @@ void Glauber::prepare_output_QCD_strings() {
 
             real baryon_fraction_right = 0.;
             if (it.get_has_baryon_right()) {
-                if (use_quarks_qcd_list) {
+                if (ISStopping) {
                     baryon_fraction_right =
                         it.get_proj()->get_remnant_baryon_number();
                 } else {

@@ -29,8 +29,6 @@ baryon_junctions 1                   # 0: baryon number assumed to be at string 
                                      # 1: baryon number transported assuming baryon junctions
                                      #    (at smaller x) see arXiv:nucl-th/9602027
 N_sea_partons 1                      # Number of allowed soft partons. Default is 1.
-baryon_split 1
-use_quarks 1
 
 resetProjWS 0                        # flag to reset Woods-saxon parameter for the projectile nucleus
 resetTargWS 0                        # flag to reset Woods-saxon parameter for the target nucleus
@@ -42,10 +40,16 @@ ProjWS_beta3 0.2
 ProjWS_gamma 0.0
 d_min 0.9                            # the minimum distance between nucleon pairs [fm]
 
+ISBaryonInStringJunction 1           # 1: assign the whole baryon number to the string junction
+                                     # 0: assign fractional baryon numbers to valence quarks
+ISorFSStopping 1                     # 1: conserved charges follows incoming hotspots
+                                     # 0: conserved charges fluctuates with final-state string fragmentations
+
 lambdaB 0.2                          # parameter the controls the strength of the baryon junction stopping
 lambdaBs 0.0                         # the fraction of single-to-double junction stopping
-baryonInStringProb 1.0               # the relative probility to put a baryon charge in the string
+FSbaryonInStringProb 1.0             # the relative probility to put a baryon charge in the string
                                      # rather than at the wounded nucleon remnant
+
 BG 16.                               # Gaussian width square for sampling the valence quark positions (GeV^2)
 cenMin 0.
 cenMax 100.

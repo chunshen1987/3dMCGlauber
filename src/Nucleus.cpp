@@ -47,7 +47,7 @@ Nucleus::Nucleus(
         lightNucleusOption_ = parameter_list_.getLightNucleusOption();
     }
 
-    baryonInStringJunction_ = parameter_list_.baryon_num_div();
+    baryonInStringJunction_ = parameter_list_.getISBaryonInStringJunction();
 }
 
 Nucleus::~Nucleus() {
