@@ -31,7 +31,6 @@ class Nucleon : public Particle {
     std::vector<int> connected_times_;
     MomentumVec remnant_p_ = {0.0, 0.0, 0.0, 0.0};
     SpatialVec remnant_x_frez_ = {0.0, 0.0, 0.0, 0.0};
-    int nucleon_system_status_;
     static int random_value_;
     MomentumVec fermi_momentum_ = {0.0, 0.0, 0.0, 0.0};
 
