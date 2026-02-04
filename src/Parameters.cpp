@@ -211,8 +211,8 @@ bool Parameters::get_batch_eccentricity_output() const {
     }
 }
 
-bool Parameters::get_baryon_junctions() const {
-    int flag = get_param_int("baryon_junctions", 0);
+bool Parameters::getFSbaryonInStringBreaking() const {
+    int flag = get_param_int("FSBaryonInStringBreaking", 0);
     if (flag == 0) {
         return (false);
     } else {
@@ -220,8 +220,8 @@ bool Parameters::get_baryon_junctions() const {
     }
 }
 
-bool Parameters::get_electric_junctions() const {
-    int flag = get_param_int("electric_junctions", 0);
+bool Parameters::getFSelectricInStringBreaking() const {
+    int flag = get_param_int("FSElectricChargeInStringBreaking", 0);
     if (flag == 0) {
         return (false);
     } else {

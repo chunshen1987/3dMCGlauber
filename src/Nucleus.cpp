@@ -173,7 +173,6 @@ void Nucleus::generate_nucleus_3d_configuration() {
         SpatialVec x = {0.0};
         MomentumVec p = {PhysConsts::MProton, 0.0, 0.0, 0.0};
         std::shared_ptr<Nucleon> nucleon_ptr(new Nucleon(x, p, ran_gen_ptr));
-        nucleon_ptr->set_electric_charge(1.);
         nucleon_list_.push_back(std::move(nucleon_ptr));
         status = 0;
     } else if (A_ == 0) {  // dipole
@@ -203,7 +202,11 @@ void Nucleus::generate_nucleus_3d_configuration() {
         }
     }
 
-    if (A_ > 0) {
+    if (A_ == 0) {
+        // assign the dipole
+        nucleon_list_[0]->set_electric_charge(0);
+        nucleon_list_[0]->set_baryon_number(0);
+    } else {
         // assign the proton or neutron identity to the nucleons
         std::vector<int> electric_charges_arr(A_, 0);
         for (int i = 0; i < Z_; i++) electric_charges_arr[i] = 1;
@@ -214,10 +217,6 @@ void Nucleus::generate_nucleus_3d_configuration() {
             nucleon_list_[i]->set_electric_charge(electric_charges_arr[i]);
             nucleon_list_[i]->set_baryon_number(1);
         }
-    } else {
-        // assign the dipole
-        nucleon_list_[0]->set_electric_charge(0);
-        nucleon_list_[0]->set_baryon_number(0);
     }
 
     recenter_nucleus();
@@ -323,7 +322,7 @@ void Nucleus::sample_fermi_momentum() {
 
 void Nucleus::sample_valence_quarks_inside_nucleons(real ecm, int direction) {
     int number_of_quarks = PhysConsts::NumValenceQuark;
-    int nucleonType = 0;
+    int nucleonType = 0;  // 0: neutron, 1: proton, -1: dipole
     if (A_ == 0) {
         nucleonType = -1;
         number_of_quarks = PhysConsts::NumQuarkinDipole;
@@ -332,7 +331,8 @@ void Nucleus::sample_valence_quarks_inside_nucleons(real ecm, int direction) {
         if (nucleon_i->is_wounded() && nucleon_i->get_number_of_quarks() == 0) {
             std::vector<real> xQuark;
             if (A_ > 0) {
-                nucleonType = nucleon_i->get_electric_charge();
+                nucleonType =
+                    static_cast<int>(nucleon_i->get_electric_charge());
             }
             sample_quark_momentum_fraction(
                 xQuark, number_of_quarks, nucleonType, nucleon_i->get_mass(),

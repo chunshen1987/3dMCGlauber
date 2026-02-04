@@ -25,14 +25,6 @@ cache_tables 1                       # 1: use pre-generated tables for valence q
                                      # 0: re-generate tables for valence quark x
 shadowing_factor 0.6                 # a shadowning factor for producing strings
                                      # from multiple scatterings
-baryon_junctions 1                   # 0: baryon number assumed to be at string end
-                                     # 1: baryon number transported assuming baryon junctions
-                                     #    (at smaller x) see arXiv:nucl-th/9602027
-electric_junctions 1                 # 0: electric charge number assumed to be at string end
-                                     # 1: electric charge number transported assuming baryon junctions
-                                     #    (at smaller x) see arXiv:nucl-th/9602027
-integer_electric_charge 1            # flag to treat electric charge as interger or fractions
-
 resetProjWS 1                        # flag to reset Woods-saxon parameter for the projectile nucleus
 resetTargWS 1                        # flag to reset Woods-saxon parameter for the target nucleus
                                      # if collision is symmetric, use ProjWS params for the target nucleus
@@ -52,14 +44,21 @@ ISBaryonInStringJunction 1           # 1: assign the whole baryon number to the 
 ISorFSStopping 1                     # 1: conserved charges follows incoming hotspots
                                      # 0: conserved charges fluctuates with final-state string fragmentations
 
+FSBaryonInStringBreaking 1           # 0: baryon number assumed to be at string end
+                                     # 1: baryon number transported assuming baryon junctions
+                                     #    (at smaller x) see arXiv:nucl-th/9602027
 lambdaB 0.2                          # parameter the controls the strength of the baryon junction stopping
 lambdaBs 0.0                         # the fraction of single-to-double junction stopping
 FSbaryonInStringProb 1.0             # the relative probility to put a baryon charge in the string
                                      # rather than at the wounded nucleon remnant
+FSElectricChargeInStringBreaking 1   # 0: electric charge number assumed to be at string end
+                                     # 1: electric charge number transported assuming baryon junctions
+                                     #    (at smaller x) see arXiv:nucl-th/9602027
 lambdaQ 0.2                          # parameter the controls the strength of the electric charge junction stopping
 lambdaQs 0.0                         # the fraction of single-to-double junction stopping
 FSelectricChargeInStringProb 1.0     # the relative probility to put a electric charge in the string
                                      # rather than at the wounded nucleon remnant
+integer_electric_charge 1            # flag to treat electric charge as interger or fractions
 
 BG 16.                               # Gaussian width square for sampling the valence quark positions (GeV^2)
 cenMin 0.

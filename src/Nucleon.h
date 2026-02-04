@@ -19,7 +19,7 @@ class Nucleon : public Particle {
     int collided_times = 0;
     int total_connected_times_ = 0;
     real electric_charge_ = 0;
-    int baryon_number_ = 1;
+    real baryon_number_ = 1;
     bool wounded_ = false;
     bool baryon_used = false;
     bool electric_charge_used = false;
@@ -27,6 +27,7 @@ class Nucleon : public Particle {
     bool remnant_carry_baryon_number_ = false;
     bool remnant_carry_electric_charge_number_ = false;
     real remnant_baryon_number = 1;
+    real remnant_electricQ_number_ = 0;
 
     std::vector<std::weak_ptr<Nucleon>> collide_with;
     std::vector<std::weak_ptr<Nucleon>> connected_with;
@@ -48,10 +49,10 @@ class Nucleon : public Particle {
 
     ~Nucleon();
 
-    void set_baryon_number(int baryon_number) {
+    void set_baryon_number(real baryon_number) {
         baryon_number_ = baryon_number;
     }
-    int get_baryon_number() const { return (baryon_number_); }
+    real get_baryon_number() const { return (baryon_number_); }
 
     void set_electric_charge(int charge) { electric_charge_ = charge; }
     real get_electric_charge() const { return (electric_charge_); }
@@ -63,9 +64,11 @@ class Nucleon : public Particle {
     }
 
     bool is_wounded() const { return (wounded_); }
-    bool baryon_was_used() const { return (baryon_used); }
     void set_wounded(bool hit) { wounded_ = hit; }
+
+    bool baryon_was_used() const { return (baryon_used); }
     void set_baryon_used(bool hit) { baryon_used = hit; }
+
     bool electric_charge_was_used() const { return (electric_charge_used); }
     void set_electric_charge_used(bool hit) { electric_charge_used = hit; }
 
@@ -108,18 +111,25 @@ class Nucleon : public Particle {
     bool is_remnant_carry_baryon_number() const {
         return (remnant_carry_baryon_number_);
     }
-    real get_remnant_baryon_number() const { return (remnant_baryon_number); }
     void set_remnant_carry_baryon_number(bool remnant) {
         remnant_carry_baryon_number_ = remnant;
     }
+    void set_remnant_baryon_number(real remnant) {
+        remnant_baryon_number = remnant;
+    }
+    real get_remnant_baryon_number() const { return (remnant_baryon_number); }
+
     bool is_remnant_carry_electric_charge_number() const {
         return (remnant_carry_electric_charge_number_);
     }
     void set_remnant_carry_electric_charge_number(bool remnant) {
         remnant_carry_electric_charge_number_ = remnant;
     }
-    void set_remnant_baryon_number(real remnant) {
-        remnant_baryon_number = remnant;
+    void set_remnant_electricQ_number(real remnant) {
+        remnant_electricQ_number_ = remnant;
+    }
+    real get_remnant_electricQ_number() const {
+        return (remnant_electricQ_number_);
     }
 
     void set_remnant_p(MomentumVec p_in) { remnant_p_ = p_in; }
@@ -127,7 +137,6 @@ class Nucleon : public Particle {
     void subtract_momentum_from_remnant(MomentumVec p_q) {
         for (int i = 0; i < 4; i++) remnant_p_[i] -= p_q[i];
     }
-
     void subtract_electric_charge_from_remnant(real Qe) {
         electric_charge_ -= Qe;
     }

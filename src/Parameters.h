@@ -57,12 +57,12 @@ class Parameters : public ParametersMap {
     int get_N_sea_partons() const;
 
     // if False do assume baryon number at string ends
-    // if True transport baryon number according to cosh(y*/2)
-    bool get_baryon_junctions() const;
+    // if True transport baryon number along the string
+    bool getFSbaryonInStringBreaking() const;
 
     // if False do assume electric charge number at string ends
     // if True transport electric charge number according to cosh(y*/2)
-    bool get_electric_junctions() const;
+    bool getFSelectricInStringBreaking() const;
 
     bool get_integer_electric_charge() const;
 

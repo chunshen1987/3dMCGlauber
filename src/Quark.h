@@ -22,7 +22,7 @@ class Quark : public Particle {
     bool Q_used_ = false;
 
   public:
-    Quark() = default;
+    Quark() = delete;
     Quark(SpatialVec x_in, MomentumVec p_in) {
         set_particle_variables(x_in, p_in);
         set_charges(0, 0, 0);

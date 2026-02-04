@@ -32,7 +32,7 @@ class EventGenerator {
     float cenEstMax_;
 
   public:
-    EventGenerator() = default;
+    EventGenerator() = delete;
     EventGenerator(
         std::string input_filename, int argc, char* argv[], int seed = 0);
     ~EventGenerator() {};

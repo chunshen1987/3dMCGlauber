@@ -95,6 +95,7 @@ class Nucleus {
                 participant_proton_list.push_back(ipart);
             }
         }
+        ipart->set_wounded(true);
     }
 
     //! This function generates the spatial and momentum configurations
