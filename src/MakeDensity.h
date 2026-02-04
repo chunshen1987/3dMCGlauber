@@ -95,19 +95,19 @@ class MakeDensity {
         return ((k * gridNx_ + i) * gridNy_ + j);
     }
 
-    void output_netBaryon_eta_distribution(std::string filename,
-                                           const int eventId,
-                                           const int outputMode=0) const;
+    void output_netBaryon_eta_distribution(
+        std::string filename, const int eventId,
+        const int outputMode = 0) const;
     void output_netElectricCharges_eta_distribution(
-                                    std::string filename, const int eventId,
-                                    const int outputMode=0) const;
-    void output_energyDensity_eta_distribution(std::string filename,
-                                               const int eventId,
-                                               const int outputMode=0) const;
-    void output_energyDensity_xeta_distribution(std::string filename,
-                                                const int eventId) const;
-    void output_energyDensity_3d(std::string filenameHeader,
-                                 const int eventId) const;
+        std::string filename, const int eventId,
+        const int outputMode = 0) const;
+    void output_energyDensity_eta_distribution(
+        std::string filename, const int eventId,
+        const int outputMode = 0) const;
+    void output_energyDensity_xeta_distribution(
+        std::string filename, const int eventId) const;
+    void output_energyDensity_3d(
+        std::string filenameHeader, const int eventId) const;
     void compute_energyDensity_3D_distribution(
         std::vector<float> &x_arr, std::vector<float> &y_arr,
         std::vector<float> &eta_arr, std::vector<float> &ed_arr) const;

@@ -28,7 +28,6 @@ class Quark : public Particle {
         set_charges(0, 0, 0);
     }
 
-
     Quark(SpatialVec x_in, MomentumVec p_in, real mass_in) {
         set_particle_variables(x_in, p_in, mass_in);
         set_charges(0, 0, 0);

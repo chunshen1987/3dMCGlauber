@@ -66,8 +66,8 @@ class Nucleon : public Particle {
     bool baryon_was_used() const { return (baryon_used); }
     void set_wounded(bool hit) { wounded_ = hit; }
     void set_baryon_used(bool hit) { baryon_used = hit; }
-    bool electric_charge_was_used() const {return(electric_charge_used);}
-    void set_electric_charge_used(bool hit) {electric_charge_used = hit;}
+    bool electric_charge_was_used() const { return (electric_charge_used); }
+    void set_electric_charge_used(bool hit) { electric_charge_used = hit; }
 
     void increment_collided_times() { collided_times++; }
     int get_collided_times() const { return (collided_times); }
@@ -113,7 +113,7 @@ class Nucleon : public Particle {
         remnant_carry_baryon_number_ = remnant;
     }
     bool is_remnant_carry_electric_charge_number() const {
-        return(remnant_carry_electric_charge_number_);
+        return (remnant_carry_electric_charge_number_);
     }
     void set_remnant_carry_electric_charge_number(bool remnant) {
         remnant_carry_electric_charge_number_ = remnant;
@@ -125,8 +125,7 @@ class Nucleon : public Particle {
     void set_remnant_p(MomentumVec p_in) { remnant_p_ = p_in; }
     MomentumVec get_remnant_p() const { return (remnant_p_); }
     void subtract_momentum_from_remnant(MomentumVec p_q) {
-        for (int i = 0; i < 4; i++)
-            remnant_p_[i] -= p_q[i];
+        for (int i = 0; i < 4; i++) remnant_p_[i] -= p_q[i];
     }
 
     void subtract_electric_charge_from_remnant(real Qe) {

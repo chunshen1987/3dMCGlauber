@@ -66,14 +66,13 @@ class Nucleus {
     void set_valence_quark_Q2(real Q2_q) { Q2 = Q2_q; }
     //! This function set Woods-Saxon parameters based on the nucleus name
     void set_nucleus_parameters(std::string nucleus_name);
-    void set_woods_saxon_parameters(int A_in, int Z_in,
-                                    real rho, real w, real R, real a,
-                                    real beta2, real beta3, real beta4,
-                                    real gamma, real da, real dR,
-                                    int density_function_type_in);
-    void setWoodsSaxonParameters(real rho, real w, real R, real a,
-                                 real beta2, real beta3, real beta4,
-                                 real gamma, real da, real dR);
+    void set_woods_saxon_parameters(
+        int A_in, int Z_in, real rho, real w, real R, real a, real beta2,
+        real beta3, real beta4, real gamma, real da, real dR,
+        int density_function_type_in);
+    void setWoodsSaxonParameters(
+        real rho, real w, real R, real a, real beta2, real beta3, real beta4,
+        real gamma, real da, real dR);
     void set_dmin(real d_min) { d_min_ = d_min; }
     real get_nucleon_minimum_distance() const { return (d_min_); }
     int get_nucleus_A() const { return (A_); }
@@ -88,7 +87,7 @@ class Nucleus {
         if (!ipart->is_wounded()) {
             // only at ipart one time
             participant_list_.push_back(ipart);
-            if(std::abs(ipart->get_electric_charge()) < 1e-8) {
+            if (std::abs(ipart->get_electric_charge()) < 1e-8) {
                 // The participant is a neutron
                 participant_neutron_list.push_back(ipart);
             } else {
@@ -123,7 +122,7 @@ class Nucleus {
     real sample_r_from_deformed_woods_saxon() const;
     void sample_r_and_costheta_from_deformed_woods_saxon(
         std::vector<std::array<real, 4>> &nucleonPos_array) const;
-    //! Fermi Distribution 
+    //! Fermi Distribution
     real fermi_distribution(real r, real R_WS, real a_WS) const;
     real getAvgWoodsSaxonDensity(real r) const;
     real spherical_harmonics(int l, real ct) const;
@@ -140,10 +139,10 @@ class Nucleus {
         return (static_cast<int>(participant_list_.size()));
     }
     int get_number_of_wounded_neutrons() const {
-        return(static_cast<int>(participant_neutron_list.size()));
+        return (static_cast<int>(participant_neutron_list.size()));
     }
     int get_number_of_wounded_protons() const {
-        return(static_cast<int>(participant_proton_list.size()));
+        return (static_cast<int>(participant_proton_list.size()));
     }
     std::shared_ptr<Nucleon> get_participant(unsigned int idx) {
         return (participant_list_.at(idx));

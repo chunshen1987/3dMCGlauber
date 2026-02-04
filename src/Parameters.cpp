@@ -98,14 +98,13 @@ real Parameters::get_lambdaBs() const {
 real Parameters::get_lambdaQ() const {
     real lambdaQ = static_cast<real>(get_param_double("lambdaQ", 0.));
     assert(lambdaQ >= 0.);
-    return(lambdaQ);
+    return (lambdaQ);
 }
-
 
 real Parameters::get_lambdaQs() const {
     real lambdaQs = static_cast<real>(get_param_double("lambdaQs", 1.));
     assert(lambdaQs >= 0.);
-    return(lambdaQs);
+    return (lambdaQs);
 }
 
 real Parameters::get_baryon_in_string_prob() const {
@@ -115,12 +114,11 @@ real Parameters::get_baryon_in_string_prob() const {
 }
 
 real Parameters::get_electric_charge_in_string_prob() const {
-    real prob = static_cast<real>(
-                        get_param_double("electricChargeInStringProb", 1.));
+    real prob =
+        static_cast<real>(get_param_double("electricChargeInStringProb", 1.));
     assert(prob >= 0. && prob <= 1.);
-    return(prob);
+    return (prob);
 }
-
 
 bool Parameters::get_cached_tabels() const {
     int flag = get_param_int("cache_tables", 1);
@@ -225,22 +223,20 @@ bool Parameters::get_baryon_junctions() const {
 bool Parameters::get_electric_junctions() const {
     int flag = get_param_int("electric_junctions", 0);
     if (flag == 0) {
-        return(false);
+        return (false);
     } else {
-        return(true);
+        return (true);
     }
 }
-
 
 bool Parameters::get_integer_electric_charge() const {
     int flag = get_param_int("integer_electric_charge", 0);
     if (flag == 0) {
-        return(false);
+        return (false);
     } else {
-        return(true);
+        return (true);
     }
 }
-
 
 real Parameters::get_shadowing_factor() const {
     real shadowing =

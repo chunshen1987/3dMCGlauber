@@ -43,38 +43,40 @@ class QCDString {
 
   public:
     QCDString() = default;
-    QCDString(SpatialVec x_in, real tau_form,
-              shared_ptr<Nucleon> proj_in, shared_ptr<Nucleon> targ_in,
-              real string_tension_in,
-              bool has_baryon_right, bool has_baryon_left);
-    QCDString(SpatialVec x_in, real tau_form,
-              shared_ptr<Nucleon> proj_in, shared_ptr<Nucleon> targ_in,
-              real string_tension_in,
-              bool has_baryon_right, bool has_baryon_left,
-              bool has_electric_charge_right, bool has_electric_charge_left);
-    QCDString(SpatialVec x_in, real tau_form,
-              shared_ptr<Nucleon> proj_in, shared_ptr<Nucleon> targ_in,
-              shared_ptr<Quark> proj_q_in, shared_ptr<Quark> targ_q_in,
-              real string_tension_in,
-              bool has_baryon_right, bool has_baryon_left);
-    QCDString(SpatialVec x_in, real tau_form,
-              shared_ptr<Nucleon> proj_in, shared_ptr<Nucleon> targ_in,
-              shared_ptr<Quark> proj_q_in, shared_ptr<Quark> targ_q_in,
-              real string_tension_in,
-              bool has_baryon_right, bool has_baryon_left,
-              bool has_electric_charge_right, bool has_electric_charge_left);
-    QCDString(SpatialVec x_in, real tau_form_in,
-              shared_ptr<Nucleon> proj_in, shared_ptr<Nucleon> targ_in,
-              MomentumVec proj_p_in, MomentumVec targ_p_in,
-              real m_over_sigma_in,
-              bool has_baryon_right_in, bool has_baryon_left_in);
-    QCDString(SpatialVec x_in, real tau_form_in,
-              shared_ptr<Nucleon> proj_in, shared_ptr<Nucleon> targ_in,
-              MomentumVec proj_p_in, MomentumVec targ_p_in,
-              real m_over_sigma_in,
-              bool has_baryon_right_in, bool has_baryon_left_in,
-              bool has_electric_charge_right_in,
-              bool has_electric_charge_left_in);
+
+    QCDString(
+        SpatialVec x_in, real tau_form_in, shared_ptr<Nucleon> proj_in,
+        shared_ptr<Nucleon> targ_in, real m_over_sigma_in,
+        bool has_baryon_right_in, bool has_baryon_left_in);
+    QCDString(
+        SpatialVec x_in, real tau_form_in, shared_ptr<Nucleon> proj_in,
+        shared_ptr<Nucleon> targ_in, real m_over_sigma_in,
+        bool has_baryon_right_in, bool has_baryon_left_in,
+        bool has_electric_charge_right_in, bool has_electric_charge_left_in);
+
+    QCDString(
+        SpatialVec x_in, real tau_form_in, shared_ptr<Nucleon> proj_in,
+        shared_ptr<Nucleon> targ_in, shared_ptr<Quark> proj_q_in,
+        shared_ptr<Quark> targ_q_in, real m_over_sigma_in,
+        bool has_baryon_right_in, bool has_baryon_left_in);
+    QCDString(
+        SpatialVec x_in, real tau_form_in, shared_ptr<Nucleon> proj_in,
+        shared_ptr<Nucleon> targ_in, shared_ptr<Quark> proj_q_in,
+        shared_ptr<Quark> targ_q_in, real m_over_sigma_in,
+        bool has_baryon_right_in, bool has_baryon_left_in,
+        bool has_electric_charge_right_in, bool has_electric_charge_left_in);
+
+    QCDString(
+        SpatialVec x_in, real tau_form_in, shared_ptr<Nucleon> proj_in,
+        shared_ptr<Nucleon> targ_in, MomentumVec proj_p_in,
+        MomentumVec targ_p_in, real m_over_sigma_in, bool has_baryon_right_in,
+        bool has_baryon_left_in);
+    QCDString(
+        SpatialVec x_in, real tau_form_in, shared_ptr<Nucleon> proj_in,
+        shared_ptr<Nucleon> targ_in, MomentumVec proj_p_in,
+        MomentumVec targ_p_in, real m_over_sigma_in, bool has_baryon_right_in,
+        bool has_baryon_left_in, bool has_electric_charge_right_in,
+        bool has_electric_charge_left_in);
 
     real get_string_mass() const { return (mass_); }
 
@@ -103,15 +105,20 @@ class QCDString {
         set_final_baryon_space_time_rapidities();
     }
     void set_final_electric_charge_rapidities(real y_f_l, real y_f_r) {
-        y_f_electric_charge_left = y_f_l; y_f_electric_charge_right = y_f_r;
+        y_f_electric_charge_left = y_f_l;
+        y_f_electric_charge_right = y_f_r;
         set_final_electric_charge_space_time_rapidities();
     }
 
     real get_y_f_baryon_left() const { return (y_f_baryon_left); }
     real get_y_f_baryon_right() const { return (y_f_baryon_right); }
 
-    real get_y_f_electric_charge_left() const {return(y_f_electric_charge_left);}
-    real get_y_f_electric_charge_right() const {return(y_f_electric_charge_right);}
+    real get_y_f_electric_charge_left() const {
+        return (y_f_electric_charge_left);
+    }
+    real get_y_f_electric_charge_right() const {
+        return (y_f_electric_charge_right);
+    }
 
     void set_final_space_time_rapidities(real eta_s_l, real eta_s_r) {
         eta_s_left = eta_s_l;
@@ -125,9 +132,11 @@ class QCDString {
         eta_s_baryon_left = eta_s_l;
         eta_s_baryon_right = eta_s_r;
     }
-    void set_final_electric_charge_space_time_rapidities(real eta_s_l, real eta_s_r) {
+    void set_final_electric_charge_space_time_rapidities(
+        real eta_s_l, real eta_s_r) {
         // set with inputs
-        eta_s_electric_charge_left = eta_s_l; eta_s_electric_charge_right = eta_s_r;
+        eta_s_electric_charge_left = eta_s_l;
+        eta_s_electric_charge_right = eta_s_r;
     }
 
     //! This funciton sets baryon eta_s assuming linear rapidity profile
@@ -136,8 +145,12 @@ class QCDString {
     //! This funciton sets baryon eta_s assuming linear rapidity profile
     void set_final_electric_charge_space_time_rapidities();
 
-    real get_eta_s_electric_charge_left() const {return(eta_s_electric_charge_left);}
-    real get_eta_s_electric_charge_right() const {return(eta_s_electric_charge_right);}
+    real get_eta_s_electric_charge_left() const {
+        return (eta_s_electric_charge_left);
+    }
+    real get_eta_s_electric_charge_right() const {
+        return (eta_s_electric_charge_right);
+    }
 
     real get_eta_s_baryon_left() const { return (eta_s_baryon_left); }
     real get_eta_s_baryon_right() const { return (eta_s_baryon_right); }
@@ -155,22 +168,25 @@ class QCDString {
         has_electric_charge_right_ = has_e_right;
     }
 
+    void set_Qe_left(real Qe) { Qe_left_ = Qe; }
+    void set_Qe_right(real Qe) { Qe_right_ = Qe; }
+    void set_eta_s_Qe_left(real etas) { eta_s_Qe_left_ = etas; }
+    void set_eta_s_Qe_right(real etas) { eta_s_Qe_right_ = etas; }
 
-    void set_Qe_left(real Qe) {Qe_left_ = Qe;}
-    void set_Qe_right(real Qe) {Qe_right_ = Qe;}
-    void set_eta_s_Qe_left(real etas) {eta_s_Qe_left_ = etas;}
-    void set_eta_s_Qe_right(real etas) {eta_s_Qe_right_ = etas;}
-
-    real get_Qe_left() const {return(Qe_left_);}
-    real get_Qe_right() const {return(Qe_right_);}
-    real get_eta_s_Qe_left() const {return(eta_s_Qe_left_);}
-    real get_eta_s_Qe_right() const {return(eta_s_Qe_right_);}
+    real get_Qe_left() const { return (Qe_left_); }
+    real get_Qe_right() const { return (Qe_right_); }
+    real get_eta_s_Qe_left() const { return (eta_s_Qe_left_); }
+    real get_eta_s_Qe_right() const { return (eta_s_Qe_right_); }
 
     bool get_has_baryon_left() const { return (has_baryon_left_); }
     bool get_has_baryon_right() const { return (has_baryon_right_); }
 
-    bool get_has_electric_charge_left() const {return(has_electric_charge_left_);}
-    bool get_has_electric_charge_right() const {return(has_electric_charge_right_);}
+    bool get_has_electric_charge_left() const {
+        return (has_electric_charge_left_);
+    }
+    bool get_has_electric_charge_right() const {
+        return (has_electric_charge_right_);
+    }
 
     void set_has_remnant_left(bool has_r_left) {
         has_remnant_left_ = has_r_left;

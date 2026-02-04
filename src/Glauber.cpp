@@ -50,18 +50,16 @@ Glauber::Glauber(
         real WS_w = parameter_list.getParam("ProjWS_w", defaultWSParam[1]);
         real WS_R = parameter_list.getParam("ProjWS_R", defaultWSParam[2]);
         real WS_a = parameter_list.getParam("ProjWS_a", defaultWSParam[3]);
-        real WS_beta2 = parameter_list.getParam(
-                                    "ProjWS_beta2", defaultWSParam[4]);
-        real WS_beta3 = parameter_list.getParam(
-                                    "ProjWS_beta3", defaultWSParam[5]);
-        real WS_beta4 = parameter_list.getParam(
-                                    "ProjWS_beta4", defaultWSParam[6]);
-        real WS_gamma = parameter_list.getParam(
-                                    "ProjWS_gamma", defaultWSParam[7]);
-        real WS_da = parameter_list.getParam(
-                                    "ProjWS_da", defaultWSParam[8]);
-        real WS_dR = parameter_list.getParam(
-                                    "ProjWS_dR", defaultWSParam[9]);
+        real WS_beta2 =
+            parameter_list.getParam("ProjWS_beta2", defaultWSParam[4]);
+        real WS_beta3 =
+            parameter_list.getParam("ProjWS_beta3", defaultWSParam[5]);
+        real WS_beta4 =
+            parameter_list.getParam("ProjWS_beta4", defaultWSParam[6]);
+        real WS_gamma =
+            parameter_list.getParam("ProjWS_gamma", defaultWSParam[7]);
+        real WS_da = parameter_list.getParam("ProjWS_da", defaultWSParam[8]);
+        real WS_dR = parameter_list.getParam("ProjWS_dR", defaultWSParam[9]);
         projectile->setWoodsSaxonParameters(
             WS_rho, WS_w, WS_R, WS_a, WS_beta2, WS_beta3, WS_beta4, WS_gamma,
             WS_da, WS_dR);
@@ -82,36 +80,32 @@ Glauber::Glauber(
             WS_w = parameter_list.getParam("ProjWS_w", defaultWSParam[1]);
             WS_R = parameter_list.getParam("ProjWS_R", defaultWSParam[2]);
             WS_a = parameter_list.getParam("ProjWS_a", defaultWSParam[3]);
-            WS_beta2 = parameter_list.getParam(
-                                   "ProjWS_beta2", defaultWSParam[4]);
-            WS_beta3 = parameter_list.getParam(
-                                   "ProjWS_beta3", defaultWSParam[5]);
-            WS_beta4 = parameter_list.getParam(
-                                   "ProjWS_beta4", defaultWSParam[6]);
-            WS_gamma = parameter_list.getParam(
-                                   "ProjWS_gamma", defaultWSParam[7]);
-            WS_da = parameter_list.getParam(
-                                   "ProjWS_da", defaultWSParam[8]);
-            WS_dR = parameter_list.getParam(
-                                   "ProjWS_dR", defaultWSParam[9]);
+            WS_beta2 =
+                parameter_list.getParam("ProjWS_beta2", defaultWSParam[4]);
+            WS_beta3 =
+                parameter_list.getParam("ProjWS_beta3", defaultWSParam[5]);
+            WS_beta4 =
+                parameter_list.getParam("ProjWS_beta4", defaultWSParam[6]);
+            WS_gamma =
+                parameter_list.getParam("ProjWS_gamma", defaultWSParam[7]);
+            WS_da = parameter_list.getParam("ProjWS_da", defaultWSParam[8]);
+            WS_dR = parameter_list.getParam("ProjWS_dR", defaultWSParam[9]);
         } else {
             // for asymmetric collisions, set with target WS params
             WS_rho = parameter_list.getParam("TargWS_rho0", defaultWSParam[0]);
             WS_w = parameter_list.getParam("TargWS_w", defaultWSParam[1]);
             WS_R = parameter_list.getParam("TargWS_R", defaultWSParam[2]);
             WS_a = parameter_list.getParam("TargWS_a", defaultWSParam[3]);
-            WS_beta2 = parameter_list.getParam(
-                                   "TargWS_beta2", defaultWSParam[4]);
-            WS_beta3 = parameter_list.getParam(
-                                   "TargWS_beta3", defaultWSParam[5]);
-            WS_beta4 = parameter_list.getParam(
-                                   "TargWS_beta4", defaultWSParam[6]);
-            WS_gamma = parameter_list.getParam(
-                                   "TargWS_gamma", defaultWSParam[7]);
-            WS_da = parameter_list.getParam(
-                                   "TargWS_da", defaultWSParam[8]);
-            WS_dR = parameter_list.getParam(
-                                   "TargWS_dR", defaultWSParam[9]);
+            WS_beta2 =
+                parameter_list.getParam("TargWS_beta2", defaultWSParam[4]);
+            WS_beta3 =
+                parameter_list.getParam("TargWS_beta3", defaultWSParam[5]);
+            WS_beta4 =
+                parameter_list.getParam("TargWS_beta4", defaultWSParam[6]);
+            WS_gamma =
+                parameter_list.getParam("TargWS_gamma", defaultWSParam[7]);
+            WS_da = parameter_list.getParam("TargWS_da", defaultWSParam[8]);
+            WS_dR = parameter_list.getParam("TargWS_dR", defaultWSParam[9]);
         }
         target->setWoodsSaxonParameters(
             WS_rho, WS_w, WS_R, WS_a, WS_beta2, WS_beta3, WS_beta4, WS_gamma,
@@ -195,7 +189,6 @@ real Glauber::get_roots_from_distribution(
     return (rootgammaN_sampled);
 }
 
-
 void Glauber::make_nuclei() {
     projectile->generate_nucleus_3d_configuration();
     target->generate_nucleus_3d_configuration();
@@ -265,15 +258,17 @@ int Glauber::get_Npart() const {
 }
 
 int Glauber::get_Neutronspart() const {
-    int Neutronspart = (projectile->get_number_of_wounded_neutrons()
-                  + target->get_number_of_wounded_neutrons());
-    return(Neutronspart);
+    int Neutronspart =
+        (projectile->get_number_of_wounded_neutrons()
+         + target->get_number_of_wounded_neutrons());
+    return (Neutronspart);
 }
 
 int Glauber::get_Protonspart() const {
-    int Protonspart = (projectile->get_number_of_wounded_protons()
-                  + target->get_number_of_wounded_protons());
-    return(Protonspart);
+    int Protonspart =
+        (projectile->get_number_of_wounded_protons()
+         + target->get_number_of_wounded_protons());
+    return (Protonspart);
 }
 
 bool Glauber::hit(real d2) const {
@@ -507,7 +502,6 @@ void Glauber::get_tau_form_and_moversigma(
     }
 }
 
-
 // add flag if baryon used to proj and target
 // - check it - only put in baryon if not used yet, then set it to used
 int Glauber::perform_string_production() {
@@ -517,8 +511,8 @@ int Glauber::perform_string_production() {
         (parameter_list.get_QCD_string_evolution_mode());
     const auto baryon_junctions = parameter_list.get_baryon_junctions();
     const auto electric_junctions = parameter_list.get_electric_junctions();
-    const auto integer_electric_charge = (
-            parameter_list.get_integer_electric_charge());
+    const auto integer_electric_charge =
+        (parameter_list.get_integer_electric_charge());
 
     real lambdaB = parameter_list.get_lambdaB();
     lambdaB = std::min(1., lambdaB);
@@ -570,7 +564,7 @@ int Glauber::perform_string_production() {
                     proj->subtract_momentum_from_remnant(p_q);
                     if (!integer_electric_charge) {
                         proj->subtract_electric_charge_from_remnant(
-                                                            proj_q->get_Qe());
+                            proj_q->Q_was_used());
                     }
                 }
                 // targ_q = targ->get_a_valence_quark();
@@ -585,7 +579,7 @@ int Glauber::perform_string_production() {
                     targ->subtract_momentum_from_remnant(p_q);
                     if (!integer_electric_charge) {
                         targ->subtract_electric_charge_from_remnant(
-                                                            targ_q->get_Qe());
+                            targ_q->Q_was_used());
                     }
                 }
                 y_in_lrf =
@@ -605,10 +599,10 @@ int Glauber::perform_string_production() {
             bool has_electric_charge_right = false;
 
             if (!sample_valence_quark) {
-                QCDString qcd_string(x_coll, tau_form, proj, targ, m_over_sigma,
-                                     has_baryon_right, has_baryon_left,
-                                     has_electric_charge_right,
-                                     has_electric_charge_left);
+                QCDString qcd_string(
+                    x_coll, tau_form, proj, targ, m_over_sigma,
+                    has_baryon_right, has_baryon_left,
+                    has_electric_charge_right, has_electric_charge_left);
                 QCD_string_list.push_back(qcd_string);
             } else {
                 // Connect the closest quark pairs into string
@@ -619,11 +613,10 @@ int Glauber::perform_string_production() {
                     x_coll[1] + (proj_q_xvec[1] + targ_q_xvec[1]) / 2.,
                     x_coll[2] + (proj_q_xvec[2] + targ_q_xvec[2]) / 2.,
                     x_coll[3]};
-                QCDString qcd_string(x_coll_q, tau_form, proj, targ,
-                                     proj_q, targ_q, m_over_sigma,
-                                     has_baryon_right, has_baryon_left,
-                                     has_electric_charge_right,
-                                     has_electric_charge_left);
+                QCDString qcd_string(
+                    x_coll_q, tau_form, proj, targ, proj_q, targ_q,
+                    m_over_sigma, has_baryon_right, has_baryon_left,
+                    has_electric_charge_right, has_electric_charge_left);
                 QCD_string_list.push_back(qcd_string);
             }
             real y_shift = y_loss;
@@ -648,9 +641,9 @@ int Glauber::perform_string_production() {
     std::vector<unsigned int> random_idx;
 
     const real baryonInStringProb = parameter_list.get_baryon_in_string_prob();
-    const real electricChargeInStringProb = (
-                parameter_list.get_electric_charge_in_string_prob());
-    unsigned int Nstrings   = QCD_string_list.size();
+    const real electricChargeInStringProb =
+        (parameter_list.get_electric_charge_in_string_prob());
+    unsigned int Nstrings = QCD_string_list.size();
     unsigned int Npart_proj = projectile->get_number_of_wounded_nucleons();
     unsigned int Npart_targ = target->get_number_of_wounded_nucleons();
     unsigned int total_length = Nstrings + Npart_proj + Npart_targ;
@@ -809,11 +802,11 @@ int Glauber::perform_string_production() {
     }
 
     // now assign electric charges randomly to strings and remnants
-    std::shuffle(random_idx.begin(), random_idx.end(),
-                 *ran_gen_ptr_->getRanGenerator());
+    std::shuffle(
+        random_idx.begin(), random_idx.end(), *ran_gen_ptr_->getRanGenerator());
     if (integer_electric_charge) {
         // for projectile
-        for (auto &idx: random_idx) {
+        for (auto &idx : random_idx) {
             if (idx < Nstrings) {
                 // put electric charge of the projectile in the selected string
                 auto proj = QCD_string_list[idx].get_proj();
@@ -821,9 +814,10 @@ int Glauber::perform_string_production() {
                 if (std::abs(proj_electric_charge) > 1e-15
                     && !proj->electric_charge_was_used()) {
                     if (ran_gen_ptr_->rand_uniform()
-                            < electricChargeInStringProb) {
+                        < electricChargeInStringProb) {
                         proj->set_electric_charge_used(true);
-                        QCD_string_list[idx].set_has_electric_charge_right(true);
+                        QCD_string_list[idx].set_has_electric_charge_right(
+                            true);
                     }
                 }
             } else if (idx < Nstrings + Npart_proj) {
@@ -834,16 +828,17 @@ int Glauber::perform_string_production() {
                 auto p_i = proj->get_remnant_p();
                 if (p_i[0] <= 0) continue;
                 if (std::abs(proj_electric_charge) > 1e-15
-                        && !proj->electric_charge_was_used()) {
+                    && !proj->electric_charge_was_used()) {
                     proj->set_electric_charge_used(true);
                     proj->set_remnant_carry_electric_charge_number(true);
                 }
             }
         }
-        std::shuffle(random_idx.begin(), random_idx.end(),
-                     *ran_gen_ptr_->getRanGenerator());
+        std::shuffle(
+            random_idx.begin(), random_idx.end(),
+            *ran_gen_ptr_->getRanGenerator());
         // for target
-        for (auto &idx: random_idx) {
+        for (auto &idx : random_idx) {
             if (idx < Nstrings) {
                 // put electric charge of the projectile in the selected string
                 auto targ = QCD_string_list[idx].get_targ();
@@ -851,40 +846,41 @@ int Glauber::perform_string_production() {
                 if (std::abs(targ_electric_charge) > 1e-15
                     && !targ->electric_charge_was_used()) {
                     if (ran_gen_ptr_->rand_uniform()
-                            < electricChargeInStringProb) {
+                        < electricChargeInStringProb) {
                         targ->set_electric_charge_used(true);
                         QCD_string_list[idx].set_has_electric_charge_left(true);
                     }
                 }
             } else if (idx > Nstrings + Npart_proj - 1) {
-                auto targ = target->get_participant(idx - Nstrings - Npart_proj);
+                auto targ =
+                    target->get_participant(idx - Nstrings - Npart_proj);
                 auto targ_electric_charge = targ->get_electric_charge();
                 auto p_i = targ->get_remnant_p();
                 if (p_i[0] <= 0) continue;
                 if (std::abs(targ_electric_charge) > 1e-15
-                        && !targ->electric_charge_was_used()) {
+                    && !targ->electric_charge_was_used()) {
                     targ->set_electric_charge_used(true);
                     targ->set_remnant_carry_electric_charge_number(true);
                 }
             }
         }
         // set electric charge rapidities
-        for (auto &it: QCD_string_list) {
+        for (auto &it : QCD_string_list) {
             if (!electric_junctions) {
                 it.set_final_electric_charge_space_time_rapidities(
-                        it.get_y_f_left(), it.get_y_f_right());
+                    it.get_y_f_left(), it.get_y_f_right());
             } else {
                 // sample HERE if electric charge should be moved
                 real y_electric_charge_right = 0.;
                 if (it.get_has_electric_charge_right()) {
                     if (ran_gen_ptr_->rand_uniform() < lambdaQ) {
                         if (ran_gen_ptr_->rand_uniform() < lambdaQs) {
-                            y_electric_charge_right = (
-                                sample_junction_rapidity_right(
+                            y_electric_charge_right =
+                                (sample_junction_rapidity_right(
                                     it.get_y_f_left(), it.get_y_f_right()));
                         } else {
-                            y_electric_charge_right = (
-                                sample_junction_rapidity_uniformed(
+                            y_electric_charge_right =
+                                (sample_junction_rapidity_uniformed(
                                     it.get_y_f_left(), it.get_y_f_right()));
                         }
                     } else {
@@ -895,12 +891,12 @@ int Glauber::perform_string_production() {
                 if (it.get_has_electric_charge_left()) {
                     if (ran_gen_ptr_->rand_uniform() < lambdaQ) {
                         if (ran_gen_ptr_->rand_uniform() < lambdaQs) {
-                            y_electric_charge_left = (
-                                sample_junction_rapidity_left(
+                            y_electric_charge_left =
+                                (sample_junction_rapidity_left(
                                     it.get_y_f_left(), it.get_y_f_right()));
                         } else {
-                            y_electric_charge_left = (
-                                sample_junction_rapidity_uniformed(
+                            y_electric_charge_left =
+                                (sample_junction_rapidity_uniformed(
                                     it.get_y_f_left(), it.get_y_f_right()));
                         }
                     } else {
@@ -908,19 +904,19 @@ int Glauber::perform_string_production() {
                     }
                 }
                 it.set_final_electric_charge_rapidities(
-                        y_electric_charge_left, y_electric_charge_right);
+                    y_electric_charge_left, y_electric_charge_right);
             }
         }
     } else {
-        for (auto &idx: random_idx) {
+        for (auto &idx : random_idx) {
             if (idx < Nstrings) {
                 auto proj_q = QCD_string_list[idx].get_proj_q();
-                if (!proj_q->Qe_was_used()) {
-                    proj_q->set_Qe_used(true);
+                if (!proj_q->Q_was_used()) {
+                    proj_q->set_Q_used(true);
                     real eta_s_right = QCD_string_list[idx].get_eta_s_right();
-                    QCD_string_list[idx].set_Qe_right(proj_q->get_Qe());
+                    QCD_string_list[idx].set_Qe_right(proj_q->Q_was_used());
 
-                    if(!electric_junctions) {
+                    if (!electric_junctions) {
                         QCD_string_list[idx].set_eta_s_Qe_right(eta_s_right);
                     } else {
                         auto targ_q = QCD_string_list[idx].get_targ_q();
@@ -930,69 +926,75 @@ int Glauber::perform_string_production() {
                         real eta_s_left = QCD_string_list[idx].get_eta_s_left();
                         if (ran_gen_ptr_->rand_uniform() < lambdaQ) {
                             if (ran_gen_ptr_->rand_uniform() < lambdaQs) {
-                                y_electric_right = (
-                                    sample_junction_rapidity_right(
-                                                    y_Qe_left, y_Qe_right));
+                                y_electric_right =
+                                    (sample_junction_rapidity_right(
+                                        y_Qe_left, y_Qe_right));
                             } else {
-                                y_electric_right = (
-                                    sample_junction_rapidity_uniformed(
-                                                    y_Qe_left, y_Qe_right));
+                                y_electric_right =
+                                    (sample_junction_rapidity_uniformed(
+                                        y_Qe_left, y_Qe_right));
                             }
                         } else {
                             y_electric_right = y_Qe_right;
                         }
-                        real slope = ((eta_s_right - eta_s_left)
-                                      /(y_Qe_right - y_Qe_left));
-                        real eta_s_electric_right = (
-                            eta_s_left + slope*(y_electric_right - y_Qe_left));
+                        real slope =
+                            ((eta_s_right - eta_s_left)
+                             / (y_Qe_right - y_Qe_left));
+                        real eta_s_electric_right =
+                            (eta_s_left
+                             + slope * (y_electric_right - y_Qe_left));
                         QCD_string_list[idx].set_eta_s_Qe_right(
-                                                    eta_s_electric_right);
+                            eta_s_electric_right);
                     }
                 }
             }
         }
-        std::shuffle(random_idx.begin(), random_idx.end(),
-                     *ran_gen_ptr_->getRanGenerator());
-        for (auto &idx: random_idx) {
+        std::shuffle(
+            random_idx.begin(), random_idx.end(),
+            *ran_gen_ptr_->getRanGenerator());
+        for (auto &idx : random_idx) {
             if (idx < Nstrings) {
                 // put baryon of the target in the selected string
                 auto targ_q = QCD_string_list[idx].get_targ_q();
-                if (!targ_q->Qe_was_used()) {
-                    targ_q->set_Qe_used(true);
+                if (!targ_q->Q_was_used()) {
+                    targ_q->set_Q_used(true);
                     real eta_s_left = QCD_string_list[idx].get_eta_s_left();
-                    QCD_string_list[idx].set_Qe_left(targ_q->get_Qe());
+                    QCD_string_list[idx].set_Qe_left(targ_q->Q_was_used());
 
-                    if(!electric_junctions) {
+                    if (!electric_junctions) {
                         QCD_string_list[idx].set_eta_s_Qe_left(eta_s_left);
                     } else {
                         auto proj_q = QCD_string_list[idx].get_proj_q();
                         real y_Qe_right = proj_q->get_rapidity();
                         real y_Qe_left = targ_q->get_rapidity();
                         real y_electric_left = 0.;
-                        real eta_s_right = QCD_string_list[idx].get_eta_s_right();
+                        real eta_s_right =
+                            QCD_string_list[idx].get_eta_s_right();
                         if (ran_gen_ptr_->rand_uniform() < lambdaQ) {
                             if (ran_gen_ptr_->rand_uniform() < lambdaQs) {
                                 y_electric_left = sample_junction_rapidity_left(
-                                            y_Qe_left, y_Qe_right);
+                                    y_Qe_left, y_Qe_right);
                             } else {
-                                y_electric_left = (
-                                    sample_junction_rapidity_uniformed(
-                                                        y_Qe_left, y_Qe_right));
+                                y_electric_left =
+                                    (sample_junction_rapidity_uniformed(
+                                        y_Qe_left, y_Qe_right));
                             }
                         } else {
                             y_electric_left = y_Qe_left;
                         }
-                        real slope = ((eta_s_right - eta_s_left)
-                                      /(y_Qe_right - y_Qe_left));
-                        real eta_s_electric_left = (
-                                eta_s_left + slope*(y_electric_left - y_Qe_left));
-                        QCD_string_list[idx].set_eta_s_Qe_left(eta_s_electric_left);
+                        real slope =
+                            ((eta_s_right - eta_s_left)
+                             / (y_Qe_right - y_Qe_left));
+                        real eta_s_electric_left =
+                            (eta_s_left
+                             + slope * (y_electric_left - y_Qe_left));
+                        QCD_string_list[idx].set_eta_s_Qe_left(
+                            eta_s_electric_left);
                     }
                 }
             }
         }
     }
-
 
     // collision remnant is assigned to the last string which connects the
     // colliding nucleons or quarks
@@ -1049,8 +1051,8 @@ int Glauber::perform_string_production() {
 
 void Glauber::produce_remnant_strings() {
     // create strings for the beam remnants
-    const auto integer_electric_charge = (
-                        parameter_list.get_integer_electric_charge());
+    const auto integer_electric_charge =
+        (parameter_list.get_integer_electric_charge());
     const auto string_evolution_mode = -4;
     real tau_form = 0.5;
     real m_over_sigma = 1.0;  // [fm]
@@ -1081,23 +1083,22 @@ void Glauber::produce_remnant_strings() {
             bool has_baryon_right = iproj->is_remnant_carry_baryon_number();
 
             bool has_electric_charge_left = false;
-            bool has_electric_charge_right = (
-                        iproj->is_remnant_carry_electric_charge_number());
+            bool has_electric_charge_right =
+                (iproj->is_remnant_carry_electric_charge_number());
 
-            QCDString qcd_string(x_i, tau_form, iproj, iproj,
-                                 p_i, targ_p_vec, m_over_sigma,
-                                 has_baryon_right, has_baryon_left,
-                                 has_electric_charge_right,
-                                 has_electric_charge_left);
+            QCDString qcd_string(
+                x_i, tau_form, iproj, iproj, p_i, targ_p_vec, m_over_sigma,
+                has_baryon_right, has_baryon_left, has_electric_charge_right,
+                has_electric_charge_left);
             qcd_string.set_has_remnant_right(true);
             qcd_string.evolve_QCD_string();
             qcd_string.set_final_baryon_rapidities(0., y_rem - y_loss);
             // read integer electric charge
-            if (integer_electric_charge){
-                if (has_electric_charge_right){
+            if (integer_electric_charge) {
+                if (has_electric_charge_right) {
                     qcd_string.set_Qe_right(iproj->get_electric_charge());
                     qcd_string.set_final_electric_charge_rapidities(
-                                                        0, y_rem - y_loss);
+                        0, y_rem - y_loss);
                 }
             } else {
                 qcd_string.set_Qe_right(iproj->get_electric_charge());
@@ -1132,15 +1133,14 @@ void Glauber::produce_remnant_strings() {
             bool has_baryon_left = itarg->is_remnant_carry_baryon_number();
             bool has_baryon_right = false;
 
-            bool has_electric_charge_left = (
-                            itarg->is_remnant_carry_electric_charge_number());
+            bool has_electric_charge_left =
+                (itarg->is_remnant_carry_electric_charge_number());
             bool has_electric_charge_right = false;
 
-            QCDString qcd_string(x_i, tau_form, itarg, itarg,
-                                 proj_p_vec, p_i, m_over_sigma,
-                                 has_baryon_right, has_baryon_left,
-                                 has_electric_charge_right,
-                                 has_electric_charge_left);
+            QCDString qcd_string(
+                x_i, tau_form, itarg, itarg, proj_p_vec, p_i, m_over_sigma,
+                has_baryon_right, has_baryon_left, has_electric_charge_right,
+                has_electric_charge_left);
             qcd_string.set_has_remnant_left(true);
             qcd_string.evolve_QCD_string();
             qcd_string.set_final_baryon_rapidities(y_rem + y_loss, 0.);
@@ -1148,7 +1148,7 @@ void Glauber::produce_remnant_strings() {
                 if (has_electric_charge_left) {
                     qcd_string.set_Qe_left(itarg->get_electric_charge());
                     qcd_string.set_final_electric_charge_rapidities(
-                                                        y_rem + y_loss, 0.);
+                        y_rem + y_loss, 0.);
                 }
             } else {
                 qcd_string.set_Qe_left(itarg->get_electric_charge());
@@ -1249,7 +1249,7 @@ void Glauber::prepare_output_QCD_strings() {
             }
         }
 
-        real electric_charge_fraction_left  = 0.;
+        real electric_charge_fraction_left = 0.;
         if (it.get_has_electric_charge_left()) {
             electric_charge_fraction_left = 1.0;
         }
@@ -1266,8 +1266,8 @@ void Glauber::prepare_output_QCD_strings() {
             Ql = electric_charge_fraction_left;
             Qr = electric_charge_fraction_right;
         } else {
-            etaQl= it.get_eta_s_Qe_left();
-            etaQr= it.get_eta_s_Qe_right();
+            etaQl = it.get_eta_s_Qe_left();
+            etaQr = it.get_eta_s_Qe_right();
             Ql = it.get_Qe_left();
             Qr = it.get_Qe_right();
         }
@@ -1299,7 +1299,7 @@ void Glauber::prepare_output_QCD_strings() {
             it.get_y_f_baryon_right(),
             baryon_fraction_left,
             baryon_fraction_right,
-            Ql, // 25
+            Ql,  // 25
             Qr,
             etaQl,
             etaQr,
@@ -1346,7 +1346,7 @@ void Glauber::prepare_output_QCD_strings() {
                     baryon_fraction_right = 1.0;
                 }
             }
-            real electric_charge_fraction_left  = 0.;
+            real electric_charge_fraction_left = 0.;
             if (it.get_has_electric_charge_left()) {
                 electric_charge_fraction_left = 1.0;
             }
@@ -1357,27 +1357,30 @@ void Glauber::prepare_output_QCD_strings() {
             }
 
             auto mass = it.get_string_mass();
-            auto eta_s_center = (it.get_eta_s_left() + it.get_eta_s_right())/2.;
-            auto eta_s_left = (  remnant_left*it.get_eta_s_left()
-                               + (1. - remnant_left)
-                                 *(std::max(
-                                     (eta_s_center + it.get_eta_s_right())/2.,
-                                     it.get_eta_s_right() - 1.0)));
-            auto eta_s_right = (  remnant_right*it.get_eta_s_right()
-                                + (1. - remnant_right)
-                                  *(std::min(
-                                     (eta_s_center + it.get_eta_s_left())/2.,
-                                     it.get_eta_s_left() + 1.0)));
+            auto eta_s_center =
+                (it.get_eta_s_left() + it.get_eta_s_right()) / 2.;
+            auto eta_s_left =
+                (remnant_left * it.get_eta_s_left()
+                 + (1. - remnant_left)
+                       * (std::max(
+                           (eta_s_center + it.get_eta_s_right()) / 2.,
+                           it.get_eta_s_right() - 1.0)));
+            auto eta_s_right =
+                (remnant_right * it.get_eta_s_right()
+                 + (1. - remnant_right)
+                       * (std::min(
+                           (eta_s_center + it.get_eta_s_left()) / 2.,
+                           it.get_eta_s_left() + 1.0)));
 
             double Ql, Qr, etaQl, etaQr;
             if (integ_charge) {
-                etaQl = remnant_left*it.get_eta_s_electric_charge_left();
-                etaQr = remnant_right*it.get_eta_s_electric_charge_right();
-                Ql = remnant_left*electric_charge_fraction_left;
-                Qr = remnant_right*electric_charge_fraction_right;
-            } else{
-                etaQl= it.get_eta_s_Qe_left();
-                etaQr= it.get_eta_s_Qe_right();
+                etaQl = remnant_left * it.get_eta_s_electric_charge_left();
+                etaQr = remnant_right * it.get_eta_s_electric_charge_right();
+                Ql = remnant_left * electric_charge_fraction_left;
+                Qr = remnant_right * electric_charge_fraction_right;
+            } else {
+                etaQl = it.get_eta_s_Qe_left();
+                etaQr = it.get_eta_s_Qe_right();
                 Ql = it.get_Qe_left();
                 Qr = it.get_Qe_right();
             }
@@ -1396,16 +1399,20 @@ void Glauber::prepare_output_QCD_strings() {
                 x_right[2] - y_o,
                 eta_s_left,
                 eta_s_right,
-                remnant_left*it.get_y_f_left() + (1. - remnant_left)*eta_s_left,
-                remnant_right*it.get_y_f_right() + (1. - remnant_right)*eta_s_right,
+                remnant_left * it.get_y_f_left()
+                    + (1. - remnant_left) * eta_s_left,
+                remnant_right * it.get_y_f_right()
+                    + (1. - remnant_right) * eta_s_right,
                 remnant_left,
                 remnant_right,
-                remnant_left*it.get_y_i_left() + (1. - remnant_left)*eta_s_left,
-                remnant_right*it.get_y_i_right() + (1. - remnant_right)*eta_s_right,
-                remnant_left*it.get_eta_s_baryon_left(),
-                remnant_right*it.get_eta_s_baryon_right(),
-                remnant_left*it.get_y_f_baryon_left(),
-                remnant_right*it.get_y_f_baryon_right(),
+                remnant_left * it.get_y_i_left()
+                    + (1. - remnant_left) * eta_s_left,
+                remnant_right * it.get_y_i_right()
+                    + (1. - remnant_right) * eta_s_right,
+                remnant_left * it.get_eta_s_baryon_left(),
+                remnant_right * it.get_eta_s_baryon_right(),
+                remnant_left * it.get_y_f_baryon_left(),
+                remnant_right * it.get_y_f_baryon_right(),
                 baryon_fraction_left,
                 baryon_fraction_right,
                 Ql,
@@ -1435,14 +1442,14 @@ void Glauber::output_QCD_strings(
            << "net_Pz = " << net_Pz << " GeV, "
            << "seed = " << seed << std::endl;
 
-    output << "# mass[GeV]  m_over_sigma[fm]  tau_form[fm]  tau_0[fm]  eta_s_0  "
-           << "x_perp[fm]  y_perp[fm]  x_l[fm]  y_l[fm]  x_r[fm]  y_r[fm]  "
-           << "eta_s_left  eta_s_right  y_l  y_r  remnant_l  remnant_r "
-           << "y_l_i  y_r_i "
-           << "eta_s_baryon_left  eta_s_baryon_right  y_l_baryon  y_r_baryon  "
-           << "baryon_fraction_l  baryon_fraction_r  "
-           << "Qe_l  Qe_r  eta_s_Qe_l  eta_s_Qe_r"
-           << endl;
+    output
+        << "# mass[GeV]  m_over_sigma[fm]  tau_form[fm]  tau_0[fm]  eta_s_0  "
+        << "x_perp[fm]  y_perp[fm]  x_l[fm]  y_l[fm]  x_r[fm]  y_r[fm]  "
+        << "eta_s_left  eta_s_right  y_l  y_r  remnant_l  remnant_r "
+        << "y_l_i  y_r_i "
+        << "eta_s_baryon_left  eta_s_baryon_right  y_l_baryon  y_r_baryon  "
+        << "baryon_fraction_l  baryon_fraction_r  "
+        << "Qe_l  Qe_r  eta_s_Qe_l  eta_s_Qe_r" << std::endl;
 
     for (auto &string_i : QCD_string_output_arr_) {
         output << std::scientific << std::setprecision(8);

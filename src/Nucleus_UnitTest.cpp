@@ -42,8 +42,8 @@ TEST_CASE("Test set nucleus parameters") {
     CHECK(test_nucleus.get_nucleus_A() == 197);
     CHECK(test_nucleus.get_nucleus_Z() == 79);
     WS_params = test_nucleus.get_woods_saxon_parameters();
-    WoodsSaxonParam WS_params_Au = {
-                            0.17, 0.0, 6.38, 0.505, -0.13, 0.0, -0.03, 0, 0};
+    WoodsSaxonParam WS_params_Au = {0.17, 0.0,   6.38, 0.505, -0.13,
+                                    0.0,  -0.03, 0,    0};
     CHECK(WS_params == WS_params_Au);
 }
 
@@ -132,15 +132,15 @@ TEST_CASE("Test Woods-Saxon sampling") {
     }
 
     int n_samples = 100000;
-    auto weight   = 1./(n_samples*dr);
+    auto weight = 1. / (n_samples * dr);
     for (int i = 0; i < n_samples; i++) {
         std::vector<std::pair<real, real>> r_array;
         test_nucleus.sample_r_from_woods_saxon(r_array);
         for (unsigned int j = 0; j < r_array.size(); j++) {
             double r_sample = std::get<0>(r_array[j]);
-            int idx = static_cast<int>((r_sample - r_min)/dr);
+            int idx = static_cast<int>((r_sample - r_min) / dr);
             if (idx >= 0 && idx < n_r) {
-                r[idx]     += weight*r_sample;
+                r[idx] += weight * r_sample;
                 rho_r[idx] += weight;
             }
         }
@@ -173,7 +173,7 @@ TEST_CASE("Test deformed Woods-Saxon sampling") {
               << std::endl;
     Nucleus test_nucleus("Zr", ran_gen_ptr, parameter_list);
     test_nucleus.set_woods_saxon_parameters(
-            96, 40, 0.17, 0.0, 5.021, 0.524, 0.5, 0.16, 0.0, 1.0, 0, 0, 3);
+        96, 40, 0.17, 0.0, 5.021, 0.524, 0.5, 0.16, 0.0, 1.0, 0, 0, 3);
     auto WS_params = test_nucleus.get_woods_saxon_parameters();
     auto a_WS = WS_params[3];
     auto R_WS = WS_params[2];
