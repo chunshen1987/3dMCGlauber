@@ -1,14 +1,16 @@
 // Copyright (C) 2018 Chun Shen
-#include "doctest.h"
 #include "CollisionEvent.h"
+
+#include <algorithm>
 #include <set>
 #include <vector>
-#include <algorithm>
 
-using MCGlb::SpatialVec;
+#include "doctest.h"
+
+using MCGlb::CollisionEvent;
 using MCGlb::MomentumVec;
 using MCGlb::Nucleon;
-using MCGlb::CollisionEvent;
+using MCGlb::SpatialVec;
 using std::shared_ptr;
 
 TEST_CASE("Test constructor") {
@@ -18,7 +20,7 @@ TEST_CASE("Test constructor") {
     MomentumVec p1 = {0.0};
     MomentumVec p2 = {0.0};
     std::shared_ptr<RandomUtil::Random> ran_gen_ptr(
-                                    new RandomUtil::Random(0, 0., 1.0));
+        new RandomUtil::Random(0, 0., 1.0));
     shared_ptr<Nucleon> proj(new Nucleon(x1, p1, ran_gen_ptr));
     shared_ptr<Nucleon> targ(new Nucleon(x2, p2, ran_gen_ptr));
     CollisionEvent test_event(x_coll, proj, targ);
@@ -34,7 +36,7 @@ TEST_CASE("Test the copy") {
     MomentumVec p1 = {0.0};
     MomentumVec p2 = {0.0};
     std::shared_ptr<RandomUtil::Random> ran_gen_ptr(
-                                    new RandomUtil::Random(0, 0., 1.0));
+        new RandomUtil::Random(0, 0., 1.0));
     shared_ptr<Nucleon> proj(new Nucleon(x1, p1, ran_gen_ptr));
     shared_ptr<Nucleon> targ(new Nucleon(x2, p2, ran_gen_ptr));
     CollisionEvent test_event(x_coll, proj, targ);
@@ -49,7 +51,7 @@ TEST_CASE("Test the collision validation function") {
     MomentumVec p1 = {0.0};
     MomentumVec p2 = {0.0};
     std::shared_ptr<RandomUtil::Random> ran_gen_ptr(
-                                    new RandomUtil::Random(0, 0., 1.0));
+        new RandomUtil::Random(0, 0., 1.0));
     shared_ptr<Nucleon> proj(new Nucleon(x1, p1, ran_gen_ptr));
     shared_ptr<Nucleon> targ(new Nucleon(x2, p2, ran_gen_ptr));
     {
@@ -64,7 +66,8 @@ TEST_CASE("Test the collision validation function") {
     CHECK(targ->get_collided_times() == 2);
 }
 
-TEST_CASE("Test pushing collision events to a set with defined comparison function") {
+TEST_CASE(
+    "Test pushing collision events to a set with defined comparison function") {
     SpatialVec x_coll1 = {4.0, 1.0, 2.0, 3.0};
     SpatialVec x_coll2 = {2.0, 1.0, 2.0, 3.0};
     SpatialVec x1 = {0.0, 0.5, 2.0, 3.0};
@@ -72,7 +75,7 @@ TEST_CASE("Test pushing collision events to a set with defined comparison functi
     MomentumVec p1 = {0.0};
     MomentumVec p2 = {0.0};
     std::shared_ptr<RandomUtil::Random> ran_gen_ptr(
-                                    new RandomUtil::Random(0, 0., 1.0));
+        new RandomUtil::Random(0, 0., 1.0));
     shared_ptr<Nucleon> proj(new Nucleon(x1, p1, ran_gen_ptr));
     shared_ptr<Nucleon> targ(new Nucleon(x2, p2, ran_gen_ptr));
     CollisionEvent test_event1(x_coll1, proj, targ);
@@ -92,7 +95,7 @@ TEST_CASE("Test pushing collision events to a vector and sort") {
     MomentumVec p1 = {0.0};
     MomentumVec p2 = {0.0};
     std::shared_ptr<RandomUtil::Random> ran_gen_ptr(
-                                    new RandomUtil::Random(0, 0., 1.0));
+        new RandomUtil::Random(0, 0., 1.0));
     shared_ptr<Nucleon> proj(new Nucleon(x1, p1, ran_gen_ptr));
     shared_ptr<Nucleon> targ(new Nucleon(x2, p2, ran_gen_ptr));
     CollisionEvent test_event1(x_coll1, proj, targ);
@@ -112,7 +115,7 @@ TEST_CASE("Test get collision nucleon pointer") {
     MomentumVec p1 = {0.0};
     MomentumVec p2 = {0.0};
     std::shared_ptr<RandomUtil::Random> ran_gen_ptr(
-                                    new RandomUtil::Random(0, 0., 1.0));
+        new RandomUtil::Random(0, 0., 1.0));
     shared_ptr<Nucleon> proj(new Nucleon(x1, p1, ran_gen_ptr));
     shared_ptr<Nucleon> targ(new Nucleon(x2, p2, ran_gen_ptr));
     CollisionEvent test_event1(x_coll1, proj, targ);

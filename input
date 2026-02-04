@@ -9,7 +9,12 @@ roots 200.                           # collision energy (GeV)
 useQuarks 1                          # switch to use valence quarks
 Q2 1.                                # the scale when evaluating the pdf
 b_min 0.                             # minimum impact parameter (fm)
-b_max 3.                             # maximum impact parameter (fm)
+b_max 0.                             # maximum impact parameter (fm)
+use_roots_distribution 0             # The collision energy is sampled from a distribution
+                                     # Only for the gamma* + A collisions currenty
+use_roots_cut 0                      # Do the trigger for the gamma* + A collisions
+roots_low_cut 100.                   # The lower cut the center-of-mass energy for gamma* + A
+roots_up_cut 200.                    # The upper cut the center-of-mass energy for gamma* + A
 seed -1                              # random seed (-1: system)
 only_event_statistics 0              # flag to only output the event_summary file
 batch_density_output 1               # output density profile in batch
@@ -23,7 +28,6 @@ shadowing_factor 0.6                 # a shadowning factor for producing strings
 baryon_junctions 1                   # 0: baryon number assumed to be at string end
                                      # 1: baryon number transported assuming baryon junctions
                                      #    (at smaller x) see arXiv:nucl-th/9602027
-
 electric_junctions 1                 # 0: electric charge number assumed to be at string end
                                      # 1: electric charge number transported assuming baryon junctions
                                      #    (at smaller x) see arXiv:nucl-th/9602027
@@ -43,14 +47,20 @@ ProjWS_da 0.2
 ProjWS_dR 0.5
 d_min 0.9                            # the minimum distance between nucleon pairs [fm]
 
+ISBaryonInStringJunction 1           # 1: assign the whole baryon number to the string junction
+                                     # 0: assign fractional baryon numbers to valence quarks
+ISorFSStopping 1                     # 1: conserved charges follows incoming hotspots
+                                     # 0: conserved charges fluctuates with final-state string fragmentations
+
 lambdaB 0.2                          # parameter the controls the strength of the baryon junction stopping
 lambdaBs 0.0                         # the fraction of single-to-double junction stopping
-lambdaQ 0.2                          # parameter the controls the strength of the baryon junction stopping
-lambdaQs 0.0                         # the fraction of single-to-double junction stopping
 baryonInStringProb 1.0               # the relative probility to put a baryon charge in the string
                                      # rather than at the wounded nucleon remnant
 electricChargeInStringProb 1.0       # the relative probility to put a electric charge in the string
                                      # rather than at the wounded nucleon remnant
+FSbaryonInStringProb 1.0             # the relative probility to put a baryon charge in the string
+                                     # rather than at the wounded nucleon remnant
+
 BG 16.                               # Gaussian width square for sampling the valence quark positions (GeV^2)
 cenMin 0.
 cenMax 100.

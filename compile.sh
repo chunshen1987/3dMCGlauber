@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+bash ./formatCode.sh
+
 num_of_cores=$1
 if [ -z "$num_of_cores" ]
 then

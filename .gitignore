@@ -10,3 +10,4 @@ build/
 LHAPDF_Lib/
 lib/
 *.dat
+*.bin.in

@@ -1,15 +1,15 @@
 // Copyright (C) 2018 Chun Shen
-#include "doctest.h"
 #include "ParametersMap.h"
+
 #include <iostream>
 
+#include "doctest.h"
 
 TEST_CASE("Test set and get parameters in ParametersMap") {
     ParametersMap parameter_list;
     parameter_list.set_parameter("test", "1.0");
     CHECK(parameter_list.get_param_val("test") == "1.0");
 }
-
 
 TEST_CASE("Test read in parameters from a file") {
     ParametersMap parameter_list;
@@ -22,7 +22,6 @@ TEST_CASE("Test read in parameters from a file") {
     CHECK(parameter_list.get_param_val("useQuarks") == "2");
     CHECK(parameter_list.get_param_val("QCD_string_production_mode") == "1");
 }
-
 
 TEST_CASE("Test default parameter value") {
     ParametersMap parameter_list;
