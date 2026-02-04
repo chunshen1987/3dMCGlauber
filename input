@@ -54,11 +54,11 @@ ISorFSStopping 1                     # 1: conserved charges follows incoming hot
 
 lambdaB 0.2                          # parameter the controls the strength of the baryon junction stopping
 lambdaBs 0.0                         # the fraction of single-to-double junction stopping
-baryonInStringProb 1.0               # the relative probility to put a baryon charge in the string
-                                     # rather than at the wounded nucleon remnant
-electricChargeInStringProb 1.0       # the relative probility to put a electric charge in the string
-                                     # rather than at the wounded nucleon remnant
 FSbaryonInStringProb 1.0             # the relative probility to put a baryon charge in the string
+                                     # rather than at the wounded nucleon remnant
+lambdaQ 0.2                          # parameter the controls the strength of the electric charge junction stopping
+lambdaQs 0.0                         # the fraction of single-to-double junction stopping
+FSelectricChargeInStringProb 1.0     # the relative probility to put a electric charge in the string
                                      # rather than at the wounded nucleon remnant
 
 BG 16.                               # Gaussian width square for sampling the valence quark positions (GeV^2)

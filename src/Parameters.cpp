@@ -115,7 +115,7 @@ real Parameters::get_baryon_in_string_prob() const {
 
 real Parameters::get_electric_charge_in_string_prob() const {
     real prob =
-        static_cast<real>(get_param_double("electricChargeInStringProb", 1.));
+        static_cast<real>(get_param_double("FSelectricChargeInStringProb", 1.));
     assert(prob >= 0. && prob <= 1.);
     return (prob);
 }
