@@ -46,6 +46,8 @@ EventGenerator::EventGenerator(
     }
     cenEstMax_ = 1e16;
     cenEstMin_ = 0;
+    NpartMin_ = parameter_list_.getParam("NpartMin", 1);
+    NpartMax_ = parameter_list_.getParam("NpartMax", 1000);
 }
 
 float EventGenerator::computeCenEstimator(
@@ -231,7 +233,9 @@ bool EventGenerator::event_of_interest_trigger(
     const int Npart, const int Ncoll, const int Nstrings) const {
     bool pick = false;
     float cenEst = computeCenEstimator(Npart, Ncoll, Nstrings);
-    pick = (Npart > 1) && (cenEst >= cenEstMin_) && (cenEst <= cenEstMax_);
+    pick =
+        ((Npart >= NpartMin_) && (Npart <= NpartMax_) && (cenEst >= cenEstMin_)
+         && (cenEst <= cenEstMax_));
     return (pick);
 }
 

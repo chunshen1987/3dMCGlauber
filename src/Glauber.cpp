@@ -1,4 +1,4 @@
-// Copyright @ Chun Shen 2018
+// Copyright @Chun Shen 2018
 
 #include "Glauber.h"
 
@@ -110,6 +110,25 @@ Glauber::Glauber(
                 std::system("rm -fr tables/neutron_valence_quark_samples*");
         }
     }
+
+    if (parameter_list.get_projectle_nucleus_name() == "d") {
+        auto polarizationFlag =
+            (parameter_list.getParam("ProjPolarizationFlag", 0));
+        projectile->setPolarizationFlag(polarizationFlag);
+        if (polarizationFlag != 0) {
+            projectile->setPolJz(parameter_list.getParam("Proj_polJz", 0));
+        }
+    }
+
+    if (parameter_list.get_target_nucleus_name() == "d") {
+        auto polarizationFlag =
+            (parameter_list.getParam("TargPolarizationFlag", 0));
+        target->setPolarizationFlag(polarizationFlag);
+        if (polarizationFlag != 0) {
+            target->setPolJz(parameter_list.getParam("Targ_polJz", 0));
+        }
+    }
+
     if (sample_valence_quark) {
         projectile->set_valence_quark_Q2(parameter_list.get_quarks_Q2());
         target->set_valence_quark_Q2(parameter_list.get_quarks_Q2());
@@ -206,11 +225,17 @@ void Glauber::make_nuclei() {
     impact_b = sqrt(
         b_min * b_min
         + (b_max * b_max - b_min * b_min) * ran_gen_ptr_->rand_uniform());
+
+    real phiRP = 0.;
+    if (std::abs(parameter_list.getParam("randomRPflag", 0)) > 1e-8)
+        phiRP = ran_gen_ptr_->rand_uniform() * 2. * M_PI;
+    auto impact_x = impact_b / 2. * cos(phiRP);
+    auto impact_y = impact_b / 2. * sin(phiRP);
     SpatialVec proj_shift = {
-        0., impact_b / 2., 0., -projectile->get_z_max() - 1e-15};
+        0, impact_x, impact_y, -projectile->get_z_max() - 1e-15};
     projectile->shift_nucleus(proj_shift);
     SpatialVec targ_shift = {
-        0., -impact_b / 2., 0., -target->get_z_min() + 1e-15};
+        0, -impact_x, -impact_y, -target->get_z_min() + 1e-15};
     target->shift_nucleus(targ_shift);
     // projectile->output_nucleon_positions("projectile.dat");
     // target->output_nucleon_positions("target.dat");

@@ -24,6 +24,8 @@ class Nucleus {
     bool deformed_;
     bool confFromFile_;
     int lightNucleusOption_;
+    int polarizationFlag_;
+    int polJz_;
     WoodsSaxonParam WS_param_vec;  // rho, w, R, a, beta2, beta3, beta4, gamma
     real d_min_;                   // minimum distance between nucleons
     bool sample_valence_quarks;
@@ -45,7 +47,7 @@ class Nucleus {
 
     int system_status_;
     int number_of_valence_quark_samples_;
-    int N_sea_partons_;
+    real N_sea_partons_;
 
     bool baryonInStringJunction_;
 
@@ -62,6 +64,12 @@ class Nucleus {
     int readin_valence_quark_samples();
 
     void setLightNucleusOption(int option) { lightNucleusOption_ = option; }
+
+    void setPolarizationFlag(int flag) {
+        polarizationFlag_ = flag;
+        if (polarizationFlag_ != 0) confFromFile_ = true;
+    }
+    void setPolJz(int Jz) { polJz_ = Jz; }
 
     void set_valence_quark_Q2(real Q2_q) { Q2 = Q2_q; }
     //! This function set Woods-Saxon parameters based on the nucleus name
@@ -151,6 +159,7 @@ class Nucleus {
 
     void shift_nucleus(SpatialVec x_shift);
     void recenter_nucleus();
+    void rotate_nucleus_phiOnly(real phi);
     void rotate_nucleus(real phi, real theta);
     void rotate_nucleus_3D(real phi, real theta, real gamma);
 

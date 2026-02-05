@@ -9,7 +9,10 @@ roots 20.                            # collision energy (GeV)
 useQuarks 1                          # switch to use valence quarks
 Q2 1.                                # the scale when evaluating the pdf
 b_min 0.                             # minimum impact parameter (fm)
-b_max 0.                             # maximum impact parameter (fm)
+b_max 20.                             # maximum impact parameter (fm)
+NpartMin 200
+NpartMax 201
+randomRPflag 0                       # flag to randomize reactio plane angle
 use_roots_distribution 0             # The collision energy is sampled from a distribution
                                      # Only for the gamma* + A collisions currenty
 use_roots_cut 0                      # Do the trigger for the gamma* + A collisions
@@ -37,6 +40,10 @@ ProjWS_beta3 0.2
 ProjWS_gamma 0.0
 ProjWS_da 0.2
 ProjWS_dR 0.5
+ProjPolarizationFlag 0               # 0: unpolarized; 1: longitudinal polarized; 2: transverse polarized
+TargPolarizationFlag 0
+Proj_polJz 0
+Targ_polJz 0
 d_min 0.9                            # the minimum distance between nucleon pairs [fm]
 
 ISBaryonInStringJunction 1           # 1: assign the whole baryon number to the string junction

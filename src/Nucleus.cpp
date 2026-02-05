@@ -48,6 +48,8 @@ Nucleus::Nucleus(
     }
 
     baryonInStringJunction_ = parameter_list_.getISBaryonInStringJunction();
+    polarizationFlag_ = 0;
+    polJz_ = 0;
 }
 
 Nucleus::~Nucleus() {
@@ -120,6 +122,10 @@ void Nucleus::set_nucleus_parameters(std::string nucleus_name) {
         // Atomic Data and Nuclear Data Tables, 36, 3, May 1987, 495-536
         set_woods_saxon_parameters(
             20, 10, 0.17, 0.0, 2.8, 0.57, 0, 0, 0, 0, 0, 0, 1);
+    } else if (nucleus_name.compare("Ne22") == 0) {
+        // Atomic Data and Nuclear Data Tables, 36, 3, May 1987, 495-536
+        set_woods_saxon_parameters(
+            22, 10, 0.17, 0.0, 2.782, 0.549, 0, 0, 0, 0, 0, 0, 1);
     } else if (nucleus_name.compare("Al") == 0) {
         set_woods_saxon_parameters(
             27, 13, 0.17, 0.0, 3.07, 0.519, 0, 0, 0, 0, 0, 0, 3);
@@ -188,8 +194,16 @@ void Nucleus::generate_nucleus_3d_configuration() {
         }
         */
     } else if (A_ == 2) {  // deuteron
-        generate_deuteron_configuration();
-        status = 0;
+        if (polarizationFlag_ != 0) {
+            status = sample_nucleon_configuration();
+            if (status != 0) {
+                generate_deuteron_configuration();
+                status = 0;
+            }
+        } else {
+            generate_deuteron_configuration();
+            status = 0;
+        }
     } else if (confFromFile_) {
         status = sample_nucleon_configuration();
     }
@@ -224,9 +238,20 @@ void Nucleus::generate_nucleus_3d_configuration() {
     sample_fermi_momentum();
 
     real phi = 2. * M_PI * ran_gen_ptr->rand_uniform();
-    real theta = acos(1. - 2. * ran_gen_ptr->rand_uniform());
-    real gamma = 2 * M_PI * ran_gen_ptr->rand_uniform();
-    rotate_nucleus_3D(phi, theta, gamma);
+    if (polarizationFlag_ == 0) {
+        real theta = acos(1. - 2. * ran_gen_ptr->rand_uniform());
+        real gamma = 2 * M_PI * ran_gen_ptr->rand_uniform();
+        rotate_nucleus_3D(phi, theta, gamma);
+    } else if (polarizationFlag_ == 1) {
+        // longitudinal polarization only rotates phi randomly
+        real theta = 0;
+        rotate_nucleus(phi, theta);
+    } else if (polarizationFlag_ == 2) {
+        // rotate Jz to the positive y-axis
+        phi = M_PI / 2;
+        real theta = M_PI / 2;
+        rotate_nucleus(phi, theta);
+    }
 }
 
 void Nucleus::recenter_nucleus() {
@@ -251,6 +276,21 @@ void Nucleus::shift_nucleus(SpatialVec x_shift) {
     for (auto &nucleon_i : nucleon_list_) {
         auto x_vec = nucleon_i->get_x();
         for (int i = 0; i < 4; i++) x_vec[i] += x_shift[i];
+        nucleon_i->set_x(x_vec);
+    }
+}
+
+void Nucleus::rotate_nucleus_phiOnly(real phi) {
+    auto cphi = cos(phi);
+    auto sphi = sin(phi);
+    for (auto &nucleon_i : nucleon_list_) {
+        auto x_vec = nucleon_i->get_x();
+        auto x_new = cphi * x_vec[1] - sphi * x_vec[2];
+        auto y_new = sphi * x_vec[1] + cphi * x_vec[2];
+        auto z_new = x_vec[3];
+        x_vec[1] = x_new;
+        x_vec[2] = y_new;
+        x_vec[3] = z_new;
         nucleon_i->set_x(x_vec);
     }
 }
@@ -389,10 +429,7 @@ void Nucleus::sample_valence_quarks_inside_nucleons(real ecm, int direction) {
 }
 
 void Nucleus::add_soft_parton_ball(real ecm, int direction) {
-    const real mN = nucleon_list_[0]->get_mass();
     real E_rem_min = 0.1;  // GeV
-    real beam_rapidity = direction * acosh(ecm / (2. * mN));
-    real Pz_rem_min = E_rem_min * tanh(beam_rapidity);
     for (auto &nucleon_i : nucleon_list_) {
         if (nucleon_i->is_wounded() && nucleon_i->get_number_of_quarks() != 0) {
             auto soft_pvec = nucleon_i->get_p();
@@ -403,54 +440,58 @@ void Nucleus::add_soft_parton_ball(real ecm, int direction) {
                     soft_pvec[i] -= quark_pvec[i];
                 }
             }
-            soft_pvec[0] -= E_rem_min;
-            soft_pvec[3] -= Pz_rem_min;
+            real Esoft = soft_pvec[0] - E_rem_min;
             real mq = PhysConsts::MQuarkValence;
-            if (soft_pvec[0] > mq) {
-                // assuming the soft parton ball has valence quark mass
-                // only add a soft parton when the leftover energy is
-                // larger than mq
-                real rapidity = direction * acosh(soft_pvec[0] / mq);
-                soft_pvec[3] = mq * sinh(rapidity);
+            int Nmq = static_cast<int>(Esoft / mq);
 
-                // Scale soft partons momentum to Pmu/N_sea_partons
-                // Add as many soft partons as N_sea_partons
-                // with momentum soft_pvec/N_sea_partons for energy-momentum
-                // conservation.
-                for (int j = 0; j < 4; j++) {
-                    soft_pvec[j] /= static_cast<double>(N_sea_partons_);
-                }
-
-                // defining quark baryon, charge, and strange numbers
-                real b = 0.;
-                real q = 0.0;
-                real s = 0.0;
-                for (int i = 0; i < N_sea_partons_; i++) {
-                    auto xvec = sample_valence_quark_position();
-                    b = 0.0;
-                    // if nucleon is proton or neutron, define a gluon with
-                    // a baryon charge
-                    if (A_ > 0) {
-                        if (i == 0) {
-                            if (baryonInStringJunction_) {
-                                // if the baryon number is
-                                // not split, set it to 1
-                                // for this iteration
-                                b = 1.0;
-                            }
-                        }
-                    }
-                    std::shared_ptr<Quark> quark_ptr(
-                        new Quark(xvec, soft_pvec, b, q, s));
-                    quark_ptr->set_rapidity(rapidity);
-                    nucleon_i->push_back_quark(quark_ptr);
-                }
-            } else {
+            // determine how many sea partons to add
+            int N_sea_partons_int = static_cast<int>(N_sea_partons_);
+            real N_sea_partons_rem = N_sea_partons_ - N_sea_partons_int;
+            if (ran_gen_ptr->rand_uniform() < N_sea_partons_rem) {
+                N_sea_partons_int++;
+            }
+            N_sea_partons_int = std::min(N_sea_partons_int, Nmq);
+            if (N_sea_partons_int == 0) continue;
                 // when there is not enough energy to add a soft parton
                 // assign the baryon number to a random valence quark hotspot
                 if (baryonInStringJunction_) {
                     nucleon_i->get_a_valence_quark()->set_baryon(1.0);
                 }
+
+            Esoft -= N_sea_partons_int * mq;  // subtract the base mass
+            std::vector<real> xSoft(N_sea_partons_int + 1, 0.);
+            for (int i = 1; i < N_sea_partons_int; i++) {
+                xSoft[i] = ran_gen_ptr->rand_uniform();
+            }
+            xSoft[0] = 0.;
+            xSoft[N_sea_partons_int] = 1.;
+            std::sort(xSoft.begin(), xSoft.end());
+
+            for (int i = 0; i < N_sea_partons_int; i++) {
+                MomentumVec soft_pvec_i = {0., 0., 0., 0.};
+                real xSoft_i = xSoft[i + 1] - xSoft[i];
+                soft_pvec_i[0] = mq + Esoft * xSoft_i;
+
+                // assuming the soft parton ball has valence quark mass
+                // only add a soft parton when the leftover energy is
+                // larger than mq
+                real rapidity = direction * acosh(soft_pvec_i[0] / mq);
+                soft_pvec_i[3] = mq * sinh(rapidity);
+
+                // if nucleon is proton or neutron, define a gluon with
+                // a baryon charge
+                real b = 0.0;
+                real q = 0.0;
+                real s = 0.0;
+                if (A_ > 0 && i == 0 && baryonInStringJunction_) {
+                    // if the baryon number is assigned to string junction
+                    b = 1.0;
+                }
+                auto xvec = sample_valence_quark_position();
+                std::shared_ptr<Quark> quark_ptr(
+                    new Quark(xvec, soft_pvec_i, b, q, s));
+                quark_ptr->set_rapidity(rapidity);
+                nucleon_i->push_back_quark(quark_ptr);
             }
         }
     }
@@ -622,7 +663,18 @@ void Nucleus::readin_nucleon_positions() {
     std::cout << "read in nucleon positions for Nucleus: " << name << "  "
               << std::flush;
     std::string filename;
-    if (A_ == 3) {  // he3 or t
+    if (A_ == 2) {
+        if (polarizationFlag_ == 0) {
+            std::cout << "[Warning]: No configuration file for Nucleus: "
+                      << name << std::endl;
+            std::cout << "Generate configuration with Hulthen distribution"
+                      << std::endl;
+            return;
+        }
+        filename = "tables/DeuteronPol0Configs.bin.in";
+        if (std::abs(polJz_) == 1)
+            filename = "tables/DeuteronPolpm1Configs.bin.in";
+    } else if (A_ == 3) {  // he3 or t
         filename = "tables/He3.bin.in";
         if (lightNucleusOption_ == 0) {
             filename = "tables/He3.bin.in";
@@ -665,6 +717,8 @@ void Nucleus::readin_nucleon_positions() {
         } else if (lightNucleusOption_ == 5) {
             filename = "tables/Ne20_NLEFT_dmin0.5fm_negativeweights.bin.in";
         }
+    } else if (A_ == 22) {  // Neon 22
+        filename = "tables/Ne22_NLEFT.bin.in";
     } else if (A_ == 40) {  // Ar
         filename = "tables/Ar40_VMC.bin.in";
         if (lightNucleusOption_ == 0) {

@@ -54,7 +54,7 @@ class Parameters : public ParametersMap {
     int get_QCD_string_evolution_mode() const;
     int get_rapidity_loss_method() const;
 
-    int get_N_sea_partons() const;
+    real get_N_sea_partons() const;
 
     // if False do assume baryon number at string ends
     // if True transport baryon number along the string
