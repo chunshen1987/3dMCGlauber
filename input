@@ -5,7 +5,7 @@ Projectile p                         # projectile nucleus name
 Target p                             # target nucleus name
 nucleon_configuration_from_file 0    # use nucleon configuration from file
 light_nucleus_option 0               # light nucleus configurations from different nuclear structure theory
-roots 200.                           # collision energy (GeV)
+roots 20.                            # collision energy (GeV)
 useQuarks 1                          # switch to use valence quarks
 Q2 1.                                # the scale when evaluating the pdf
 b_min 0.                             # minimum impact parameter (fm)
@@ -42,18 +42,18 @@ d_min 0.9                            # the minimum distance between nucleon pair
 ISBaryonInStringJunction 1           # 1: assign the whole baryon number to the string junction
                                      # 0: assign fractional baryon numbers to valence quarks
 
-FSBaryonFluctStringBreaking 1        # 0: baryon number assumed to be at string end
+FSBaryonFluctStringBreaking 0        # 0: baryon number assumed to be at string end
                                      # 1: baryon number transported along the string when it breaks
 lambdaB 1.0                          # parameter the controls the strength of the baryon junction stopping
 lambdaBs 0.0                         # the fraction of single-to-double junction stopping
-FSbaryonInStringProb 1.0             # the relative probility to put a baryon charge in the string
+FSbaryonInStringProb 0.2             # the relative probility to put a baryon charge in the string
                                      # rather than at the wounded nucleon remnant
-FSElectricQFluctStringBreaking 1     # 0: electric charge number assumed to be at string end
+FSElectricQFluctStringBreaking 0     # 0: electric charge number assumed to be at string end
                                      # 1: electric charge number transported assuming baryon junctions
                                      #    (at smaller x) see arXiv:nucl-th/9602027
 lambdaQ 1.0                          # parameter the controls the strength of the electric charge junction stopping
 lambdaQs 0.0                         # the fraction of single-to-double junction stopping
-FSelectricChargeInStringProb 1.0     # the relative probility to put a electric charge in the string
+FSelectricChargeInStringProb 0.2     # the relative probility to put a electric charge in the string
                                      # rather than at the wounded nucleon remnant
 
 BG 16.                               # Gaussian width square for sampling the valence quark positions (GeV^2)

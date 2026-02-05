@@ -26,7 +26,7 @@ class Nucleon : public Particle {
     bool remnant_set_ = false;
     bool remnant_carry_baryon_number_ = false;
     bool remnant_carry_electric_charge_number_ = false;
-    real remnant_baryon_number = 1;
+    real remnant_baryon_number = 0;
     real remnant_electricQ_number_ = 0;
 
     std::vector<std::weak_ptr<Nucleon>> collide_with;
