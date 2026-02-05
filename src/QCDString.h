@@ -29,9 +29,6 @@ class QCDString {
     real eta_s_baryon_left, eta_s_baryon_right;
     real eta_s_electric_charge_left, eta_s_electric_charge_right;
 
-    real Qe_left_, Qe_right_;
-    real eta_s_Qe_left_, eta_s_Qe_right_;
-
     bool has_remnant_left_, has_remnant_right_;
 
     shared_ptr<Nucleon> proj;
@@ -167,16 +164,6 @@ class QCDString {
     void set_has_electric_charge_right(bool has_e_right) {
         has_electric_charge_right_ = has_e_right;
     }
-
-    void set_Qe_left(real Qe) { Qe_left_ = Qe; }
-    void set_Qe_right(real Qe) { Qe_right_ = Qe; }
-    void set_eta_s_Qe_left(real etas) { eta_s_Qe_left_ = etas; }
-    void set_eta_s_Qe_right(real etas) { eta_s_Qe_right_ = etas; }
-
-    real get_Qe_left() const { return (Qe_left_); }
-    real get_Qe_right() const { return (Qe_right_); }
-    real get_eta_s_Qe_left() const { return (eta_s_Qe_left_); }
-    real get_eta_s_Qe_right() const { return (eta_s_Qe_right_); }
 
     bool get_has_baryon_left() const { return (has_baryon_left_); }
     bool get_has_baryon_right() const { return (has_baryon_right_); }

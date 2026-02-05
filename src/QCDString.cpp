@@ -30,10 +30,6 @@ QCDString::QCDString(
     has_remnant_right_ = false;
     has_electric_charge_left_ = false;
     has_electric_charge_right_ = false;
-    Qe_left_ = 0.;
-    Qe_right_ = 0.;
-    eta_s_Qe_left_ = 0.;
-    eta_s_Qe_right_ = 0.;
 }
 
 QCDString::QCDString(
@@ -65,10 +61,6 @@ QCDString::QCDString(
 
     has_remnant_left_ = false;
     has_remnant_right_ = false;
-    Qe_left_ = 0.;
-    Qe_right_ = 0.;
-    eta_s_Qe_left_ = 0.;
-    eta_s_Qe_right_ = 0.;
 }
 
 QCDString::QCDString(
@@ -94,10 +86,6 @@ QCDString::QCDString(
     has_remnant_right_ = false;
     has_electric_charge_left_ = false;
     has_electric_charge_right_ = false;
-    Qe_left_ = 0.;
-    Qe_right_ = 0.;
-    eta_s_Qe_left_ = 0.;
-    eta_s_Qe_right_ = 0.;
 }
 
 QCDString::QCDString(
@@ -130,10 +118,6 @@ QCDString::QCDString(
 
     has_remnant_left_ = false;
     has_remnant_right_ = false;
-    Qe_left_ = 0.;
-    Qe_right_ = 0.;
-    eta_s_Qe_left_ = 0.;
-    eta_s_Qe_right_ = 0.;
 }
 
 QCDString::QCDString(
@@ -158,10 +142,6 @@ QCDString::QCDString(
     has_remnant_right_ = false;
     has_electric_charge_left_ = false;
     has_electric_charge_right_ = false;
-    Qe_left_ = 0.;
-    Qe_right_ = 0.;
-    eta_s_Qe_left_ = 0.;
-    eta_s_Qe_right_ = 0.;
 }
 
 QCDString::QCDString(
@@ -193,10 +173,6 @@ QCDString::QCDString(
 
     has_remnant_left_ = false;
     has_remnant_right_ = false;
-    Qe_left_ = 0.;
-    Qe_right_ = 0.;
-    eta_s_Qe_left_ = 0.;
-    eta_s_Qe_right_ = 0.;
 }
 
 void QCDString::evolve_QCD_string() {
