@@ -211,8 +211,8 @@ bool Parameters::get_batch_eccentricity_output() const {
     }
 }
 
-bool Parameters::getFSbaryonInStringBreaking() const {
-    int flag = get_param_int("FSBaryonInStringBreaking", 0);
+bool Parameters::getFSBaryonFluctStringBreaking() const {
+    int flag = get_param_int("FSBaryonFluctStringBreaking", 0);
     if (flag == 0) {
         return (false);
     } else {
@@ -220,17 +220,8 @@ bool Parameters::getFSbaryonInStringBreaking() const {
     }
 }
 
-bool Parameters::getFSelectricInStringBreaking() const {
-    int flag = get_param_int("FSElectricChargeInStringBreaking", 0);
-    if (flag == 0) {
-        return (false);
-    } else {
-        return (true);
-    }
-}
-
-bool Parameters::get_integer_electric_charge() const {
-    int flag = get_param_int("integer_electric_charge", 0);
+bool Parameters::getFSElectricQFluctStringBreaking() const {
+    int flag = get_param_int("FSElectricQFluctStringBreaking", 0);
     if (flag == 0) {
         return (false);
     } else {
@@ -314,15 +305,6 @@ real Parameters::get_BG() const {
 
 bool Parameters::getISBaryonInStringJunction() const {
     int flag = get_param_int("ISBaryonInStringJunction", 0);
-    if (flag == 0) {
-        return (false);
-    } else {
-        return (true);
-    }
-}
-
-bool Parameters::getISorFSStopping() const {
-    int flag = get_param_int("ISorFSStopping", 0);
     if (flag == 0) {
         return (false);
     } else {

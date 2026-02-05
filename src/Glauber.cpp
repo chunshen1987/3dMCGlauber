@@ -618,24 +618,20 @@ int Glauber::perform_string_production() {
     // to strings and remnants
     std::vector<unsigned int> random_idx;
 
-    const bool ISStopping = parameter_list.getISorFSStopping();
-
-    const bool baryonInStringBreaking =
-        (parameter_list.getFSbaryonInStringBreaking());
+    const bool FSBaryonFluctStringBreaking =
+        (parameter_list.getFSBaryonFluctStringBreaking());
     real lambdaB = parameter_list.get_lambdaB();
     lambdaB = std::min(1., lambdaB);
     real lambdaBs = parameter_list.get_lambdaBs();
     lambdaBs = std::min(1., lambdaBs);
     const real baryonInStringProb = parameter_list.get_baryon_in_string_prob();
 
-    const bool electricInStringBreaking =
-        (parameter_list.getFSelectricInStringBreaking());
+    const bool FSElectricQFluctStringBreaking =
+        (parameter_list.getFSElectricQFluctStringBreaking());
     real lambdaQ = parameter_list.get_lambdaQ();
     lambdaQ = std::min(1., lambdaQ);
     real lambdaQs = parameter_list.get_lambdaQs();
     lambdaQs = std::min(1., lambdaQs);
-    const bool integer_electric_charge =
-        (parameter_list.get_integer_electric_charge());
     const real electricChargeInStringProb =
         (parameter_list.get_electric_charge_in_string_prob());
 
@@ -646,28 +642,111 @@ int Glauber::perform_string_production() {
     for (unsigned int idx = 0; idx < total_length; idx++) {
         random_idx.push_back(idx);
     }
-    std::shuffle(
-        random_idx.begin(), random_idx.end(), *ran_gen_ptr_->getRanGenerator());
 
-    // assign charges for projectile hotspots
-    for (auto &idx : random_idx) {
-        if (idx < Nstrings) {
-            if (ISStopping) {
+    if (!FSBaryonFluctStringBreaking || !FSElectricQFluctStringBreaking) {
+        // assign charges for projectile hotspots
+        std::shuffle(
+            random_idx.begin(), random_idx.end(),
+            *ran_gen_ptr_->getRanGenerator());
+        for (auto &idx : random_idx) {
+            if (idx < Nstrings) {
                 // put baryon and electric Q of the projectile hotspot
                 // in the selected string
                 auto proj_q = QCD_string_list[idx].get_proj_q();
                 if (!proj_q->Q_was_used()) {
                     proj_q->set_Q_used(true);
-                    QCD_string_list[idx].set_has_baryon_right(true);
-                    QCD_string_list[idx].set_has_electric_charge_right(true);
+                    if (!FSBaryonFluctStringBreaking) {
+                        QCD_string_list[idx].set_has_baryon_right(true);
+                    }
+                    if (!FSElectricQFluctStringBreaking) {
+                        QCD_string_list[idx].set_has_electric_charge_right(
+                            true);
+                    }
                 }
-            } else if (!electricInStringBreaking) {
-                auto proj_q = QCD_string_list[idx].get_proj_q();
-                if (!proj_q->Q_was_used()) {
-                    proj_q->set_Q_used(true);
-                    QCD_string_list[idx].set_has_electric_charge_right(true);
+            } else if (idx < Nstrings + Npart_proj) {
+                // put baryon of the projectile in the projectile remnant
+                auto proj = projectile->get_participant(idx - Nstrings);
+                auto p_i = proj->get_remnant_p();
+                if (p_i[0] <= 0) continue;
+                if (!proj->baryon_was_used()) {
+                    real remnant_baryon_number = 0.;
+                    real remnant_electricQ_number = 0.;
+                    for (auto &proj_q : proj->get_quark_list()) {
+                        if (!proj_q->Q_was_used()) {
+                            proj_q->set_Q_used(true);
+                            remnant_baryon_number += proj_q->get_baryon();
+                            remnant_electricQ_number += proj_q->get_charge();
+                        }
+                    }
+                    if (!FSElectricQFluctStringBreaking) {
+                        proj->set_electric_charge_used(true);
+                        proj->set_remnant_carry_electric_charge_number(true);
+                        proj->set_remnant_electricQ_number(
+                            remnant_electricQ_number);
+                    }
+                    if (!FSBaryonFluctStringBreaking) {
+                        proj->set_baryon_used(true);
+                        proj->set_remnant_carry_baryon_number(true);
+                        proj->set_remnant_baryon_number(remnant_baryon_number);
+                    }
                 }
-            } else {
+            }
+        }
+
+        // assign charges for target
+        std::shuffle(
+            random_idx.begin(), random_idx.end(),
+            *ran_gen_ptr_->getRanGenerator());
+        for (auto &idx : random_idx) {
+            if (idx < Nstrings) {
+                auto targ_q = QCD_string_list[idx].get_targ_q();
+                if (!targ_q->Q_was_used()) {
+                    targ_q->set_Q_used(true);
+                    if (!FSBaryonFluctStringBreaking) {
+                        QCD_string_list[idx].set_has_baryon_left(true);
+                    }
+                    if (!FSElectricQFluctStringBreaking) {
+                        QCD_string_list[idx].set_has_electric_charge_left(true);
+                    }
+                }
+            } else if (idx > Nstrings + Npart_proj - 1) {
+                // put baryon of the target in the target remnant
+                auto targ =
+                    target->get_participant(idx - Nstrings - Npart_proj);
+                auto p_i = targ->get_remnant_p();
+                if (p_i[0] <= 0) continue;
+                if (!targ->baryon_was_used()) {
+                    real remnant_baryon_number = 0.;
+                    real remnant_electricQ_number = 0.;
+                    for (auto &targ_q : targ->get_quark_list()) {
+                        if (!targ_q->Q_was_used()) {
+                            targ_q->set_Q_used(true);
+                            remnant_baryon_number += targ_q->get_baryon();
+                            remnant_electricQ_number += targ_q->get_charge();
+                        }
+                    }
+                    if (!FSElectricQFluctStringBreaking) {
+                        targ->set_electric_charge_used(true);
+                        targ->set_remnant_carry_electric_charge_number(true);
+                        targ->set_remnant_electricQ_number(
+                            remnant_electricQ_number);
+                    }
+                    if (!FSBaryonFluctStringBreaking) {
+                        targ->set_baryon_used(true);
+                        targ->set_remnant_carry_baryon_number(true);
+                        targ->set_remnant_baryon_number(remnant_baryon_number);
+                    }
+                }
+            }
+        }
+    }
+
+    if (FSBaryonFluctStringBreaking) {
+        std::shuffle(
+            random_idx.begin(), random_idx.end(),
+            *ran_gen_ptr_->getRanGenerator());
+        for (auto &idx : random_idx) {
+            if (idx < Nstrings) {
                 // put baryon of the projectile in the selected string
                 auto proj = QCD_string_list[idx].get_proj();
                 if (proj->get_baryon_number() == 0) proj->set_baryon_used(true);
@@ -677,55 +756,24 @@ int Glauber::perform_string_production() {
                         QCD_string_list[idx].set_has_baryon_right(true);
                     }
                 }
-            }
-        } else if (idx < Nstrings + Npart_proj) {
-            // put baryon of the projectile in the projectile remnant
-            auto proj = projectile->get_participant(idx - Nstrings);
-            auto p_i = proj->get_remnant_p();
-            if (p_i[0] <= 0) continue;
-            if (!proj->baryon_was_used()) {
-                real remnant_baryon_number = 0.;
-                real remnant_electricQ_number = 0.;
-                if (ISStopping || !electricInStringBreaking) {
-                    for (auto &proj_q : proj->get_quark_list()) {
-                        if (!proj_q->Q_was_used()) {
-                            proj_q->set_Q_used(true);
-                            remnant_baryon_number += proj_q->get_baryon();
-                            remnant_electricQ_number += proj_q->get_charge();
-                        }
-                    }
-                    proj->set_electric_charge_used(true);
-                    proj->set_remnant_carry_electric_charge_number(true);
-                    proj->set_remnant_electricQ_number(
-                        remnant_electricQ_number);
+            } else if (idx < Nstrings + Npart_proj) {
+                // put baryon of the projectile in the projectile remnant
+                auto proj = projectile->get_participant(idx - Nstrings);
+                auto p_i = proj->get_remnant_p();
+                if (p_i[0] <= 0) continue;
+                if (!proj->baryon_was_used()) {
+                    proj->set_baryon_used(true);
+                    proj->set_remnant_carry_baryon_number(true);
+                    proj->set_remnant_baryon_number(1.0);
                 }
-                proj->set_baryon_used(true);
-                proj->set_remnant_carry_baryon_number(true);
-                proj->set_remnant_baryon_number(remnant_baryon_number);
             }
         }
-    }
-
-    // assign charges for target
-    std::shuffle(
-        random_idx.begin(), random_idx.end(), *ran_gen_ptr_->getRanGenerator());
-
-    for (auto &idx : random_idx) {
-        if (idx < Nstrings) {
-            if (ISStopping) {
-                auto targ_q = QCD_string_list[idx].get_targ_q();
-                if (!targ_q->Q_was_used()) {
-                    targ_q->set_Q_used(true);
-                    QCD_string_list[idx].set_has_baryon_left(true);
-                    QCD_string_list[idx].set_has_electric_charge_left(true);
-                }
-            } else if (!electricInStringBreaking) {
-                auto targ_q = QCD_string_list[idx].get_targ_q();
-                if (!targ_q->Q_was_used()) {
-                    targ_q->set_Q_used(true);
-                    QCD_string_list[idx].set_has_electric_charge_left(true);
-                }
-            } else {
+        // assign charges for target
+        std::shuffle(
+            random_idx.begin(), random_idx.end(),
+            *ran_gen_ptr_->getRanGenerator());
+        for (auto &idx : random_idx) {
+            if (idx < Nstrings) {
                 // put baryon of the target in the selected string
                 auto targ = QCD_string_list[idx].get_targ();
                 if (targ->get_baryon_number() == 0) targ->set_baryon_used(true);
@@ -735,51 +783,129 @@ int Glauber::perform_string_production() {
                         QCD_string_list[idx].set_has_baryon_left(true);
                     }
                 }
-            }
-        } else if (idx > Nstrings + Npart_proj - 1) {
-            // put baryon of the target in the target remnant
-            auto targ = target->get_participant(idx - Nstrings - Npart_proj);
-            auto p_i = targ->get_remnant_p();
-            if (p_i[0] <= 0) continue;
-            if (!targ->baryon_was_used()) {
-                real remnant_baryon_number = 0.;
-                real remnant_electricQ_number = 0.;
-                if (ISStopping || !electricInStringBreaking) {
-                    for (auto &targ_q : targ->get_quark_list()) {
-                        if (!targ_q->Q_was_used()) {
-                            targ_q->set_Q_used(true);
-                            remnant_baryon_number += targ_q->get_baryon();
-                            remnant_electricQ_number += targ_q->get_charge();
-                        }
-                    }
-                    targ->set_electric_charge_used(true);
-                    targ->set_remnant_carry_electric_charge_number(true);
-                    targ->set_remnant_electricQ_number(
-                        remnant_electricQ_number);
+            } else if (idx > Nstrings + Npart_proj - 1) {
+                // put baryon of the target in the target remnant
+                auto targ =
+                    target->get_participant(idx - Nstrings - Npart_proj);
+                auto p_i = targ->get_remnant_p();
+                if (p_i[0] <= 0) continue;
+                if (!targ->baryon_was_used()) {
+                    targ->set_baryon_used(true);
+                    targ->set_remnant_carry_baryon_number(true);
+                    targ->set_remnant_baryon_number(1.0);
                 }
-                targ->set_baryon_used(true);
-                targ->set_remnant_carry_baryon_number(true);
-                targ->set_remnant_baryon_number(remnant_baryon_number);
             }
         }
     }
 
-    // set baryons' rapidities
+    if (FSElectricQFluctStringBreaking) {
+        std::shuffle(
+            random_idx.begin(), random_idx.end(),
+            *ran_gen_ptr_->getRanGenerator());
+        for (auto &idx : random_idx) {
+            if (idx < Nstrings) {
+                // put baryon of the projectile in the selected string
+                auto proj = QCD_string_list[idx].get_proj();
+                if (proj->get_electric_charge() == 0)
+                    proj->set_electric_charge_used(true);
+                if (!proj->electric_charge_was_used()) {
+                    if (ran_gen_ptr_->rand_uniform()
+                        < electricChargeInStringProb) {
+                        proj->set_electric_charge_used(true);
+                        QCD_string_list[idx].set_has_electric_charge_right(
+                            true);
+                    }
+                }
+            } else if (idx < Nstrings + Npart_proj) {
+                // put baryon of the projectile in the projectile remnant
+                auto proj = projectile->get_participant(idx - Nstrings);
+                auto p_i = proj->get_remnant_p();
+                if (p_i[0] <= 0) continue;
+                if (!proj->electric_charge_was_used()) {
+                    proj->set_electric_charge_used(true);
+                    proj->set_remnant_carry_electric_charge_number(true);
+                    proj->set_remnant_electricQ_number(
+                        proj->get_electric_charge());
+                }
+            }
+        }
+        // assign charges for target
+        std::shuffle(
+            random_idx.begin(), random_idx.end(),
+            *ran_gen_ptr_->getRanGenerator());
+        for (auto &idx : random_idx) {
+            if (idx < Nstrings) {
+                // put baryon of the target in the selected string
+                auto targ = QCD_string_list[idx].get_targ();
+                if (targ->get_electric_charge() == 0)
+                    targ->set_electric_charge_used(true);
+                if (!targ->electric_charge_was_used()) {
+                    if (ran_gen_ptr_->rand_uniform()
+                        < electricChargeInStringProb) {
+                        targ->set_electric_charge_used(true);
+                        QCD_string_list[idx].set_has_electric_charge_left(true);
+                    }
+                }
+            } else if (idx > Nstrings + Npart_proj - 1) {
+                // put baryon of the target in the target remnant
+                auto targ =
+                    target->get_participant(idx - Nstrings - Npart_proj);
+                auto p_i = targ->get_remnant_p();
+                if (p_i[0] <= 0) continue;
+                if (!targ->electric_charge_was_used()) {
+                    targ->set_electric_charge_used(true);
+                    targ->set_remnant_carry_electric_charge_number(true);
+                    targ->set_remnant_electricQ_number(
+                        targ->get_electric_charge());
+                }
+            }
+        }
+    }
+
+    // set baryons' and electric charges' rapidities
     for (auto &it : QCD_string_list) {
         it.evolve_QCD_string();
-        if (!electricInStringBreaking) {
+        if (!FSElectricQFluctStringBreaking) {
             it.set_final_electric_charge_rapidities(
                 it.get_y_f_left(), it.get_y_f_right());
+        } else {
+            // sample HERE if electric charge should be moved
+            real y_electric_charge_right = 0.;
+            if (it.get_has_electric_charge_right()) {
+                if (ran_gen_ptr_->rand_uniform() < lambdaQ) {
+                    if (ran_gen_ptr_->rand_uniform() < lambdaQs) {
+                        y_electric_charge_right =
+                            (sample_junction_rapidity_right(
+                                it.get_y_f_left(), it.get_y_f_right()));
+                    } else {
+                        y_electric_charge_right =
+                            (sample_junction_rapidity_uniformed(
+                                it.get_y_f_left(), it.get_y_f_right()));
+                    }
+                } else {
+                    y_electric_charge_right = it.get_y_f_right();
+                }
+            }
+            real y_electric_charge_left = 0.;
+            if (it.get_has_electric_charge_left()) {
+                if (ran_gen_ptr_->rand_uniform() < lambdaQ) {
+                    if (ran_gen_ptr_->rand_uniform() < lambdaQs) {
+                        y_electric_charge_left = (sample_junction_rapidity_left(
+                            it.get_y_f_left(), it.get_y_f_right()));
+                    } else {
+                        y_electric_charge_left =
+                            (sample_junction_rapidity_uniformed(
+                                it.get_y_f_left(), it.get_y_f_right()));
+                    }
+                } else {
+                    y_electric_charge_left = it.get_y_f_left();
+                }
+            }
+            it.set_final_electric_charge_rapidities(
+                y_electric_charge_left, y_electric_charge_right);
         }
-        if (ISStopping) {
-            // set baryon and electric Q rapidities to string endpoints
-            it.set_final_baryon_rapidities(
-                it.get_y_f_left(), it.get_y_f_right());
-            it.set_final_electric_charge_rapidities(
-                it.get_y_f_left(), it.get_y_f_right());
-        } else if (!baryonInStringBreaking) {
-            // set baryon rapidities to string endpoint rapidities
-            // if no junction transport is used
+
+        if (!FSBaryonFluctStringBreaking) {
             it.set_final_baryon_rapidities(
                 it.get_y_f_left(), it.get_y_f_right());
         } else {
@@ -828,114 +954,6 @@ int Glauber::perform_string_production() {
                 }
             }
             it.set_final_baryon_rapidities(y_baryon_left, y_baryon_right);
-        }
-    }
-
-    // now assign electric charges randomly to strings and remnants
-    // for Final State only
-    if (electricInStringBreaking) {
-        std::shuffle(
-            random_idx.begin(), random_idx.end(),
-            *ran_gen_ptr_->getRanGenerator());
-        // consider integer electric charge at string breaking
-        // for projectile
-        for (auto &idx : random_idx) {
-            if (idx < Nstrings) {
-                // put electric charge of the projectile in the selected
-                // string
-                auto proj = QCD_string_list[idx].get_proj();
-                auto proj_electric_charge = proj->get_electric_charge();
-                if (std::abs(proj_electric_charge) > 1e-15
-                    && !proj->electric_charge_was_used()) {
-                    if (ran_gen_ptr_->rand_uniform()
-                        < electricChargeInStringProb) {
-                        proj->set_electric_charge_used(true);
-                        QCD_string_list[idx].set_has_electric_charge_right(
-                            true);
-                    }
-                }
-            } else if (idx < Nstrings + Npart_proj) {
-                // put electric charge of the projectile in the projectile
-                // remnant
-                auto proj = projectile->get_participant(idx - Nstrings);
-                auto proj_electric_charge = proj->get_electric_charge();
-                auto p_i = proj->get_remnant_p();
-                if (p_i[0] <= 0) continue;
-                if (std::abs(proj_electric_charge) > 1e-15
-                    && !proj->electric_charge_was_used()) {
-                    proj->set_electric_charge_used(true);
-                    proj->set_remnant_carry_electric_charge_number(true);
-                }
-            }
-        }
-
-        // for target
-        std::shuffle(
-            random_idx.begin(), random_idx.end(),
-            *ran_gen_ptr_->getRanGenerator());
-        for (auto &idx : random_idx) {
-            if (idx < Nstrings) {
-                // put electric charge of the projectile in the selected
-                // string
-                auto targ = QCD_string_list[idx].get_targ();
-                auto targ_electric_charge = targ->get_electric_charge();
-                if (std::abs(targ_electric_charge) > 1e-15
-                    && !targ->electric_charge_was_used()) {
-                    if (ran_gen_ptr_->rand_uniform()
-                        < electricChargeInStringProb) {
-                        targ->set_electric_charge_used(true);
-                        QCD_string_list[idx].set_has_electric_charge_left(true);
-                    }
-                }
-            } else if (idx > Nstrings + Npart_proj - 1) {
-                auto targ =
-                    target->get_participant(idx - Nstrings - Npart_proj);
-                auto targ_electric_charge = targ->get_electric_charge();
-                auto p_i = targ->get_remnant_p();
-                if (p_i[0] <= 0) continue;
-                if (std::abs(targ_electric_charge) > 1e-15
-                    && !targ->electric_charge_was_used()) {
-                    targ->set_electric_charge_used(true);
-                    targ->set_remnant_carry_electric_charge_number(true);
-                }
-            }
-        }
-        // Now we set electric charge rapidities
-        for (auto &it : QCD_string_list) {
-            // sample HERE if electric charge should be moved
-            real y_electric_charge_right = 0.;
-            if (it.get_has_electric_charge_right()) {
-                if (ran_gen_ptr_->rand_uniform() < lambdaQ) {
-                    if (ran_gen_ptr_->rand_uniform() < lambdaQs) {
-                        y_electric_charge_right =
-                            (sample_junction_rapidity_right(
-                                it.get_y_f_left(), it.get_y_f_right()));
-                    } else {
-                        y_electric_charge_right =
-                            (sample_junction_rapidity_uniformed(
-                                it.get_y_f_left(), it.get_y_f_right()));
-                    }
-                } else {
-                    y_electric_charge_right = it.get_y_f_right();
-                }
-            }
-            real y_electric_charge_left = 0.;
-            if (it.get_has_electric_charge_left()) {
-                if (ran_gen_ptr_->rand_uniform() < lambdaQ) {
-                    if (ran_gen_ptr_->rand_uniform() < lambdaQs) {
-                        y_electric_charge_left = (sample_junction_rapidity_left(
-                            it.get_y_f_left(), it.get_y_f_right()));
-                    } else {
-                        y_electric_charge_left =
-                            (sample_junction_rapidity_uniformed(
-                                it.get_y_f_left(), it.get_y_f_right()));
-                    }
-                } else {
-                    y_electric_charge_left = it.get_y_f_left();
-                }
-            }
-            it.set_final_electric_charge_rapidities(
-                y_electric_charge_left, y_electric_charge_right);
         }
     }
 
@@ -994,8 +1012,8 @@ int Glauber::perform_string_production() {
 
 void Glauber::produce_remnant_strings() {
     // create strings for the beam remnants
-    const auto integer_electric_charge =
-        (parameter_list.get_integer_electric_charge());
+    const auto FSElectricQFluctStringBreaking =
+        (parameter_list.getFSElectricQFluctStringBreaking());
     const auto string_evolution_mode = -4;
     real tau_form = 0.5;
     real m_over_sigma = 1.0;  // [fm]
@@ -1037,7 +1055,7 @@ void Glauber::produce_remnant_strings() {
             qcd_string.evolve_QCD_string();
             qcd_string.set_final_baryon_rapidities(0., y_rem - y_loss);
             // read integer electric charge
-            if (integer_electric_charge) {
+            if (FSElectricQFluctStringBreaking) {
                 if (has_electric_charge_right) {
                     qcd_string.set_Qe_right(iproj->get_electric_charge());
                     qcd_string.set_final_electric_charge_rapidities(
@@ -1087,7 +1105,7 @@ void Glauber::produce_remnant_strings() {
             qcd_string.set_has_remnant_left(true);
             qcd_string.evolve_QCD_string();
             qcd_string.set_final_baryon_rapidities(y_rem + y_loss, 0.);
-            if (integer_electric_charge) {
+            if (FSElectricQFluctStringBreaking) {
                 if (has_electric_charge_left) {
                     qcd_string.set_Qe_left(itarg->get_electric_charge());
                     qcd_string.set_final_electric_charge_rapidities(
@@ -1138,13 +1156,15 @@ void Glauber::computeCenterOfMass(real &x_o, real &y_o) {
 
 void Glauber::prepare_output_QCD_strings() {
     QCD_string_output_arr_.clear();
-    bool integ_charge = parameter_list.get_integer_electric_charge();
     // compute the center of mass
     real x_o = 0.;
     real y_o = 0.;
     computeCenterOfMass(x_o, y_o);
 
-    bool ISStopping = parameter_list.getISorFSStopping();
+    bool FSBaryonFluctStringBreaking =
+        (parameter_list.getFSBaryonFluctStringBreaking());
+    bool FSElectricQFluctStringBreaking =
+        (parameter_list.getFSElectricQFluctStringBreaking());
 
     // prepare output strings
     for (auto &it : QCD_string_list) {
@@ -1176,7 +1196,7 @@ void Glauber::prepare_output_QCD_strings() {
 
         real baryon_fraction_left = 0.;
         if (it.get_has_baryon_left()) {
-            if (ISStopping) {
+            if (!FSBaryonFluctStringBreaking) {
                 baryon_fraction_left = it.get_targ_q()->get_baryon();
             } else {
                 baryon_fraction_left = 1.;
@@ -1185,7 +1205,7 @@ void Glauber::prepare_output_QCD_strings() {
 
         real baryon_fraction_right = 0.;
         if (it.get_has_baryon_right()) {
-            if (ISStopping) {
+            if (!FSBaryonFluctStringBreaking) {
                 baryon_fraction_right = it.get_proj_q()->get_baryon();
             } else {
                 baryon_fraction_right = 1.;
@@ -1194,16 +1214,24 @@ void Glauber::prepare_output_QCD_strings() {
 
         real electric_charge_fraction_left = 0.;
         if (it.get_has_electric_charge_left()) {
-            electric_charge_fraction_left = 1.0;
+            if (!FSElectricQFluctStringBreaking) {
+                electric_charge_fraction_left = it.get_targ_q()->get_charge();
+            } else {
+                electric_charge_fraction_left = 1.0;
+            }
         }
 
         real electric_charge_fraction_right = 0.;
         if (it.get_has_electric_charge_right()) {
-            electric_charge_fraction_right = 1.0;
+            if (!FSElectricQFluctStringBreaking) {
+                electric_charge_fraction_right = it.get_proj_q()->get_charge();
+            } else {
+                electric_charge_fraction_right = 1.0;
+            }
         }
 
         double Ql, Qr, etaQl, etaQr;
-        if (integ_charge) {
+        if (FSElectricQFluctStringBreaking) {
             etaQl = it.get_eta_s_electric_charge_left();
             etaQr = it.get_eta_s_electric_charge_right();
             Ql = electric_charge_fraction_left;
@@ -1272,7 +1300,7 @@ void Glauber::prepare_output_QCD_strings() {
 
             real baryon_fraction_left = 0.;
             if (it.get_has_baryon_left()) {
-                if (ISStopping) {
+                if (!FSBaryonFluctStringBreaking) {
                     baryon_fraction_left =
                         it.get_targ()->get_remnant_baryon_number();
                 } else {
@@ -1282,7 +1310,7 @@ void Glauber::prepare_output_QCD_strings() {
 
             real baryon_fraction_right = 0.;
             if (it.get_has_baryon_right()) {
-                if (ISStopping) {
+                if (!FSBaryonFluctStringBreaking) {
                     baryon_fraction_right =
                         it.get_proj()->get_remnant_baryon_number();
                 } else {
@@ -1291,14 +1319,23 @@ void Glauber::prepare_output_QCD_strings() {
             }
             real electric_charge_fraction_left = 0.;
             if (it.get_has_electric_charge_left()) {
-                electric_charge_fraction_left = 1.0;
+                if (!FSElectricQFluctStringBreaking) {
+                    electric_charge_fraction_left =
+                        it.get_targ_q()->get_charge();
+                } else {
+                    electric_charge_fraction_left = 1.0;
+                }
             }
 
             real electric_charge_fraction_right = 0.;
             if (it.get_has_electric_charge_right()) {
-                electric_charge_fraction_right = 1.0;
+                if (!FSElectricQFluctStringBreaking) {
+                    electric_charge_fraction_right =
+                        it.get_proj_q()->get_charge();
+                } else {
+                    electric_charge_fraction_right = 1.0;
+                }
             }
-
             auto mass = it.get_string_mass();
             auto eta_s_center =
                 (it.get_eta_s_left() + it.get_eta_s_right()) / 2.;
@@ -1316,7 +1353,7 @@ void Glauber::prepare_output_QCD_strings() {
                            it.get_eta_s_left() + 1.0)));
 
             double Ql, Qr, etaQl, etaQr;
-            if (integ_charge) {
+            if (FSElectricQFluctStringBreaking) {
                 etaQl = remnant_left * it.get_eta_s_electric_charge_left();
                 etaQr = remnant_right * it.get_eta_s_electric_charge_right();
                 Ql = remnant_left * electric_charge_fraction_left;

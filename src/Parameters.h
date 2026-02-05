@@ -58,13 +58,11 @@ class Parameters : public ParametersMap {
 
     // if False do assume baryon number at string ends
     // if True transport baryon number along the string
-    bool getFSbaryonInStringBreaking() const;
+    bool getFSBaryonFluctStringBreaking() const;
 
     // if False do assume electric charge number at string ends
     // if True transport electric charge number according to cosh(y*/2)
-    bool getFSelectricInStringBreaking() const;
-
-    bool get_integer_electric_charge() const;
+    bool getFSElectricQFluctStringBreaking() const;
 
     bool get_only_event_statistics() const;
     bool get_cached_tabels() const;
@@ -93,7 +91,7 @@ class Parameters : public ParametersMap {
     int getLightNucleusOption() const;
 
     bool getISBaryonInStringJunction() const;
-    bool getISorFSStopping() const;
+    bool getFSStringBreakingFluct() const;
 };
 
 }  // namespace MCGlb
