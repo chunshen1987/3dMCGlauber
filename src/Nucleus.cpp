@@ -749,7 +749,7 @@ void Nucleus::sample_r_from_woods_saxon(
             r = rmaxCut * pow(ran_gen_ptr->rand_uniform(), 1.0 / 3.0);
         } while (ran_gen_ptr->rand_uniform()
                  > fermi_distribution(r, R_WS_p, a_WS_p));
-        r_array.push_back(std::make_pair(r, 1.));
+        r_array.push_back(std::make_pair(r, 1));
     }
 
     for (int i = Z_; i < A_; i++) {
