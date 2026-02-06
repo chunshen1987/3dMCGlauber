@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "Nucleon.h"
+#include "Parameters.h"
 #include "Random.h"
 #include "data_structs.h"
 
@@ -15,6 +16,7 @@ namespace MCGlb {
 
 class Nucleus {
   private:
+    const Parameters &parameter_list_;
     std::string name;
     int density_function_type;
     int A_;
@@ -32,6 +34,8 @@ class Nucleus {
 
     std::vector<std::shared_ptr<Nucleon>> nucleon_list_;
     std::vector<std::shared_ptr<Nucleon>> participant_list_;
+    std::vector<std::shared_ptr<Nucleon>> participant_proton_list;
+    std::vector<std::shared_ptr<Nucleon>> participant_neutron_list;
     std::shared_ptr<RandomUtil::Random> ran_gen_ptr;
 
     bool nucleon_configuration_loaded_;
@@ -45,13 +49,13 @@ class Nucleus {
     int number_of_valence_quark_samples_;
     real N_sea_partons_;
 
+    bool baryonInStringJunction_;
+
   public:
-    Nucleus() = default;
+    Nucleus() = delete;
     Nucleus(
         std::string nucleus_name, std::shared_ptr<RandomUtil::Random> ran_gen,
-        bool sample_valence_quarks = false, real BG = 4., real d_min = 0.9,
-        bool deformed = true, bool confFromFile = false,
-        real N_sea_partons = 1);
+        const MCGlb::Parameters &param_in);
     ~Nucleus();
 
     std::string get_name() const { return (name); }
@@ -72,10 +76,11 @@ class Nucleus {
     void set_nucleus_parameters(std::string nucleus_name);
     void set_woods_saxon_parameters(
         int A_in, int Z_in, real rho, real w, real R, real a, real beta2,
-        real beta3, real beta4, real gamma, int density_function_type_in);
+        real beta3, real beta4, real gamma, real da, real dR,
+        int density_function_type_in);
     void setWoodsSaxonParameters(
         real rho, real w, real R, real a, real beta2, real beta3, real beta4,
-        real gamma);
+        real gamma, real da, real dR);
     void set_dmin(real d_min) { d_min_ = d_min; }
     real get_nucleon_minimum_distance() const { return (d_min_); }
     int get_nucleus_A() const { return (A_); }
@@ -83,13 +88,22 @@ class Nucleus {
     WoodsSaxonParam get_woods_saxon_parameters() const {
         return (WS_param_vec);
     }
+    void set_deformed(bool deformed) { deformed_ = deformed; }
     bool is_deformed() const { return (deformed_); }
 
     void add_a_participant(std::shared_ptr<Nucleon> ipart) {
         if (!ipart->is_wounded()) {
             // only at ipart one time
             participant_list_.push_back(ipart);
+            if (std::abs(ipart->get_electric_charge()) < 1e-8) {
+                // The participant is a neutron
+                participant_neutron_list.push_back(ipart);
+            } else {
+                // The participant is a proton
+                participant_proton_list.push_back(ipart);
+            }
         }
+        ipart->set_wounded(true);
     }
 
     //! This function generates the spatial and momentum configurations
@@ -112,10 +126,11 @@ class Nucleus {
     //! the Fermi Distribution
     void generate_nucleus_configuration_with_woods_saxon();
     void generate_nucleus_configuration_with_deformed_woods_saxon();
-    real sample_r_from_woods_saxon() const;
+    void sample_r_from_woods_saxon(
+        std::vector<std::pair<real, real>> &r_array) const;
     real sample_r_from_deformed_woods_saxon() const;
     void sample_r_and_costheta_from_deformed_woods_saxon(
-        real &phi, real &r, real &costheta) const;
+        std::vector<std::array<real, 4>> &nucleonPos_array) const;
     //! Fermi Distribution
     real fermi_distribution(real r, real R_WS, real a_WS) const;
     real getAvgWoodsSaxonDensity(real r) const;
@@ -131,6 +146,12 @@ class Nucleus {
     }
     int get_number_of_wounded_nucleons() const {
         return (static_cast<int>(participant_list_.size()));
+    }
+    int get_number_of_wounded_neutrons() const {
+        return (static_cast<int>(participant_neutron_list.size()));
+    }
+    int get_number_of_wounded_protons() const {
+        return (static_cast<int>(participant_proton_list.size()));
     }
     std::shared_ptr<Nucleon> get_participant(unsigned int idx) {
         return (participant_list_.at(idx));

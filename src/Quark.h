@@ -16,20 +16,44 @@ class Quark : public Particle {
     bool remnant_set_ = false;
     int number_of_connections = 0;
 
+    real baryon_ = 0;
+    real charge_ = 0;
+    real strange_ = 0;
+    bool Q_used_ = false;
+
   public:
-    Quark() = default;
+    Quark() = delete;
     Quark(SpatialVec x_in, MomentumVec p_in) {
         set_particle_variables(x_in, p_in);
+        set_charges(0, 0, 0);
     }
 
     Quark(SpatialVec x_in, MomentumVec p_in, real mass_in) {
         set_particle_variables(x_in, p_in, mass_in);
+        set_charges(0, 0, 0);
     }
 
-    Quark(SpatialVec x_in, real pdf_x_in) {
+    Quark(
+        SpatialVec x_in, real pdf_x_in, real baryon_in = 0, real charge_in = 0,
+        real strange_in = 0) {
         set_pdf_x(pdf_x_in);
         MomentumVec p_in = {0.0};
         set_particle_variables(x_in, p_in);
+        set_charges(baryon_in, charge_in, strange_in);
+    }
+
+    Quark(
+        SpatialVec x_in, MomentumVec p_in, real baryon_in, real charge_in,
+        real strange_in) {
+        set_particle_variables(x_in, p_in);
+        set_charges(baryon_in, charge_in, strange_in);
+    }
+
+    Quark(
+        SpatialVec x_in, MomentumVec p_in, real mass_in, real baryon_in,
+        real charge_in, real strange_in) {
+        set_particle_variables(x_in, p_in, mass_in);
+        set_charges(baryon_in, charge_in, strange_in);
     }
 
     void set_pdf_x(real x_in) {
@@ -47,6 +71,24 @@ class Quark : public Particle {
 
     void add_a_connection() { number_of_connections++; }
     int get_number_of_connections() const { return (number_of_connections); }
+
+    void set_baryon(real baryon_in) { baryon_ = baryon_in; }
+    real get_baryon() const { return (baryon_); }
+
+    void set_charge(real charge_in) { charge_ = charge_in; }
+    real get_charge() const { return (charge_); }
+
+    void set_strange(real strange_in) { strange_ = strange_in; }
+    real get_strange() const { return (strange_); }
+
+    void set_charges(real baryon_in, real charge_in, real strange_in) {
+        baryon_ = baryon_in;
+        charge_ = charge_in;
+        strange_ = strange_in;
+    }
+
+    void set_Q_used(bool used) { Q_used_ = used; }
+    bool Q_was_used() const { return (Q_used_); }
 };
 
 }  // namespace MCGlb

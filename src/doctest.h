@@ -2299,9 +2299,9 @@ class DOCTEST_INTERFACE Context {
 #endif  // DOCTEST_CONFIG_WITH_VARIADIC_MACROS
 
 // for subcases
-#define DOCTEST_SUBCASE(name)                                            \
-    if (const doctest::detail::Subcase                                   \
-            & DOCTEST_ANONYMOUS(_DOCTEST_ANON_SUBCASE_) DOCTEST_UNUSED = \
+#define DOCTEST_SUBCASE(name)                              \
+    if (const doctest::detail::Subcase& DOCTEST_ANONYMOUS( \
+            _DOCTEST_ANON_SUBCASE_) DOCTEST_UNUSED =       \
             doctest::detail::Subcase(name, __FILE__, __LINE__))
 
 // for grouping tests in test suites by using code blocks
@@ -2488,7 +2488,7 @@ constexpr T to_lvalue = x;
                 #expr, DOCTEST_TOSTR(DOCTEST_HANDLE_BRACED_VA_ARGS(as)));     \
             try {                                                             \
                 expr;                                                         \
-            } catch (const DOCTEST_HANDLE_BRACED_VA_ARGS(as)&) {              \
+            } catch (const DOCTEST_HANDLE_BRACED_VA_ARGS(as) &) {             \
                 _DOCTEST_RB.m_threw = true;                                   \
                 _DOCTEST_RB.m_threw_as = true;                                \
             } catch (...) {                                                   \
@@ -4348,9 +4348,10 @@ void Color::init() {
 #endif  // DOCTEST_CONFIG_COLORS_WINDOWS
 }
 
-void Color::use(Code
+void Color::use(
+    Code
 #ifndef DOCTEST_CONFIG_COLORS_NONE
-                    code
+        code
 #endif  // DOCTEST_CONFIG_COLORS_NONE
 ) {
     const ContextState* p = contextState;
@@ -4486,7 +4487,7 @@ void popFromContexts() { contextState->contexts.pop_back(); }
 DOCTEST_MSVC_SUPPRESS_WARNING_WITH_PUSH(
     4996)  // std::uncaught_exception is deprecated in C++17
 void useContextIfExceptionOccurred(IContextScope* ptr) {
-    if (std::uncaught_exception()) {
+    if (std::uncaught_exceptions() > 0) {
         std::ostringstream stream;
         ptr->build(&stream);
         contextState->exceptionalContexts.push_back(stream.str());

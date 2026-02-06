@@ -120,7 +120,9 @@ void EventGenerator::generate_events(int nev, int event_id_offset) {
     messager.flush("info");
     // this file records all the essential information for the generated events
     std::ofstream record_file("events_summary.dat", std::ios::out);
-    record_file << "# event_id  Npart  Ncoll  Nstrings  b(fm)" << std::endl;
+    record_file
+        << "# event_id  Npart  Ncoll  Nstrings  b(fm) PartProtons PartNeutrons"
+        << std::endl;
 
     int iev = 0;
     long long int icollisions = 0;
@@ -130,6 +132,8 @@ void EventGenerator::generate_events(int nev, int event_id_offset) {
         mc_glauber_ptr_->make_nuclei();
         auto Ncoll = mc_glauber_ptr_->make_collision_schedule();
         auto Npart = mc_glauber_ptr_->get_Npart();
+        auto NpartNeut = mc_glauber_ptr_->get_Neutronspart();
+        auto NpartProt = mc_glauber_ptr_->get_Protonspart();
         auto Nstrings = mc_glauber_ptr_->decide_QCD_strings_production();
         icollisions++;
         if (event_of_interest_trigger(Npart, Ncoll, Nstrings)) {
@@ -153,7 +157,8 @@ void EventGenerator::generate_events(int nev, int event_id_offset) {
 
             // write event information to the record file
             record_file << event_id << "  " << Npart << "  " << Ncoll << "  "
-                        << Nstrings << "  " << b << std::endl;
+                        << Nstrings << "  " << b << "  " << NpartProt << "  "
+                        << NpartNeut << std::endl;
             iev++;
             if (statistics_only_) continue;
 
@@ -164,12 +169,17 @@ void EventGenerator::generate_events(int nev, int event_id_offset) {
                     "ecc_ed_n", event_id, 1);
                 density_maker_ptr_->output_netBaryon_eta_distribution(
                     "nB_etas_distribution", event_id, 1);
+                density_maker_ptr_->output_netElectricCharges_eta_distribution(
+                    "nQ_etas_distribution", event_id, 1);
                 density_maker_ptr_->output_energyDensity_eta_distribution(
                     "ed_etas_distribution", event_id, 1);
             }
+
             if (batchDensityOutput_) {
                 density_maker_ptr_->output_netBaryon_eta_distribution(
                     "nB_etas_distribution", event_id);
+                density_maker_ptr_->output_netElectricCharges_eta_distribution(
+                    "nQ_etas_distribution", event_id);
                 density_maker_ptr_->output_energyDensity_eta_distribution(
                     "ed_etas_distribution", event_id);
                 if (batchDensity2DOutput_) {

@@ -51,7 +51,7 @@ class Glauber {
     real nucleon_width_;
 
   public:
-    // Glauber() = default;
+    Glauber() = delete;
     Glauber(
         const MCGlb::Parameters &param_in,
         shared_ptr<RandomUtil::Random> ran_gen);
@@ -68,6 +68,8 @@ class Glauber {
     bool hit(real d2) const;
 
     int get_Npart() const;
+    int get_Protonspart() const;
+    int get_Neutronspart() const;
 
     //! This function creates a new collision event between two nucleons
     void create_a_collision_event(

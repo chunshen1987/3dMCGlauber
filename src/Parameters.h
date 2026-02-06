@@ -44,7 +44,10 @@ class Parameters : public ParametersMap {
     bool use_E_dependent_LB() const;
     real get_lambdaB() const;
     real get_lambdaBs() const;
+    real get_lambdaQ() const;
+    real get_lambdaQs() const;
     real get_baryon_in_string_prob() const;
+    real get_electric_charge_in_string_prob() const;
     real get_shadowing_factor() const;
 
     int get_QCD_string_production_mode() const;
@@ -54,8 +57,12 @@ class Parameters : public ParametersMap {
     real get_N_sea_partons() const;
 
     // if False do assume baryon number at string ends
-    // if True transport baryon number according to cosh(y*/2)
-    bool get_baryon_junctions() const;
+    // if True transport baryon number along the string
+    bool getFSBaryonFluctStringBreaking() const;
+
+    // if False do assume electric charge number at string ends
+    // if True transport electric charge number according to cosh(y*/2)
+    bool getFSElectricQFluctStringBreaking() const;
 
     bool get_only_event_statistics() const;
     bool get_cached_tabels() const;
@@ -82,6 +89,9 @@ class Parameters : public ParametersMap {
     real get_d_min() const;
     bool nucleon_configuration_from_file() const;
     int getLightNucleusOption() const;
+
+    bool getISBaryonInStringJunction() const;
+    bool getFSStringBreakingFluct() const;
 };
 
 }  // namespace MCGlb

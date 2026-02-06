@@ -12,41 +12,46 @@
 
 using MCGlb::MomentumVec;
 using MCGlb::Nucleus;
+using MCGlb::Parameters;
 using MCGlb::real;
 using MCGlb::SpatialVec;
 using MCGlb::WoodsSaxonParam;
 
 TEST_CASE("Test random seed") {
     int seed = 23;
+    Parameters parameter_list;
     std::shared_ptr<RandomUtil::Random> ran_gen_ptr(
         new RandomUtil::Random(seed, 0., 1.0));
-    Nucleus test_nucleus("Au", ran_gen_ptr);
+    Nucleus test_nucleus("Au", ran_gen_ptr, parameter_list);
     CHECK(test_nucleus.get_random_seed() == seed);
 }
 
 TEST_CASE("Test set nucleus parameters") {
+    Parameters parameter_list;
     std::shared_ptr<RandomUtil::Random> ran_gen_ptr(
-        new RandomUtil::Random(-1, 0., 1.));
-    Nucleus test_nucleus;
+        new RandomUtil::Random(-1, 0., 1.0));
+    Nucleus test_nucleus("Au", ran_gen_ptr, parameter_list);
     test_nucleus.set_nucleus_parameters("p");
     CHECK(test_nucleus.get_nucleus_A() == 1);
     CHECK(test_nucleus.get_nucleus_Z() == 1);
     auto WS_params = test_nucleus.get_woods_saxon_parameters();
-    WoodsSaxonParam WS_params_p = {0.17, 0.0, 1.0, 1.0, 0.0, 0.0, 0.0};
+    WoodsSaxonParam WS_params_p = {0.17, 0.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0, 0};
     CHECK(WS_params == WS_params_p);
 
     test_nucleus.set_nucleus_parameters("Au");
     CHECK(test_nucleus.get_nucleus_A() == 197);
     CHECK(test_nucleus.get_nucleus_Z() == 79);
     WS_params = test_nucleus.get_woods_saxon_parameters();
-    WoodsSaxonParam WS_params_Au = {0.17, 0.0, 6.38, 0.505, -0.13, 0.0, -0.03};
+    WoodsSaxonParam WS_params_Au = {0.17, 0.0,   6.38, 0.505, -0.13,
+                                    0.0,  -0.03, 0,    0};
     CHECK(WS_params == WS_params_Au);
 }
 
 TEST_CASE("Test generate nucleus configuratin") {
     std::shared_ptr<RandomUtil::Random> ran_gen_ptr(
         new RandomUtil::Random(-1, 0., 1.));
-    Nucleus test_nucleus("p", ran_gen_ptr);
+    Parameters parameter_list;
+    Nucleus test_nucleus("p", ran_gen_ptr, parameter_list);
     test_nucleus.generate_nucleus_3d_configuration();
     CHECK(test_nucleus.get_number_of_nucleons() == 1);
     auto test_nucleon = (*test_nucleus.get_nucleon(0));
@@ -78,7 +83,8 @@ TEST_CASE("Test generate nucleus configuratin") {
 TEST_CASE("Test shift the nucleus") {
     std::shared_ptr<RandomUtil::Random> ran_gen_ptr(
         new RandomUtil::Random(-1, 0., 1.));
-    Nucleus test_nucleus("p", ran_gen_ptr);
+    Parameters parameter_list;
+    Nucleus test_nucleus("p", ran_gen_ptr, parameter_list);
     test_nucleus.generate_nucleus_3d_configuration();
     SpatialVec x_shift = {0.0, 1.0, 0.0, -1.0};
     test_nucleus.shift_nucleus(x_shift);
@@ -88,7 +94,8 @@ TEST_CASE("Test shift the nucleus") {
 TEST_CASE("Test recenter the nucleus") {
     std::shared_ptr<RandomUtil::Random> ran_gen_ptr(
         new RandomUtil::Random(-1, 0., 1.));
-    Nucleus test_nucleus("Au", ran_gen_ptr);
+    Parameters parameter_list;
+    Nucleus test_nucleus("Au", ran_gen_ptr, parameter_list);
     test_nucleus.recenter_nucleus();
     auto nucleon_list = test_nucleus.get_nucleon_list();
     real meanx = 0., meany = 0., meanz = 0.;
@@ -107,7 +114,8 @@ TEST_CASE("Test Woods-Saxon sampling") {
     std::shared_ptr<RandomUtil::Random> ran_gen_ptr(
         new RandomUtil::Random(-1, 0., 1.));
     std::cout << "Testing the Woods-Saxon sampling routine..." << std::endl;
-    Nucleus test_nucleus("Au", ran_gen_ptr);
+    Parameters parameter_list;
+    Nucleus test_nucleus("Au", ran_gen_ptr, parameter_list);
     auto WS_params = test_nucleus.get_woods_saxon_parameters();
     auto a_WS = WS_params[3];
     auto R_WS = WS_params[2];
@@ -123,14 +131,18 @@ TEST_CASE("Test Woods-Saxon sampling") {
         norm_WS += r_local * r_local / (exp((r_local - R_WS) / a_WS) + 1.) * dr;
     }
 
-    int n_samples = 10000000;
+    int n_samples = 100000;
     auto weight = 1. / (n_samples * dr);
     for (int i = 0; i < n_samples; i++) {
-        auto r_sample = test_nucleus.sample_r_from_woods_saxon();
-        int idx = static_cast<int>((r_sample - r_min) / dr);
-        if (idx >= 0 && idx < n_r) {
-            r[idx] += weight * r_sample;
-            rho_r[idx] += weight;
+        std::vector<std::pair<real, real>> r_array;
+        test_nucleus.sample_r_from_woods_saxon(r_array);
+        for (unsigned int j = 0; j < r_array.size(); j++) {
+            double r_sample = std::get<0>(r_array[j]);
+            int idx = static_cast<int>((r_sample - r_min) / dr);
+            if (idx >= 0 && idx < n_r) {
+                r[idx] += weight * r_sample;
+                rho_r[idx] += weight;
+            }
         }
     }
     real sum_th = 0;
@@ -156,11 +168,12 @@ TEST_CASE("Test Woods-Saxon sampling") {
 TEST_CASE("Test deformed Woods-Saxon sampling") {
     std::shared_ptr<RandomUtil::Random> ran_gen_ptr(
         new RandomUtil::Random(-1, 0., 1.));
+    Parameters parameter_list;
     std::cout << "Testing the Woods-Saxon deformed sampling routine..."
               << std::endl;
-    Nucleus test_nucleus("Zr", ran_gen_ptr);
+    Nucleus test_nucleus("Zr", ran_gen_ptr, parameter_list);
     test_nucleus.set_woods_saxon_parameters(
-        96, 40, 0.17, 0.0, 5.021, 0.524, 0.5, 0.16, 0.0, 1.0, 3);
+        96, 40, 0.17, 0.0, 5.021, 0.524, 0.5, 0.16, 0.0, 1.0, 0, 0, 3);
     auto WS_params = test_nucleus.get_woods_saxon_parameters();
     auto a_WS = WS_params[3];
     auto R_WS = WS_params[2];
@@ -247,24 +260,26 @@ TEST_CASE("Test deformed Woods-Saxon sampling") {
 TEST_CASE("Test deformed nucleus") {
     std::shared_ptr<RandomUtil::Random> ran_gen_ptr(
         new RandomUtil::Random(-1, 0., 1.));
-    Nucleus test_nucleus("U", ran_gen_ptr, false, 4, 0.9, true, false);
+    Parameters parameter_list;
+    Nucleus test_nucleus("U", ran_gen_ptr, parameter_list);
     test_nucleus.generate_nucleus_3d_configuration();
     CHECK(test_nucleus.get_number_of_nucleons() == 238);
     CHECK(test_nucleus.is_deformed() == true);
 
-    Nucleus test_nucleus1("Au", ran_gen_ptr);
+    Nucleus test_nucleus1("Au", ran_gen_ptr, parameter_list);
     CHECK(test_nucleus1.is_deformed() == true);
-    Nucleus test_nucleus2("Au", ran_gen_ptr, false, 4, 0.9, false, false);
-    CHECK(test_nucleus2.is_deformed() == false);
 }
 
 TEST_CASE("Test sample a deformed U nucleus") {
     std::shared_ptr<RandomUtil::Random> ran_gen_ptr(
         new RandomUtil::Random(-1, 0., 1.));
-    Nucleus test_nucleus("U", ran_gen_ptr, false, 4, 0.9, true, false);
+    Parameters parameter_list;
+    Nucleus test_nucleus("U", ran_gen_ptr, parameter_list);
     test_nucleus.generate_nucleus_3d_configuration();
     CHECK(test_nucleus.get_number_of_nucleons() == 238);
     CHECK(test_nucleus.is_deformed() == true);
+    test_nucleus.set_deformed(false);
+    CHECK(test_nucleus.is_deformed() == false);
     test_nucleus.output_nucleon_positions("test_U_sample.txt");
 }
 
@@ -273,7 +288,9 @@ TEST_CASE("Test sampled nuclear density distribution") {
         new RandomUtil::Random(-1, 0., 1.));
     std::cout << "Testing the sampling routine..." << std::endl;
     // Nucleus test_nucleus("Pb", ran_gen_ptr);
-    Nucleus test_nucleus("Au", ran_gen_ptr, false, 4, 0.9, false, false);
+    Parameters parameter_list;
+    Nucleus test_nucleus("Au", ran_gen_ptr, parameter_list);
+    test_nucleus.set_deformed(false);
     auto WS_params = test_nucleus.get_woods_saxon_parameters();
     auto a_WS = WS_params[3];
     auto R_WS = WS_params[2];
@@ -331,7 +348,8 @@ TEST_CASE("Test sampled nuclear density distribution") {
 TEST_CASE("Test get_z_max and get_z_min") {
     std::shared_ptr<RandomUtil::Random> ran_gen_ptr(
         new RandomUtil::Random(-1, 0., 1.));
-    Nucleus test_nucleus("Au", ran_gen_ptr);
+    Parameters parameter_list;
+    Nucleus test_nucleus("Au", ran_gen_ptr, parameter_list);
     test_nucleus.generate_nucleus_3d_configuration();
     test_nucleus.accelerate_nucleus(20., 1);
     auto z_max = test_nucleus.get_z_max();
@@ -353,8 +371,9 @@ TEST_CASE("Test get_z_max and get_z_min") {
 TEST_CASE("Test accelerate_nucleus()") {
     std::shared_ptr<RandomUtil::Random> ran_gen_ptr(
         new RandomUtil::Random(-1, 0., 1.));
-    Nucleus test_nucleus1("Au", ran_gen_ptr);
-    Nucleus test_nucleus2("Pb", ran_gen_ptr);
+    Parameters parameter_list;
+    Nucleus test_nucleus1("Au", ran_gen_ptr, parameter_list);
+    Nucleus test_nucleus2("Pb", ran_gen_ptr, parameter_list);
     test_nucleus1.generate_nucleus_3d_configuration();
     test_nucleus2.generate_nucleus_3d_configuration();
     test_nucleus1.accelerate_nucleus(20., 1);
@@ -372,7 +391,8 @@ TEST_CASE("Test accelerate_nucleus()") {
 TEST_CASE("Test get_number_of_wounded_nucleons()") {
     std::shared_ptr<RandomUtil::Random> ran_gen_ptr(
         new RandomUtil::Random(-1, 0., 1.));
-    Nucleus test_nucleus1("Au", ran_gen_ptr);
+    Parameters parameter_list;
+    Nucleus test_nucleus1("Au", ran_gen_ptr, parameter_list);
     test_nucleus1.generate_nucleus_3d_configuration();
     auto list = test_nucleus1.get_nucleon_list();
     for (auto &it : (*list)) {
@@ -394,7 +414,8 @@ TEST_CASE("Test sampled valence quark spatial distribution") {
     std::shared_ptr<RandomUtil::Random> ran_gen_ptr(
         new RandomUtil::Random(-1, 0., 1.));
     std::cout << "Testing the valence quark sampling routine..." << std::endl;
-    Nucleus test_nucleus("Au", ran_gen_ptr);
+    Parameters parameter_list;
+    Nucleus test_nucleus("Au", ran_gen_ptr, parameter_list);
     const real r_min = 0.0, r_max = 4.0, dr = 0.05;
     const int n_r = static_cast<int>((r_max - r_min) / dr) + 1;
     const real a = 3.87;
@@ -439,4 +460,114 @@ TEST_CASE("Test sampled valence quark spatial distribution") {
               << "check_sampled_valence_quark_spatial_distribution.dat"
               << std::endl;
     CHECK(std::abs(sum_th - sum_sampled) / sum_th < 0.01);
+}
+
+TEST_CASE(
+    "Test particle baryon, charge & strange number with null string junction "
+    "flag") {
+    Parameters parameter_list;
+    parameter_list.set_parameter("ISBaryonInStringJunction", 0);
+    std::shared_ptr<RandomUtil::Random> ran_gen_ptr(
+        new RandomUtil::Random(-1, 0., 1.));
+    Nucleus test_nucleus("p", ran_gen_ptr, parameter_list);
+    test_nucleus.generate_nucleus_3d_configuration();
+    test_nucleus.sample_valence_quarks_inside_nucleons(1.0, 1);
+    test_nucleus.add_soft_parton_ball(1.0, 1);
+
+    auto nucleon = *test_nucleus.get_nucleon(0);
+    std::vector<std::shared_ptr<MCGlb::Quark>> quark_list =
+        nucleon.get_quark_list();
+
+    real baryon_num = 0.0;
+    real charge_num = 0.0;
+    real strange_num = 0.0;
+    for (int i = 0; i < nucleon.get_number_of_quarks(); i++) {
+        std::shared_ptr<MCGlb::Quark> quark = quark_list.at(i);
+        baryon_num += quark->get_baryon();
+        charge_num += quark->get_charge();
+        strange_num += quark->get_strange();
+    }
+    CHECK(baryon_num == 1.0);
+    CHECK(charge_num == 1.0);
+    CHECK(strange_num == 0.0);
+
+    baryon_num = 0.0;
+    charge_num = 0.0;
+    strange_num = 0.0;
+
+    Nucleus test_nucleus1("Au", ran_gen_ptr, parameter_list);
+    test_nucleus1.generate_nucleus_3d_configuration();
+    test_nucleus1.sample_valence_quarks_inside_nucleons(1.0, 1);
+    test_nucleus1.add_soft_parton_ball(1.0, 1);
+
+    for (int nuNum = 0; nuNum < test_nucleus1.get_number_of_nucleons();
+         nuNum++) {
+        nucleon = *test_nucleus1.get_nucleon(nuNum);
+        quark_list = nucleon.get_quark_list();
+
+        for (int i = 0; i < nucleon.get_number_of_quarks(); i++) {
+            std::shared_ptr<MCGlb::Quark> quark = quark_list.at(i);
+            baryon_num += quark->get_baryon();
+            charge_num += quark->get_charge();
+            strange_num += quark->get_strange();
+        }
+    }
+    CHECK(baryon_num == 197.0);
+    CHECK(charge_num == 79.0);
+    CHECK(strange_num == 0.0);
+}
+
+TEST_CASE(
+    "Test particle baryon, charge & strange number with positive string "
+    "junction flag") {
+    Parameters parameter_list;
+    parameter_list.set_parameter("ISBaryonInStringJunction", 1);
+    std::shared_ptr<RandomUtil::Random> ran_gen_ptr(
+        new RandomUtil::Random(-1, 0., 1.));
+    Nucleus test_nucleus("p", ran_gen_ptr, parameter_list);
+    test_nucleus.generate_nucleus_3d_configuration();
+    test_nucleus.sample_valence_quarks_inside_nucleons(1.0, 1);
+    test_nucleus.add_soft_parton_ball(1.0, 1);
+
+    auto nucleon = *test_nucleus.get_nucleon(0);
+    std::vector<std::shared_ptr<MCGlb::Quark>> quark_list =
+        nucleon.get_quark_list();
+
+    real baryon_num = 0.0;
+    real charge_num = 0.0;
+    real strange_num = 0.0;
+    for (int i = 0; i < nucleon.get_number_of_quarks(); i++) {
+        std::shared_ptr<MCGlb::Quark> quark = quark_list.at(i);
+        baryon_num += quark->get_baryon();
+        charge_num += quark->get_charge();
+        strange_num += quark->get_strange();
+    }
+    CHECK(baryon_num == 1.0);
+    CHECK(charge_num == 1.0);
+    CHECK(strange_num == 0.0);
+
+    baryon_num = 0.0;
+    charge_num = 0.0;
+    strange_num = 0.0;
+
+    Nucleus test_nucleus1("Au", ran_gen_ptr, parameter_list);
+    test_nucleus1.generate_nucleus_3d_configuration();
+    test_nucleus1.sample_valence_quarks_inside_nucleons(1.0, 1);
+    test_nucleus1.add_soft_parton_ball(1.0, 1);
+
+    for (int nuNum = 0; nuNum < test_nucleus1.get_number_of_nucleons();
+         nuNum++) {
+        nucleon = *test_nucleus1.get_nucleon(nuNum);
+        quark_list = nucleon.get_quark_list();
+
+        for (int i = 0; i < nucleon.get_number_of_quarks(); i++) {
+            std::shared_ptr<MCGlb::Quark> quark = quark_list.at(i);
+            baryon_num += quark->get_baryon();
+            charge_num += quark->get_charge();
+            strange_num += quark->get_strange();
+        }
+    }
+    CHECK(baryon_num == 197.0);
+    CHECK(charge_num == 79.0);
+    CHECK(strange_num == 0.0);
 }

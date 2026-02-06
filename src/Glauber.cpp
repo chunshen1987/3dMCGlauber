@@ -24,34 +24,11 @@ namespace MCGlb {
 Glauber::Glauber(
     const MCGlb::Parameters &param_in, shared_ptr<RandomUtil::Random> ran_gen)
     : parameter_list(param_in) {
-    sample_valence_quark = false;
-    fluct_Nstrings_per_NN_collision_ = false;
-    remnant_energy_loss_fraction_ =
-        (parameter_list.get_remnant_energy_loss_fraction());
-    if (parameter_list.get_use_quarks() > 0) {
-        sample_valence_quark = true;
-        fluct_Nstrings_per_NN_collision_ =
-            (parameter_list.get_fluct_Nstrings_per_NN_collision());
-        if (!parameter_list.get_cached_tabels()) {
-            system_status_ =
-                std::system("rm -fr tables/proton_valence_quark_samples*");
-            system_status_ =
-                std::system("rm -fr tables/neutron_valence_quark_samples*");
-        }
-    }
-
-    real d_min = parameter_list.get_d_min();
-
-    real N_sea_partons = parameter_list.get_N_sea_partons();
-
-    bool deformed = true;
-    bool nucleonConfFromFile = parameter_list.nucleon_configuration_from_file();
+    ran_gen_ptr_ = ran_gen;
     projectile = std::unique_ptr<Nucleus>(new Nucleus(
-        parameter_list.get_projectle_nucleus_name(), ran_gen,
-        sample_valence_quark, parameter_list.get_BG(), d_min, deformed,
-        nucleonConfFromFile, N_sea_partons));
+        parameter_list.get_projectle_nucleus_name(), ran_gen, parameter_list));
     int resetProjWS =
-        static_cast<int>(parameter_list.getParam("resetProjWS", 0.0));
+        static_cast<int>(parameter_list.getParam("resetProjWS", 0));
     if (resetProjWS != 0) {
         auto defaultWSParam = projectile->get_woods_saxon_parameters();
         real WS_rho = parameter_list.getParam("ProjWS_rho0", defaultWSParam[0]);
@@ -66,19 +43,21 @@ Glauber::Glauber(
             parameter_list.getParam("ProjWS_beta4", defaultWSParam[6]);
         real WS_gamma =
             parameter_list.getParam("ProjWS_gamma", defaultWSParam[7]);
+        real WS_da = parameter_list.getParam("ProjWS_da", defaultWSParam[8]);
+        real WS_dR = parameter_list.getParam("ProjWS_dR", defaultWSParam[9]);
         projectile->setWoodsSaxonParameters(
-            WS_rho, WS_w, WS_R, WS_a, WS_beta2, WS_beta3, WS_beta4, WS_gamma);
+            WS_rho, WS_w, WS_R, WS_a, WS_beta2, WS_beta3, WS_beta4, WS_gamma,
+            WS_da, WS_dR);
     }
 
     target = std::unique_ptr<Nucleus>(new Nucleus(
-        parameter_list.get_target_nucleus_name(), ran_gen, sample_valence_quark,
-        parameter_list.get_BG(), d_min, deformed, nucleonConfFromFile,
-        N_sea_partons));
+        parameter_list.get_target_nucleus_name(), ran_gen, parameter_list));
     int resetTargWS =
-        static_cast<int>(parameter_list.getParam("resetTargWS", 0.0));
+        static_cast<int>(parameter_list.getParam("resetTargWS", 0));
     if (resetTargWS != 0) {
         auto defaultWSParam = target->get_woods_saxon_parameters();
         real WS_rho, WS_w, WS_R, WS_a, WS_beta2, WS_beta3, WS_beta4, WS_gamma;
+        real WS_da, WS_dR;
         if (parameter_list.get_target_nucleus_name()
             == parameter_list.get_projectle_nucleus_name()) {
             // if it is a symmetric collision, then use the projectile WS param
@@ -94,6 +73,8 @@ Glauber::Glauber(
                 parameter_list.getParam("ProjWS_beta4", defaultWSParam[6]);
             WS_gamma =
                 parameter_list.getParam("ProjWS_gamma", defaultWSParam[7]);
+            WS_da = parameter_list.getParam("ProjWS_da", defaultWSParam[8]);
+            WS_dR = parameter_list.getParam("ProjWS_dR", defaultWSParam[9]);
         } else {
             // for asymmetric collisions, set with target WS params
             WS_rho = parameter_list.getParam("TargWS_rho0", defaultWSParam[0]);
@@ -108,14 +89,26 @@ Glauber::Glauber(
                 parameter_list.getParam("TargWS_beta4", defaultWSParam[6]);
             WS_gamma =
                 parameter_list.getParam("TargWS_gamma", defaultWSParam[7]);
+            WS_da = parameter_list.getParam("TargWS_da", defaultWSParam[8]);
+            WS_dR = parameter_list.getParam("TargWS_dR", defaultWSParam[9]);
         }
         target->setWoodsSaxonParameters(
-            WS_rho, WS_w, WS_R, WS_a, WS_beta2, WS_beta3, WS_beta4, WS_gamma);
+            WS_rho, WS_w, WS_R, WS_a, WS_beta2, WS_beta3, WS_beta4, WS_gamma,
+            WS_da, WS_dR);
     }
-    if (nucleonConfFromFile) {
-        projectile->setLightNucleusOption(
-            parameter_list.getLightNucleusOption());
-        target->setLightNucleusOption(parameter_list.getLightNucleusOption());
+
+    sample_valence_quark = false;
+    fluct_Nstrings_per_NN_collision_ = false;
+    if (parameter_list.get_use_quarks() > 0) {
+        sample_valence_quark = true;
+        fluct_Nstrings_per_NN_collision_ =
+            (parameter_list.get_fluct_Nstrings_per_NN_collision());
+        if (!parameter_list.get_cached_tabels()) {
+            system_status_ =
+                std::system("rm -fr tables/proton_valence_quark_samples*");
+            system_status_ =
+                std::system("rm -fr tables/neutron_valence_quark_samples*");
+        }
     }
 
     if (parameter_list.get_projectle_nucleus_name() == "d") {
@@ -140,7 +133,6 @@ Glauber::Glauber(
         projectile->set_valence_quark_Q2(parameter_list.get_quarks_Q2());
         target->set_valence_quark_Q2(parameter_list.get_quarks_Q2());
     }
-    ran_gen_ptr_ = ran_gen;
 
     yloss_param_slope = parameter_list.get_yloss_param_slope();
     real alpha1 = parameter_list.get_yloss_param_alpha1();
@@ -148,8 +140,12 @@ Glauber::Glauber(
     real alpha = alpha2 / alpha1;
     yloss_param_a = alpha / (1. - alpha);
     yloss_param_b = alpha2 / yloss_param_a;
+    remnant_energy_loss_fraction_ =
+        (parameter_list.get_remnant_energy_loss_fraction());
+
     collision_energy_ = parameter_list.get_roots();
     real ybeam_AA = acosh(collision_energy_ / (2. * PhysConsts::MProton));
+
     real rootgammaN_low = 2.0;
     real rootgammaN_up = parameter_list.get_roots() / 2.0;
 
@@ -162,11 +158,13 @@ Glauber::Glauber(
             parameter_list.get_roots(), rootgammaN_low, rootgammaN_up);
     }
     ybeam = acosh(collision_energy_ / (2. * PhysConsts::MProton));
+
     std::ofstream output_rapidity_shift("rapidity_shift.dat");
     output_rapidity_shift << parameter_list.use_roots_distribution() << "  "
                           << collision_energy_ << "  " << ybeam - ybeam_AA
                           << std::endl;
     output_rapidity_shift.close();
+
     real siginNN = compute_NN_inelastic_cross_section(collision_energy_);
     sigma_eff_ = get_sig_eff(siginNN);
     std::cout << "sqrt{s} = " << collision_energy_ << " GeV, "
@@ -258,8 +256,6 @@ int Glauber::make_collision_schedule() {
                 create_a_collision_event(iproj, itarg);
                 projectile->add_a_participant(iproj);
                 target->add_a_participant(itarg);
-                iproj->set_wounded(true);
-                itarg->set_wounded(true);
                 iproj->add_collide_nucleon(itarg);
                 itarg->add_collide_nucleon(iproj);
             }
@@ -285,6 +281,20 @@ int Glauber::get_Npart() const {
         (projectile->get_number_of_wounded_nucleons()
          + target->get_number_of_wounded_nucleons());
     return (Npart);
+}
+
+int Glauber::get_Neutronspart() const {
+    int Neutronspart =
+        (projectile->get_number_of_wounded_neutrons()
+         + target->get_number_of_wounded_neutrons());
+    return (Neutronspart);
+}
+
+int Glauber::get_Protonspart() const {
+    int Protonspart =
+        (projectile->get_number_of_wounded_protons()
+         + target->get_number_of_wounded_protons());
+    return (Protonspart);
 }
 
 bool Glauber::hit(real d2) const {
@@ -525,12 +535,6 @@ int Glauber::perform_string_production() {
     remnant_string_list_.clear();
     const auto string_evolution_mode =
         (parameter_list.get_QCD_string_evolution_mode());
-    const auto baryon_junctions = parameter_list.get_baryon_junctions();
-
-    real lambdaB = parameter_list.get_lambdaB();
-    lambdaB = std::min(1., lambdaB);
-    real lambdaBs = parameter_list.get_lambdaBs();
-    lambdaBs = std::min(1., lambdaBs);
 
     real t_current = 0.0;
     int number_of_collided_events = 0;
@@ -568,7 +572,7 @@ int Glauber::perform_string_production() {
                     // we need to substract the valence quark energy-momentum
                     // from the nucleon remnant energy-momentum vector
                     auto p_q = proj_q->get_p();
-                    proj->substract_momentum_from_remnant(p_q);
+                    proj->subtract_momentum_from_remnant(p_q);
                 }
                 // targ_q = targ->get_a_valence_quark();
                 targ_q = targ->get_a_close_valence_quark(
@@ -579,7 +583,7 @@ int Glauber::perform_string_production() {
                     // we need to substract the valence quark energy-momentum
                     // from the nucleon remnant energy-momentum vector
                     auto p_q = targ_q->get_p();
-                    targ->substract_momentum_from_remnant(p_q);
+                    targ->subtract_momentum_from_remnant(p_q);
                 }
                 y_in_lrf =
                     std::abs(proj_q->get_rapidity() - targ_q->get_rapidity())
@@ -591,13 +595,10 @@ int Glauber::perform_string_production() {
             get_tau_form_and_moversigma(
                 string_evolution_mode, y_in_lrf, tau_form, m_over_sigma,
                 y_loss);
-            // set variables in case of no baryon junction transport
-            bool has_baryon_left = false;
-            bool has_baryon_right = false;
+
             if (!sample_valence_quark) {
                 QCDString qcd_string(
-                    x_coll, tau_form, proj, targ, m_over_sigma,
-                    has_baryon_right, has_baryon_left);
+                    x_coll, tau_form, proj, targ, m_over_sigma);
                 QCD_string_list.push_back(qcd_string);
             } else {
                 // Connect the closest quark pairs into string
@@ -610,7 +611,7 @@ int Glauber::perform_string_production() {
                     x_coll[3]};
                 QCDString qcd_string(
                     x_coll_q, tau_form, proj, targ, proj_q, targ_q,
-                    m_over_sigma, has_baryon_right, has_baryon_left);
+                    m_over_sigma);
                 QCD_string_list.push_back(qcd_string);
             }
             real y_shift = y_loss;
@@ -630,131 +631,343 @@ int Glauber::perform_string_production() {
         collision_schedule.erase((*collision_schedule.begin()));
     }
 
-    // randomize the QCD_string_list and assign the baryon charge to
-    // the strings
+    // randomize the QCD_string_list and assign the baryon charges
+    // to strings and remnants
     std::vector<unsigned int> random_idx;
+
+    const bool FSBaryonFluctStringBreaking =
+        (parameter_list.getFSBaryonFluctStringBreaking());
+    real lambdaB = parameter_list.get_lambdaB();
+    lambdaB = std::min(1., lambdaB);
+    real lambdaBs = parameter_list.get_lambdaBs();
+    lambdaBs = std::min(1., lambdaBs);
     const real baryonInStringProb = parameter_list.get_baryon_in_string_prob();
+
+    const bool FSElectricQFluctStringBreaking =
+        (parameter_list.getFSElectricQFluctStringBreaking());
+    real lambdaQ = parameter_list.get_lambdaQ();
+    lambdaQ = std::min(1., lambdaQ);
+    real lambdaQs = parameter_list.get_lambdaQs();
+    lambdaQs = std::min(1., lambdaQs);
+    const real electricChargeInStringProb =
+        (parameter_list.get_electric_charge_in_string_prob());
+
     unsigned int Nstrings = QCD_string_list.size();
     unsigned int Npart_proj = projectile->get_number_of_wounded_nucleons();
     unsigned int Npart_targ = target->get_number_of_wounded_nucleons();
     unsigned int total_length = Nstrings + Npart_proj + Npart_targ;
-    for (unsigned int idx = 0; idx < total_length; idx++)
+    for (unsigned int idx = 0; idx < total_length; idx++) {
         random_idx.push_back(idx);
-    std::shuffle(
-        random_idx.begin(), random_idx.end(), *ran_gen_ptr_->getRanGenerator());
-    for (auto &idx : random_idx) {
-        if (idx < Nstrings) {
-            // put baryon of the projectile in the selected string
-            auto proj = QCD_string_list[idx].get_proj();
-            if (proj->get_baryon_number() == 0) proj->set_baryon_used(true);
-            if (!proj->baryon_was_used()) {
-                if (ran_gen_ptr_->rand_uniform() < baryonInStringProb) {
-                    proj->set_baryon_used(true);
-                    QCD_string_list[idx].set_has_baryon_right(true);
+    }
+
+    if (!FSBaryonFluctStringBreaking || !FSElectricQFluctStringBreaking) {
+        // assign charges for projectile hotspots
+        std::shuffle(
+            random_idx.begin(), random_idx.end(),
+            *ran_gen_ptr_->getRanGenerator());
+        for (auto &idx : random_idx) {
+            if (idx < Nstrings) {
+                // put baryon and electric Q of the projectile hotspot
+                // in the selected string
+                auto proj_q = QCD_string_list[idx].get_proj_q();
+                if (!proj_q->Q_was_used()) {
+                    proj_q->set_Q_used(true);
+                    if (!FSBaryonFluctStringBreaking) {
+                        QCD_string_list[idx].set_baryon_charge_right(
+                            proj_q->get_baryon());
+                    }
+                    if (!FSElectricQFluctStringBreaking) {
+                        QCD_string_list[idx].set_electric_charge_right(
+                            proj_q->get_charge());
+                    }
                 }
-            }
-        } else if (idx < Nstrings + Npart_proj) {
-            // put baryon of the projectile in the projectile remnant
-            auto proj = projectile->get_participant(idx - Nstrings);
-            auto p_i = proj->get_remnant_p();
-            if (p_i[0] <= 0) continue;
-            // auto mass = 0.;
-            // if (std::abs(p_i[3]) < p_i[0]) {
-            //     // a time-like beam remnant
-            //     mass = sqrt(p_i[0]*p_i[0] - p_i[3]*p_i[3]);
-            // }
-            // if (!proj->baryon_was_used() && mass > 0.1) {}
-            if (proj->get_baryon_number() == 0) proj->set_baryon_used(true);
-            if (!proj->baryon_was_used()) {
-                proj->set_baryon_used(true);
-                proj->set_remnant_carry_baryon_number(true);
+            } else if (idx < Nstrings + Npart_proj) {
+                // put baryon of the projectile in the projectile remnant
+                auto proj = projectile->get_participant(idx - Nstrings);
+                auto p_i = proj->get_remnant_p();
+                if (p_i[0] <= 0) continue;
+                if (!proj->baryon_was_used()
+                    && !proj->electric_charge_was_used()) {
+                    real remnant_baryon_number = 0.;
+                    real remnant_electricQ_number = 0.;
+                    for (auto &proj_q : proj->get_quark_list()) {
+                        if (!proj_q->Q_was_used()) {
+                            proj_q->set_Q_used(true);
+                            remnant_baryon_number += proj_q->get_baryon();
+                            remnant_electricQ_number += proj_q->get_charge();
+                        }
+                    }
+                    if (!FSElectricQFluctStringBreaking) {
+                        proj->set_electric_charge_used(true);
+                        proj->set_remnant_carry_electric_charge_number(true);
+                        proj->set_remnant_electricQ_number(
+                            remnant_electricQ_number);
+                    }
+                    if (!FSBaryonFluctStringBreaking) {
+                        proj->set_baryon_used(true);
+                        proj->set_remnant_carry_baryon_number(true);
+                        proj->set_remnant_baryon_number(remnant_baryon_number);
+                    }
+                }
             }
         }
-    }
-    std::shuffle(
-        random_idx.begin(), random_idx.end(), *ran_gen_ptr_->getRanGenerator());
-    for (auto &idx : random_idx) {
-        if (idx < Nstrings) {
-            // put baryon of the target in the selected string
-            auto targ = QCD_string_list[idx].get_targ();
-            if (targ->get_baryon_number() == 0) targ->set_baryon_used(true);
-            if (!targ->baryon_was_used()) {
-                if (ran_gen_ptr_->rand_uniform() < baryonInStringProb) {
-                    targ->set_baryon_used(true);
-                    QCD_string_list[idx].set_has_baryon_left(true);
+
+        // assign charges for target
+        std::shuffle(
+            random_idx.begin(), random_idx.end(),
+            *ran_gen_ptr_->getRanGenerator());
+        for (auto &idx : random_idx) {
+            if (idx < Nstrings) {
+                auto targ_q = QCD_string_list[idx].get_targ_q();
+                if (!targ_q->Q_was_used()) {
+                    targ_q->set_Q_used(true);
+                    if (!FSBaryonFluctStringBreaking) {
+                        QCD_string_list[idx].set_baryon_charge_left(
+                            targ_q->get_baryon());
+                    }
+                    if (!FSElectricQFluctStringBreaking) {
+                        QCD_string_list[idx].set_electric_charge_left(
+                            targ_q->get_charge());
+                    }
                 }
-            }
-        } else if (idx > Nstrings + Npart_proj - 1) {
-            // put baryon of the target in the target remnant
-            auto targ = target->get_participant(idx - Nstrings - Npart_proj);
-            auto p_i = targ->get_remnant_p();
-            if (p_i[0] <= 0) continue;
-            // auto mass = 0.;
-            // if (std::abs(p_i[3]) < p_i[0]) {
-            //     // a time-like beam remnant
-            //     mass = sqrt(p_i[0]*p_i[0] - p_i[3]*p_i[3]);
-            // }
-            // if (!targ->baryon_was_used() && mass > 0.1) {}
-            if (targ->get_baryon_number() == 0) targ->set_baryon_used(true);
-            if (!targ->baryon_was_used()) {
-                targ->set_baryon_used(true);
-                targ->set_remnant_carry_baryon_number(true);
+            } else if (idx > Nstrings + Npart_proj - 1) {
+                // put baryon of the target in the target remnant
+                auto targ =
+                    target->get_participant(idx - Nstrings - Npart_proj);
+                auto p_i = targ->get_remnant_p();
+                if (p_i[0] <= 0) continue;
+                if (!targ->baryon_was_used()
+                    && !targ->electric_charge_was_used()) {
+                    real remnant_baryon_number = 0.;
+                    real remnant_electricQ_number = 0.;
+                    for (auto &targ_q : targ->get_quark_list()) {
+                        if (!targ_q->Q_was_used()) {
+                            targ_q->set_Q_used(true);
+                            remnant_baryon_number += targ_q->get_baryon();
+                            remnant_electricQ_number += targ_q->get_charge();
+                        }
+                    }
+                    if (!FSElectricQFluctStringBreaking) {
+                        targ->set_electric_charge_used(true);
+                        targ->set_remnant_carry_electric_charge_number(true);
+                        targ->set_remnant_electricQ_number(
+                            remnant_electricQ_number);
+                    }
+                    if (!FSBaryonFluctStringBreaking) {
+                        targ->set_baryon_used(true);
+                        targ->set_remnant_carry_baryon_number(true);
+                        targ->set_remnant_baryon_number(remnant_baryon_number);
+                    }
+                }
             }
         }
     }
 
-    // set baryons' rapidities
+    if (FSBaryonFluctStringBreaking) {
+        std::shuffle(
+            random_idx.begin(), random_idx.end(),
+            *ran_gen_ptr_->getRanGenerator());
+        for (auto &idx : random_idx) {
+            if (idx < Nstrings) {
+                // put baryon of the projectile in the selected string
+                auto proj = QCD_string_list[idx].get_proj();
+                if (proj->get_baryon_number() == 0) proj->set_baryon_used(true);
+                if (!proj->baryon_was_used()) {
+                    if (ran_gen_ptr_->rand_uniform() < baryonInStringProb) {
+                        proj->set_baryon_used(true);
+                        QCD_string_list[idx].set_baryon_charge_right(
+                            proj->get_baryon_number());
+                    }
+                }
+            } else if (idx < Nstrings + Npart_proj) {
+                // put baryon of the projectile in the projectile remnant
+                auto proj = projectile->get_participant(idx - Nstrings);
+                auto p_i = proj->get_remnant_p();
+                if (p_i[0] <= 0) continue;
+                if (!proj->baryon_was_used()) {
+                    proj->set_baryon_used(true);
+                    proj->set_remnant_carry_baryon_number(true);
+                    proj->set_remnant_baryon_number(proj->get_baryon_number());
+                }
+            }
+        }
+        // assign charges for target
+        std::shuffle(
+            random_idx.begin(), random_idx.end(),
+            *ran_gen_ptr_->getRanGenerator());
+        for (auto &idx : random_idx) {
+            if (idx < Nstrings) {
+                // put baryon of the target in the selected string
+                auto targ = QCD_string_list[idx].get_targ();
+                if (targ->get_baryon_number() == 0) targ->set_baryon_used(true);
+                if (!targ->baryon_was_used()) {
+                    if (ran_gen_ptr_->rand_uniform() < baryonInStringProb) {
+                        targ->set_baryon_used(true);
+                        QCD_string_list[idx].set_baryon_charge_left(
+                            targ->get_baryon_number());
+                    }
+                }
+            } else if (idx > Nstrings + Npart_proj - 1) {
+                // put baryon of the target in the target remnant
+                auto targ =
+                    target->get_participant(idx - Nstrings - Npart_proj);
+                auto p_i = targ->get_remnant_p();
+                if (p_i[0] <= 0) continue;
+                if (!targ->baryon_was_used()) {
+                    targ->set_baryon_used(true);
+                    targ->set_remnant_carry_baryon_number(true);
+                    targ->set_remnant_baryon_number(targ->get_baryon_number());
+                }
+            }
+        }
+    }
+
+    if (FSElectricQFluctStringBreaking) {
+        std::shuffle(
+            random_idx.begin(), random_idx.end(),
+            *ran_gen_ptr_->getRanGenerator());
+        for (auto &idx : random_idx) {
+            if (idx < Nstrings) {
+                // put baryon of the projectile in the selected string
+                auto proj = QCD_string_list[idx].get_proj();
+                if (proj->get_electric_charge() == 0)
+                    proj->set_electric_charge_used(true);
+                if (!proj->electric_charge_was_used()) {
+                    if (ran_gen_ptr_->rand_uniform()
+                        < electricChargeInStringProb) {
+                        proj->set_electric_charge_used(true);
+                        QCD_string_list[idx].set_electric_charge_right(
+                            proj->get_electric_charge());
+                    }
+                }
+            } else if (idx < Nstrings + Npart_proj) {
+                // put baryon of the projectile in the projectile remnant
+                auto proj = projectile->get_participant(idx - Nstrings);
+                auto p_i = proj->get_remnant_p();
+                if (p_i[0] <= 0) continue;
+                if (!proj->electric_charge_was_used()) {
+                    proj->set_electric_charge_used(true);
+                    proj->set_remnant_carry_electric_charge_number(true);
+                    proj->set_remnant_electricQ_number(
+                        proj->get_electric_charge());
+                }
+            }
+        }
+        // assign charges for target
+        std::shuffle(
+            random_idx.begin(), random_idx.end(),
+            *ran_gen_ptr_->getRanGenerator());
+        for (auto &idx : random_idx) {
+            if (idx < Nstrings) {
+                // put baryon of the target in the selected string
+                auto targ = QCD_string_list[idx].get_targ();
+                if (targ->get_electric_charge() == 0)
+                    targ->set_electric_charge_used(true);
+                if (!targ->electric_charge_was_used()) {
+                    if (ran_gen_ptr_->rand_uniform()
+                        < electricChargeInStringProb) {
+                        targ->set_electric_charge_used(true);
+                        QCD_string_list[idx].set_electric_charge_left(
+                            targ->get_electric_charge());
+                    }
+                }
+            } else if (idx > Nstrings + Npart_proj - 1) {
+                // put baryon of the target in the target remnant
+                auto targ =
+                    target->get_participant(idx - Nstrings - Npart_proj);
+                auto p_i = targ->get_remnant_p();
+                if (p_i[0] <= 0) continue;
+                if (!targ->electric_charge_was_used()) {
+                    targ->set_electric_charge_used(true);
+                    targ->set_remnant_carry_electric_charge_number(true);
+                    targ->set_remnant_electricQ_number(
+                        targ->get_electric_charge());
+                }
+            }
+        }
+    }
+
+    // set baryons' and electric charges' rapidities
     for (auto &it : QCD_string_list) {
         it.evolve_QCD_string();
-        if (!baryon_junctions) {
-            // set baryon rapidities to string endpoint rapidities
-            // if no junction transport is used
+        if (!FSElectricQFluctStringBreaking) {
+            it.set_final_electric_charge_rapidities(
+                it.get_y_f_left(), it.get_y_f_right());
+        } else {
+            // sample HERE if electric charge should be moved
+            real y_electric_charge_right = 0.;
+            if (ran_gen_ptr_->rand_uniform() < lambdaQ) {
+                if (ran_gen_ptr_->rand_uniform() < lambdaQs) {
+                    y_electric_charge_right = (sample_junction_rapidity_right(
+                        it.get_y_f_left(), it.get_y_f_right()));
+                } else {
+                    y_electric_charge_right =
+                        (sample_junction_rapidity_uniformed(
+                            it.get_y_f_left(), it.get_y_f_right()));
+                }
+            } else {
+                y_electric_charge_right = it.get_y_f_right();
+            }
+            real y_electric_charge_left = 0.;
+            if (ran_gen_ptr_->rand_uniform() < lambdaQ) {
+                if (ran_gen_ptr_->rand_uniform() < lambdaQs) {
+                    y_electric_charge_left = (sample_junction_rapidity_left(
+                        it.get_y_f_left(), it.get_y_f_right()));
+                } else {
+                    y_electric_charge_left =
+                        (sample_junction_rapidity_uniformed(
+                            it.get_y_f_left(), it.get_y_f_right()));
+                }
+            } else {
+                y_electric_charge_left = it.get_y_f_left();
+            }
+            it.set_final_electric_charge_rapidities(
+                y_electric_charge_left, y_electric_charge_right);
+        }
+
+        if (!FSBaryonFluctStringBreaking) {
             it.set_final_baryon_rapidities(
                 it.get_y_f_left(), it.get_y_f_right());
         } else {
             // sample HERE if baryon should be moved
             real y_baryon_right = 0.;
-            if (it.get_has_baryon_right()) {
-                if (ran_gen_ptr_->rand_uniform() < lambdaB) {
-                    if (ran_gen_ptr_->rand_uniform() < lambdaBs) {
-                        // y_baryon_right = sample_junction_rapidity_right(
-                        //          it->get_y_i_left(), it->get_y_i_right());
-                        y_baryon_right = sample_junction_rapidity_right(
-                            it.get_y_f_left(), it.get_y_f_right());
-                    } else {
-                        y_baryon_right = sample_junction_rapidity_uniformed(
-                            it.get_y_f_left(), it.get_y_f_right());
-                    }
+            if (ran_gen_ptr_->rand_uniform() < lambdaB) {
+                if (ran_gen_ptr_->rand_uniform() < lambdaBs) {
+                    // y_baryon_right = sample_junction_rapidity_right(
+                    //          it->get_y_i_left(), it->get_y_i_right());
+                    y_baryon_right = sample_junction_rapidity_right(
+                        it.get_y_f_left(), it.get_y_f_right());
                 } else {
-                    // One should use the very initial rapidities of the
-                    // colliding nucleons to determine the junction rapidity
-                    // this may, however, lead to junctions lying outside the
-                    // rapidity range of the final string which may cause
-                    // problems in hydro and could be seen as unphysical...
-                    // Another thing to discuss is the energy dependence.
-                    // The cross section for baryon junctions stopping has
-                    // a different root-s dependence than the usual inelastic
-                    // cross section
-                    // - so in principle it needs to be treated separately
-                    // altogether... not sure how yet
-                    y_baryon_right = it.get_y_f_right();
+                    y_baryon_right = sample_junction_rapidity_uniformed(
+                        it.get_y_f_left(), it.get_y_f_right());
                 }
+            } else {
+                // One should use the very initial rapidities of the
+                // colliding nucleons to determine the junction rapidity
+                // this may, however, lead to junctions lying outside the
+                // rapidity range of the final string which may cause
+                // problems in hydro and could be seen as unphysical...
+                // Another thing to discuss is the energy dependence.
+                // The cross section for baryon junctions stopping has
+                // a different root-s dependence than the usual inelastic
+                // cross section
+                // - so in principle it needs to be treated separately
+                // altogether... not sure how yet
+                y_baryon_right = it.get_y_f_right();
             }
             real y_baryon_left = 0.;
-            if (it.get_has_baryon_left()) {
-                if (ran_gen_ptr_->rand_uniform() < lambdaB) {
-                    if (ran_gen_ptr_->rand_uniform() < lambdaBs) {
-                        // y_baryon_left = sample_junction_rapidity_left(
-                        //           it->get_y_i_left(), it->get_y_i_right());
-                        y_baryon_left = sample_junction_rapidity_left(
-                            it.get_y_f_left(), it.get_y_f_right());
-                    } else {
-                        y_baryon_left = sample_junction_rapidity_uniformed(
-                            it.get_y_f_left(), it.get_y_f_right());
-                    }
+            if (ran_gen_ptr_->rand_uniform() < lambdaB) {
+                if (ran_gen_ptr_->rand_uniform() < lambdaBs) {
+                    // y_baryon_left = sample_junction_rapidity_left(
+                    //           it->get_y_i_left(), it->get_y_i_right());
+                    y_baryon_left = sample_junction_rapidity_left(
+                        it.get_y_f_left(), it.get_y_f_right());
                 } else {
-                    y_baryon_left = it.get_y_f_left();
+                    y_baryon_left = sample_junction_rapidity_uniformed(
+                        it.get_y_f_left(), it.get_y_f_right());
                 }
+            } else {
+                y_baryon_left = it.get_y_f_left();
             }
             it.set_final_baryon_rapidities(y_baryon_left, y_baryon_right);
         }
@@ -840,14 +1053,21 @@ void Glauber::produce_remnant_strings() {
 
             get_tau_form_and_moversigma(
                 string_evolution_mode, y_rem, tau_form, m_over_sigma, y_loss);
-            bool has_baryon_left = false;
-            bool has_baryon_right = iproj->is_remnant_carry_baryon_number();
+
+            real baryon_left = 0.;
+            real baryon_right = iproj->get_remnant_baryon_number();
+
+            real electric_charge_left = 0.;
+            real electric_charge_right = iproj->get_remnant_electricQ_number();
+
             QCDString qcd_string(
                 x_i, tau_form, iproj, iproj, p_i, targ_p_vec, m_over_sigma,
-                has_baryon_right, has_baryon_left);
+                baryon_right, baryon_left, electric_charge_right,
+                electric_charge_left);
             qcd_string.set_has_remnant_right(true);
             qcd_string.evolve_QCD_string();
             qcd_string.set_final_baryon_rapidities(0., y_rem - y_loss);
+            qcd_string.set_final_electric_charge_rapidities(0., y_rem - y_loss);
             remnant_string_list_.push_back(qcd_string);
         }
     }
@@ -873,14 +1093,21 @@ void Glauber::produce_remnant_strings() {
             get_tau_form_and_moversigma(
                 string_evolution_mode, std::abs(y_rem), tau_form, m_over_sigma,
                 y_loss);
-            bool has_baryon_left = itarg->is_remnant_carry_baryon_number();
-            bool has_baryon_right = false;
+
+            real baryon_left = itarg->get_remnant_baryon_number();
+            real baryon_right = 0.;
+
+            real electric_charge_left = itarg->get_remnant_electricQ_number();
+            real electric_charge_right = 0.;
+
             QCDString qcd_string(
                 x_i, tau_form, itarg, itarg, proj_p_vec, p_i, m_over_sigma,
-                has_baryon_right, has_baryon_left);
+                baryon_right, baryon_left, electric_charge_right,
+                electric_charge_left);
             qcd_string.set_has_remnant_left(true);
             qcd_string.evolve_QCD_string();
             qcd_string.set_final_baryon_rapidities(y_rem + y_loss, 0.);
+            qcd_string.set_final_electric_charge_rapidities(y_rem + y_loss, 0.);
             remnant_string_list_.push_back(qcd_string);
         }
     }
@@ -947,22 +1174,12 @@ void Glauber::prepare_output_QCD_strings() {
 
         real remnant_left = 0.;
         if (it.get_has_remnant_left()) {
-            remnant_left = 1.0;
+            remnant_left = 1.;
         }
 
         real remnant_right = 0.;
         if (it.get_has_remnant_right()) {
-            remnant_right = 1.0;
-        }
-
-        real baryon_fraction_left = 0.;
-        if (it.get_has_baryon_left()) {
-            baryon_fraction_left = 1.0;
-        }
-
-        real baryon_fraction_right = 0.;
-        if (it.get_has_baryon_right()) {
-            baryon_fraction_right = 1.0;
+            remnant_right = 1.;
         }
 
         auto mass = it.get_string_mass();
@@ -990,8 +1207,12 @@ void Glauber::prepare_output_QCD_strings() {
             it.get_eta_s_baryon_right(),
             it.get_y_f_baryon_left(),
             it.get_y_f_baryon_right(),
-            baryon_fraction_left,
-            baryon_fraction_right,
+            it.get_baryon_charge_left(),
+            it.get_baryon_charge_right(),
+            it.get_electric_charge_left(),  // 25
+            it.get_electric_charge_right(),
+            it.get_eta_s_electric_charge_left(),
+            it.get_eta_s_electric_charge_right(),
         };
         QCD_string_output_arr_.push_back(output_array);
     }
@@ -1008,22 +1229,12 @@ void Glauber::prepare_output_QCD_strings() {
 
             real remnant_left = 0.;
             if (it.get_has_remnant_left()) {
-                remnant_left = 1.0;
+                remnant_left = 1.;
             }
 
             real remnant_right = 0.;
             if (it.get_has_remnant_right()) {
-                remnant_right = 1.0;
-            }
-
-            real baryon_fraction_left = 0.;
-            if (it.get_has_baryon_left()) {
-                baryon_fraction_left = 1.0;
-            }
-
-            real baryon_fraction_right = 0.;
-            if (it.get_has_baryon_right()) {
-                baryon_fraction_right = 1.0;
+                remnant_right = 1.;
             }
 
             auto mass = it.get_string_mass();
@@ -1041,6 +1252,7 @@ void Glauber::prepare_output_QCD_strings() {
                        * (std::min(
                            (eta_s_center + it.get_eta_s_left()) / 2.,
                            it.get_eta_s_left() + 1.0)));
+
             std::vector<real> output_array = {
                 mass,
                 it.get_m_over_sigma(),
@@ -1069,8 +1281,12 @@ void Glauber::prepare_output_QCD_strings() {
                 remnant_right * it.get_eta_s_baryon_right(),
                 remnant_left * it.get_y_f_baryon_left(),
                 remnant_right * it.get_y_f_baryon_right(),
-                baryon_fraction_left,
-                baryon_fraction_right,
+                it.get_baryon_charge_left(),
+                it.get_baryon_charge_right(),
+                it.get_electric_charge_left(),  // 25
+                it.get_electric_charge_right(),
+                remnant_left * it.get_eta_s_electric_charge_left(),
+                remnant_right * it.get_eta_s_electric_charge_right(),
             };
             QCD_string_output_arr_.push_back(output_array);
         }
@@ -1100,7 +1316,8 @@ void Glauber::output_QCD_strings(
         << "eta_s_left  eta_s_right  y_l  y_r  remnant_l  remnant_r "
         << "y_l_i  y_r_i "
         << "eta_s_baryon_left  eta_s_baryon_right  y_l_baryon  y_r_baryon  "
-        << "baryon_fraction_l  baryon_fraction_r" << std::endl;
+        << "baryon_fraction_l  baryon_fraction_r  "
+        << "Qe_l  Qe_r  eta_s_Qe_l  eta_s_Qe_r" << std::endl;
 
     for (auto &string_i : QCD_string_output_arr_) {
         output << std::scientific << std::setprecision(8);

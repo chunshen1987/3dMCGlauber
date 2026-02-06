@@ -10,8 +10,9 @@ namespace MCGlb {
 
 QCDString::QCDString(
     SpatialVec x_in, real tau_form_in, shared_ptr<Nucleon> proj_in,
-    shared_ptr<Nucleon> targ_in, real m_over_sigma_in, bool has_baryon_right_in,
-    bool has_baryon_left_in) {
+    shared_ptr<Nucleon> targ_in, real m_over_sigma_in, real baryon_right_in,
+    real baryon_left_in, real electric_charge_right_in,
+    real electric_charge_left_in) {
     x_production = x_in;
     tau_form = tau_form_in;
     proj = proj_in;
@@ -22,10 +23,19 @@ QCDString::QCDString(
     y_i_right = atanh(pvec[3] / pvec[0]);
     m_over_sigma = m_over_sigma_in;
     mass_ = PhysConsts::MProton;
-    has_baryon_right_ = has_baryon_right_in;
-    has_baryon_left_ = has_baryon_left_in;
+
+    baryon_charge_right_ = baryon_right_in;
+    baryon_charge_left_ = baryon_left_in;
+
+    electric_charge_right_ = electric_charge_right_in;
+    electric_charge_left_ = electric_charge_left_in;
+
     eta_s_baryon_left = 0.;
     eta_s_baryon_right = 0.;
+
+    eta_s_electric_charge_left = 0.;
+    eta_s_electric_charge_right = 0.;
+
     has_remnant_left_ = false;
     has_remnant_right_ = false;
 }
@@ -33,8 +43,9 @@ QCDString::QCDString(
 QCDString::QCDString(
     SpatialVec x_in, real tau_form_in, shared_ptr<Nucleon> proj_in,
     shared_ptr<Nucleon> targ_in, shared_ptr<Quark> proj_q_in,
-    shared_ptr<Quark> targ_q_in, real m_over_sigma_in, bool has_baryon_right_in,
-    bool has_baryon_left_in) {
+    shared_ptr<Quark> targ_q_in, real m_over_sigma_in, real baryon_right_in,
+    real baryon_left_in, real electric_charge_right_in,
+    real electric_charge_left_in) {
     x_production = x_in;
     tau_form = tau_form_in;
     proj = proj_in;
@@ -45,10 +56,18 @@ QCDString::QCDString(
     y_i_right = proj_q->get_rapidity();
     m_over_sigma = m_over_sigma_in;
     mass_ = PhysConsts::MQuarkValence;
-    has_baryon_right_ = has_baryon_right_in;
-    has_baryon_left_ = has_baryon_left_in;
+    baryon_charge_right_ = baryon_right_in;
+    baryon_charge_left_ = baryon_left_in;
+
+    electric_charge_right_ = electric_charge_right_in;
+    electric_charge_left_ = electric_charge_left_in;
+
     eta_s_baryon_left = 0.;
     eta_s_baryon_right = 0.;
+
+    eta_s_electric_charge_left = 0.;
+    eta_s_electric_charge_right = 0.;
+
     has_remnant_left_ = false;
     has_remnant_right_ = false;
 }
@@ -56,7 +75,8 @@ QCDString::QCDString(
 QCDString::QCDString(
     SpatialVec x_in, real tau_form_in, shared_ptr<Nucleon> proj_in,
     shared_ptr<Nucleon> targ_in, MomentumVec proj_p_in, MomentumVec targ_p_in,
-    real m_over_sigma_in, bool has_baryon_right_in, bool has_baryon_left_in) {
+    real m_over_sigma_in, real baryon_right_in, real baryon_left_in,
+    real electric_charge_right_in, real electric_charge_left_in) {
     x_production = x_in;
     tau_form = tau_form_in;
     proj = proj_in;
@@ -67,10 +87,18 @@ QCDString::QCDString(
     mass_ = sqrt(
         proj_p_in[0] * proj_p_in[0] - proj_p_in[1] * proj_p_in[1]
         - proj_p_in[2] * proj_p_in[2] - proj_p_in[3] * proj_p_in[3]);
-    has_baryon_right_ = has_baryon_right_in;
-    has_baryon_left_ = has_baryon_left_in;
+    baryon_charge_right_ = baryon_right_in;
+    baryon_charge_left_ = baryon_left_in;
+
+    electric_charge_right_ = electric_charge_right_in;
+    electric_charge_left_ = electric_charge_left_in;
+
     eta_s_baryon_left = 0.;
     eta_s_baryon_right = 0.;
+
+    eta_s_electric_charge_left = 0.;
+    eta_s_electric_charge_right = 0.;
+
     has_remnant_left_ = false;
     has_remnant_right_ = false;
 }
@@ -149,6 +177,14 @@ void QCDString::set_final_baryon_space_time_rapidities() {
     const double slope = (eta_s_right - eta_s_left) / (y_f_right - y_f_left);
     eta_s_baryon_left = eta_s_left + slope * (y_f_baryon_left - y_f_left);
     eta_s_baryon_right = eta_s_left + slope * (y_f_baryon_right - y_f_left);
+}
+
+void QCDString::set_final_electric_charge_space_time_rapidities() {
+    const double slope = (eta_s_right - eta_s_left) / (y_f_right - y_f_left);
+    eta_s_electric_charge_left =
+        (eta_s_left + slope * (y_f_electric_charge_left - y_f_left));
+    eta_s_electric_charge_right =
+        (eta_s_left + slope * (y_f_electric_charge_right - y_f_left));
 }
 
 }  // namespace MCGlb

@@ -95,9 +95,27 @@ real Parameters::get_lambdaBs() const {
     assert(lambdaBs >= 0.);
     return (lambdaBs);
 }
+real Parameters::get_lambdaQ() const {
+    real lambdaQ = static_cast<real>(get_param_double("lambdaQ", 0.));
+    assert(lambdaQ >= 0.);
+    return (lambdaQ);
+}
+
+real Parameters::get_lambdaQs() const {
+    real lambdaQs = static_cast<real>(get_param_double("lambdaQs", 1.));
+    assert(lambdaQs >= 0.);
+    return (lambdaQs);
+}
 
 real Parameters::get_baryon_in_string_prob() const {
-    real prob = static_cast<real>(get_param_double("baryonInStringProb", 1.));
+    real prob = static_cast<real>(get_param_double("FSbaryonInStringProb", 1.));
+    assert(prob >= 0. && prob <= 1.);
+    return (prob);
+}
+
+real Parameters::get_electric_charge_in_string_prob() const {
+    real prob =
+        static_cast<real>(get_param_double("FSelectricChargeInStringProb", 1.));
     assert(prob >= 0. && prob <= 1.);
     return (prob);
 }
@@ -194,8 +212,17 @@ bool Parameters::get_batch_eccentricity_output() const {
     }
 }
 
-bool Parameters::get_baryon_junctions() const {
-    int flag = get_param_int("baryon_junctions", 0);
+bool Parameters::getFSBaryonFluctStringBreaking() const {
+    int flag = get_param_int("FSBaryonFluctStringBreaking", 0);
+    if (flag == 0) {
+        return (false);
+    } else {
+        return (true);
+    }
+}
+
+bool Parameters::getFSElectricQFluctStringBreaking() const {
+    int flag = get_param_int("FSElectricQFluctStringBreaking", 0);
     if (flag == 0) {
         return (false);
     } else {
@@ -275,6 +302,15 @@ real Parameters::get_BG() const {
     real BG = static_cast<real>(get_param_double("BG", 5.));
     assert(BG > 0.);
     return (BG);
+}
+
+bool Parameters::getISBaryonInStringJunction() const {
+    int flag = get_param_int("ISBaryonInStringJunction", 0);
+    if (flag == 0) {
+        return (false);
+    } else {
+        return (true);
+    }
 }
 
 }  // namespace MCGlb
