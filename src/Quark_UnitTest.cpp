@@ -6,7 +6,9 @@
 using MCGlb::real;
 
 TEST_CASE("Test set and get functions") {
-    MCGlb::Quark test_quark;
+    MCGlb::SpatialVec x = {1.0, 0.0, -2.0, 3.0};
+    MCGlb::MomentumVec p = {5.0, 0.0, -4.0, 3.0};
+    MCGlb::Quark test_quark(x, p);
     test_quark.set_pdf_x(0.2);
     CHECK(test_quark.get_pdf_x() == 0.2);
 }
