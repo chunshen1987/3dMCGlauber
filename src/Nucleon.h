@@ -14,6 +14,7 @@ namespace MCGlb {
 
 class Nucleon : public Particle {
  private:
+    int id_ = 0;
     std::vector<std::shared_ptr<Quark>> quark_list;
     int collided_times = 0;
     int total_connected_times_ = 0;
@@ -44,6 +45,10 @@ class Nucleon : public Particle {
             std::shared_ptr<RandomUtil::Random> ran_gen_ptr);
 
     ~Nucleon();
+
+
+    void set_id(int id) { id_ = id; }
+    int get_id() const {return(id_);}
 
     void set_electric_charge(int charge) {electric_charge_ = charge;}
     int get_electric_charge() const {return(electric_charge_);}

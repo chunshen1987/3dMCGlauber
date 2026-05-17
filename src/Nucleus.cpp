@@ -190,6 +190,7 @@ void Nucleus::generate_nucleus_3d_configuration() {
                  electric_charges_arr.end(), *ran_gen_ptr->getRanGenerator());
     for (int i = 0; i < A_; i++) {
         nucleon_list_[i]->set_electric_charge(electric_charges_arr[i]);
+        nucleon_list_[i]->set_id(i);
     }
 
     recenter_nucleus();

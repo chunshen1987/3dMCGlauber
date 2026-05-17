@@ -279,7 +279,7 @@ int Glauber::make_collision_schedule() {
         // collision list is time ordered
         collision_schedule_list_.push_back(*it);
     }
-    get_collision_information();
+    //get_collision_information();
     return(collision_schedule.size());
 }
 
@@ -305,7 +305,7 @@ int Glauber::make_collision_schedule_second_stage() {
         // collision list is time ordered
         collision_schedule_list_.push_back(*it);
     }
-    get_collision_information();
+    //get_collision_information();
     return(collision_schedule.size());
 }
 
