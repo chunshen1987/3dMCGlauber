@@ -257,6 +257,42 @@ std::vector<double>  Glauber::get_all_targ_nucleon_z() {
     return (Targ_nucleonz_);
 }
 
+void Glauber::get_nucleon_xyz_at_t(
+    const double t, const int idx, double direction,
+    std::unique_ptr<Nucleus> &nucleus_ptr,
+    double &x, double &y, double &z) {
+    auto nuclues_rapidity = nucleus_ptr->get_beam_rapidity(
+                                    parameter_list.get_roots(), direction);
+    x = 0.0;
+    y = 0.0;
+    z = 0.0;
+    auto nucleon_list = target->get_nucleon_list();
+    if (direction > 1)
+        nucleon_list = projectile->get_nucleon_list();
+    if (idx < 0 || idx > static_cast<int>(nucleon_list->size())) {
+        std::cout << "Glauber::get_nucleon_xyz_at_t: "
+                  << "idx = " << idx
+                  << " is larger than the number of nucleons = "
+                  << nucleon_list->size() << std::endl;
+        return;
+    }
+    auto inucleon = (*nucleon_list)[idx];
+    auto nucl_x = inucleon->get_x();
+    x = nucl_x[1];
+    y = nucl_x[2];
+    z = nucl_x[3] + tanh(nuclues_rapidity) * t;
+}
+
+void Glauber::get_target_nucleon_xyz_at_t(
+    const double t, const int idx, double &x, double &y, double &z) {
+    get_nucleon_xyz_at_t(t, idx, -1, target, x, y, z);
+}
+
+void Glauber::get_projectile_nucleon_xyz_at_t(
+    const double t, const int idx, double &x, double &y, double &z) {
+    get_nucleon_xyz_at_t(t, idx, 1, projectile, x, y, z);
+}
+
 
 int Glauber::make_collision_schedule() {
     collision_schedule.clear();

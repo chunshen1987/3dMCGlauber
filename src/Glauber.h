@@ -131,6 +131,15 @@ class Glauber {
     std::vector<SpatialVec> get_all_proj_nucleon_xyz();
     std::vector<SpatialVec> get_all_targ_nucleon_xyz();
 
+    void get_nucleon_xyz_at_t(
+        const double t, const int idx, double direction,
+        std::unique_ptr<Nucleus> &nucleus_ptr,
+        double &x, double &y, double &z);
+    void get_target_nucleon_xyz_at_t(
+        const double t, const int idx, double &x, double &y, double &z);
+    void get_projectile_nucleon_xyz_at_t(
+        const double t, const int idx, double &x, double &y, double &z);
+
     std::vector<double> OutputquarkPosProj(std::vector<double> &HardPos);
     std::vector<double> OutputquarkPosTarg(std::vector<double> &HardPos);
 
