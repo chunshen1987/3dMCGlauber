@@ -120,9 +120,14 @@ void EventGenerator::generate_events(int nev, int event_id_offset) {
     messager.flush("info");
     // this file records all the essential information for the generated events
     std::ofstream record_file("events_summary.dat", std::ios::out);
-    record_file
-        << "# event_id  Npart  Ncoll  Nstrings  b(fm) PartProtons PartNeutrons"
-        << std::endl;
+    if (statistics_only_) {
+        record_file << "# event_id  Npart  Ncoll  Nstrings  b(fm)  "
+                    << "PartProtons  PartNeutrons" << std::endl;
+    } else {
+        record_file << "# event_id  Npart  Ncoll  Nstrings  b(fm)  "
+                    << "PartProtons  PartNeutrons  trans_area(fm^2)"
+                    << std::endl;
+    }
 
     int iev = 0;
     long long int icollisions = 0;
@@ -158,12 +163,19 @@ void EventGenerator::generate_events(int nev, int event_id_offset) {
             // write event information to the record file
             record_file << event_id << "  " << Npart << "  " << Ncoll << "  "
                         << Nstrings << "  " << b << "  " << NpartProt << "  "
-                        << NpartNeut << std::endl;
+                        << NpartNeut;
             iev++;
-            if (statistics_only_) continue;
+            if (statistics_only_) {
+                record_file << std::endl;
+                continue;
+            }
 
             density_maker_ptr_->set_QCD_string_output_arr(
                 mc_glauber_ptr_->get_QCD_strings_output_list());
+
+            double s_perp = density_maker_ptr_->compute_transverse_area();
+            record_file << "  " << s_perp << std::endl;
+
             if (initialEstOutput_) {
                 density_maker_ptr_->output_eccentricity(
                     "ecc_ed_n", event_id, 1);

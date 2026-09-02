@@ -120,6 +120,8 @@ class MakeDensity {
         const int outputMode = 0) const;
     void outputTATBEccentricity(
         std::string filenameHeader, const int eventId) const;
+
+    double compute_transverse_area() const;
 };
 
 };  // namespace MCGlb

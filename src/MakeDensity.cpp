@@ -132,6 +132,33 @@ void MakeDensity::compute_energyDensity_3D_distribution(
     }
 }
 
+double MakeDensity::compute_transverse_area() const {
+    double x_o = 0.;
+    double y_o = 0.;
+    int Nstring = QCD_string_output_arr_.size();
+    for (auto &string_i : QCD_string_output_arr_) {
+        double xPerpC = string_i[5];
+        double yPerpC = string_i[6];
+        x_o += xPerpC;
+        y_o += yPerpC;
+    }
+    x_o /= Nstring;
+    y_o /= Nstring;
+
+    double x_RMS = 0.;
+    double y_RMS = 0.;
+    for (auto &string_i : QCD_string_output_arr_) {
+        double xPerpC = string_i[5];
+        double yPerpC = string_i[6];
+        x_RMS += (xPerpC - x_o) * (xPerpC - x_o);
+        y_RMS += (yPerpC - y_o) * (yPerpC - y_o);
+    }
+    x_RMS = std::sqrt(x_RMS / Nstring) + sigma_x_;
+    y_RMS = std::sqrt(y_RMS / Nstring) + sigma_x_;
+    double area = M_PI * x_RMS * y_RMS;
+    return area;
+}
+
 void MakeDensity::computeTATB(
     std::vector<float> &x_arr, std::vector<float> &y_arr,
     std::vector<float> &TA_arr, std::vector<float> &TB_arr) const {
