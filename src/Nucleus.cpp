@@ -722,10 +722,17 @@ void Nucleus::readin_nucleon_positions() {
         }
     } else if (A_ == 22) {  // Neon 22
         filename = "tables/Ne22_NLEFT.bin.in";
+        if (lightNucleusOption_ == 3) {
+            filename = "tables/Ne22_PGCM.bin.in";
+        } else if (lightNucleusOption_ == 4) {
+            filename = "tables/Ne22_NLEFT.bin.in";
+        }
     } else if (A_ == 40) {  // Ar
         filename = "tables/Ar40_VMC.bin.in";
         if (lightNucleusOption_ == 0) {
             filename = "tables/Ar40_VMC.bin.in";
+        } else if (lightNucleusOption_ == 3) {
+            filename = "tables/Ar40_PGCM.bin.in";
         } else if (lightNucleusOption_ == 4) {
             // to be consistent with the O16 options
             filename = "tables/Ar40_NLEFT.bin.in";
