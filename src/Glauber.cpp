@@ -643,18 +643,10 @@ void Glauber::Pick_and_subtract_hard_parton_momentum() {
                                           tarj_q_pos[3] + tarj_n[3]};
                             auto dis_square_q_xy = (pos_q_Targ[1] - pos_q_Proj[1])*(pos_q_Targ[1] - pos_q_Proj[1]) +
                                                    (pos_q_Targ[2] - pos_q_Proj[2])*(pos_q_Targ[2] - pos_q_Proj[2]);
-                            SpatialVec newplace = pos_q_Targ;
-                            while (dis_square_q_xy > 0.25) {
-                                tarj_q_pos = (
-                                   targ_collided->resample_valence_quark_position(
-                                       parameter_list.get_BG())
-                                );
-                                newplace = {0,
-                                            tarj_q_pos[1] + tarj_n[1],
-                                            tarj_q_pos[2] + tarj_n[2],
-                                            tarj_q_pos[3] + tarj_n[3]};
-                                dis_square_q_xy = (newplace[1] - pos_q_Proj[1])*(newplace[1] - pos_q_Proj[1]) +
-                                                  (newplace[2] - pos_q_Proj[2])*(newplace[2] - pos_q_Proj[2]);
+                            if (dis_square_q_xy > 0.25) {
+                                tarj_q_pos = sample_targ_hard_quark_position(
+                                    targ_collided, tarj_n, pos_q_Proj,
+                                    parameter_list.get_BG());
                             }
                             targ_q->set_x(tarj_q_pos);
                             do_resample_targ = false;
@@ -672,6 +664,48 @@ void Glauber::Pick_and_subtract_hard_parton_momentum() {
             }
         }
     }
+}
+
+
+SpatialVec Glauber::sample_targ_hard_quark_position(
+        std::shared_ptr<Nucleon> targ, const SpatialVec &targ_n,
+        const SpatialVec &proj_q, real BG) {
+    // Whole positions from the valence-quark Gaussian until one falls within
+    // 0.5 fm of the projectile's quark.  Its chance per draw falls like
+    // exp(-d^2/(2 sigma^2)) with the distance d between the projectile's
+    // quark and the target nucleon (sigma = sqrt(BG) hbarc ~ 0.4 fm), so
+    // beyond d ~ 2.5 fm this would practically never end (seen in ~1 of
+    // 500-1300 O+O events with ISR).  1e8 draws take ~5 s; an event that
+    // ends within them keeps its random numbers.
+    const long max_draws = 100000000;
+    for (long n = 0; n < max_draws; n++) {
+        SpatialVec x_q = targ->resample_valence_quark_position(BG);
+        const real dx = x_q[1] + targ_n[1] - proj_q[1];
+        const real dy = x_q[2] + targ_n[2] - proj_q[2];
+        if (dx*dx + dy*dy <= 0.25) return(x_q);
+    }
+    // The same distribution, sampled directly: uniform in the 0.5 fm disk
+    // around the projectile's quark, kept with the Gaussian's weight relative
+    // to the disk's point nearest the nucleon (<= 1).  z as in the draws.
+    const real sigma = sqrt(BG)*PhysConsts::HBARC;
+    const real R = 0.5;
+    const real cx = proj_q[1] - targ_n[1];   // disk centre, from the nucleon
+    const real cy = proj_q[2] - targ_n[2];
+    const real d_min = std::max(0., sqrt(cx*cx + cy*cy) - R);
+    real x, y;
+    do {
+        const real r = R*sqrt(ran_gen_ptr_->rand_uniform());
+        const real phi = 2.*M_PI*ran_gen_ptr_->rand_uniform();
+        x = cx + r*cos(phi);
+        y = cy + r*sin(phi);
+    } while (ran_gen_ptr_->rand_uniform()
+             >= exp(-(x*x + y*y - d_min*d_min)/(2.*sigma*sigma)));
+    const real z = ran_gen_ptr_->rand_normal(0., sigma);
+    std::cout << "[3dMCGlauber] the target's hard quark was placed by direct "
+              << "sampling (" << max_draws << " draws missed; projectile "
+              << "quark " << sqrt(cx*cx + cy*cy) << " fm from the target "
+              << "nucleon)" << std::endl;
+    return(SpatialVec{0.0, x, y, z});
 }
 
 

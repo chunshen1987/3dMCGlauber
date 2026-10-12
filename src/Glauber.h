@@ -159,6 +159,12 @@ class Glauber {
                             const real b, const unsigned int seed);
 
     void Pick_and_subtract_hard_parton_momentum();
+    //! the target's hard quark: a position (relative to its nucleon at
+    //! targ_n) from the valence-quark Gaussian (BG) within 0.5 fm, in the
+    //! transverse plane, of the projectile's hard quark at proj_q
+    SpatialVec sample_targ_hard_quark_position(
+        std::shared_ptr<Nucleon> targ, const SpatialVec &targ_n,
+        const SpatialVec &proj_q, real BG);
     void Set_hard_parton_momentum(
         std::vector<double> &proj_t, std::vector<double> &proj_x,
         std::vector<double> &proj_y, std::vector<double> &proj_z,
