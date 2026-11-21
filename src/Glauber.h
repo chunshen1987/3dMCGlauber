@@ -125,11 +125,22 @@ class Glauber {
     //! The unit is 1/fm^3
     double get_nucleon_density(double t, double x, double y, double z);
 
+    //! This function gets the target/projectile nucleon density at its rest
+    //! frame at t, x, y, z The unit is 1/fm^3
+    double get_nucleus_restframe_density(
+            double t, double x, double y, double z, int direction,
+            std::unique_ptr<Nucleus> &nucleus_ptr);
+
+    double get_targ_restframe_nucleon_density(double t, double x, double y, double z);
+    double get_proj_restframe_nucleon_density(double t, double x, double y, double z);
+
     std::vector<double> get_all_proj_nucleon_z();
     std::vector<double> get_all_targ_nucleon_z();
 
     std::vector<SpatialVec> get_all_proj_nucleon_xyz();
     std::vector<SpatialVec> get_all_targ_nucleon_xyz();
+    std::vector<SpatialVec> get_all_proj_restframe_nucleon_xyz();
+    std::vector<SpatialVec> get_all_targ_restframe_nucleon_xyz();
 
     void get_nucleon_xyz_at_t(
         const double t, const int idx, double direction,

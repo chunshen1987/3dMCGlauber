@@ -108,8 +108,25 @@ double EventGenerator::MCGlb_projectile_nucleon_density(double t, double x,
 }
 
 
+double EventGenerator::MCGlb_target_restframe_nucleon_density(double t, double x,
+                                                              double y, double z) {
+    return(mc_glauber_ptr_->get_targ_restframe_nucleon_density(t, x, y, z));
+}
+
+
+double EventGenerator::MCGlb_projectile_restframe_nucleon_density(double t, double x,
+                                                                  double y, double z) {
+    return(mc_glauber_ptr_->get_proj_restframe_nucleon_density(t, x, y, z));
+}
+
+
 std::vector<double> EventGenerator::MCGlb_projectile_nucleon_z() {
     return(mc_glauber_ptr_->get_all_proj_nucleon_z());
+}
+
+
+std::vector<double> EventGenerator::MCGlb_target_nucleon_z() {
+    return(mc_glauber_ptr_->get_all_targ_nucleon_z());
 }
 
 
@@ -123,9 +140,15 @@ std::vector<SpatialVec> EventGenerator::MCGlb_target_nucleon_xyz() {
 }
 
 
-std::vector<double> EventGenerator::MCGlb_target_nucleon_z() {
-    return(mc_glauber_ptr_->get_all_targ_nucleon_z());
+std::vector<SpatialVec> EventGenerator::MCGlb_projectile_restframe_nucleon_xyz() {
+    return(mc_glauber_ptr_->get_all_proj_restframe_nucleon_xyz());
 }
+
+
+std::vector<SpatialVec> EventGenerator::MCGlb_target_restframe_nucleon_xyz() {
+    return(mc_glauber_ptr_->get_all_targ_restframe_nucleon_xyz());
+}
+
 
 
 void EventGenerator::GetMomandPos_Proj(

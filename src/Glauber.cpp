@@ -198,6 +198,35 @@ real Glauber::get_nucleus_density(double t, double x,
 }
 
 
+real Glauber::get_nucleus_restframe_density(
+        double t, double x, double y, double z, int direction,
+        std::unique_ptr<Nucleus> &nucleus_ptr) {
+    auto nuclues_rapidity = nucleus_ptr->get_beam_rapidity(
+                                    parameter_list.get_roots(), direction);
+    const real gamma = cosh(nuclues_rapidity);
+    const real width_xy = 0.5;       // fm
+    const real width_z = width_xy;   // fm
+    const real prefactor = 1./(width_xy*width_xy*width_z)/pow(M_PI*2, 1.5);
+
+    auto nucleon_list = nucleus_ptr->get_nucleon_list();
+    real nucleon_density = 0.0;
+    for (auto &inucleon: (*nucleon_list)) {
+        auto nucl_x = inucleon->get_x();
+        auto dis_square_xy = ((x - nucl_x[1])*(x - nucl_x[1]) +
+                              (y - nucl_x[2])*(y - nucl_x[2]));
+        if (dis_square_xy > width_xy*width_xy*200.) continue;
+
+        auto nucl_z_lrf = gamma*nucl_x[3];
+        auto dis_square_z = (z - nucl_z_lrf)*(z - nucl_z_lrf);
+        if (dis_square_z > width_z*width_z*100.) continue;
+
+        nucleon_density += exp(- dis_square_xy/(2.*width_xy*width_xy)
+                               - dis_square_z/(2.*width_z*width_z));
+    }
+    return (nucleon_density*prefactor);
+}
+
+
 real Glauber::get_proj_nucleon_density(double t, double x,
                                        double y, double z) {
     return get_nucleus_density(t, x, y, z, 1, projectile);
@@ -207,6 +236,18 @@ real Glauber::get_proj_nucleon_density(double t, double x,
 real Glauber::get_targ_nucleon_density(double t, double x,
                                        double y, double z) {
     return get_nucleus_density(t, x, y, z, -1, target);
+}
+
+
+real Glauber::get_proj_restframe_nucleon_density(double t, double x,
+                                                 double y, double z) {
+    return get_nucleus_restframe_density(t, x, y, z, 1, projectile);
+}
+
+
+real Glauber::get_targ_restframe_nucleon_density(double t, double x,
+                                                 double y, double z) {
+    return get_nucleus_restframe_density(t, x, y, z, -1, target);
 }
 
 
@@ -237,7 +278,7 @@ std::vector<SpatialVec>  Glauber::get_all_proj_nucleon_xyz() {
     return (Proj_nucleonxyz_);
 }
 
-std::vector<SpatialVec>  Glauber::get_all_targ_nucleon_xyz() {
+std::vector<SpatialVec> Glauber::get_all_targ_nucleon_xyz() {
     Targ_nucleonxyz_.clear();
     auto nucleon_list = target->get_nucleon_list();
     for (auto &inucleon: (*nucleon_list)) {
@@ -246,6 +287,37 @@ std::vector<SpatialVec>  Glauber::get_all_targ_nucleon_xyz() {
     }
     return (Targ_nucleonxyz_);
 }
+
+
+std::vector<SpatialVec> Glauber::get_all_proj_restframe_nucleon_xyz() {
+    Proj_nucleonxyz_.clear();
+    auto nucleon_list = projectile->get_nucleon_list();
+    auto nuclues_rapidity = projectile->get_beam_rapidity(
+                                    parameter_list.get_roots(), 1);
+    auto gamma = cosh(nuclues_rapidity);
+    for (auto &inucleon: (*nucleon_list)) {
+        SpatialVec nucl_x = inucleon->get_x();
+        nucl_x[3] = gamma*nucl_x[3];
+        Proj_nucleonxyz_.push_back(nucl_x);
+    }
+    return (Proj_nucleonxyz_);
+}
+
+
+std::vector<SpatialVec> Glauber::get_all_targ_restframe_nucleon_xyz() {
+    Targ_nucleonxyz_.clear();
+    auto nucleon_list = target->get_nucleon_list();
+    auto nuclues_rapidity = target->get_beam_rapidity(
+                                    parameter_list.get_roots(), -1);
+    auto gamma = cosh(nuclues_rapidity);
+    for (auto &inucleon: (*nucleon_list)) {
+        SpatialVec nucl_x = inucleon->get_x();
+        nucl_x[3] = gamma*nucl_x[3];
+        Targ_nucleonxyz_.push_back(nucl_x);
+    }
+    return (Targ_nucleonxyz_);
+}
+
 
 std::vector<double>  Glauber::get_all_targ_nucleon_z() {
     Targ_nucleonz_.clear();

@@ -88,13 +88,19 @@ class EventGenerator {
     double MCGlb_nucleon_density(double t, double x,
                                  double y, double z);
     //! calculate the target/projectile nucleon density at Lab frame,
-    //
     //! unit is 1/fm^3
     double MCGlb_target_nucleon_density(double t, double x,
                                         double y, double z);
 
     double MCGlb_projectile_nucleon_density(double t, double x,
                                             double y, double z);
+    //! calculate the target/projectile nucleon density at its rest frame,
+    //! unit is 1/fm^3
+    double MCGlb_target_restframe_nucleon_density(double t, double x,
+                                                  double y, double z);
+
+    double MCGlb_projectile_restframe_nucleon_density(double t, double x,
+                                                      double y, double z);
 
     void GetMomandPos_Proj(
         std::vector<double> &t, std::vector<double> &x,
@@ -111,6 +117,8 @@ class EventGenerator {
     std::vector<double> MCGlb_target_nucleon_z();
     std::vector<SpatialVec> MCGlb_projectile_nucleon_xyz();
     std::vector<SpatialVec> MCGlb_target_nucleon_xyz();
+    std::vector<SpatialVec> MCGlb_projectile_restframe_nucleon_xyz();
+    std::vector<SpatialVec> MCGlb_target_restframe_nucleon_xyz();
 
     void get_target_nucleon_xyz_at_t(
         const double t, const int idx, double &x, double &y, double &z) {
