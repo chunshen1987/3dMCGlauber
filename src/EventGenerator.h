@@ -96,10 +96,10 @@ class EventGenerator {
                                             double y, double z);
     //! calculate the target/projectile nucleon density at its rest frame,
     //! unit is 1/fm^3
-    double MCGlb_target_restframe_nucleon_density(double t, double x,
+    double MCGlb_target_restframe_nucleon_density(double x,
                                                   double y, double z);
 
-    double MCGlb_projectile_restframe_nucleon_density(double t, double x,
+    double MCGlb_projectile_restframe_nucleon_density(double x,
                                                       double y, double z);
 
     void GetMomandPos_Proj(

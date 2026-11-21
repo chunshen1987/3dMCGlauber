@@ -199,7 +199,7 @@ real Glauber::get_nucleus_density(double t, double x,
 
 
 real Glauber::get_nucleus_restframe_density(
-        double t, double x, double y, double z, int direction,
+        double x, double y, double z, int direction,
         std::unique_ptr<Nucleus> &nucleus_ptr) {
     auto nuclues_rapidity = nucleus_ptr->get_beam_rapidity(
                                     parameter_list.get_roots(), direction);
@@ -239,15 +239,15 @@ real Glauber::get_targ_nucleon_density(double t, double x,
 }
 
 
-real Glauber::get_proj_restframe_nucleon_density(double t, double x,
+real Glauber::get_proj_restframe_nucleon_density(double x,
                                                  double y, double z) {
-    return get_nucleus_restframe_density(t, x, y, z, 1, projectile);
+    return get_nucleus_restframe_density(x, y, z, 1, projectile);
 }
 
 
-real Glauber::get_targ_restframe_nucleon_density(double t, double x,
+real Glauber::get_targ_restframe_nucleon_density(double x,
                                                  double y, double z) {
-    return get_nucleus_restframe_density(t, x, y, z, -1, target);
+    return get_nucleus_restframe_density(x, y, z, -1, target);
 }
 
 

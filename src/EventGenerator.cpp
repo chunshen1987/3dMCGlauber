@@ -108,15 +108,15 @@ double EventGenerator::MCGlb_projectile_nucleon_density(double t, double x,
 }
 
 
-double EventGenerator::MCGlb_target_restframe_nucleon_density(double t, double x,
+double EventGenerator::MCGlb_target_restframe_nucleon_density(double x,
                                                               double y, double z) {
-    return(mc_glauber_ptr_->get_targ_restframe_nucleon_density(t, x, y, z));
+    return(mc_glauber_ptr_->get_targ_restframe_nucleon_density(x, y, z));
 }
 
 
-double EventGenerator::MCGlb_projectile_restframe_nucleon_density(double t, double x,
+double EventGenerator::MCGlb_projectile_restframe_nucleon_density(double x,
                                                                   double y, double z) {
-    return(mc_glauber_ptr_->get_proj_restframe_nucleon_density(t, x, y, z));
+    return(mc_glauber_ptr_->get_proj_restframe_nucleon_density(x, y, z));
 }
 
 
