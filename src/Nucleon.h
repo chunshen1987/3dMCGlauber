@@ -102,7 +102,7 @@ class Nucleon : public Particle {
     void accelerate_quarks(real ecm, int direction);
     void lorentz_contraction(real gamma);
 
-    std::shared_ptr<Quark> get_a_valence_quark();
+    std::shared_ptr<Quark> get_a_valence_quark(bool add_connection = true);
     std::shared_ptr<Quark> get_a_close_valence_quark(real xq, real yq);
 
     bool is_remnant_set() const { return (remnant_set_); }

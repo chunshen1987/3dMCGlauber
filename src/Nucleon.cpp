@@ -70,7 +70,7 @@ void Nucleon::lorentz_contraction(real gamma) {
     }
 }
 
-std::shared_ptr<Quark> Nucleon::get_a_valence_quark() {
+std::shared_ptr<Quark> Nucleon::get_a_valence_quark(bool add_connection) {
     // return the quark with the minimum number of connections
     int minimum_connections = 1000;
     for (auto &iq : quark_list) {
@@ -81,7 +81,7 @@ std::shared_ptr<Quark> Nucleon::get_a_valence_quark() {
         quark_list.begin(), quark_list.end(), *ran_gen_ptr_->getRanGenerator());
     for (auto &iq : quark_list) {
         if (minimum_connections == iq->get_number_of_connections()) {
-            iq->add_a_connection();
+            if (add_connection) iq->add_a_connection();
             return (iq);
         }
     }

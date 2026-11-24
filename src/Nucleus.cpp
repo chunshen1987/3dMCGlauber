@@ -456,7 +456,8 @@ void Nucleus::add_soft_parton_ball(real ecm, int direction) {
                 // when there is not enough energy to add a soft parton
                 // assign the baryon number to a random valence quark hotspot
                 if (baryonInStringJunction_) {
-                    nucleon_i->get_a_valence_quark()->set_baryon(1.0);
+                    nucleon_i->get_a_valence_quark(/*add_connection=*/false)
+                        ->set_baryon(1.0);
                 }
                 continue;
             }
