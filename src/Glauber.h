@@ -49,6 +49,8 @@ class Glauber {
 
     real sigma_eff_;
     real nucleon_width_;
+    static constexpr real hit_reject_guard_ = 1e-3;
+    real hit_reject_distance_sq_;
 
   public:
     Glauber() = delete;

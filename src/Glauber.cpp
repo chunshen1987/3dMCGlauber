@@ -10,6 +10,7 @@
 #include <fstream>
 #include <iomanip>
 #include <iostream>
+#include <limits>
 #include <memory>
 #include <string>
 #include <vector>
@@ -167,6 +168,22 @@ Glauber::Glauber(
 
     real siginNN = compute_NN_inelastic_cross_section(collision_energy_);
     sigma_eff_ = get_sig_eff(siginNN);
+    const real width_sq = 4. * nucleon_width_ * nucleon_width_;
+    const real norm = 4. * M_PI * nucleon_width_ * nucleon_width_;
+    const real peak_exponent = sigma_eff_ / norm;
+    if (std::isfinite(peak_exponent) && peak_exponent > 0.) {
+        // The exponent bounds the hit probability. Leave a factor of two
+        // between the exponent at the cutoff and the minimum draw.
+        const real distance_sq =
+            width_sq
+            * std::max(0., log(peak_exponent / (0.5 * hit_reject_guard_)));
+        const real exponent_at_cutoff =
+            sigma_eff_ * (exp(-distance_sq / width_sq) / norm);
+        if (std::isfinite(distance_sq)
+            && exponent_at_cutoff < hit_reject_guard_) {
+            hit_reject_distance_sq_ = distance_sq;
+        }
+    }
     std::cout << "sqrt{s} = " << collision_energy_ << " GeV, "
               << "siginNN = " << siginNN << " mb" << std::endl;
 }
@@ -298,13 +315,16 @@ int Glauber::get_Protonspart() const {
 }
 
 bool Glauber::hit(real d2) const {
-    // real G = 0.92;  // from Glassando
-    // return(ran_gen_ptr_->rand_uniform() < G*exp(-G*d2/d2_in));
+    const real draw = ran_gen_ptr_->rand_uniform();
+    if (draw >= hit_reject_guard_ && d2 >= hit_reject_distance_sq_) {
+        return false;
+    }
+
     const real T_nn =
         (exp(-d2 / (4. * nucleon_width_ * nucleon_width_))
          / (4. * M_PI * nucleon_width_ * nucleon_width_));
-    const real hit_treshold = 1. - exp(-sigma_eff_ * T_nn);
-    return (ran_gen_ptr_->rand_uniform() < hit_treshold);
+    const real hit_threshold = 1. - exp(-sigma_eff_ * T_nn);
+    return draw < hit_threshold;
 }
 
 void Glauber::create_a_collision_event(
@@ -1629,6 +1649,8 @@ real Glauber::get_sig_eff(const real siginNN) {
     // where 2*PI*(2R)^2=sigmaNN
     const real width = sqrt(0.1 * siginNN / M_PI) / sqrt(8.);
     nucleon_width_ = width;
+    // A width change invalidates the cutoff computed with the stored sigma_eff_.
+    hit_reject_distance_sq_ = std::numeric_limits<real>::infinity();
     const real sigin = siginNN * 0.1;  // sigma_in(s) [mb --> fm^2]
 
     const int Nint = 100;  // # of integration points
