@@ -27,11 +27,12 @@ class EventGenerator {
     bool batchEccOutput_;
     bool initialEstOutput_;
     pretty_ostream messager;
-    std::vector<float> cenEstMinBiasList_;
     float cenEstMin_;
     float cenEstMax_;
     int NpartMin_;
     int NpartMax_;
+
+    std::vector<float> sampleMinBiasEventList(int nev);
 
   public:
     EventGenerator() = delete;

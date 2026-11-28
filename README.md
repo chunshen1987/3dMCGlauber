@@ -36,3 +36,20 @@ The code package also includes unit test modules for individual class components
 
 All the unit test executables will be installed to the test/ folder. Under the test/ folder, one can run the bash script run\_all\_UnitTests.sh to execute all the unit test programs.
 
+### Reusing the minimum-bias centrality table
+
+When `cenMin` and `cenMax` select a centrality range narrower than 0–100%,
+the program calibrates the cuts from 50,000 inelastic events and saves the
+sorted string counts (`Nstrings`) in `minimum_bias_collisions.dat` in the
+working directory. Later runs automatically load a matching table and can use
+it for different centrality ranges and random seeds at the same collision
+energy. Set `minBiasTableFile`
+in the input or pass `minBiasTableFile=/path/to/table.dat` to share a table
+across run directories or keep separate calibrations.
+
+The program regenerates missing, invalid, or incompatible tables. Choose a
+fresh table path after replacing underlying nuclear or parton input tables.
+For reproducible production events, keep the same saved table and run seed.
+The run that generates the table consumes random numbers during calibration,
+so its production events can differ from a run that loads the table with the
+same seed. A 0–100% run skips calibration entirely.

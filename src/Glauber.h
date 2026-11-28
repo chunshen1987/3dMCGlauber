@@ -65,6 +65,7 @@ class Glauber {
 
     void make_nuclei();
     real get_impact_parameter() const { return (impact_b); }
+    real get_collision_energy() const { return collision_energy_; }
 
     int make_collision_schedule();  // get the number of binary collisions
     bool hit(real d2) const;

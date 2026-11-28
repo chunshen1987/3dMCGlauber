@@ -42,6 +42,9 @@ class ParametersMap {
     void read_in_parameters_from_arguments(
         int argc, char* argv[], string delimiter = "=", long startFrom = 1);
     int get_parameter_list_size() const { return (parameter_map.size()); }
+    const std::map<string, string>& get_parameters() const {
+        return parameter_map;
+    }
     void print_parameter_list() const;
 };
 

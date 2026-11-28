@@ -2,12 +2,101 @@
 
 #include "EventGenerator.h"
 
+#include <unistd.h>
+
+#include <algorithm>
+#include <cmath>
+#include <cstdio>
+#include <cstdlib>
 #include <fstream>
-#include <iostream>
+#include <iomanip>
+#include <limits>
+#include <set>
 #include <sstream>
 #include <string>
 
 namespace MCGlb {
+
+namespace {
+
+constexpr char minBiasTableVersion[] = "# 3dMCGlauber minimum-bias Nstrings v1";
+
+std::string minBiasTableParameters(
+    const Parameters& parameters, real collisionEnergy) {
+    // Exclude production event selection, output settings, and the random seed.
+    const std::set<std::string> excluded {
+        "cenMin",
+        "cenMax",
+        "b_min",
+        "b_max",
+        "NpartMin",
+        "NpartMax",
+        "seed",
+        "only_event_statistics",
+        "batch_density_output",
+        "batch_2Ddensity_output",
+        "batch_eccentricity_output",
+        "outputInitialEst",
+        "minBiasTableFile"};
+    std::ostringstream header;
+    header << "# collision_energy_GeV="
+           << std::setprecision(std::numeric_limits<real>::max_digits10)
+           << collisionEnergy << " parameters";
+    for (const auto& [name, value] : parameters.get_parameters()) {
+        if (excluded.count(name) == 0) {
+            header << ' ' << name << '=' << std::quoted(value);
+        }
+    }
+    return header.str();
+}
+
+bool readMinBiasTable(
+    std::istream& input, const std::string& parameters,
+    std::vector<float>& estimators, unsigned int& seed) {
+    std::string version, storedParameters;
+    if (!std::getline(input, version) || version != minBiasTableVersion
+        || !std::getline(input, storedParameters)
+        || storedParameters != parameters || !(input >> seed)) {
+        return false;
+    }
+    for (auto& estimator : estimators) {
+        if (!(input >> estimator) || !std::isfinite(estimator) || estimator < 0
+            || estimator != std::floor(estimator)) {
+            return false;
+        }
+    }
+    input >> std::ws;
+    return input.eof() && !input.bad()
+           && std::is_sorted(
+               estimators.begin(), estimators.end(), std::greater<float>());
+}
+
+bool writeMinBiasTable(
+    const std::string& filename, const std::string& parameters,
+    const std::vector<float>& estimators, unsigned int seed) {
+    // Publish the complete table in one rename, even when jobs share a path.
+    std::string temporary = filename + ".XXXXXX";
+    int fd = mkstemp(temporary.data());
+    if (fd == -1) return false;
+    close(fd);
+
+    std::ofstream output(temporary);
+    output << minBiasTableVersion << '\n'
+           << parameters << '\n'
+           << seed << '\n'
+           << std::setprecision(std::numeric_limits<float>::max_digits10);
+    for (const auto estimator : estimators) {
+        output << estimator << '\n';
+    }
+    output.close();
+    if (output && std::rename(temporary.c_str(), filename.c_str()) == 0) {
+        return true;
+    }
+    std::remove(temporary.c_str());
+    return false;
+}
+
+}  // namespace
 
 std::vector<CollisionEvent> EventGenerator::get_CollisionEventvector() {
     return mc_glauber_ptr_->get_collision_information();
@@ -60,16 +149,63 @@ void EventGenerator::generateMinBiasEventList() {
     real cenMax = parameter_list_.getParam("cenMax", 100.);
     if (cenMin < 1e-8 && 100 - cenMax < 1e-8) return;
 
-    auto b_max_tmp = parameter_list_.get_b_max();
-    auto b_min_tmp = parameter_list_.get_b_min();
+    const int nev = 50000;
+    const auto filename =
+        parameter_list_.checkParamIsDefined("minBiasTableFile")
+            ? parameter_list_.get_param_val("minBiasTableFile")
+            : "minimum_bias_collisions.dat";
+    const auto parameters = minBiasTableParameters(
+        parameter_list_, mc_glauber_ptr_->get_collision_energy());
+    const auto bMin = parameter_list_.get_b_min();
+    const auto bMax = parameter_list_.get_b_max();
+    std::vector<float> estimators(nev);
+    unsigned int tableSeed = 0;
+    std::ifstream input(filename);
+    if (readMinBiasTable(input, parameters, estimators, tableSeed)) {
+        messager << "Loaded minimum-bias table from " << filename
+                 << " (table seed = " << tableSeed << ")";
+        messager.flush("info");
+    } else {
+        if (input.is_open()) {
+            messager << "Invalid or incompatible minimum-bias table in "
+                     << filename << "; regenerating";
+            messager.flush("warning");
+            input.close();
+        }
+        estimators = sampleMinBiasEventList(nev);
+        if (writeMinBiasTable(
+                filename, parameters, estimators, ran_gen_ptr_->get_seed())) {
+            messager << "Saved minimum-bias table to " << filename;
+            messager.flush("info");
+        } else {
+            messager << "Could not save minimum-bias table to " << filename;
+            messager.flush("warning");
+        }
+    }
+
+    // Apply the same parameter normalization on cache hits as after sampling.
+    parameter_list_.set_b_min(bMin);
+    parameter_list_.set_b_max(bMax);
+    int idx = std::min(nev - 1, static_cast<int>(nev * cenMax / 100.));
+    cenEstMin_ = estimators[idx];
+    idx = std::max(0, static_cast<int>(nev * cenMin / 100.));
+    cenEstMax_ = estimators[idx];
+    messager << "centrality cut [" << cenMin << ", " << cenMax
+             << "]: cenEstMin = " << cenEstMin_
+             << ", cenEstMax = " << cenEstMax_;
+    messager.flush("info");
+}
+
+std::vector<float> EventGenerator::sampleMinBiasEventList(int nev) {
     messager << "Random seed = " << ran_gen_ptr_->get_seed();
     messager.flush("info");
-    const int nev = 50000;
     messager << "Generating minimum bias with " << nev << " events ... ";
     messager.flush("info");
     parameter_list_.set_b_min(0.);
     parameter_list_.set_b_max(25.);
     auto b_max_local = 0.;
+    std::vector<float> estimators;
+    estimators.reserve(nev);
 
     int iev = 0;
     int nev_progress = std::max(1, nev / 10);
@@ -92,25 +228,12 @@ void EventGenerator::generateMinBiasEventList() {
         }
 
         auto Nstrings = mc_glauber_ptr_->decide_QCD_strings_production();
-        cenEstMinBiasList_.push_back(
-            computeCenEstimator(Npart, Ncoll, Nstrings));
+        estimators.push_back(computeCenEstimator(Npart, Ncoll, Nstrings));
         iev++;
     }
-    std::sort(
-        cenEstMinBiasList_.begin(), cenEstMinBiasList_.end(),
-        std::greater<int>());
+    std::sort(estimators.begin(), estimators.end(), std::greater<float>());
 
-    int idx = std::min(nev - 1, static_cast<int>(nev * cenMax / 100.));
-    cenEstMin_ = cenEstMinBiasList_[idx];
-    idx = std::max(0, static_cast<int>(nev * cenMin / 100.));
-    cenEstMax_ = cenEstMinBiasList_[idx];
-    messager << "centrality cut [" << cenMin << ", " << cenMax
-             << "]: cenEstMin = " << cenEstMin_
-             << ", cenEstMax = " << cenEstMax_;
-    messager.flush("info");
-
-    parameter_list_.set_b_min(b_min_tmp);
-    parameter_list_.set_b_max(b_max_tmp);
+    return estimators;
 }
 
 void EventGenerator::generate_events(int nev, int event_id_offset) {
